@@ -1,0 +1,25 @@
+---
+interface Props {
+	label?: string;
+	title: string;
+	description: string;
+}
+const { label = '', title, description } = Astro.props;
+---
+
+<div class="relative z-10 w-full flex-1 min-h-0 flex flex-col">
+	<!-- Profile content (white box): same for Profile, My Transfers, My Trips, My experiences, Settings -->
+	<div class="profile-content flex-1 min-h-0 flex flex-col bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10 overflow-auto" aria-label="Profile content">
+		<div class="mb-8">
+			{label && (
+				<div class="flex items-center gap-2 mb-3">
+					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+					<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase">{label}</span>
+				</div>
+			)}
+			<h1 class="text-3xl font-bold text-neutral-900">{title}</h1>
+			<p class="text-neutral-500 text-sm mt-1">{description}</p>
+		</div>
+		<slot />
+	</div>
+</div>

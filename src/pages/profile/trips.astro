@@ -1,26 +1,12 @@
 ---
 import ProfileLayout from '../../components/ProfileLayout.astro';
+import ProfileContent from '../../components/ProfileContent.astro';
 ---
 
 <ProfileLayout>
-	<div class="relative z-10 w-full max-w-md">
-		<div class="flex justify-center mb-8">
-			<a href="/" aria-label="Go to homepage">
-				<img src="/logo-opawey.png" alt="Opawey" class="h-16 w-auto object-contain" />
-			</a>
-		</div>
-		<div class="bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10">
-			<div class="mb-8">
-				<div class="flex items-center gap-2 mb-3">
-					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-					<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase">Trips</span>
-				</div>
-				<h1 class="text-3xl font-bold text-neutral-900">My Trips</h1>
-				<p class="text-neutral-500 text-sm mt-1">View and manage your trip bookings.</p>
-			</div>
-			<p class="text-neutral-500 text-sm">No trips yet. <a href="/book/tour" class="text-[#0C6B95] font-medium hover:underline">Book a tour</a>.</p>
-		</div>
-	</div>
+	<ProfileContent label="Trips" title="My Trips" description="View and manage your trip bookings.">
+		<p class="text-neutral-500 text-sm">No trips yet. <a href="/book/tour" class="text-[#0C6B95] font-medium hover:underline">Book a tour</a>.</p>
+	</ProfileContent>
 </ProfileLayout>
 
 <script>
