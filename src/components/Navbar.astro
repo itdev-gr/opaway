@@ -114,7 +114,7 @@
 <script>
 	import { auth, db } from '../lib/firebase';
 	import { onAuthStateChanged } from 'firebase/auth';
-	import { doc, getDoc } from 'firebase/firestore';
+	import { doc, getDocFromServer } from 'firebase/firestore';
 
 	function updateActiveLink() {
 		const pathname = window.location.pathname;
@@ -140,7 +140,7 @@
 			nameEl.textContent = user.displayName?.trim() || user.email || 'Account';
 			nameEl.setAttribute('title', nameEl.textContent);
 			try {
-				const snap = await getDoc(doc(db, 'users', user.uid));
+				const snap = await getDocFromServer(doc(db, 'users', user.uid));
 				if (snap.exists()) {
 					const data = snap.data();
 					const displayName = data?.displayName as string | undefined;
@@ -148,7 +148,7 @@
 						nameEl.textContent = displayName.trim();
 						nameEl.setAttribute('title', displayName.trim());
 					}
-					// Show Admin button only if type === 'admin' in Firebase (any other type → hidden)
+					// Show Admin only when type is exactly string 'admin'; user, undefined, or any other type → hidden
 					const isAdmin = data?.type === 'admin';
 					if (adminBtn) adminBtn.classList.toggle('hidden', !isAdmin);
 				}
