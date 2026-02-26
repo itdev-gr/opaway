@@ -19,12 +19,12 @@ import Layout from '../layouts/Layout.astro';
 			</svg>
 		</button>
 
-		<!-- Sidebar -->
+		<!-- Sidebar: on desktop starts below nav bar (nav ≈ 6.5rem) -->
 		<aside
 			id="profile-sidebar"
-			class="fixed top-0 left-0 z-40 h-full w-72 bg-violet-800 flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
+			class="fixed top-0 left-0 z-40 h-full w-72 md:top-[6.5rem] md:h-[calc(100vh-6.5rem)] bg-violet-800 flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
 		>
-			<!-- Nav links (side menu starts from Home) -->
+			<!-- Nav links (side menu) -->
 			<nav class="flex-1 pt-6 py-4 px-4 flex flex-col">
 				<a href="/" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Home</a>
 				<a href="/about" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">About Us</a>
