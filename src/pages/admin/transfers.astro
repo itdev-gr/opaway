@@ -5,9 +5,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 <AdminLayout pageTitle="Transfers" pageDescription="All transfer bookings." activeSection="transfers">
 
 	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
-		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
-			<h2 class="text-base font-semibold text-neutral-800">All Transfers</h2>
-			<span id="transfers-count" class="text-xs text-neutral-400 font-medium"></span>
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4">
+			<div class="flex items-center gap-3">
+				<h2 class="text-base font-semibold text-neutral-800">All Transfers</h2>
+				<span id="transfers-count" class="text-xs text-neutral-400 font-medium"></span>
+			</div>
+			<button id="add-transfer-btn" type="button"
+				class="flex items-center gap-2 px-4 py-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-[#0C6B95]/20">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+				</svg>
+				Add Booking
+			</button>
 		</div>
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
@@ -30,11 +39,121 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
+	<!-- Add Booking Modal -->
+	<div id="add-transfer-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6">
+		<div class="bg-white rounded-2xl shadow-2xl border border-neutral-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+
+			<div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+				<h3 class="text-lg font-bold text-neutral-900">Add Transfer Booking</h3>
+				<button id="add-transfer-close" type="button" class="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 transition-colors">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+				</button>
+			</div>
+
+			<form id="add-transfer-form" class="px-6 py-5 flex flex-col gap-4">
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Full Name *</label>
+						<input id="tf-name" type="text" placeholder="John Smith" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email *</label>
+						<input id="tf-email" type="email" placeholder="john@example.com" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</label>
+					<input id="tf-phone" type="text" placeholder="+30 69..."
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">From *</label>
+						<input id="tf-from" type="text" placeholder="Pickup location" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">To *</label>
+						<input id="tf-to" type="text" placeholder="Drop-off location" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date *</label>
+						<input id="tf-date" type="date" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</label>
+						<input id="tf-time" type="time"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers *</label>
+						<input id="tf-passengers" type="number" min="1" max="60" placeholder="1" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</label>
+						<select id="tf-vehicle"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
+							<option value="">Select vehicle</option>
+							<option>Sedan</option>
+							<option>SUV</option>
+							<option>Van</option>
+							<option>Minibus</option>
+							<option>Bus</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Notes</label>
+					<textarea id="tf-notes" rows="2" placeholder="Special requests or notes..."
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50 resize-none"></textarea>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</label>
+					<select id="tf-status"
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
+						<option value="pending">Pending</option>
+						<option value="confirmed">Confirmed</option>
+						<option value="completed">Completed</option>
+						<option value="cancelled">Cancelled</option>
+					</select>
+				</div>
+
+				<p id="tf-error" class="hidden text-sm text-red-600"></p>
+
+				<div class="flex gap-3 pt-1">
+					<button type="button" id="add-transfer-cancel2"
+						class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 text-sm font-semibold hover:bg-neutral-50 transition-colors">Cancel</button>
+					<button type="submit" id="tf-submit"
+						class="flex-1 py-2.5 rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+						Save Booking
+					</button>
+				</div>
+
+			</form>
+		</div>
+	</div>
+
 </AdminLayout>
 
 <script>
 	import { db } from '../../lib/firebase';
-	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore';
 
 	const statusBadge = (s: string) => {
 		const map: Record<string, string> = {
@@ -76,6 +195,65 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
+	/* ── Modal ── */
+	const modal      = document.getElementById('add-transfer-modal')!;
+	const openModal  = () => modal.classList.remove('hidden');
+	const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-transfer-form') as HTMLFormElement)?.reset(); document.getElementById('tf-error')!.classList.add('hidden'); };
+
+	document.getElementById('add-transfer-btn')?.addEventListener('click', openModal);
+	document.getElementById('add-transfer-close')?.addEventListener('click', closeModal);
+	document.getElementById('add-transfer-cancel2')?.addEventListener('click', closeModal);
+	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+	document.getElementById('add-transfer-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const errorEl = document.getElementById('tf-error')!;
+		const submitBtn = document.getElementById('tf-submit') as HTMLButtonElement;
+		errorEl.classList.add('hidden');
+
+		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
+
+		const name       = val('tf-name');
+		const email      = val('tf-email');
+		const phone      = val('tf-phone');
+		const from       = val('tf-from');
+		const to         = val('tf-to');
+		const date       = val('tf-date');
+		const time       = val('tf-time');
+		const passengers = parseInt(val('tf-passengers') || '1', 10);
+		const vehicle    = val('tf-vehicle');
+		const notes      = val('tf-notes');
+		const status     = val('tf-status') || 'pending';
+
+		if (!name || !email || !from || !to || !date || !passengers) {
+			errorEl.textContent = 'Please fill in all required fields.';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Saving…';
+		try {
+			await addDoc(collection(db, 'transfers'), {
+				name, email, phone: phone || '', from, to, date,
+				time: time || '', passengers, vehicle: vehicle || '',
+				notes: notes || '', status,
+				createdAt: serverTimestamp(),
+				addedByAdmin: true,
+			});
+			closeModal();
+			await loadTransfers();
+		} catch (err) {
+			console.error(err);
+			errorEl.textContent = 'Failed to save. Please try again.';
+			errorEl.classList.remove('hidden');
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Save Booking';
+		}
+	});
+
+	/* ── Auth guard ── */
 	const authEl = document.getElementById('admin-auth-check');
 	const observer = new MutationObserver(() => {
 		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadTransfers(); }
