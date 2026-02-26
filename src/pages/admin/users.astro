@@ -9,7 +9,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		<div class="relative flex-1 max-w-sm">
 			<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0118 0z" />
 				</svg>
 			</span>
 			<input
@@ -19,8 +19,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				class="w-full pl-9 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 			/>
 		</div>
-
-		<!-- Role filter -->
 		<select
 			id="users-role-filter"
 			class="bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm cursor-pointer"
@@ -47,7 +45,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Provider</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Registered</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Login</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
 					</tr>
 				</thead>
 				<tbody id="users-tbody">
@@ -57,14 +55,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
-	<!-- Confirm modal -->
-	<div id="role-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+	<!-- Confirmation modal -->
+	<div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
 		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
-			<h3 class="text-base font-bold text-neutral-900 mb-1" id="modal-title">Change Role</h3>
-			<p class="text-sm text-neutral-500 mb-6" id="modal-body"></p>
+			<!-- Icon -->
+			<div id="modal-icon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+			<h3 id="modal-title" class="text-base font-bold text-neutral-900 text-center mb-1"></h3>
+			<p id="modal-body" class="text-sm text-neutral-500 text-center mb-6"></p>
 			<div class="flex gap-3">
-				<button id="modal-cancel" class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-medium text-sm hover:bg-neutral-50 transition-colors">Cancel</button>
-				<button id="modal-confirm" class="flex-1 py-2.5 rounded-xl bg-[#0C6B95] text-white font-medium text-sm hover:bg-[#0a5c82] transition-colors">Confirm</button>
+				<button id="modal-no"  class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50 transition-colors">No</button>
+				<button id="modal-yes" class="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white transition-colors">Yes</button>
 			</div>
 		</div>
 	</div>
@@ -73,18 +73,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { auth, db } from '../../lib/firebase';
-	import { collection, getDocs, orderBy, query, doc, updateDoc } from 'firebase/firestore';
+	import { collection, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 	/* ── Types ── */
 	interface UserRow {
-		uid:         string;
-		displayName: string;
-		email:       string;
-		type:        string;
-		provider:    string;
-		createdAt:   string;
-		lastLoginAt: string;
+		uid: string; displayName: string; email: string;
+		type: string; provider: string; createdAt: string; lastLoginAt: string;
 	}
+	type ActionType = 'promote' | 'demote' | 'delete';
 
 	/* ── Helpers ── */
 	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
@@ -94,21 +90,47 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	const roleBadge = (type: string) => {
 		const isAdmin = type === 'admin';
-		const cls = isAdmin
-			? 'bg-[#0C6B95]/10 text-[#0C6B95] border-[#0C6B95]/30'
-			: 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		const cls = isAdmin ? 'bg-[#0C6B95]/10 text-[#0C6B95] border-[#0C6B95]/30' : 'bg-neutral-50 text-neutral-600 border-neutral-200';
 		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${type || 'user'}</span>`;
 	};
 
-	const providerBadge = (p: string) => {
-		const isGoogle = p === 'google';
-		return isGoogle
-			? `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600">
-					<svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-					Google</span>`
-			: `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600">
-					<svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-					Email</span>`;
+	const providerBadge = (p: string) => p === 'google'
+		? `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google</span>`
+		: `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600"><svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Email</span>`;
+
+	/* ── Dropdown HTML per user ── */
+	const actionDropdown = (uid: string, type: string) => {
+		const roleItem = type === 'admin'
+			? `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+					data-uid="${uid}" data-action="demote">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+					Remove Admin
+				</button>`
+			: `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#0C6B95] hover:bg-sky-50 transition-colors"
+					data-uid="${uid}" data-action="promote">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+					Make Admin
+				</button>`;
+
+		return `
+			<div class="relative flex justify-end" id="dd-wrap-${uid}">
+				<button class="dd-trigger flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 text-xs font-medium transition-colors shadow-sm"
+					data-uid="${uid}" type="button">
+					Actions
+					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				<div class="dd-menu absolute right-0 top-full mt-1.5 w-48 bg-white rounded-xl border border-neutral-200 shadow-lg z-20 hidden overflow-hidden py-1" id="dd-menu-${uid}">
+					${roleItem}
+					<div class="border-t border-neutral-100 my-1"></div>
+					<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+						data-uid="${uid}" data-action="delete">
+						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+						Delete User
+					</button>
+				</div>
+			</div>`;
 	};
 
 	/* ── State ── */
@@ -118,16 +140,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Render ── */
 	function renderTable() {
-		const tbody = document.getElementById('users-tbody')!;
+		const tbody   = document.getElementById('users-tbody')!;
 		const countEl = document.getElementById('users-count');
 
 		const filtered = allUsers.filter(u => {
-			const matchSearch =
-				!currentSearch ||
-				u.displayName.toLowerCase().includes(currentSearch) ||
-				u.email.toLowerCase().includes(currentSearch);
-			const matchRole =
-				currentRoleFilter === 'all' || u.type === currentRoleFilter;
+			const matchSearch = !currentSearch || u.displayName.toLowerCase().includes(currentSearch) || u.email.toLowerCase().includes(currentSearch);
+			const matchRole   = currentRoleFilter === 'all' || u.type === currentRoleFilter;
 			return matchSearch && matchRole;
 		});
 
@@ -138,40 +156,60 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			return;
 		}
 
-		tbody.innerHTML = filtered.map(u => {
-			const isAdmin = u.type === 'admin';
-			const actionBtn = isAdmin
-				? `<button data-uid="${u.uid}" data-name="${u.displayName}" data-action="demote"
-						class="role-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 text-xs font-medium transition-colors">
-						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-						Remove Admin
-					</button>`
-				: `<button data-uid="${u.uid}" data-name="${u.displayName}" data-action="promote"
-						class="role-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0C6B95]/30 text-[#0C6B95] bg-[#0C6B95]/5 hover:bg-[#0C6B95]/10 text-xs font-medium transition-colors">
-						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-						Make Admin
-					</button>`;
-
-			return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors" data-uid="${u.uid}">
+		tbody.innerHTML = filtered.map(u => `
+			<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors" data-uid="${u.uid}">
 				<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${u.displayName}</td>
 				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${u.email}</td>
 				<td class="px-6 py-3" id="role-cell-${u.uid}">${roleBadge(u.type)}</td>
 				<td class="px-6 py-3">${providerBadge(u.provider)}</td>
 				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${u.createdAt}</td>
 				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${u.lastLoginAt}</td>
-				<td class="px-6 py-3" id="action-cell-${u.uid}">${actionBtn}</td>
-			</tr>`;
-		}).join('');
+				<td class="px-6 py-3" id="action-cell-${u.uid}">${actionDropdown(u.uid, u.type)}</td>
+			</tr>`).join('');
 
-		/* Re-attach role button listeners */
-		document.querySelectorAll<HTMLButtonElement>('.role-btn').forEach(btn => {
-			btn.addEventListener('click', () => openModal(
-				btn.dataset.uid!,
-				btn.dataset.name!,
-				btn.dataset.action as 'promote' | 'demote'
-			));
+		attachDropdownListeners();
+	}
+
+	/* ── Dropdown logic ── */
+	let openDropdownUid: string | null = null;
+
+	function closeAllDropdowns() {
+		document.querySelectorAll('.dd-menu').forEach(m => m.classList.add('hidden'));
+		openDropdownUid = null;
+	}
+
+	function attachDropdownListeners() {
+		/* Trigger buttons */
+		document.querySelectorAll<HTMLButtonElement>('.dd-trigger').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const uid  = btn.dataset.uid!;
+				const menu = document.getElementById(`dd-menu-${uid}`)!;
+				if (openDropdownUid === uid) {
+					closeAllDropdowns();
+				} else {
+					closeAllDropdowns();
+					menu.classList.remove('hidden');
+					openDropdownUid = uid;
+				}
+			});
+		});
+
+		/* Action items */
+		document.querySelectorAll<HTMLButtonElement>('.dd-item').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				closeAllDropdowns();
+				const uid    = btn.dataset.uid!;
+				const action = btn.dataset.action as ActionType;
+				const user   = allUsers.find(u => u.uid === uid)!;
+				openModal(uid, user.displayName, action);
+			});
 		});
 	}
+
+	/* Close dropdown when clicking outside */
+	document.addEventListener('click', closeAllDropdowns);
 
 	/* ── Load from Firestore ── */
 	async function loadUsers() {
@@ -201,60 +239,82 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	/* ── Role change modal ── */
+	/* ── Confirmation modal ── */
 	let pendingUid    = '';
-	let pendingAction: 'promote' | 'demote' = 'promote';
+	let pendingAction: ActionType = 'promote';
 
-	function openModal(uid: string, name: string, action: 'promote' | 'demote') {
+	const modalConfig: Record<ActionType, { title: string; body: (name: string) => string; icon: string; iconBg: string; yesCls: string }> = {
+		promote: {
+			title:  'Make Admin',
+			body:   (n) => `Give admin access to "${n}"? They will be able to access the Admin Dashboard.`,
+			icon:   `<svg class="w-6 h-6 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+			iconBg: 'bg-[#0C6B95]/10',
+			yesCls: 'bg-[#0C6B95] hover:bg-[#0a5c82]',
+		},
+		demote: {
+			title:  'Remove Admin',
+			body:   (n) => `Remove admin access from "${n}"? They will no longer be able to access the Admin Dashboard.`,
+			icon:   `<svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+			iconBg: 'bg-amber-100',
+			yesCls: 'bg-amber-500 hover:bg-amber-600',
+		},
+		delete: {
+			title:  'Delete User',
+			body:   (n) => `Permanently delete "${n}"? This action cannot be undone.`,
+			icon:   `<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`,
+			iconBg: 'bg-red-100',
+			yesCls: 'bg-red-600 hover:bg-red-700',
+		},
+	};
+
+	function openModal(uid: string, name: string, action: ActionType) {
 		pendingUid    = uid;
 		pendingAction = action;
-		const modal   = document.getElementById('role-modal')!;
-		const title   = document.getElementById('modal-title')!;
-		const body    = document.getElementById('modal-body')!;
-
-		if (action === 'promote') {
-			title.textContent = 'Promote to Admin';
-			body.textContent  = `Give admin access to "${name}"? They will be able to access the Admin Dashboard.`;
-			(document.getElementById('modal-confirm') as HTMLButtonElement).className =
-				'flex-1 py-2.5 rounded-xl bg-[#0C6B95] text-white font-medium text-sm hover:bg-[#0a5c82] transition-colors';
-		} else {
-			title.textContent = 'Remove Admin';
-			body.textContent  = `Remove admin access from "${name}"? They will no longer access the Admin Dashboard.`;
-			(document.getElementById('modal-confirm') as HTMLButtonElement).className =
-				'flex-1 py-2.5 rounded-xl bg-red-600 text-white font-medium text-sm hover:bg-red-700 transition-colors';
-		}
-		modal.classList.remove('hidden');
+		const cfg = modalConfig[action];
+		document.getElementById('modal-icon')!.className  = `w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${cfg.iconBg}`;
+		document.getElementById('modal-icon')!.innerHTML  = cfg.icon;
+		document.getElementById('modal-title')!.textContent = cfg.title;
+		document.getElementById('modal-body')!.textContent  = cfg.body(name);
+		const yesBtn = document.getElementById('modal-yes') as HTMLButtonElement;
+		yesBtn.className = `flex-1 py-2.5 rounded-xl font-semibold text-sm text-white transition-colors ${cfg.yesCls}`;
+		yesBtn.textContent = 'Yes';
+		yesBtn.disabled = false;
+		document.getElementById('confirm-modal')!.classList.remove('hidden');
+		document.getElementById('confirm-modal')!.classList.add('flex');
 	}
 
 	function closeModal() {
-		document.getElementById('role-modal')!.classList.add('hidden');
+		document.getElementById('confirm-modal')!.classList.add('hidden');
+		document.getElementById('confirm-modal')!.classList.remove('flex');
 	}
 
-	async function confirmRoleChange() {
-		const newType = pendingAction === 'promote' ? 'admin' : 'user';
-		const confirmBtn = document.getElementById('modal-confirm') as HTMLButtonElement;
-		confirmBtn.textContent = 'Saving…';
-		confirmBtn.disabled = true;
+	async function confirmAction() {
+		const yesBtn = document.getElementById('modal-yes') as HTMLButtonElement;
+		yesBtn.textContent = 'Processing…';
+		yesBtn.disabled = true;
 
 		try {
-			await updateDoc(doc(db, 'users', pendingUid), { type: newType });
-
-			/* Update local state */
-			const user = allUsers.find(u => u.uid === pendingUid);
-			if (user) user.type = newType;
-
+			if (pendingAction === 'delete') {
+				await deleteDoc(doc(db, 'users', pendingUid));
+				allUsers = allUsers.filter(u => u.uid !== pendingUid);
+			} else {
+				const newType = pendingAction === 'promote' ? 'admin' : 'user';
+				await updateDoc(doc(db, 'users', pendingUid), { type: newType });
+				const user = allUsers.find(u => u.uid === pendingUid);
+				if (user) user.type = newType;
+			}
 			closeModal();
 			renderTable();
 		} catch (e) {
-			console.error('Role update error:', e);
-			confirmBtn.textContent = 'Error — retry';
-			confirmBtn.disabled = false;
+			console.error('Action error:', e);
+			yesBtn.textContent = 'Error — retry';
+			yesBtn.disabled = false;
 		}
 	}
 
-	document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
-	document.getElementById('modal-confirm')?.addEventListener('click', confirmRoleChange);
-	document.getElementById('role-modal')?.addEventListener('click', (e) => {
+	document.getElementById('modal-no')?.addEventListener('click', closeModal);
+	document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
+	document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
 		if (e.target === e.currentTarget) closeModal();
 	});
 
