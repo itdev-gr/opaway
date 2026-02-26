@@ -78,6 +78,7 @@ Airport transfers, city rides, and curated tours. Astro + Tailwind CSS.
 | `/contact` | Contact |
 | `/login` | Sign in |
 | `/register` | Create account |
+| `/profile` | Profile (signed-in users) |
 
 ## Commands
 

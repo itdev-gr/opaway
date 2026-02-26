@@ -81,23 +81,39 @@
 
 	</div>
 
-	<!-- Right: Profile icon + Sign-in -->
+	<!-- Right: Profile icon + Sign-in (guest) or Profile link (logged-in) -->
 	<div class="flex items-center gap-3 shrink-0">
-		<!-- Profile icon button -->
-		<a href="/login" aria-label="My Account" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200">
-			<svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" aria-hidden="true">
-				<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
-			</svg>
-		</a>
-		<!-- Sign-in pill -->
-		<a href="/login" class="inline-flex items-center gap-2 bg-black text-white font-medium px-5 py-2.5 rounded-full hover:bg-neutral-800 transition-colors">
-			Sign in
-		</a>
+		<!-- Guest: profile icon + Sign in -->
+		<div id="nav-auth-guest" class="flex items-center gap-3">
+			<a href="/login" aria-label="My Account" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200">
+				<svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" aria-hidden="true">
+					<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+				</svg>
+			</a>
+			<a href="/login" class="inline-flex items-center gap-2 bg-black text-white font-medium px-5 py-2.5 rounded-full hover:bg-neutral-800 transition-colors">
+				Sign in
+			</a>
+		</div>
+		<!-- Logged-in: user name + profile link (hidden by default) -->
+		<div id="nav-auth-user" class="hidden">
+			<div class="flex items-center gap-3">
+			<span id="nav-user-name" class="text-sm font-medium text-neutral-700 truncate max-w-[140px] sm:max-w-[180px]" title=""></span>
+			<a href="/profile" aria-label="My profile" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200 shrink-0">
+				<svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" aria-hidden="true">
+					<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+				</svg>
+			</a>
+			</div>
+		</div>
 	</div>
 </nav>
 
 <script>
+	import { auth } from '../lib/firebase';
+	import { onAuthStateChanged } from 'firebase/auth';
+
 	function updateActiveLink() {
 		const pathname = window.location.pathname;
 		document.querySelectorAll('[data-navlink]').forEach((el) => {
@@ -109,9 +125,27 @@
 		});
 	}
 
+	function updateAuthNav(user: { displayName?: string | null; email?: string | null } | null) {
+		const guest = document.getElementById('nav-auth-guest');
+		const userEl = document.getElementById('nav-auth-user');
+		const nameEl = document.getElementById('nav-user-name');
+		if (guest) guest.classList.toggle('hidden', !!user);
+		if (userEl) userEl.classList.toggle('hidden', !user);
+		if (nameEl && user) {
+			const name = user.displayName?.trim() || user.email || 'Account';
+			nameEl.textContent = name;
+			nameEl.setAttribute('title', name);
+		}
+	}
+
+	onAuthStateChanged(auth, updateAuthNav);
+
 	// Run on first load
 	updateActiveLink();
 
 	// Re-run on every View Transitions page navigation
-	document.addEventListener('astro:page-load', updateActiveLink);
+	document.addEventListener('astro:page-load', () => {
+		updateActiveLink();
+		updateAuthNav(auth.currentUser);
+	});
 </script>

@@ -313,6 +313,11 @@ import Layout from '../layouts/Layout.astro';
 			showError('Password must be at least 8 characters.');
 			return;
 		}
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			showError('Please enter a valid email address.');
+			return;
+		}
 		submitBtn.disabled = true;
 		try {
 			const { user } = await createUserWithEmailAndPassword(auth, email, password);
@@ -321,12 +326,23 @@ import Layout from '../layouts/Layout.astro';
 			window.location.href = '/';
 		} catch (err: unknown) {
 			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
-			if (code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found') {
-				showError('Service is not configured correctly. Please try again later or contact support.');
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
+			const isInvalidKey = code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found' ||
+				/api-key-not-valid|invalid.api.key|valid.api.key/i.test(msg);
+			if (isInvalidKey) {
+				showError('Service is not configured correctly. The site owner needs to set a valid Firebase API key in .env or Vercel (PUBLIC_FIREBASE_API_KEY).');
 				return;
 			}
-			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Registration failed. Check your details and try again.';
-			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
+			if (code === 'auth/email-already-in-use') {
+				showError('This email is already registered. Try signing in instead.');
+				return;
+			}
+			if (code === 'auth/invalid-email') {
+				showError('Please enter a valid email address.');
+				return;
+			}
+			const fallback = 'Registration failed. Check your email and password (min 8 characters). If it keeps failing, ask the site owner to add this site in Firebase Console → Authentication → Authorized domains.';
+			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : (msg || fallback));
 		} finally {
 			submitBtn.disabled = false;
 		}
@@ -343,12 +359,14 @@ import Layout from '../layouts/Layout.astro';
 			window.location.href = '/';
 		} catch (err: unknown) {
 			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
-			if (code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found') {
-				showError('Service is not configured correctly. Please try again later or contact support.');
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
+			const isInvalidKey = code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found' ||
+				/api-key-not-valid|invalid.api.key|valid.api.key/i.test(msg);
+			if (isInvalidKey) {
+				showError('Service is not configured correctly. The site owner needs to set a valid Firebase API key in .env or Vercel (PUBLIC_FIREBASE_API_KEY).');
 				return;
 			}
-			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed.';
-			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
+			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : (msg || 'Google sign-in failed.'));
 		} finally {
 			googleBtn.disabled = false;
 		}
