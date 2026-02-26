@@ -1,0 +1,87 @@
+---
+const vehicles = [
+	{
+		title: 'Business Class',
+		models: 'Mercedes-Benz E-Class, or similar.',
+		image: '/car.avif',
+		features: [
+			'Fits up to 4 people',
+			'Fits 2 carry-on bags, or 2 standard check-in, or 1 extra large check-in bag',
+			'Available for airport transfers & city tours',
+		],
+	},
+	{
+		title: 'Premium Van',
+		models: 'Mercedes Vito Tourer PRO Extra Long, or similar.',
+		image: '/mini_van.avif',
+		features: [
+			'Fits up to 8 people',
+			'Fits 6 carry-on bags, or 6 standard check-in bags',
+			'Ideal for group transfers & private tours',
+		],
+	},
+	{
+		title: 'Group Class',
+		models: 'Mercedes Sprinter, or similar.',
+		image: '/van.avif',
+		features: [
+			'Fits up to 14 people',
+			'Fits 10 carry-on bags, or large luggage loads',
+			'Perfect for large groups & corporate events',
+		],
+	},
+];
+---
+
+<section class="bg-[#F5F6F8] py-20 lg:py-28 px-6 lg:px-10">
+	<div class="max-w-6xl mx-auto">
+
+		<!-- Header -->
+		<div class="mb-12">
+			<div class="flex items-center gap-2 mb-3">
+				<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+				<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Fleet</span>
+			</div>
+			<h2 class="text-4xl lg:text-5xl font-bold text-neutral-900">Discover our service classes</h2>
+		</div>
+
+		<!-- Cards grid -->
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			{vehicles.map((v) => (
+				<article class="bg-white rounded-2xl overflow-hidden shadow-sm flex flex-col">
+
+					<!-- Image area -->
+					<div class="bg-neutral-100 aspect-[4/3] overflow-hidden">
+						<img
+							src={v.image}
+							alt={v.title}
+							class="w-full h-full object-cover"
+						/>
+					</div>
+
+					<!-- Card content -->
+					<div class="p-6 flex flex-col flex-1">
+						<h3 class="text-2xl font-bold text-neutral-900 mb-1">{v.title}</h3>
+						<p class="text-sm text-neutral-500 mb-4">{v.models}</p>
+
+						<!-- Colored divider -->
+						<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+
+						<!-- Feature checklist -->
+						<ul class="flex flex-col gap-3">
+							{v.features.map((f) => (
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-neutral-700 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+									</svg>
+									<span class="text-sm text-neutral-600 leading-snug">{f}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+
+				</article>
+			))}
+		</div>
+	</div>
+</section>

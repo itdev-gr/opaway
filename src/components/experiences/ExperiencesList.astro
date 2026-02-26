@@ -1,0 +1,220 @@
+---
+const experiences = [
+	{
+		label: 'Wine & Culture',
+		title: 'Athens Wine Tasting Tour',
+		images: [
+			{ full: 'https://picsum.photos/seed/opaway-wine-1/900/600', thumb: 'https://picsum.photos/seed/opaway-wine-1/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-wine-2/900/600', thumb: 'https://picsum.photos/seed/opaway-wine-2/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-wine-3/900/600', thumb: 'https://picsum.photos/seed/opaway-wine-3/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-wine-4/900/600', thumb: 'https://picsum.photos/seed/opaway-wine-4/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-wine-5/900/600', thumb: 'https://picsum.photos/seed/opaway-wine-5/300/200' },
+		],
+		imageLeft: true,
+		introText: "Experience the true taste of Greece with an unforgettable wine tasting journey through one of Athens' beautiful vineyards.",
+		paragraphs: [
+			"From the moment your private chauffeur picks you up at your hotel, your day is designed to be effortless, relaxed, and full of authentic flavors. Surrounded by rolling vines and stunning countryside views, you'll stroll through the vineyard and discover the secrets behind Greece's celebrated grape varieties.",
+			"Continue into the production area, where tradition meets modern expertise, and learn how each bottle is carefully crafted from harvest to aging. Then, settle in for the highlight of the experience — a guided tasting of exceptional local wines, thoughtfully paired with traditional Greek delicacies such as artisanal cheeses, olives, and freshly baked bread.",
+			"After a memorable day of aromas, flavors, and beautiful scenery, relax as your chauffeur comfortably transfers you back to your hotel — with a deeper appreciation for Greece in every glass.",
+		],
+		highlights: [
+			'Private chauffeur included',
+			'Full day experience',
+			'Guided wine tasting',
+			'Greek delicacies included',
+		],
+		bg: 'bg-white',
+	},
+	{
+		label: 'Private Cruise',
+		title: 'Athens Riviera Private Cruise',
+		images: [
+			{ full: 'https://picsum.photos/seed/opaway-riviera-1/900/600', thumb: 'https://picsum.photos/seed/opaway-riviera-1/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-riviera-2/900/600', thumb: 'https://picsum.photos/seed/opaway-riviera-2/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-riviera-3/900/600', thumb: 'https://picsum.photos/seed/opaway-riviera-3/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-riviera-4/900/600', thumb: 'https://picsum.photos/seed/opaway-riviera-4/300/200' },
+			{ full: 'https://picsum.photos/seed/opaway-riviera-5/900/600', thumb: 'https://picsum.photos/seed/opaway-riviera-5/300/200' },
+		],
+		imageLeft: false,
+		introText: "See a different side of Athens on a relaxing and luxurious catamaran cruise along the beautiful Athens Riviera.",
+		paragraphs: [
+			"A private chauffeur will pick you up from your hotel and take you to Alimos Marina, where you'll be welcomed on board with a drink. After a short safety briefing, you'll set sail. Relax on deck, enjoy the sun and sea breeze, and take in the stunning coastal views.",
+			"Swim in clear blue waters at carefully chosen stops, with fresh towels provided by our crew. Back on board, enjoy a delicious Mediterranean meal with BBQ, fresh Greek salad, shrimps saganaki, dips, and more — all served with drinks and a view of the sea.",
+			"As you return to the marina, unwind and enjoy the final moments of your cruise. Your chauffeur will be waiting to take you comfortably back to your hotel.",
+		],
+		highlights: [
+			'Private chauffeur included',
+			'Catamaran cruise',
+			'Swimming stops included',
+			'Mediterranean BBQ meal',
+		],
+		bg: 'bg-[#F5F6F8]',
+	},
+];
+---
+
+<style>
+	.carousel-thumb {
+		opacity: 0.55;
+		transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+	.carousel-thumb:hover {
+		opacity: 0.8;
+		transform: scale(1.03);
+	}
+	.carousel-thumb.is-active {
+		opacity: 1;
+		outline: 2.5px solid #0C6B95;
+		outline-offset: 2px;
+	}
+	.carousel-main {
+		transition: opacity 0.2s ease;
+	}
+</style>
+
+{experiences.map((exp, expIdx) => (
+	<section class={`${exp.bg} py-20 lg:py-28 px-6 lg:px-10`}>
+		<div class="max-w-6xl mx-auto">
+			<div class={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${!exp.imageLeft ? 'lg:[&>*:first-child]:order-2' : ''}`}>
+
+				<!-- ── Image Carousel ── -->
+				<div data-carousel class="flex flex-col gap-3">
+					<!-- Main image -->
+					<div class="relative rounded-2xl overflow-hidden shadow-lg aspect-[3/2] bg-neutral-200">
+						<img
+							data-main-img
+							src={exp.images[0].full}
+							alt={exp.title}
+							class="carousel-main w-full h-full object-cover"
+						/>
+						<!-- Next arrow -->
+						<button
+							data-next
+							class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105 cursor-pointer"
+							aria-label="Next image"
+						>
+							<svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+							</svg>
+						</button>
+						<!-- Prev arrow -->
+						<button
+							data-prev
+							class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105 cursor-pointer"
+							aria-label="Previous image"
+						>
+							<svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+							</svg>
+						</button>
+					</div>
+
+					<!-- Thumbnails -->
+					<div class="grid grid-cols-5 gap-2">
+						{exp.images.map((img, i) => (
+							<button
+								data-thumb
+								data-full={img.full}
+								class={`carousel-thumb rounded-xl overflow-hidden aspect-[3/2] cursor-pointer ${i === 0 ? 'is-active' : ''}`}
+								aria-label={`View image ${i + 1}`}
+							>
+								<img
+									src={img.thumb}
+									alt={`${exp.title} — photo ${i + 1}`}
+									class="w-full h-full object-cover pointer-events-none"
+								/>
+							</button>
+						))}
+					</div>
+				</div>
+
+				<!-- ── Text Content ── -->
+				<div class="flex flex-col">
+
+					<!-- Label -->
+					<div class="flex items-center gap-2 mb-4">
+						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">{exp.label}</span>
+					</div>
+
+					<!-- Title -->
+					<h2 class="text-4xl lg:text-5xl font-bold text-neutral-900 mb-5 leading-tight">{exp.title}</h2>
+
+					<!-- Divider -->
+					<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-6"></div>
+
+					<!-- Intro paragraph — larger/bolder -->
+					<p class="text-neutral-700 text-lg leading-relaxed font-medium mb-5">{exp.introText}</p>
+
+					<!-- Body paragraphs -->
+					<div class="flex flex-col gap-3 mb-7">
+						{exp.paragraphs.map((para) => (
+							<p class="text-neutral-500 text-sm leading-relaxed">{para}</p>
+						))}
+					</div>
+
+					<!-- Highlights grid -->
+					<div class="grid grid-cols-2 gap-2.5 mb-8">
+						{exp.highlights.map((h) => (
+							<div class="flex items-center gap-2.5 bg-neutral-100 rounded-xl px-4 py-3">
+								<span class="w-1.5 h-1.5 rounded-full bg-[#0C6B95] shrink-0"></span>
+								<span class="text-xs font-semibold text-neutral-700 leading-snug">{h}</span>
+							</div>
+						))}
+					</div>
+
+					<!-- CTA Button -->
+					<div>
+						<a
+							href="/contact"
+							class="inline-flex items-center gap-2 bg-neutral-900 hover:bg-[#0C6B95] text-white text-sm font-semibold px-8 py-4 rounded-xl transition-colors duration-200"
+						>
+							Request Quote
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+							</svg>
+						</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</section>
+))}
+
+<script>
+	document.querySelectorAll('[data-carousel]').forEach((carousel) => {
+		const mainImg = carousel.querySelector('[data-main-img]') as HTMLImageElement;
+		const thumbs = Array.from(carousel.querySelectorAll('[data-thumb]')) as HTMLButtonElement[];
+		const nextBtn = carousel.querySelector('[data-next]') as HTMLButtonElement;
+		const prevBtn = carousel.querySelector('[data-prev]') as HTMLButtonElement;
+		let current = 0;
+
+		function goTo(idx: number) {
+			current = (idx + thumbs.length) % thumbs.length;
+			const fullSrc = thumbs[current].getAttribute('data-full') ?? '';
+
+			// Fade transition
+			mainImg.style.opacity = '0.5';
+			setTimeout(() => {
+				mainImg.src = fullSrc;
+				mainImg.style.opacity = '1';
+			}, 180);
+
+			// Update thumbnail active states
+			thumbs.forEach((t, i) => {
+				if (i === current) {
+					t.classList.add('is-active');
+				} else {
+					t.classList.remove('is-active');
+				}
+			});
+		}
+
+		thumbs.forEach((thumb, i) => {
+			thumb.addEventListener('click', () => goTo(i));
+		});
+		nextBtn?.addEventListener('click', () => goTo(current + 1));
+		prevBtn?.addEventListener('click', () => goTo(current - 1));
+	});
+</script>

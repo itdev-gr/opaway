@@ -1,0 +1,266 @@
+---
+const vehicles = [
+	{
+		title: 'Business Class',
+		models: 'Mercedes-Benz E-Class, or similar.',
+		image: '/car.avif',
+		features: [
+			'Fits up to 4 people',
+			'Fits 2 carry-on bags, or 2 standard check-in, or 1 extra large check-in bag',
+			'Available for airport transfers & city tours',
+		],
+	},
+	{
+		title: 'Premium Van',
+		models: 'Mercedes Vito Tourer PRO Extra Long, or similar.',
+		image: '/mini_van.avif',
+		features: [
+			'Fits up to 8 people',
+			'Fits 6 carry-on bags, or 6 standard check-in bags',
+			'Ideal for group transfers & private tours',
+		],
+	},
+	{
+		title: 'Group Class',
+		models: 'Mercedes Sprinter, or similar.',
+		image: '/van.avif',
+		features: [
+			'Fits up to 14 people',
+			'Fits 10 carry-on bags, or large luggage loads',
+			'Perfect for large groups & corporate events',
+		],
+	},
+];
+---
+
+<section class="bg-white py-12 lg:py-16 px-6 lg:px-10">
+	<div class="max-w-6xl mx-auto">
+
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+
+			<!-- ── Booking form panel ── -->
+			<div class="bg-neutral-100 rounded-2xl p-6 lg:p-8 shadow-sm">
+
+				<!-- Tab -->
+				<div class="flex border-b border-neutral-200 mb-6">
+					<button type="button" class="px-4 py-3 font-medium text-black bg-neutral-200/80 border-b-2 border-black -mb-px rounded-t-lg">
+						Book a transfer
+					</button>
+				</div>
+
+				<!-- From -->
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-neutral-700 mb-1">From</label>
+					<div class="relative">
+						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+						</span>
+						<input type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+
+				<!-- To -->
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-neutral-700 mb-1">To</label>
+					<div class="relative">
+						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+						</span>
+						<input type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+
+				<!-- Date & Time -->
+				<div class="grid grid-cols-2 gap-4 mb-5">
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup date</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+							</span>
+							<input type="text" value="Fri, 27 Feb, 2026" readonly class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+						</div>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							</span>
+							<input type="text" value="01:45 PM" readonly class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+						</div>
+					</div>
+				</div>
+
+				<!-- Add Return button -->
+				<button
+					type="button"
+					id="add-return-btn"
+					class="flex items-center gap-2 text-sm font-semibold text-[#0C6B95] border border-[#0C6B95]/40 hover:border-[#0C6B95] hover:bg-[#0C6B95]/5 px-4 py-2.5 rounded-xl transition-all duration-200 mb-6 group"
+				>
+					<svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+					Add Return
+				</button>
+
+				<!-- Return date row (hidden by default) -->
+				<div id="return-row" class="hidden grid grid-cols-2 gap-4 mb-6">
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Return date</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+							</span>
+							<input type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+						</div>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Return time</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							</span>
+							<input type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+						</div>
+					</div>
+				</div>
+
+				<!-- Passengers -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-neutral-700 mb-2">Passengers</label>
+					<div class="flex items-center gap-3">
+						<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl">
+							<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+							<span class="text-neutral-800 font-medium" id="passenger-count">2</span>
+						</div>
+						<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers">−</button>
+						<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
+					</div>
+				</div>
+
+				<!-- See prices -->
+				<button type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+					See prices
+				</button>
+			</div>
+
+			<!-- ── Service class carousel ── -->
+			<div data-fleet-carousel class="flex flex-col">
+
+				<!-- Header -->
+				<div class="mb-5">
+					<div class="flex items-center gap-2 mb-2">
+						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Fleet</span>
+					</div>
+					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900">Discover our service classes</h2>
+				</div>
+
+				<!-- Card viewport -->
+				<div class="relative overflow-hidden rounded-2xl flex-1">
+					{vehicles.map((v, i) => (
+						<article
+							data-fleet-card
+							class={`fleet-card bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-opacity duration-300 ${i === 0 ? '' : 'hidden'}`}
+						>
+							<!-- Image -->
+							<div class="bg-neutral-100 aspect-[16/9] overflow-hidden">
+								<img src={v.image} alt={v.title} class="w-full h-full object-cover" />
+							</div>
+
+							<!-- Content -->
+							<div class="p-6 flex flex-col">
+								<h3 class="text-2xl font-bold text-neutral-900 mb-1">{v.title}</h3>
+								<p class="text-sm text-neutral-500 mb-4">{v.models}</p>
+								<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+								<ul class="flex flex-col gap-3">
+									{v.features.map((f) => (
+										<li class="flex items-start gap-3">
+											<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+											</svg>
+											<span class="text-sm text-neutral-600 leading-snug">{f}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						</article>
+					))}
+				</div>
+
+				<!-- Navigation row -->
+				<div class="flex items-center justify-between mt-4">
+					<button
+						data-fleet-prev
+						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
+						aria-label="Previous vehicle"
+					>
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+						</svg>
+					</button>
+
+					<span data-fleet-indicator class="text-sm font-semibold text-neutral-500 tracking-wide">1 / {vehicles.length}</span>
+
+					<button
+						data-fleet-next
+						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
+						aria-label="Next vehicle"
+					>
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+						</svg>
+					</button>
+				</div>
+
+			</div><!-- end carousel -->
+
+		</div>
+	</div>
+</section>
+
+<script>
+	// ── Fleet carousel ──
+	document.querySelectorAll('[data-fleet-carousel]').forEach((carousel) => {
+		const cards = Array.from(carousel.querySelectorAll('[data-fleet-card]')) as HTMLElement[];
+		const prevBtn = carousel.querySelector('[data-fleet-prev]') as HTMLButtonElement;
+		const nextBtn = carousel.querySelector('[data-fleet-next]') as HTMLButtonElement;
+		const indicator = carousel.querySelector('[data-fleet-indicator]') as HTMLElement;
+		let current = 0;
+
+		function goTo(idx: number) {
+			cards[current].classList.add('hidden');
+			current = (idx + cards.length) % cards.length;
+			cards[current].classList.remove('hidden');
+			if (indicator) indicator.textContent = `${current + 1} / ${cards.length}`;
+		}
+
+		prevBtn?.addEventListener('click', () => goTo(current - 1));
+		nextBtn?.addEventListener('click', () => goTo(current + 1));
+	});
+
+	// ── Passenger counter ──
+	const countEl = document.getElementById('passenger-count');
+	let count = 2;
+	document.getElementById('pax-minus')?.addEventListener('click', () => {
+		if (count > 1) { count--; if (countEl) countEl.textContent = String(count); }
+	});
+	document.getElementById('pax-plus')?.addEventListener('click', () => {
+		count++; if (countEl) countEl.textContent = String(count);
+	});
+
+	// ── Add Return toggle ──
+	const returnBtn = document.getElementById('add-return-btn');
+	const returnRow = document.getElementById('return-row');
+	let returnOpen = false;
+	returnBtn?.addEventListener('click', () => {
+		returnOpen = !returnOpen;
+		returnRow?.classList.toggle('hidden', !returnOpen);
+		const label = returnBtn.querySelector('span') ?? returnBtn;
+		if (returnBtn.lastChild?.nodeType === Node.TEXT_NODE) {
+			returnBtn.lastChild.textContent = returnOpen ? ' Remove Return' : ' Add Return';
+		}
+	});
+</script>

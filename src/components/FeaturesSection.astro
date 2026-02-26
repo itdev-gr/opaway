@@ -1,0 +1,60 @@
+---
+const features = [
+	{
+		title: 'Global',
+		description: 'Wherever your journey leads, Opawey ensures your comfort along the way.',
+		icon: 'globe',
+		href: '#',
+	},
+	{
+		title: 'Professional drivers',
+		description: 'Professional Drivers, Timely Rides, Relaxed Travel',
+		icon: 'driver',
+		href: '#',
+	},
+	{
+		title: 'Chauffeur by the hour',
+		description: 'Hire an hourly chauffeur for your business or leisure needs.',
+		icon: 'clock',
+		href: '#',
+	},
+	{
+		title: 'City rides',
+		description: 'Explore the city anytime, anywhere—even long distances.',
+		icon: 'car',
+		href: '#',
+	},
+];
+---
+
+<section class="bg-white py-16 lg:py-20 px-6 lg:px-10">
+	<div class="max-w-6xl mx-auto">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+			{features.map((feature) => (
+				<article class="bg-[#F5F6F8] rounded-xl p-6 flex flex-col">
+					<div class="flex justify-between items-start gap-4 mb-4">
+						<h3 class="text-lg font-bold text-neutral-900 pr-2">{feature.title}</h3>
+						<span class="shrink-0 w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-700" aria-hidden="true">
+							{feature.icon === 'globe' && (
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0h.5a2.5 2.5 0 002.5-2.5V3.935M12 12a4 4 0 118 0 4 4 0 01-8 0z" /></svg>
+							)}
+							{feature.icon === 'driver' && (
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+							)}
+							{feature.icon === 'clock' && (
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							)}
+							{feature.icon === 'car' && (
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1h-1m4-4V6a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1z" /></svg>
+							)}
+						</span>
+					</div>
+					<p class="text-sm text-neutral-600 mb-6 flex-1">{feature.description}</p>
+					<a href={feature.href} class="inline-flex justify-center rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-900 font-medium text-sm px-4 py-2.5 transition-colors w-fit">
+						Details
+					</a>
+				</article>
+			))}
+		</div>
+	</div>
+</section>

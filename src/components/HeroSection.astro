@@ -1,0 +1,26 @@
+---
+// Placeholder video URL – replace with your own later
+const videoSrc = '/the-luxury-car-is-high-in-the-mountains-on-an-obse-2026-01-21-03-24-01-utc.mp4';
+---
+
+<section class="relative w-full h-screen min-h-[400px] overflow-hidden bg-neutral-900" aria-label="Hero video">
+	<video
+		id="hero-video"
+		class="absolute inset-0 w-full h-full object-cover"
+		autoplay
+		muted
+		loop
+		playsinline
+		aria-label="Hero background video"
+	>
+		<source src={videoSrc} type="video/mp4" />
+	</video>
+</section>
+
+<script>
+	const video = document.getElementById('hero-video') as HTMLVideoElement;
+	if (video) {
+		video.playbackRate = 0.5;
+		video.addEventListener('play', () => { video.playbackRate = 0.5; });
+	}
+</script>

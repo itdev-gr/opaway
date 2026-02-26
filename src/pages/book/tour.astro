@@ -1,0 +1,286 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const tours = [
+	{
+		title: 'Athens Wine Tasting Tour',
+		duration: 'Half day · ~4 hours',
+		image: 'https://picsum.photos/seed/opaway-wine/800/600',
+		description: 'Discover the finest Greek wines at award-winning vineyards in the Attica region, guided by a sommelier.',
+		highlights: [
+			'Private chauffeur to & from Athens',
+			'Expert sommelier guide throughout',
+			'Tasting of 6+ premium Greek wines',
+		],
+	},
+	{
+		title: 'Athens Riviera Private Cruise',
+		duration: 'Full day · ~8 hours',
+		image: 'https://picsum.photos/seed/opaway-cruise/800/600',
+		description: 'Sail the sparkling waters of the Saronic Gulf, stopping at secluded beaches and historic sea caves.',
+		highlights: [
+			'Luxury yacht with crew included',
+			'Snorkeling gear & beach equipment',
+			'Gourmet lunch served on board',
+		],
+	},
+	{
+		title: 'Meteora & Delphi Day Trip',
+		duration: 'Full day · ~10 hours',
+		image: 'https://picsum.photos/seed/opaway-meteora/800/600',
+		description: 'Journey through ancient Delphi and the breathtaking rock monasteries of Meteora with a private guide.',
+		highlights: [
+			'Round-trip private chauffeur from Athens',
+			'Licensed archaeologist guide',
+			'Skip-the-line entry to all sites',
+		],
+	},
+	{
+		title: 'Cape Sounion Sunset Tour',
+		duration: 'Half day · ~5 hours',
+		image: 'https://picsum.photos/seed/opaway-sounion/800/600',
+		description: 'Watch the sun dip below the Aegean at the Temple of Poseidon, one of Greece\'s most iconic views.',
+		highlights: [
+			'Scenic coastal drive along the Riviera',
+			'Private guide at the Temple of Poseidon',
+			'Champagne sunset toast included',
+		],
+	},
+];
+---
+
+<Layout>
+	<main class="min-h-screen bg-sky-50 pt-36 pb-24 px-6 lg:px-10">
+		<div class="max-w-6xl mx-auto">
+
+			<!-- Sub-navigation tabs -->
+			<div class="flex items-center gap-3 mb-10">
+				<a href="/book/transfer" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+					</svg>
+					Book a Transfer
+				</a>
+				<a href="/book/tour" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0C6B95] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+					</svg>
+					Book a Tour
+				</a>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+
+				<!-- ── Booking form panel ── -->
+				<div class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
+
+					<h2 class="text-2xl font-bold text-neutral-900 mb-6">Tour Details</h2>
+
+					<!-- Tour Type -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Tour Experience</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+							</span>
+							<select class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
+								<option value="" disabled selected>Select a tour...</option>
+								<option value="wine">Athens Wine Tasting Tour</option>
+								<option value="cruise">Athens Riviera Private Cruise</option>
+								<option value="meteora">Meteora &amp; Delphi Day Trip</option>
+								<option value="sounion">Cape Sounion Sunset Tour</option>
+							</select>
+							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+							</span>
+						</div>
+					</div>
+
+					<!-- Pickup Location -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup Location</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+							</span>
+							<input type="text" placeholder="Hotel, address or landmark..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+						</div>
+					</div>
+
+					<!-- Date & Time -->
+					<div class="grid grid-cols-2 gap-4 mb-5">
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Tour date</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+								</span>
+								<input type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+							</div>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								</span>
+								<input type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Participants -->
+					<div class="mb-5">
+						<label class="block text-sm font-medium text-neutral-700 mb-2">Participants</label>
+						<div class="flex items-center gap-3">
+							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl">
+								<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+								<span class="text-neutral-800 font-medium" id="participant-count">2</span>
+							</div>
+							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants">−</button>
+							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants">+</button>
+						</div>
+					</div>
+
+					<!-- Special Requests -->
+					<div class="mb-6">
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Special Requests <span class="text-neutral-400 font-normal">(optional)</span></label>
+						<textarea
+							rows="3"
+							placeholder="Dietary requirements, accessibility needs, preferences..."
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] resize-none"
+						></textarea>
+					</div>
+
+					<!-- Request Button -->
+					<button type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+						Request This Tour
+					</button>
+				</div>
+
+				<!-- ── Tour experiences carousel ── -->
+				<div data-tour-carousel class="flex flex-col">
+					<div class="mb-5">
+						<div class="flex items-center gap-2 mb-2">
+							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Experiences</span>
+						</div>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900">Curated Tours in Greece</h2>
+					</div>
+
+					<div class="relative overflow-hidden rounded-2xl flex-1">
+						{tours.map((t, i) => (
+							<article data-tour-card class={`bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}`}>
+								<div class="aspect-[16/9] overflow-hidden">
+									<img src={t.image} alt={t.title} class="w-full h-full object-cover" />
+								</div>
+								<div class="p-6 flex flex-col">
+									<div class="flex items-center gap-2 mb-2">
+										<svg class="w-4 h-4 text-[#0C6B95] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+										<span class="text-xs font-semibold text-[#0C6B95] uppercase tracking-wide">{t.duration}</span>
+									</div>
+									<h3 class="text-2xl font-bold text-neutral-900 mb-2">{t.title}</h3>
+									<p class="text-sm text-neutral-500 mb-4 leading-relaxed">{t.description}</p>
+									<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+									<ul class="flex flex-col gap-3">
+										{t.highlights.map((h) => (
+											<li class="flex items-start gap-3">
+												<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+												<span class="text-sm text-neutral-600 leading-snug">{h}</span>
+											</li>
+										))}
+									</ul>
+								</div>
+							</article>
+						))}
+					</div>
+
+					<div class="flex items-center justify-between mt-4">
+						<button data-tour-prev class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Previous">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+						</button>
+						<span data-tour-indicator class="text-sm font-semibold text-neutral-500">1 / {tours.length}</span>
+						<button data-tour-next class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Next">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+						</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script>
+	// Tour carousel
+	document.querySelectorAll('[data-tour-carousel]').forEach((carousel) => {
+		const cards = Array.from(carousel.querySelectorAll('[data-tour-card]')) as HTMLElement[];
+		const prevBtn = carousel.querySelector('[data-tour-prev]') as HTMLButtonElement;
+		const nextBtn = carousel.querySelector('[data-tour-next]') as HTMLButtonElement;
+		const indicator = carousel.querySelector('[data-tour-indicator]') as HTMLElement;
+		let current = 0;
+		let animating = false;
+
+		function wait(ms: number) {
+			return new Promise<void>(resolve => setTimeout(resolve, ms));
+		}
+
+		async function goTo(idx: number, direction: 'prev' | 'next') {
+			if (animating) return;
+			animating = true;
+
+			const outgoing = cards[current];
+			const nextIdx = (idx + cards.length) % cards.length;
+			const incoming = cards[nextIdx];
+
+			// Animate outgoing card out
+			outgoing.style.transition = 'transform 220ms ease, opacity 220ms ease';
+			outgoing.style.transform = direction === 'next' ? 'translateX(-48px)' : 'translateX(48px)';
+			outgoing.style.opacity = '0';
+
+			await wait(220);
+
+			outgoing.classList.add('hidden');
+			outgoing.style.transition = '';
+			outgoing.style.transform = '';
+			outgoing.style.opacity = '';
+
+			// Position incoming off-screen (opposite direction)
+			incoming.style.transition = 'none';
+			incoming.style.transform = direction === 'next' ? 'translateX(48px)' : 'translateX(-48px)';
+			incoming.style.opacity = '0';
+			incoming.classList.remove('hidden');
+
+			// Force reflow before starting transition
+			incoming.getBoundingClientRect();
+
+			// Animate incoming card in
+			incoming.style.transition = 'transform 220ms ease, opacity 220ms ease';
+			incoming.style.transform = 'translateX(0)';
+			incoming.style.opacity = '1';
+
+			current = nextIdx;
+			if (indicator) indicator.textContent = `${current + 1} / ${cards.length}`;
+
+			await wait(220);
+			incoming.style.transition = '';
+			incoming.style.transform = '';
+			incoming.style.opacity = '';
+			animating = false;
+		}
+
+		prevBtn?.addEventListener('click', () => goTo(current - 1, 'prev'));
+		nextBtn?.addEventListener('click', () => goTo(current + 1, 'next'));
+	});
+
+	// Participant counter
+	const countEl = document.getElementById('participant-count');
+	let count = 2;
+	document.getElementById('pax-minus')?.addEventListener('click', () => {
+		if (count > 1) { count--; if (countEl) countEl.textContent = String(count); }
+	});
+	document.getElementById('pax-plus')?.addEventListener('click', () => {
+		count++; if (countEl) countEl.textContent = String(count);
+	});
+</script>

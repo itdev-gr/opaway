@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(/usr/local/bin/node:*)",
+      "Bash(chmod:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.opawey.com)",
+      "Bash(ls:*)"
+    ]
+  }
+}
