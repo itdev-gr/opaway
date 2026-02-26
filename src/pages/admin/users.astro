@@ -4,6 +4,34 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <AdminLayout pageTitle="Users" pageDescription="All registered users." activeSection="users">
 
+	<!-- Search bar -->
+	<div class="mb-5 flex items-center gap-3">
+		<div class="relative flex-1 max-w-sm">
+			<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+				</svg>
+			</span>
+			<input
+				id="users-search"
+				type="text"
+				placeholder="Search by name or email…"
+				class="w-full pl-9 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+			/>
+		</div>
+
+		<!-- Role filter -->
+		<select
+			id="users-role-filter"
+			class="bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm cursor-pointer"
+		>
+			<option value="all">All roles</option>
+			<option value="user">User</option>
+			<option value="admin">Admin</option>
+		</select>
+	</div>
+
+	<!-- Table -->
 	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
 			<h2 class="text-base font-semibold text-neutral-800">All Users</h2>
@@ -19,60 +47,228 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Provider</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Registered</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Login</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
 					</tr>
 				</thead>
 				<tbody id="users-tbody">
-					<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+					<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
 				</tbody>
 			</table>
+		</div>
+	</div>
+
+	<!-- Confirm modal -->
+	<div id="role-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+			<h3 class="text-base font-bold text-neutral-900 mb-1" id="modal-title">Change Role</h3>
+			<p class="text-sm text-neutral-500 mb-6" id="modal-body"></p>
+			<div class="flex gap-3">
+				<button id="modal-cancel" class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-medium text-sm hover:bg-neutral-50 transition-colors">Cancel</button>
+				<button id="modal-confirm" class="flex-1 py-2.5 rounded-xl bg-[#0C6B95] text-white font-medium text-sm hover:bg-[#0a5c82] transition-colors">Confirm</button>
+			</div>
 		</div>
 	</div>
 
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+	import { auth, db } from '../../lib/firebase';
+	import { collection, getDocs, orderBy, query, doc, updateDoc } from 'firebase/firestore';
+
+	/* ── Types ── */
+	interface UserRow {
+		uid:         string;
+		displayName: string;
+		email:       string;
+		type:        string;
+		provider:    string;
+		createdAt:   string;
+		lastLoginAt: string;
+	}
+
+	/* ── Helpers ── */
+	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
+		if (!ts?.toDate) return '—';
+		try { return ts.toDate().toLocaleDateString('el-GR'); } catch { return '—'; }
+	};
 
 	const roleBadge = (type: string) => {
-		const isAdmin = type?.toLowerCase() === 'admin';
+		const isAdmin = type === 'admin';
 		const cls = isAdmin
 			? 'bg-[#0C6B95]/10 text-[#0C6B95] border-[#0C6B95]/30'
 			: 'bg-neutral-50 text-neutral-600 border-neutral-200';
 		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${type || 'user'}</span>`;
 	};
 
-	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
-		if (!ts?.toDate) return '—';
-		try { return ts.toDate().toLocaleDateString(); } catch { return '—'; }
+	const providerBadge = (p: string) => {
+		const isGoogle = p === 'google';
+		return isGoogle
+			? `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600">
+					<svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+					Google</span>`
+			: `<span class="inline-flex items-center gap-1.5 text-xs text-neutral-600">
+					<svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+					Email</span>`;
 	};
 
-	async function loadUsers() {
+	/* ── State ── */
+	let allUsers: UserRow[] = [];
+	let currentSearch = '';
+	let currentRoleFilter = 'all';
+
+	/* ── Render ── */
+	function renderTable() {
 		const tbody = document.getElementById('users-tbody')!;
 		const countEl = document.getElementById('users-count');
+
+		const filtered = allUsers.filter(u => {
+			const matchSearch =
+				!currentSearch ||
+				u.displayName.toLowerCase().includes(currentSearch) ||
+				u.email.toLowerCase().includes(currentSearch);
+			const matchRole =
+				currentRoleFilter === 'all' || u.type === currentRoleFilter;
+			return matchSearch && matchRole;
+		});
+
+		if (countEl) countEl.textContent = `${filtered.length} of ${allUsers.length} user${allUsers.length !== 1 ? 's' : ''}`;
+
+		if (filtered.length === 0) {
+			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No users match your filter.</td></tr>`;
+			return;
+		}
+
+		tbody.innerHTML = filtered.map(u => {
+			const isAdmin = u.type === 'admin';
+			const actionBtn = isAdmin
+				? `<button data-uid="${u.uid}" data-name="${u.displayName}" data-action="demote"
+						class="role-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 text-xs font-medium transition-colors">
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+						Remove Admin
+					</button>`
+				: `<button data-uid="${u.uid}" data-name="${u.displayName}" data-action="promote"
+						class="role-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0C6B95]/30 text-[#0C6B95] bg-[#0C6B95]/5 hover:bg-[#0C6B95]/10 text-xs font-medium transition-colors">
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+						Make Admin
+					</button>`;
+
+			return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors" data-uid="${u.uid}">
+				<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${u.displayName}</td>
+				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${u.email}</td>
+				<td class="px-6 py-3" id="role-cell-${u.uid}">${roleBadge(u.type)}</td>
+				<td class="px-6 py-3">${providerBadge(u.provider)}</td>
+				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${u.createdAt}</td>
+				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${u.lastLoginAt}</td>
+				<td class="px-6 py-3" id="action-cell-${u.uid}">${actionBtn}</td>
+			</tr>`;
+		}).join('');
+
+		/* Re-attach role button listeners */
+		document.querySelectorAll<HTMLButtonElement>('.role-btn').forEach(btn => {
+			btn.addEventListener('click', () => openModal(
+				btn.dataset.uid!,
+				btn.dataset.name!,
+				btn.dataset.action as 'promote' | 'demote'
+			));
+		});
+	}
+
+	/* ── Load from Firestore ── */
+	async function loadUsers() {
+		const tbody = document.getElementById('users-tbody')!;
 		try {
 			const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc')));
-			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
 			if (snap.empty) {
-				tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No users found.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No users found.</td></tr>`;
 				return;
 			}
-			tbody.innerHTML = snap.docs.map(doc => {
-				const d = doc.data() as Record<string, unknown>;
-				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
-					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.displayName ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
-					<td class="px-6 py-3">${roleBadge(String(d.type ?? 'user'))}</td>
-					<td class="px-6 py-3 text-neutral-600 capitalize">${d.provider ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${fmtDate(d.createdAt as { toDate?: () => Date } | undefined)}</td>
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${fmtDate(d.lastLoginAt as { toDate?: () => Date } | undefined)}</td>
-				</tr>`;
-			}).join('');
-		} catch {
-			tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+			allUsers = snap.docs.map(d => {
+				const data = d.data() as Record<string, unknown>;
+				return {
+					uid:         d.id,
+					displayName: String(data.displayName ?? '—'),
+					email:       String(data.email ?? '—'),
+					type:        String(data.type ?? 'user'),
+					provider:    String(data.provider ?? 'email'),
+					createdAt:   fmtDate(data.createdAt as { toDate?: () => Date } | undefined),
+					lastLoginAt: fmtDate(data.lastLoginAt as { toDate?: () => Date } | undefined),
+				};
+			});
+			renderTable();
+		} catch (e) {
+			console.error('Users load error:', e);
+			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load users.</td></tr>`;
 		}
 	}
 
+	/* ── Role change modal ── */
+	let pendingUid    = '';
+	let pendingAction: 'promote' | 'demote' = 'promote';
+
+	function openModal(uid: string, name: string, action: 'promote' | 'demote') {
+		pendingUid    = uid;
+		pendingAction = action;
+		const modal   = document.getElementById('role-modal')!;
+		const title   = document.getElementById('modal-title')!;
+		const body    = document.getElementById('modal-body')!;
+
+		if (action === 'promote') {
+			title.textContent = 'Promote to Admin';
+			body.textContent  = `Give admin access to "${name}"? They will be able to access the Admin Dashboard.`;
+			(document.getElementById('modal-confirm') as HTMLButtonElement).className =
+				'flex-1 py-2.5 rounded-xl bg-[#0C6B95] text-white font-medium text-sm hover:bg-[#0a5c82] transition-colors';
+		} else {
+			title.textContent = 'Remove Admin';
+			body.textContent  = `Remove admin access from "${name}"? They will no longer access the Admin Dashboard.`;
+			(document.getElementById('modal-confirm') as HTMLButtonElement).className =
+				'flex-1 py-2.5 rounded-xl bg-red-600 text-white font-medium text-sm hover:bg-red-700 transition-colors';
+		}
+		modal.classList.remove('hidden');
+	}
+
+	function closeModal() {
+		document.getElementById('role-modal')!.classList.add('hidden');
+	}
+
+	async function confirmRoleChange() {
+		const newType = pendingAction === 'promote' ? 'admin' : 'user';
+		const confirmBtn = document.getElementById('modal-confirm') as HTMLButtonElement;
+		confirmBtn.textContent = 'Saving…';
+		confirmBtn.disabled = true;
+
+		try {
+			await updateDoc(doc(db, 'users', pendingUid), { type: newType });
+
+			/* Update local state */
+			const user = allUsers.find(u => u.uid === pendingUid);
+			if (user) user.type = newType;
+
+			closeModal();
+			renderTable();
+		} catch (e) {
+			console.error('Role update error:', e);
+			confirmBtn.textContent = 'Error — retry';
+			confirmBtn.disabled = false;
+		}
+	}
+
+	document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
+	document.getElementById('modal-confirm')?.addEventListener('click', confirmRoleChange);
+	document.getElementById('role-modal')?.addEventListener('click', (e) => {
+		if (e.target === e.currentTarget) closeModal();
+	});
+
+	/* ── Search + filter ── */
+	document.getElementById('users-search')?.addEventListener('input', (e) => {
+		currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		renderTable();
+	});
+	document.getElementById('users-role-filter')?.addEventListener('change', (e) => {
+		currentRoleFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
+
+	/* ── Auth guard observer ── */
 	const authEl = document.getElementById('admin-auth-check');
 	const observer = new MutationObserver(() => {
 		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }

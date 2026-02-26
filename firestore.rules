@@ -1,9 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users: each authenticated user can read/write only their own document (uid == userId)
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    // Helper: check if the requesting user is an admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.type == 'admin';
     }
+
+    // ── Users ──────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Every authenticated user can read & write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Admins can read and update any user document (e.g. change roles)
+      allow read, write: if isAdmin();
+    }
+
+    // ── Transfers ──────────────────────────────────────────────────────────
+    match /transfers/{docId} {
+      // Any authenticated user can create a booking
+      allow create: if request.auth != null;
+      // Only the owner can read their own booking
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      // Admins can read, update, and delete all transfers
+      allow read, write: if isAdmin();
+    }
+
+    // ── Tours ──────────────────────────────────────────────────────────────
+    match /tours/{docId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow read, write: if isAdmin();
+    }
+
+    // ── Experiences ────────────────────────────────────────────────────────
+    match /experiences/{docId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow read, write: if isAdmin();
+    }
+
   }
 }
