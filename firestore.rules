@@ -58,5 +58,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Requests (public create, admin read/write) ───────────────────────
+    // Anyone (including unauthenticated visitors) can submit a tour booking
+    // or contact form. Only admins can read and manage requests.
+    match /requests/{docId} {
+      allow create: if true;
+      allow read, write: if isAdmin();
+    }
+
   }
 }
