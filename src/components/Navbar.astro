@@ -134,9 +134,9 @@
 		const adminBtn = document.getElementById('nav-admin-btn');
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
+		// Admin button: hidden by default; show only when Firestore user.type === 'admin'
 		if (adminBtn) adminBtn.classList.add('hidden');
 		if (nameEl && user) {
-			// Show fallback immediately, then try Firestore displayName and admin
 			nameEl.textContent = user.displayName?.trim() || user.email || 'Account';
 			nameEl.setAttribute('title', nameEl.textContent);
 			try {
@@ -148,12 +148,12 @@
 						nameEl.textContent = displayName.trim();
 						nameEl.setAttribute('title', displayName.trim());
 					}
-					// Admin: show button if type === 'admin' (or legacy role/isAdmin)
-					const isAdmin = data?.type === 'admin' || data?.role === 'admin' || data?.isAdmin === true;
+					// Show Admin button only if type === 'admin' in Firebase (any other type → hidden)
+					const isAdmin = data?.type === 'admin';
 					if (adminBtn) adminBtn.classList.toggle('hidden', !isAdmin);
 				}
 			} catch {
-				// Keep fallback from Auth
+				// Keep fallback from Auth; admin stays hidden
 			}
 		}
 	}
