@@ -111,8 +111,9 @@
 </nav>
 
 <script>
-	import { auth } from '../lib/firebase';
+	import { auth, db } from '../lib/firebase';
 	import { onAuthStateChanged } from 'firebase/auth';
+	import { doc, getDoc } from 'firebase/firestore';
 
 	function updateActiveLink() {
 		const pathname = window.location.pathname;
@@ -125,16 +126,26 @@
 		});
 	}
 
-	function updateAuthNav(user: { displayName?: string | null; email?: string | null } | null) {
+	async function updateAuthNav(user: { uid: string; displayName?: string | null; email?: string | null } | null) {
 		const guest = document.getElementById('nav-auth-guest');
 		const userEl = document.getElementById('nav-auth-user');
 		const nameEl = document.getElementById('nav-user-name');
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
 		if (nameEl && user) {
-			const name = user.displayName?.trim() || user.email || 'Account';
-			nameEl.textContent = name;
-			nameEl.setAttribute('title', name);
+			// Show fallback immediately, then try Firestore displayName
+			nameEl.textContent = user.displayName?.trim() || user.email || 'Account';
+			nameEl.setAttribute('title', nameEl.textContent);
+			try {
+				const snap = await getDoc(doc(db, 'users', user.uid));
+				const displayName = snap.exists() ? (snap.data()?.displayName as string | undefined) : undefined;
+				if (displayName && typeof displayName === 'string' && displayName.trim()) {
+					nameEl.textContent = displayName.trim();
+					nameEl.setAttribute('title', displayName.trim());
+				}
+			} catch {
+				// Keep fallback from Auth
+			}
 		}
 	}
 
