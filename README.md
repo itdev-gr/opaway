@@ -93,10 +93,13 @@ Airport transfers, city rides, and curated tours. Astro + Tailwind CSS.
 
 Login and register use **Firebase Authentication** (email/password and Google).
 
+### Firebase setup
+
 1. Create a project at [Firebase Console](https://console.firebase.google.com/).
-2. Enable **Authentication** → Sign-in method: **Email/Password** and **Google**.
-3. Add a web app and copy the config object.
-4. In the project root, copy `.env.example` to `.env` and set:
+2. **Authentication → Sign-in method:** enable **Email/Password** and **Google** (otherwise login/register will fail with 400 or auth errors).
+3. **Authentication → Settings → Authorized domains:** add `localhost` for local dev and your production domain (e.g. `opaway.vercel.app`). If the app’s domain is not listed, Auth requests can return 400.
+4. Add a web app in the project, then copy the config object.
+5. In the project root, copy `.env.example` to `.env` and set the `PUBLIC_FIREBASE_*` variables (for Vercel, set the same in Project → Settings → Environment Variables):
 
    ```env
    PUBLIC_FIREBASE_API_KEY=...
@@ -107,7 +110,7 @@ Login and register use **Firebase Authentication** (email/password and Google).
    PUBLIC_FIREBASE_APP_ID=...
    ```
 
-5. Restart the dev server. Sign in and register will use Firebase.
+6. Restart the dev server. Sign in and register will use Firebase.
 
 ## Tech
 

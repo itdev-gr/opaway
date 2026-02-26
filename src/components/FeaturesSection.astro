@@ -4,25 +4,21 @@ const features = [
 		title: 'Global',
 		description: 'Wherever your journey leads, Opawey ensures your comfort along the way.',
 		icon: 'globe',
-		href: '#',
 	},
 	{
 		title: 'Professional drivers',
 		description: 'Professional Drivers, Timely Rides, Relaxed Travel',
 		icon: 'driver',
-		href: '#',
 	},
 	{
 		title: 'Chauffeur by the hour',
 		description: 'Hire an hourly chauffeur for your business or leisure needs.',
 		icon: 'clock',
-		href: '#',
 	},
 	{
 		title: 'City rides',
 		description: 'Explore the city anytime, anywhere—even long distances.',
 		icon: 'car',
-		href: '#',
 	},
 ];
 ---
@@ -49,10 +45,7 @@ const features = [
 							)}
 						</span>
 					</div>
-					<p class="text-sm text-neutral-600 mb-6 flex-1">{feature.description}</p>
-					<a href={feature.href} class="inline-flex justify-center rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-900 font-medium text-sm px-4 py-2.5 transition-colors w-fit">
-						Details
-					</a>
+					<p class="text-sm text-neutral-600 flex-1">{feature.description}</p>
 				</article>
 			))}
 		</div>

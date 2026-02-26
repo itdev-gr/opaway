@@ -320,7 +320,12 @@ import Layout from '../layouts/Layout.astro';
 			await ensureUserInFirestore(user, name || undefined);
 			window.location.href = '/';
 		} catch (err: unknown) {
-			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Registration failed. Try again.';
+			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
+			if (code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found') {
+				showError('Service is not configured correctly. Please try again later or contact support.');
+				return;
+			}
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Registration failed. Check your details and try again.';
 			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
 		} finally {
 			submitBtn.disabled = false;
@@ -337,6 +342,11 @@ import Layout from '../layouts/Layout.astro';
 			await ensureUserInFirestore(user);
 			window.location.href = '/';
 		} catch (err: unknown) {
+			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
+			if (code === 'auth/invalid-api-key' || code === 'auth/configuration-not-found') {
+				showError('Service is not configured correctly. Please try again later or contact support.');
+				return;
+			}
 			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed.';
 			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
 		} finally {
