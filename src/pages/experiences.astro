@@ -65,7 +65,10 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 			const section = document.getElementById('catalog-section')!;
 			const grid    = document.getElementById('exp-catalog-grid')!;
 
-			grid.innerHTML = snap.docs.map(d => {
+			const docs = snap.docs.filter(d => d.data().published !== false);
+			if (docs.length === 0) return;
+
+			grid.innerHTML = docs.map(d => {
 				const item = d.data() as { title: string; description: string; price: number; imageUrl: string };
 				return `
 					<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">

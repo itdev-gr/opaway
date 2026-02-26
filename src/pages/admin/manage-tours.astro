@@ -84,10 +84,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</form>
 	</div>
 
-	<!-- Published Tours Grid -->
+	<!-- Tours Grid -->
 	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
-			<h2 class="text-base font-semibold text-neutral-800">Published Tours</h2>
+			<h2 class="text-base font-semibold text-neutral-800">Tours Catalog</h2>
 			<span id="tours-count" class="text-xs text-neutral-400 font-medium"></span>
 		</div>
 		<div id="tours-grid" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -112,47 +112,126 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
+	<!-- Edit modal -->
+	<div id="edit-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+			<div class="flex items-center justify-between mb-5">
+				<h3 class="text-base font-bold text-neutral-900">Edit Tour</h3>
+				<button id="edit-close" class="text-neutral-400 hover:text-neutral-600 transition-colors" type="button">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+			<div class="space-y-4">
+				<!-- Edit Image URL + Preview -->
+				<div class="flex flex-col sm:flex-row gap-4 items-start">
+					<div class="flex-1">
+						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Image URL *</label>
+						<input
+							id="e-image" type="url"
+							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+						/>
+					</div>
+					<div class="sm:w-36 h-24 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
+						<img id="e-img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
+						<span id="e-img-placeholder" class="text-neutral-400 text-xs flex flex-col items-center gap-1">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							Preview
+						</span>
+					</div>
+				</div>
+				<!-- Edit Title + Price -->
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
+						<input
+							id="e-title" type="text"
+							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+						/>
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Price (€) *</label>
+						<input
+							id="e-price" type="number" min="0" step="0.01"
+							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+						/>
+					</div>
+				</div>
+				<!-- Edit Description -->
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Description *</label>
+					<textarea
+						id="e-description" rows="4"
+						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm resize-none"
+					></textarea>
+				</div>
+				<!-- Edit status + Save -->
+				<div class="flex items-center justify-between pt-1">
+					<span id="edit-status" class="text-sm"></span>
+					<div class="flex gap-3">
+						<button id="edit-cancel" type="button" class="px-5 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50 transition-colors">Cancel</button>
+						<button id="edit-save"   type="button" class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </AdminLayout>
 
 <script>
 	import { db } from '../../lib/firebase';
-	import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
 
 	/* ── Types ── */
-	interface CatalogItem { id: string; title: string; description: string; price: number; imageUrl: string; }
+	interface CatalogItem { id: string; title: string; description: string; price: number; imageUrl: string; published: boolean; }
 
 	/* ── State ── */
 	let items: CatalogItem[] = [];
 	let pendingDeleteId = '';
+	let pendingEditId   = '';
 
 	/* ── Escape HTML ── */
 	const esc = (s: string) => String(s)
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-	/* ── Image preview ── */
+	/* ── Add-form image preview ── */
 	const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
 	const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
 	const imgPlaceholder = document.getElementById('img-placeholder')!;
 	let previewTimer: ReturnType<typeof setTimeout>;
 
+	function applyPreview(input: HTMLInputElement, preview: HTMLImageElement, placeholder: Element) {
+		const url = input.value.trim();
+		if (url) {
+			preview.src = url;
+			preview.classList.remove('hidden');
+			placeholder.classList.add('hidden');
+			preview.onerror = () => { preview.classList.add('hidden'); placeholder.classList.remove('hidden'); };
+		} else {
+			preview.classList.add('hidden');
+			placeholder.classList.remove('hidden');
+		}
+	}
+
 	imgInput.addEventListener('input', () => {
 		clearTimeout(previewTimer);
-		previewTimer = setTimeout(() => {
-			const url = imgInput.value.trim();
-			if (url) {
-				imgPreview.src = url;
-				imgPreview.classList.remove('hidden');
-				imgPlaceholder.classList.add('hidden');
-				imgPreview.onerror = () => {
-					imgPreview.classList.add('hidden');
-					imgPlaceholder.classList.remove('hidden');
-				};
-			} else {
-				imgPreview.classList.add('hidden');
-				imgPlaceholder.classList.remove('hidden');
-			}
-		}, 400);
+		previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
+	});
+
+	/* ── Edit-modal image preview ── */
+	const eImgInput       = document.getElementById('e-image')       as HTMLInputElement;
+	const eImgPreview     = document.getElementById('e-img-preview') as HTMLImageElement;
+	const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
+	let ePreviewTimer: ReturnType<typeof setTimeout>;
+
+	eImgInput.addEventListener('input', () => {
+		clearTimeout(ePreviewTimer);
+		ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
 	});
 
 	/* ── Render grid ── */
@@ -166,33 +245,76 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			return;
 		}
 
-		grid.innerHTML = items.map(item => `
+		grid.innerHTML = items.map(item => {
+			const isLive = item.published !== false;
+			return `
 			<div class="group rounded-xl border border-neutral-200 overflow-hidden bg-neutral-50 shadow-sm hover:shadow-md transition-shadow duration-200">
-				<div class="aspect-video overflow-hidden bg-neutral-200">
+				<!-- Image + status badge -->
+				<div class="aspect-video overflow-hidden bg-neutral-200 relative">
 					<img
 						src="${esc(item.imageUrl)}"
 						alt="${esc(item.title)}"
 						class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 						onerror="this.closest('.aspect-video').style.background='#e5e7eb'"
 					/>
+					<span class="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full ${isLive ? 'bg-emerald-100 text-emerald-700' : 'bg-neutral-200 text-neutral-500'}">
+						${isLive ? 'Live' : 'Hidden'}
+					</span>
 				</div>
+				<!-- Content -->
 				<div class="p-4">
 					<h3 class="font-semibold text-neutral-900 mb-1 truncate text-sm">${esc(item.title)}</h3>
 					<p class="text-xs text-neutral-500 leading-relaxed mb-3 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(item.description)}</p>
-					<div class="flex items-center justify-between">
-						<span class="text-base font-bold text-[#0C6B95]">€${Number(item.price).toFixed(2)}</span>
+					<span class="text-base font-bold text-[#0C6B95]">€${Number(item.price).toFixed(2)}</span>
+					<!-- Actions -->
+					<div class="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100">
+						<!-- Toggle On/Off -->
 						<button
-							class="delete-btn flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
-							data-id="${item.id}" data-title="${esc(item.title)}" type="button"
+							class="toggle-btn flex-1 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${isLive ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:bg-neutral-200'}"
+							data-id="${item.id}" data-published="${isLive}" type="button"
+						>${isLive ? 'On' : 'Off'}</button>
+						<!-- Edit -->
+						<button
+							class="edit-btn p-1.5 rounded-lg border border-neutral-200 text-neutral-400 hover:text-[#0C6B95] hover:border-[#0C6B95]/30 hover:bg-sky-50 transition-colors"
+							data-id="${item.id}" type="button" title="Edit"
 						>
-							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
+							</svg>
+						</button>
+						<!-- Delete -->
+						<button
+							class="delete-btn p-1.5 rounded-lg border border-neutral-200 text-neutral-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors"
+							data-id="${item.id}" data-title="${esc(item.title)}" type="button" title="Delete"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7M10 11v6m4-6v6M9 7V4h6v3M4 7h16"/>
 							</svg>
-							Delete
 						</button>
 					</div>
 				</div>
-			</div>`).join('');
+			</div>`;
+		}).join('');
+
+		/* Attach toggle handlers */
+		document.querySelectorAll<HTMLButtonElement>('.toggle-btn').forEach(btn => {
+			btn.addEventListener('click', async () => {
+				const id     = btn.dataset.id!;
+				const isLive = btn.dataset.published === 'true';
+				btn.disabled = true;
+				try {
+					await updateDoc(doc(db, 'toursCatalog', id), { published: !isLive });
+					const item = items.find(i => i.id === id);
+					if (item) item.published = !isLive;
+					renderGrid();
+				} catch (err) { console.error(err); btn.disabled = false; }
+			});
+		});
+
+		/* Attach edit handlers */
+		document.querySelectorAll<HTMLButtonElement>('.edit-btn').forEach(btn => {
+			btn.addEventListener('click', () => openEditModal(btn.dataset.id!));
+		});
 
 		/* Attach delete handlers */
 		document.querySelectorAll<HTMLButtonElement>('.delete-btn').forEach(btn => {
@@ -244,9 +366,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		try {
 			const docRef = await addDoc(collection(db, 'toursCatalog'), {
-				imageUrl, title, description, price, createdAt: serverTimestamp(),
+				imageUrl, title, description, price, published: true, createdAt: serverTimestamp(),
 			});
-			items.unshift({ id: docRef.id, imageUrl, title, description, price });
+			items.unshift({ id: docRef.id, imageUrl, title, description, price, published: true });
 			renderGrid();
 			form.reset();
 			imgPreview.classList.add('hidden');
@@ -263,13 +385,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	});
 
 	/* ── Delete modal ── */
-	const closeModal = () => {
+	const closeDeleteModal = () => {
 		const m = document.getElementById('delete-modal')!;
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
 
-	document.getElementById('delete-no')?.addEventListener('click', closeModal);
-	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+	document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
+	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
 
 	document.getElementById('delete-yes')?.addEventListener('click', async () => {
 		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
@@ -280,7 +402,72 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			renderGrid();
 		} catch (err) { console.error(err); }
 		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
-		closeModal();
+		closeDeleteModal();
+	});
+
+	/* ── Edit modal ── */
+	function openEditModal(id: string) {
+		const item = items.find(i => i.id === id);
+		if (!item) return;
+		pendingEditId = id;
+
+		(document.getElementById('e-image')       as HTMLInputElement).value       = item.imageUrl;
+		(document.getElementById('e-title')       as HTMLInputElement).value       = item.title;
+		(document.getElementById('e-price')       as HTMLInputElement).value       = String(item.price);
+		(document.getElementById('e-description') as HTMLTextAreaElement).value    = item.description;
+
+		/* pre-fill image preview */
+		applyPreview(eImgInput, eImgPreview, eImgPlaceholder);
+
+		const editStatusEl = document.getElementById('edit-status')!;
+		editStatusEl.textContent = '';
+
+		const modal = document.getElementById('edit-modal')!;
+		modal.classList.remove('hidden');
+		modal.classList.add('flex');
+	}
+
+	const closeEditModal = () => {
+		const m = document.getElementById('edit-modal')!;
+		m.classList.add('hidden'); m.classList.remove('flex');
+	};
+
+	document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
+
+	document.getElementById('edit-save')?.addEventListener('click', async () => {
+		const imageUrl    = (document.getElementById('e-image')       as HTMLInputElement).value.trim();
+		const title       = (document.getElementById('e-title')       as HTMLInputElement).value.trim();
+		const description = (document.getElementById('e-description') as HTMLTextAreaElement).value.trim();
+		const price       = parseFloat((document.getElementById('e-price') as HTMLInputElement).value);
+		const editStatus  = document.getElementById('edit-status')!;
+		const saveBtn     = document.getElementById('edit-save') as HTMLButtonElement;
+
+		if (!imageUrl || !title || !description || isNaN(price)) {
+			editStatus.textContent = 'Please fill in all fields.';
+			editStatus.className = 'text-sm text-red-500';
+			return;
+		}
+
+		saveBtn.disabled = true;
+		saveBtn.textContent = 'Saving…';
+		editStatus.textContent = '';
+
+		try {
+			await updateDoc(doc(db, 'toursCatalog', pendingEditId), { imageUrl, title, description, price });
+			const item = items.find(i => i.id === pendingEditId);
+			if (item) Object.assign(item, { imageUrl, title, description, price });
+			renderGrid();
+			closeEditModal();
+		} catch (err) {
+			console.error(err);
+			editStatus.textContent = 'Error saving changes. Please try again.';
+			editStatus.className = 'text-sm text-red-500';
+		} finally {
+			saveBtn.disabled = false;
+			saveBtn.textContent = 'Save Changes';
+		}
 	});
 
 	/* ── Auth guard observer ── */

@@ -322,10 +322,13 @@ const tours = [
 			const snap = await getDocs(query(collection(db, 'toursCatalog'), orderBy('createdAt', 'desc')));
 			if (snap.empty) return;
 
+			const docs = snap.docs.filter(d => d.data().published !== false);
+			if (docs.length === 0) return;
+
 			const section = document.getElementById('catalog-section')!;
 			const grid    = document.getElementById('tours-catalog-grid')!;
 
-			grid.innerHTML = snap.docs.map(d => {
+			grid.innerHTML = docs.map(d => {
 				const item = d.data() as { title: string; description: string; price: number; imageUrl: string };
 				return `
 					<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
