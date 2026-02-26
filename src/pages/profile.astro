@@ -26,23 +26,11 @@ import Layout from '../layouts/Layout.astro';
 		>
 			<!-- Nav links (side menu) -->
 			<nav class="flex-1 pt-6 py-4 px-4 flex flex-col">
-				<a href="/" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Home</a>
-				<a href="/about" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">About Us</a>
-				<div class="relative group/book border-b border-white/10">
-					<a href="/book" class="flex items-center justify-between py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors">
-						<span>Book Online</span>
-						<svg class="w-4 h-4 transition-transform group-hover/book:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-						</svg>
-					</a>
-					<div class="pl-3 pb-2">
-						<a href="/book/transfer" class="block py-1.5 text-sm text-white/90 hover:text-white">Book a Transfer</a>
-						<a href="/book/tour" class="block py-1.5 text-sm text-white/90 hover:text-white">Book a Tour</a>
-					</div>
-				</div>
-				<a href="/experiences" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Experiences</a>
-				<a href="/contact" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Contact</a>
-				<div class="py-3 px-3 text-white/80 font-medium border-b border-white/10">Profile</div>
+				<a href="/profile/transfers" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My Transfers</a>
+				<a href="/profile/trips" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My Trips</a>
+				<a href="/profile/experiences" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My experiences</a>
+				<a href="/profile/settings" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Settings</a>
+				<button type="button" id="profile-sidebar-logout" class="py-3 px-3 text-left text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10 w-full">Logout</button>
 			</nav>
 
 			<!-- Newsletter -->
@@ -154,6 +142,21 @@ import Layout from '../layouts/Layout.astro';
 	overlay?.addEventListener('click', closeSidebar);
 	sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
 
+	const sidebarLogoutBtn = document.getElementById('profile-sidebar-logout');
+	const doSignOut = async () => {
+		try {
+			await signOut(auth);
+			window.location.href = '/';
+		} catch {
+			window.location.href = '/';
+		}
+	};
+	signOutBtn?.addEventListener('click', doSignOut);
+	sidebarLogoutBtn?.addEventListener('click', () => {
+		closeSidebar();
+		doSignOut();
+	});
+
 	onAuthStateChanged(auth, (user) => {
 		if (!user) {
 			window.location.href = '/login';
@@ -170,12 +173,4 @@ import Layout from '../layouts/Layout.astro';
 		}
 	});
 
-	signOutBtn?.addEventListener('click', async () => {
-		try {
-			await signOut(auth);
-			window.location.href = '/';
-		} catch {
-			window.location.href = '/';
-		}
-	});
 </script>
