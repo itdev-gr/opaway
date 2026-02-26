@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+	<main class="min-h-screen bg-white flex items-center justify-center px-6">
+		<p class="text-neutral-500 text-sm">Signing out…</p>
+	</main>
+</Layout>
+
+<script>
+	import { auth } from '../lib/firebase';
+	import { signOut } from 'firebase/auth';
+
+	(async () => {
+		try {
+			await signOut(auth);
+		} finally {
+			window.location.href = '/';
+		}
+	})();
+</script>

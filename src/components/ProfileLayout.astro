@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+	<main class="flex min-h-screen bg-white">
+		<!-- Mobile overlay when sidebar open -->
+		<div id="profile-sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden" aria-hidden="true"></div>
+
+		<!-- Burger button (mobile only) -->
+		<button
+			type="button"
+			id="profile-burger"
+			class="fixed top-4 right-4 z-50 md:hidden w-12 h-12 rounded-full bg-[#0C6B95] text-white flex items-center justify-center shadow-lg hover:bg-[#0a5c82] transition-colors"
+			aria-label="Open menu"
+		>
+			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+			</svg>
+		</button>
+
+		<!-- Sidebar -->
+		<aside
+			id="profile-sidebar"
+			class="fixed top-26 left-0 z-40 w-72 h-[calc(100vh-6.5rem)] bg-[#0C6B95] flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
+		>
+			<nav class="flex-1 pt-6 py-4 px-4 flex flex-col">
+				<a href="/profile/transfers" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My Transfers</a>
+				<a href="/profile/trips" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My Trips</a>
+				<a href="/profile/experiences" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My experiences</a>
+				<a href="/profile/settings" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">Settings</a>
+				<button type="button" id="profile-sidebar-logout" class="py-3 px-3 text-left text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10 w-full">Logout</button>
+			</nav>
+
+			<div class="px-6 py-4 border-t border-white/20">
+				<p class="text-white font-medium mb-2">Subscribe for newsletter</p>
+				<input
+					type="email"
+					placeholder="Enter Email Address"
+					class="w-full px-4 py-2.5 rounded-lg bg-white/95 border border-white/30 text-neutral-800 placeholder-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-white/40"
+				/>
+			</div>
+
+			<div class="px-6 py-4 border-t border-white/20">
+				<p class="text-white/70 text-xs">Copyright © 2025 Opawey. All rights reserved.</p>
+			</div>
+		</aside>
+
+		<!-- Page content -->
+		<div class="flex-1 min-h-screen md:ml-72 flex items-center justify-center px-6 py-24 relative bg-white">
+			<slot />
+		</div>
+	</main>
+</Layout>
+
+<script>
+	import { auth } from '../lib/firebase';
+	import { signOut } from 'firebase/auth';
+
+	const sidebar = document.getElementById('profile-sidebar');
+	const overlay = document.getElementById('profile-sidebar-overlay');
+	const burger = document.getElementById('profile-burger');
+
+	function openSidebar() {
+		sidebar?.classList.remove('-translate-x-full');
+		overlay?.classList.remove('hidden');
+		document.body.style.overflow = 'hidden';
+	}
+	function closeSidebar() {
+		sidebar?.classList.add('-translate-x-full');
+		overlay?.classList.add('hidden');
+		document.body.style.overflow = '';
+	}
+	function toggleSidebar() {
+		if (sidebar?.classList.contains('-translate-x-full')) openSidebar();
+		else closeSidebar();
+	}
+
+	burger?.addEventListener('click', toggleSidebar);
+	overlay?.addEventListener('click', closeSidebar);
+	sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
+
+	const sidebarLogoutBtn = document.getElementById('profile-sidebar-logout');
+	sidebarLogoutBtn?.addEventListener('click', async () => {
+		closeSidebar();
+		try {
+			await signOut(auth);
+			window.location.href = '/';
+		} catch {
+			window.location.href = '/';
+		}
+	});
+</script>
