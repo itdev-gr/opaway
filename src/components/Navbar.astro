@@ -81,22 +81,18 @@
 
 	</div>
 
-	<!-- Right: language + Sign-in -->
-	<div class="flex items-center gap-6 shrink-0">
-		<div class="hidden sm:flex items-center gap-2 text-black cursor-pointer hover:text-black/70 transition-colors">
-			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0h.5a2.5 2.5 0 002.5-2.5V3.935M12 12a4 4 0 118 0 4 4 0 01-8 0z" />
+	<!-- Right: Profile icon + Sign-in -->
+	<div class="flex items-center gap-3 shrink-0">
+		<!-- Profile icon button -->
+		<a href="/login" aria-label="My Account" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200">
+			<svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" aria-hidden="true">
+				<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
 			</svg>
-			<span class="text-sm">EN</span>
-			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-			</svg>
-		</div>
+		</a>
+		<!-- Sign-in pill -->
 		<a href="/login" class="inline-flex items-center gap-2 bg-black text-white font-medium px-5 py-2.5 rounded-full hover:bg-neutral-800 transition-colors">
-			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-			</svg>
-			Sign-in
+			Sign in
 		</a>
 	</div>
 </nav>

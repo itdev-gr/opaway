@@ -89,7 +89,28 @@ Airport transfers, city rides, and curated tours. Astro + Tailwind CSS.
 | `npm run build` | Production build to `./dist/` |
 | `npm run preview` | Preview production build |
 
+## Firebase Auth (login / register)
+
+Login and register use **Firebase Authentication** (email/password and Google).
+
+1. Create a project at [Firebase Console](https://console.firebase.google.com/).
+2. Enable **Authentication** → Sign-in method: **Email/Password** and **Google**.
+3. Add a web app and copy the config object.
+4. In the project root, copy `.env.example` to `.env` and set:
+
+   ```env
+   PUBLIC_FIREBASE_API_KEY=...
+   PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   PUBLIC_FIREBASE_PROJECT_ID=...
+   PUBLIC_FIREBASE_STORAGE_BUCKET=...
+   PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+   PUBLIC_FIREBASE_APP_ID=...
+   ```
+
+5. Restart the dev server. Sign in and register will use Firebase.
+
 ## Tech
 
 - [Astro](https://astro.build)
 - [Tailwind CSS](https://tailwindcss.com) via `@tailwindcss/vite`
+- [Firebase](https://firebase.google.com) (Authentication)

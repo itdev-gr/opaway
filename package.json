@@ -9,8 +9,10 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "@tailwindcss/vite": "^4.2.1",
     "astro": "^5.17.1",
+    "firebase": "^12.9.0",
     "tailwindcss": "^4.2.1"
   }
 }

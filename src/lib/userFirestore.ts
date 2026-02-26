@@ -1,0 +1,32 @@
+import type { User } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
+
+const USERS_COLLECTION = 'users';
+
+/**
+ * Creates or updates the user document in Firestore (collection `users`).
+ * Use after every successful sign-in (login or register, email or Google)
+ * so you can manage clients from the database.
+ * - New users: sets uid, email, displayName, provider, createdAt, lastLoginAt.
+ * - Existing users: updates lastLoginAt (and displayName if provided and doc exists without it).
+ */
+export async function ensureUserInFirestore(user: User, displayName?: string): Promise<void> {
+	const userRef = doc(db, USERS_COLLECTION, user.uid);
+	const snapshot = await getDoc(userRef);
+	const isNewUser = !snapshot.exists();
+
+	const provider = user.providerId === 'google.com' ? 'google' : 'email';
+	const payload: Record<string, unknown> = {
+		uid: user.uid,
+		email: user.email ?? '',
+		displayName: displayName?.trim() || user.displayName || null,
+		provider,
+		lastLoginAt: serverTimestamp(),
+	};
+	if (isNewUser) {
+		payload.createdAt = serverTimestamp();
+	}
+
+	await setDoc(userRef, payload, { merge: true });
+}

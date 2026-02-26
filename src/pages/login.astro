@@ -31,8 +31,11 @@ import Layout from '../layouts/Layout.astro';
 					<p class="text-neutral-500 text-sm mt-1">Enter your credentials to access your account.</p>
 				</div>
 
+				<!-- Auth error message -->
+				<div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert"></div>
+
 				<!-- Form -->
-				<form class="flex flex-col gap-5" novalidate>
+				<form id="login-form" class="flex flex-col gap-5" novalidate>
 
 					<!-- Email -->
 					<div class="flex flex-col gap-1.5">
@@ -107,7 +110,8 @@ import Layout from '../layouts/Layout.astro';
 					<!-- Submit -->
 					<button
 						type="submit"
-						class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 mt-1"
+						id="submit-btn"
+						class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
 					>
 						Sign in
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -127,7 +131,8 @@ import Layout from '../layouts/Layout.astro';
 				<!-- Google SSO -->
 				<button
 					type="button"
-					class="w-full py-3 border border-neutral-200 rounded-xl bg-white hover:bg-neutral-50 transition-colors flex items-center justify-center gap-3 text-sm font-medium text-neutral-700"
+					id="google-btn"
+					class="w-full py-3 border border-neutral-200 rounded-xl bg-white hover:bg-neutral-50 transition-colors flex items-center justify-center gap-3 text-sm font-medium text-neutral-700 disabled:opacity-60 disabled:cursor-not-allowed"
 				>
 					<svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
 						<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -150,6 +155,10 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+	import { auth } from '../lib/firebase';
+	import { ensureUserInFirestore } from '../lib/userFirestore';
+	import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+
 	// Toggle password visibility
 	const toggleBtn = document.getElementById('toggle-password');
 	const passwordInput = document.getElementById('password-input') as HTMLInputElement;
@@ -171,5 +180,60 @@ import Layout from '../layouts/Layout.astro';
 		input.addEventListener('change', () => {
 			if (checkmark) checkmark.style.opacity = input.checked ? '1' : '0';
 		});
+	});
+
+	// Firebase Auth: email/password login
+	const loginForm = document.getElementById('login-form') as HTMLFormElement;
+	const authError = document.getElementById('auth-error') as HTMLElement;
+	const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+	function showError(message: string) {
+		if (authError) {
+			authError.textContent = message;
+			authError.classList.remove('hidden');
+		}
+	}
+
+	function hideError() {
+		authError?.classList.add('hidden');
+	}
+
+	loginForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		hideError();
+		const email = (loginForm.querySelector('[name="email"]') as HTMLInputElement)?.value?.trim();
+		const password = (loginForm.querySelector('[name="password"]') as HTMLInputElement)?.value;
+		if (!email || !password) {
+			showError('Please enter email and password.');
+			return;
+		}
+		submitBtn.disabled = true;
+		try {
+			const { user } = await signInWithEmailAndPassword(auth, email, password);
+			await ensureUserInFirestore(user);
+			window.location.href = '/';
+		} catch (err: unknown) {
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
+			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
+		} finally {
+			submitBtn.disabled = false;
+		}
+	});
+
+	// Firebase Auth: Google sign-in
+	const googleBtn = document.getElementById('google-btn') as HTMLButtonElement;
+	googleBtn?.addEventListener('click', async () => {
+		hideError();
+		googleBtn.disabled = true;
+		try {
+			const { user } = await signInWithPopup(auth, new GoogleAuthProvider());
+			await ensureUserInFirestore(user);
+			window.location.href = '/';
+		} catch (err: unknown) {
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed.';
+			showError(msg.includes('auth/') ? msg.replace('Firebase: ', '').replace('auth/', '') : msg);
+		} finally {
+			googleBtn.disabled = false;
+		}
 	});
 </script>
