@@ -1,0 +1,82 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Tours" pageDescription="All tour bookings." activeSection="tours">
+
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+			<h2 class="text-base font-semibold text-neutral-800">All Tours</h2>
+			<span id="tours-count" class="text-xs text-neutral-400 font-medium"></span>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="bg-neutral-50 text-left">
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tour</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Participants</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+					</tr>
+				</thead>
+				<tbody id="tours-tbody">
+					<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { db } from '../../lib/firebase';
+	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+
+	const statusBadge = (s: string) => {
+		const map: Record<string, string> = {
+			pending:   'bg-amber-50 text-amber-700 border-amber-200',
+			confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+			cancelled: 'bg-red-50 text-red-600 border-red-200',
+			completed: 'bg-sky-50 text-sky-700 border-sky-200',
+		};
+		const cls = map[s.toLowerCase()] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${s}</span>`;
+	};
+
+	async function loadTours() {
+		const tbody = document.getElementById('tours-tbody')!;
+		const countEl = document.getElementById('tours-count');
+		try {
+			const snap = await getDocs(query(collection(db, 'tours'), orderBy('createdAt', 'desc')));
+			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
+			if (snap.empty) {
+				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No tours found.</td></tr>`;
+				return;
+			}
+			tbody.innerHTML = snap.docs.map(doc => {
+				const d = doc.data() as Record<string, unknown>;
+				const date = d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—';
+				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
+					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${d.tour ?? d.tourName ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600">${d.pickup ?? d.pickupLocation ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 text-center">${d.participants ?? d.passengers ?? '—'}</td>
+					<td class="px-6 py-3">${statusBadge(String(d.status ?? 'pending'))}</td>
+				</tr>`;
+			}).join('');
+		} catch {
+			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+		}
+	}
+
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadTours(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>

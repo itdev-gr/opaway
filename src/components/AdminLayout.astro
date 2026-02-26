@@ -1,0 +1,231 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	pageTitle: string;
+	pageDescription?: string;
+	activeSection?: string;
+	docTitle?: string;
+}
+
+const {
+	pageTitle,
+	pageDescription = '',
+	activeSection = '',
+	docTitle,
+} = Astro.props;
+
+const nav = [
+	{
+		group: 'Main',
+		items: [
+			{ key: 'dashboard', label: 'Dashboard', href: '/admin', icon: 'home' },
+		],
+	},
+	{
+		group: 'Bookings',
+		items: [
+			{ key: 'transfers',   label: 'Transfers',   href: '/admin/transfers',   icon: 'transfer' },
+			{ key: 'tours',       label: 'Tours',       href: '/admin/tours',       icon: 'map' },
+			{ key: 'experiences', label: 'Experiences', href: '/admin/experiences', icon: 'star' },
+		],
+	},
+	{
+		group: 'Management',
+		items: [
+			{ key: 'users',    label: 'Users',    href: '/admin/users',    icon: 'users' },
+			{ key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'settings' },
+		],
+	},
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<title>{docTitle ?? `${pageTitle} — Opawey Admin`}</title>
+	</head>
+	<body class="flex min-h-screen bg-neutral-100 font-sans">
+
+		<!-- Mobile overlay -->
+		<div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden" aria-hidden="true"></div>
+
+		<!-- Mobile burger -->
+		<button
+			type="button"
+			id="admin-burger"
+			class="fixed top-4 right-4 z-50 md:hidden w-12 h-12 rounded-full bg-[#0C6B95] text-white flex items-center justify-center shadow-lg hover:bg-[#0a5c82] transition-colors"
+			aria-label="Open menu"
+		>
+			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+			</svg>
+		</button>
+
+		<!-- Sidebar -->
+		<aside
+			id="admin-sidebar"
+			class="fixed md:sticky top-0 left-0 h-screen z-40 w-72 shrink-0 bg-[#0C6B95] flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
+		>
+			<!-- Logo -->
+			<div class="flex items-center justify-center px-6 py-5 border-b border-white/20">
+				<a href="/" target="_blank" rel="noopener noreferrer" aria-label="Opawey — Home">
+					<img src="/logo-opawey.png" alt="Opawey" class="h-20 w-auto object-contain brightness-0 invert" width="240" height="80" />
+				</a>
+			</div>
+
+			<!-- Nav -->
+			<nav class="flex-1 pt-4 px-4 flex flex-col overflow-y-auto gap-0.5">
+				{nav.map(({ group, items }) => (
+					<>
+						<p class="text-white/50 text-xs font-semibold tracking-widest uppercase px-3 mb-1 mt-4 first:mt-2">{group}</p>
+						{items.map(({ key, label, href, icon }) => {
+							const active = activeSection === key;
+							return (
+								<a
+									href={href}
+									class={`flex items-center gap-3 py-2.5 px-3 rounded-lg text-white transition-colors border-b border-white/10 ${active ? 'bg-white/20 font-semibold' : 'hover:bg-white/10'}`}
+								>
+									<!-- Icons -->
+									{icon === 'home' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+										</svg>
+									)}
+									{icon === 'transfer' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+										</svg>
+									)}
+									{icon === 'map' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+										</svg>
+									)}
+									{icon === 'star' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+										</svg>
+									)}
+									{icon === 'users' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+											<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+										</svg>
+									)}
+									{icon === 'settings' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+										</svg>
+									)}
+									{label}
+								</a>
+							);
+						})}
+					</>
+				))}
+
+				<!-- Logout -->
+				<button
+					type="button"
+					id="admin-sidebar-logout"
+					class="mt-auto flex items-center gap-3 py-2.5 px-3 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors w-full text-left mb-2"
+				>
+					<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+					</svg>
+					Logout
+				</button>
+			</nav>
+
+			<div class="px-6 py-4 border-t border-white/20">
+				<p class="text-white/50 text-xs">© 2025 Opawey. Admin Panel.</p>
+			</div>
+		</aside>
+
+		<!-- Main -->
+		<div class="flex-1 flex flex-col min-h-screen min-w-0">
+
+			<!-- Top bar -->
+			<header class="bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm">
+				<div>
+					<h1 class="text-xl font-bold text-neutral-900">{pageTitle}</h1>
+					{pageDescription && <p class="text-xs text-neutral-400 mt-0.5">{pageDescription}</p>}
+				</div>
+				<div class="flex items-center gap-3">
+					<span id="admin-user-name" class="text-sm font-medium text-neutral-600 hidden sm:block"></span>
+					<div class="flex items-center gap-2 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+						<span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+						Admin
+					</div>
+				</div>
+			</header>
+
+			<!-- Page content -->
+			<main class="flex-1 p-6 md:p-8 overflow-auto">
+
+				<!-- Auth checking overlay -->
+				<div id="admin-auth-check" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+					<div class="flex flex-col items-center gap-4">
+						<svg class="w-10 h-10 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+						</svg>
+						<p class="text-neutral-500 text-sm">Verifying access…</p>
+					</div>
+				</div>
+
+				<slot />
+			</main>
+		</div>
+
+	</body>
+</html>
+
+<script>
+	import { auth, db } from '../lib/firebase';
+	import { onAuthStateChanged, signOut } from 'firebase/auth';
+	import { doc, getDocFromServer } from 'firebase/firestore';
+
+	const overlay    = document.getElementById('admin-sidebar-overlay');
+	const sidebar    = document.getElementById('admin-sidebar');
+	const burger     = document.getElementById('admin-burger');
+	const authCheck  = document.getElementById('admin-auth-check');
+	const userNameEl = document.getElementById('admin-user-name');
+
+	/* ── Sidebar mobile toggle ── */
+	function openSidebar()  { sidebar?.classList.remove('-translate-x-full'); overlay?.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+	function closeSidebar() { sidebar?.classList.add('-translate-x-full');    overlay?.classList.add('hidden');    document.body.style.overflow = ''; }
+	burger?.addEventListener('click', () => sidebar?.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar());
+	overlay?.addEventListener('click', closeSidebar);
+	sidebar?.querySelectorAll('a').forEach(l => l.addEventListener('click', closeSidebar));
+
+	/* ── Logout ── */
+	document.getElementById('admin-sidebar-logout')?.addEventListener('click', async () => {
+		closeSidebar();
+		try { await signOut(auth); } catch { /* ignore */ }
+		window.close();
+	});
+
+	/* ── Admin guard ── */
+	onAuthStateChanged(auth, async (user) => {
+		if (!user) { window.location.href = '/login'; return; }
+		try {
+			const snap = await getDocFromServer(doc(db, 'users', user.uid));
+			const data = snap.exists() ? snap.data() : null;
+			if (data?.type !== 'admin') { window.location.href = '/'; return; }
+			if (userNameEl) {
+				userNameEl.textContent =
+					(data?.displayName as string | undefined)?.trim() ||
+					user.displayName?.trim() ||
+					user.email || 'Admin';
+			}
+			authCheck?.classList.add('hidden');
+		} catch { window.location.href = '/'; }
+	});
+</script>

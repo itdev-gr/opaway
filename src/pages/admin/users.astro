@@ -1,0 +1,81 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Users" pageDescription="All registered users." activeSection="users">
+
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+			<h2 class="text-base font-semibold text-neutral-800">All Users</h2>
+			<span id="users-count" class="text-xs text-neutral-400 font-medium"></span>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="bg-neutral-50 text-left">
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Role</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Provider</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Registered</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Login</th>
+					</tr>
+				</thead>
+				<tbody id="users-tbody">
+					<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { db } from '../../lib/firebase';
+	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+
+	const roleBadge = (type: string) => {
+		const isAdmin = type?.toLowerCase() === 'admin';
+		const cls = isAdmin
+			? 'bg-[#0C6B95]/10 text-[#0C6B95] border-[#0C6B95]/30'
+			: 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${type || 'user'}</span>`;
+	};
+
+	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
+		if (!ts?.toDate) return '—';
+		try { return ts.toDate().toLocaleDateString(); } catch { return '—'; }
+	};
+
+	async function loadUsers() {
+		const tbody = document.getElementById('users-tbody')!;
+		const countEl = document.getElementById('users-count');
+		try {
+			const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc')));
+			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
+			if (snap.empty) {
+				tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No users found.</td></tr>`;
+				return;
+			}
+			tbody.innerHTML = snap.docs.map(doc => {
+				const d = doc.data() as Record<string, unknown>;
+				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.displayName ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
+					<td class="px-6 py-3">${roleBadge(String(d.type ?? 'user'))}</td>
+					<td class="px-6 py-3 text-neutral-600 capitalize">${d.provider ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${fmtDate(d.createdAt as { toDate?: () => Date } | undefined)}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${fmtDate(d.lastLoginAt as { toDate?: () => Date } | undefined)}</td>
+				</tr>`;
+			}).join('');
+		} catch {
+			tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+		}
+	}
+
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>
