@@ -152,8 +152,14 @@
 					const isAdmin = data?.type === 'admin';
 					// eslint-disable-next-line no-console -- temporary debug: verify Firestore type for current user
 					console.log('Navbar user type:', data?.type, 'uid:', user.uid);
-					// Stale check: only apply if this response is for the current user (avoids race with concurrent updateAuthNav calls)
-					if (auth.currentUser?.uid === user.uid && adminBtn) adminBtn.classList.toggle('hidden', !isAdmin);
+					if (!adminBtn) return;
+					// When not admin: always hide (so we never leave it visible from a stale state).
+					// When admin: only show if this response is for the current user (stale check).
+					if (!isAdmin) {
+						adminBtn.classList.add('hidden');
+					} else if (auth.currentUser?.uid === user.uid) {
+						adminBtn.classList.remove('hidden');
+					}
 				}
 			} catch {
 				// Keep fallback from Auth; admin stays hidden
