@@ -1,0 +1,19 @@
+---
+import ProfileLayout from '../../components/ProfileLayout.astro';
+import ProfileContent from '../../components/ProfileContent.astro';
+---
+
+<ProfileLayout>
+	<ProfileContent label="Overview" title="Dashboard" description="Your account overview and quick links.">
+		<p class="text-neutral-500 text-sm">Welcome to your dashboard. Use the menu to view transfers, trips, experiences, or settings.</p>
+	</ProfileContent>
+</ProfileLayout>
+
+<script>
+	import { auth } from '../../lib/firebase';
+	import { onAuthStateChanged } from 'firebase/auth';
+
+	onAuthStateChanged(auth, (user) => {
+		if (!user) window.location.href = '/login';
+	});
+</script>
