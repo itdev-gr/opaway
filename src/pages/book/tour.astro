@@ -215,7 +215,7 @@ import Layout from '../../layouts/Layout.astro';
 </script>
 
 <script>
-	import { db } from '../../lib/firebase';
+	import { db, auth } from '../../lib/firebase';
 	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore';
 
 	interface TourItem {
@@ -424,6 +424,9 @@ import Layout from '../../layouts/Layout.astro';
 		btn.disabled = true;
 		btn.textContent = 'Sending…';
 
+		// Capture logged-in user info at the moment of submission
+		const currentUser = auth.currentUser;
+
 		try {
 			await addDoc(collection(db, 'requests'), {
 				source:         'tour',
@@ -438,6 +441,10 @@ import Layout from '../../layouts/Layout.astro';
 				specialRequests: notes  || '',
 				status:         'new',
 				createdAt:      serverTimestamp(),
+				// User account info (null if not logged in)
+				userId:          currentUser?.uid         || null,
+				userDisplayName: currentUser?.displayName || null,
+				userEmail:       currentUser?.email       || null,
 			});
 
 			successEl.classList.remove('hidden');

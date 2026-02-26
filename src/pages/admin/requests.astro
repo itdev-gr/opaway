@@ -61,7 +61,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		source: 'tour' | 'contact';
 		status: 'new' | 'read' | 'resolved';
 		createdAt: { toDate?: () => Date } | null;
-		// tour fields
+		// Submitted-by (logged-in user info, null if guest)
+		userId?: string | null;
+		userDisplayName?: string | null;
+		userEmail?: string | null;
+		// Tour booking fields
 		tourName?: string;
 		name?: string;
 		contactInfo?: string;
@@ -70,7 +74,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		time?: string;
 		participants?: number;
 		specialRequests?: string;
-		// contact fields
+		// Contact form fields
 		email?: string;
 		subject?: string;
 		message?: string;
@@ -117,6 +121,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</span>`;
 	};
 
+	/** Renders a label-value detail row; returns empty string if value is falsy */
 	const row = (label: string, value: unknown) => value
 		? `<div class="flex gap-2 text-sm">
 			<span class="text-neutral-400 font-medium min-w-[120px] shrink-0">${esc(label)}</span>
@@ -124,10 +129,46 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		  </div>`
 		: '';
 
+	/** "Submitted by" banner — shows user account or guest pill */
+	const submittedByBanner = (r: Request) => {
+		const initial = (r.userDisplayName || r.userEmail || '?')[0].toUpperCase();
+
+		if (r.userId) {
+			// Registered user submitted the form
+			return `
+			<div class="flex items-center gap-2.5 px-5 py-3 bg-[#0C6B95]/5 border-b border-[#0C6B95]/10">
+				<div class="w-8 h-8 rounded-full bg-[#0C6B95] text-white flex items-center justify-center text-xs font-bold shrink-0">${esc(initial)}</div>
+				<div class="flex flex-col min-w-0">
+					<div class="flex items-center gap-2">
+						<span class="text-sm font-semibold text-neutral-900 truncate">${esc(r.userDisplayName || 'Registered User')}</span>
+						<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#0C6B95]/10 text-[#0C6B95] text-[10px] font-semibold shrink-0">
+							<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							Registered
+						</span>
+					</div>
+					<span class="text-xs text-neutral-500 truncate">${esc(r.userEmail || '')}${r.userEmail ? '' : ''}&nbsp;·&nbsp;<span class="font-mono text-[10px]">${esc(r.userId)}</span></span>
+				</div>
+			</div>`;
+		}
+
+		// Guest (not logged in)
+		return `
+		<div class="flex items-center gap-2.5 px-5 py-3 bg-neutral-50 border-b border-neutral-100">
+			<div class="w-8 h-8 rounded-full bg-neutral-200 text-neutral-500 flex items-center justify-center shrink-0">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+				</svg>
+			</div>
+			<span class="text-sm text-neutral-500 font-medium">Guest — not logged in</span>
+		</div>`;
+	};
+
 	/* ── Render ──────────────────────────────────────────────────── */
 	function renderGrid(filter = 'all') {
 		const grid = document.getElementById('req-grid')!;
-		const newCountEl  = document.getElementById('req-count-new');
+		const newCountEl   = document.getElementById('req-count-new');
 		const totalCountEl = document.getElementById('req-count-total');
 
 		const newCount = allRequests.filter(r => r.status === 'new').length;
@@ -135,7 +176,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		if (totalCountEl) totalCountEl.textContent = String(allRequests.length);
 
 		let filtered = allRequests;
-		if (filter === 'tour')     filtered = allRequests.filter(r => r.source === 'tour');
+		if      (filter === 'tour')     filtered = allRequests.filter(r => r.source === 'tour');
 		else if (filter === 'contact')  filtered = allRequests.filter(r => r.source === 'contact');
 		else if (filter === 'new')      filtered = allRequests.filter(r => r.status === 'new');
 		else if (filter === 'read')     filtered = allRequests.filter(r => r.status === 'read');
@@ -172,7 +213,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 			return `
 			<div class="bg-white border border-neutral-200 border-l-4 ${accentBorder} rounded-2xl shadow-sm overflow-hidden flex flex-col" data-req-id="${esc(r.id)}">
-				<!-- Card header -->
+
+				<!-- Card header: source + status + date -->
 				<div class="px-5 py-4 flex items-start justify-between gap-3 border-b border-neutral-100">
 					<div class="flex flex-wrap items-center gap-2">
 						${sourceBadge(r.source)}
@@ -184,14 +226,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					</div>
 				</div>
 
-				<!-- Card body -->
+				<!-- Submitted by -->
+				${submittedByBanner(r)}
+
+				<!-- Request details -->
 				<div class="px-5 py-4 flex flex-col gap-2.5 flex-1">
 					${detailRows}
 				</div>
 
-				<!-- Card footer / actions -->
+				<!-- Actions -->
 				<div class="px-5 py-3 border-t border-neutral-100 flex items-center gap-2 bg-neutral-50/60">
-					${r.status !== 'read' ? `<button class="req-action-btn flex-1 py-1.5 px-3 rounded-lg border border-sky-200 bg-sky-50 text-sky-700 text-xs font-semibold hover:bg-sky-100 transition-colors" data-id="${esc(r.id)}" data-action="read">Mark as Read</button>` : ''}
+					${r.status !== 'read'     ? `<button class="req-action-btn flex-1 py-1.5 px-3 rounded-lg border border-sky-200 bg-sky-50 text-sky-700 text-xs font-semibold hover:bg-sky-100 transition-colors" data-id="${esc(r.id)}" data-action="read">Mark as Read</button>` : ''}
 					${r.status !== 'resolved' ? `<button class="req-action-btn flex-1 py-1.5 px-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors" data-id="${esc(r.id)}" data-action="resolved">Mark as Resolved</button>` : ''}
 					<button class="req-delete-btn p-1.5 rounded-lg border border-neutral-200 bg-white text-neutral-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors" data-id="${esc(r.id)}" title="Delete">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -207,7 +252,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Card listeners ──────────────────────────────────────────── */
 	function attachCardListeners() {
-		/* Status change buttons */
 		document.querySelectorAll<HTMLButtonElement>('.req-action-btn').forEach(btn => {
 			btn.addEventListener('click', async () => {
 				const id     = btn.dataset.id!;
@@ -222,7 +266,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			});
 		});
 
-		/* Delete buttons */
 		document.querySelectorAll<HTMLButtonElement>('.req-delete-btn').forEach(btn => {
 			btn.addEventListener('click', () => {
 				deleteTargetId = btn.dataset.id!;

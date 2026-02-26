@@ -181,14 +181,25 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { db } from '../lib/firebase';
+	import { db, auth } from '../lib/firebase';
 	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+	import { onAuthStateChanged } from 'firebase/auth';
 
 	const form       = document.getElementById('contact-form') as HTMLFormElement;
 	const errorEl    = document.getElementById('contact-error')!;
 	const successEl  = document.getElementById('contact-success')!;
 	const resetBtn   = document.getElementById('contact-reset-btn')!;
 	const submitBtn  = document.getElementById('contact-submit-btn') as HTMLButtonElement;
+
+	const nameInput  = document.getElementById('contact-name')  as HTMLInputElement;
+	const emailInput = document.getElementById('contact-email') as HTMLInputElement;
+
+	// Pre-fill form if user is already logged in
+	onAuthStateChanged(auth, (user) => {
+		if (!user) return;
+		if (nameInput && !nameInput.value)   nameInput.value  = user.displayName || '';
+		if (emailInput && !emailInput.value) emailInput.value = user.email || '';
+	});
 
 	form?.addEventListener('submit', async (e) => {
 		e.preventDefault();
@@ -206,6 +217,9 @@ import Layout from '../layouts/Layout.astro';
 		submitBtn.disabled = true;
 		submitBtn.textContent = 'Sending…';
 
+		// Capture logged-in user info at the moment of submission
+		const currentUser = auth.currentUser;
+
 		try {
 			await addDoc(collection(db, 'requests'), {
 				source:  'contact',
@@ -215,6 +229,10 @@ import Layout from '../layouts/Layout.astro';
 				message,
 				status:  'new',
 				createdAt: serverTimestamp(),
+				// User account info (null if not logged in)
+				userId:          currentUser?.uid          || null,
+				userDisplayName: currentUser?.displayName  || null,
+				userEmail:       currentUser?.email        || null,
 			});
 
 			form.classList.add('hidden');
