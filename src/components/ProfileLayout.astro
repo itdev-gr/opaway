@@ -46,8 +46,8 @@ import Layout from '../layouts/Layout.astro';
 			</div>
 		</aside>
 
-		<!-- Profile content area: starts from bottom of nav bar (pt-26 ≈ nav height), fills remaining space -->
-		<div class="flex-1 min-h-0 flex flex-col min-w-0 md:ml-0 pt-26 p-4 md:p-6 bg-white">
+		<!-- Profile content area: starts from bottom of nav bar, padding from end of side menu -->
+		<div class="flex-1 min-h-0 flex flex-col min-w-0 md:ml-0 pt-26 p-4 md:p-6 md:pl-8 bg-white">
 			<slot />
 		</div>
 	</main>
