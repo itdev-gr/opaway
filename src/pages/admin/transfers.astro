@@ -127,10 +127,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</label>
 					<select id="tf-status"
 						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
+						<option value="new">New</option>
 						<option value="pending">Pending</option>
-						<option value="confirmed">Confirmed</option>
-						<option value="completed">Completed</option>
+						<option value="payed">Payed</option>
+						<option value="planning">Planning</option>
 						<option value="cancelled">Cancelled</option>
+						<option value="done">Done</option>
 					</select>
 				</div>
 
@@ -153,17 +155,31 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { db } from '../../lib/firebase';
-	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
 
-	const statusBadge = (s: string) => {
-		const map: Record<string, string> = {
-			pending:   'bg-amber-50 text-amber-700 border-amber-200',
-			confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-			cancelled: 'bg-red-50 text-red-600 border-red-200',
-			completed: 'bg-sky-50 text-sky-700 border-sky-200',
-		};
-		const cls = map[s.toLowerCase()] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
-		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${s}</span>`;
+	/* ── Status colours ── */
+	const STATUS_COLORS: Record<string, string> = {
+		new:       'bg-sky-50 text-sky-700 border-sky-200',
+		pending:   'bg-amber-50 text-amber-700 border-amber-200',
+		payed:     'bg-emerald-50 text-emerald-700 border-emerald-200',
+		planning:  'bg-violet-50 text-violet-700 border-violet-200',
+		cancelled: 'bg-red-50 text-red-600 border-red-200',
+		done:      'bg-neutral-100 text-neutral-600 border-neutral-300',
+	};
+
+	const STATUS_OPTIONS = ['new', 'pending', 'payed', 'planning', 'cancelled', 'done'];
+
+	const applySelectColor = (sel: HTMLSelectElement) => {
+		const cls = STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		sel.className = `status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	};
+
+	const buildStatusSelect = (docId: string, current: string) => {
+		const val = current?.toLowerCase() ?? 'new';
+		const opts = STATUS_OPTIONS.map(s =>
+			`<option value="${s}" ${val === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
+		).join('');
+		return `<select class="status-select" data-id="${docId}" data-col="transfers">${opts}</select>`;
 	};
 
 	async function loadTransfers() {
@@ -176,8 +192,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">No transfers found.</td></tr>`;
 				return;
 			}
-			tbody.innerHTML = snap.docs.map(doc => {
-				const d = doc.data() as Record<string, unknown>;
+			tbody.innerHTML = snap.docs.map(document => {
+				const d = document.data() as Record<string, unknown>;
 				const date = d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—';
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
@@ -187,13 +203,30 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-6 py-3 text-neutral-600">${d.to ?? '—'}</td>
 					<td class="px-6 py-3 text-neutral-600 text-center">${d.passengers ?? '—'}</td>
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${d.vehicle ?? '—'}</td>
-					<td class="px-6 py-3">${statusBadge(String(d.status ?? 'pending'))}</td>
+					<td class="px-6 py-3">${buildStatusSelect(document.id, String(d.status ?? 'new'))}</td>
 				</tr>`;
 			}).join('');
+
+			/* Apply colours to all selects */
+			document.querySelectorAll<HTMLSelectElement>('.status-select').forEach(applySelectColor);
 		} catch {
 			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
 		}
 	}
+
+	/* ── Status change delegation ── */
+	document.getElementById('transfers-tbody')?.addEventListener('change', async (e) => {
+		const sel = e.target as HTMLSelectElement;
+		if (!sel.classList.contains('status-select')) return;
+		const docId = sel.dataset.id!;
+		const newStatus = sel.value;
+		applySelectColor(sel);
+		try {
+			await updateDoc(doc(db, 'transfers', docId), { status: newStatus });
+		} catch (err) {
+			console.error('Failed to update status:', err);
+		}
+	});
 
 	/* ── Modal ── */
 	const modal      = document.getElementById('add-transfer-modal')!;
@@ -223,7 +256,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const passengers = parseInt(val('tf-passengers') || '1', 10);
 		const vehicle    = val('tf-vehicle');
 		const notes      = val('tf-notes');
-		const status     = val('tf-status') || 'pending';
+		const status     = val('tf-status') || 'new';
 
 		if (!name || !email || !from || !to || !date || !passengers) {
 			errorEl.textContent = 'Please fill in all required fields.';
