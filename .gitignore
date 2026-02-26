@@ -17,6 +17,10 @@ pnpm-debug.log*
 .env
 .env.production
 
+# Firebase service account (for migration scripts)
+**/serviceAccountKey.json
+**/serviceAccount*.json
+
 # macOS-specific files
 .DS_Store
 

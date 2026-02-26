@@ -148,8 +148,8 @@
 						nameEl.textContent = displayName.trim();
 						nameEl.setAttribute('title', displayName.trim());
 					}
-					// Admin: show button if role === 'admin' or isAdmin === true
-					const isAdmin = data?.role === 'admin' || data?.isAdmin === true;
+					// Admin: show button if type === 'admin' (or legacy role/isAdmin)
+					const isAdmin = data?.type === 'admin' || data?.role === 'admin' || data?.isAdmin === true;
 					if (adminBtn) adminBtn.classList.toggle('hidden', !isAdmin);
 				}
 			} catch {

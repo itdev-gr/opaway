@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "migrate:user-type": "node scripts/migrate-user-type.mjs"
   },
   "dependencies": {
     "@dataconnect/generated": "file:src/dataconnect-generated",
@@ -14,5 +15,8 @@
     "astro": "^5.17.1",
     "firebase": "^12.9.0",
     "tailwindcss": "^4.2.1"
+  },
+  "devDependencies": {
+    "firebase-admin": "^13.0.1"
   }
 }
