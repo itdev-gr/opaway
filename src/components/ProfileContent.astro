@@ -7,8 +7,8 @@ interface Props {
 const { label = '', title, description } = Astro.props;
 ---
 
-<div class="relative z-10 w-full flex-1 min-h-0 flex flex-col pt-4">
-	<!-- Profile content (white box): top border below nav bar bottom (pt-4 gap); same for all profile pages -->
+<div class="relative z-10 w-full flex-1 min-h-0 flex flex-col pt-[4rem]">
+	<!-- Profile content (white box): top border below nav bar (4rem gap); same for all profile pages -->
 	<div class="profile-content flex-1 min-h-0 flex flex-col bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10 overflow-auto" aria-label="Profile content">
 		<div class="mb-8">
 			{label && (
