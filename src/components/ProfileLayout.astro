@@ -19,10 +19,10 @@ import Layout from '../layouts/Layout.astro';
 			</svg>
 		</button>
 
-		<!-- Sidebar: from end of nav bar to start of footer (nav 6.5rem, footer ~24rem) -->
+		<!-- Sidebar: full height from end of nav to bottom of viewport (positioning unchanged) -->
 		<aside
 			id="profile-sidebar"
-			class="fixed md:sticky top-26 left-0 bottom-96 md:bottom-auto z-40 w-72 md:h-[calc(100vh-6.5rem-24rem)] shrink-0 bg-[#0C6B95] flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
+			class="fixed md:sticky top-26 left-0 h-[calc(100vh-6.5rem)] z-40 w-72 shrink-0 bg-[#0C6B95] flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
 		>
 			<nav class="flex-1 pt-6 py-4 px-4 flex flex-col">
 				<a href="/profile/transfers" class="py-3 px-3 text-white hover:bg-white/10 rounded-lg transition-colors border-b border-white/10">My Transfers</a>
