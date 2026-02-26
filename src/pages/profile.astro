@@ -4,7 +4,8 @@ import ProfileLayout from '../components/ProfileLayout.astro';
 
 <ProfileLayout>
 	<div class="relative z-10 w-full flex-1 min-h-0 flex flex-col">
-		<div class="flex-1 min-h-0 flex flex-col bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10 overflow-auto">
+		<!-- Profile content (white box): starts below nav, named for reference -->
+		<div class="profile-content flex-1 min-h-0 flex flex-col bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10 overflow-auto" aria-label="Profile content">
 			<div id="profile-loading" class="text-center py-8 text-neutral-500 text-sm min-h-[120px]"></div>
 
 			<div id="profile-content" class="hidden">
