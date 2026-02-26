@@ -1,0 +1,292 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Tours Catalog" pageDescription="Add and manage tours displayed on the website." activeSection="manage-tours">
+
+	<!-- Add New Tour Form -->
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 mb-6">
+		<h2 class="text-base font-semibold text-neutral-800 mb-5 flex items-center gap-2">
+			<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+			</svg>
+			Add New Tour
+		</h2>
+
+		<form id="tour-form" class="space-y-4" novalidate>
+
+			<!-- Image URL + Live Preview -->
+			<div class="flex flex-col sm:flex-row gap-4 items-start">
+				<div class="flex-1">
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Image URL *</label>
+					<input
+						id="f-image" type="url" required
+						placeholder="https://example.com/photo.jpg"
+						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+					/>
+					<p class="text-xs text-neutral-400 mt-1.5">Paste a direct link to the tour image (JPG, PNG, WebP)</p>
+				</div>
+				<div class="sm:w-48 h-32 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
+					<img id="img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
+					<span id="img-placeholder" class="text-neutral-400 text-xs font-medium flex flex-col items-center gap-1.5">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+						</svg>
+						Preview
+					</span>
+				</div>
+			</div>
+
+			<!-- Title + Price -->
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<div class="sm:col-span-2">
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
+					<input
+						id="f-title" type="text" required
+						placeholder="e.g. Athens City Tour"
+						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+					/>
+				</div>
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Price (€) *</label>
+					<input
+						id="f-price" type="number" min="0" step="0.01" required
+						placeholder="e.g. 150"
+						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+					/>
+				</div>
+			</div>
+
+			<!-- Description -->
+			<div>
+				<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Description *</label>
+				<textarea
+					id="f-description" required rows="4"
+					placeholder="Describe the tour experience, highlights, what's included…"
+					class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm resize-none"
+				></textarea>
+			</div>
+
+			<!-- Status + Submit -->
+			<div class="flex items-center justify-between pt-1">
+				<span id="form-status" class="text-sm"></span>
+				<button
+					type="submit"
+					id="submit-btn"
+					class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+					</svg>
+					Add Tour
+				</button>
+			</div>
+		</form>
+	</div>
+
+	<!-- Published Tours Grid -->
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+			<h2 class="text-base font-semibold text-neutral-800">Published Tours</h2>
+			<span id="tours-count" class="text-xs text-neutral-400 font-medium"></span>
+		</div>
+		<div id="tours-grid" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+			<p class="text-neutral-400 text-sm col-span-full text-center py-10">Loading…</p>
+		</div>
+	</div>
+
+	<!-- Delete confirmation modal -->
+	<div id="delete-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+			<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+				<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+				</svg>
+			</div>
+			<h3 class="text-base font-bold text-neutral-900 text-center mb-1">Delete Tour</h3>
+			<p id="delete-modal-body" class="text-sm text-neutral-500 text-center mb-6">This tour will be permanently removed from the website.</p>
+			<div class="flex gap-3">
+				<button id="delete-no"  class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50 transition-colors">No</button>
+				<button id="delete-yes" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 font-semibold text-sm text-white transition-colors">Yes</button>
+			</div>
+		</div>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { db } from '../../lib/firebase';
+	import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+
+	/* ── Types ── */
+	interface CatalogItem { id: string; title: string; description: string; price: number; imageUrl: string; }
+
+	/* ── State ── */
+	let items: CatalogItem[] = [];
+	let pendingDeleteId = '';
+
+	/* ── Escape HTML ── */
+	const esc = (s: string) => String(s)
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	/* ── Image preview ── */
+	const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
+	const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
+	const imgPlaceholder = document.getElementById('img-placeholder')!;
+	let previewTimer: ReturnType<typeof setTimeout>;
+
+	imgInput.addEventListener('input', () => {
+		clearTimeout(previewTimer);
+		previewTimer = setTimeout(() => {
+			const url = imgInput.value.trim();
+			if (url) {
+				imgPreview.src = url;
+				imgPreview.classList.remove('hidden');
+				imgPlaceholder.classList.add('hidden');
+				imgPreview.onerror = () => {
+					imgPreview.classList.add('hidden');
+					imgPlaceholder.classList.remove('hidden');
+				};
+			} else {
+				imgPreview.classList.add('hidden');
+				imgPlaceholder.classList.remove('hidden');
+			}
+		}, 400);
+	});
+
+	/* ── Render grid ── */
+	function renderGrid() {
+		const grid    = document.getElementById('tours-grid')!;
+		const countEl = document.getElementById('tours-count');
+		if (countEl) countEl.textContent = `${items.length} tour${items.length !== 1 ? 's' : ''}`;
+
+		if (items.length === 0) {
+			grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-12">No tours added yet. Use the form above to publish your first tour.</p>`;
+			return;
+		}
+
+		grid.innerHTML = items.map(item => `
+			<div class="group rounded-xl border border-neutral-200 overflow-hidden bg-neutral-50 shadow-sm hover:shadow-md transition-shadow duration-200">
+				<div class="aspect-video overflow-hidden bg-neutral-200">
+					<img
+						src="${esc(item.imageUrl)}"
+						alt="${esc(item.title)}"
+						class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+						onerror="this.closest('.aspect-video').style.background='#e5e7eb'"
+					/>
+				</div>
+				<div class="p-4">
+					<h3 class="font-semibold text-neutral-900 mb-1 truncate text-sm">${esc(item.title)}</h3>
+					<p class="text-xs text-neutral-500 leading-relaxed mb-3 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(item.description)}</p>
+					<div class="flex items-center justify-between">
+						<span class="text-base font-bold text-[#0C6B95]">€${Number(item.price).toFixed(2)}</span>
+						<button
+							class="delete-btn flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+							data-id="${item.id}" data-title="${esc(item.title)}" type="button"
+						>
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7M10 11v6m4-6v6M9 7V4h6v3M4 7h16"/>
+							</svg>
+							Delete
+						</button>
+					</div>
+				</div>
+			</div>`).join('');
+
+		/* Attach delete handlers */
+		document.querySelectorAll<HTMLButtonElement>('.delete-btn').forEach(btn => {
+			btn.addEventListener('click', () => {
+				pendingDeleteId = btn.dataset.id!;
+				const modal = document.getElementById('delete-modal')!;
+				const body  = document.getElementById('delete-modal-body')!;
+				body.textContent = `"${btn.dataset.title}" will be permanently removed from the website.`;
+				modal.classList.remove('hidden');
+				modal.classList.add('flex');
+			});
+		});
+	}
+
+	/* ── Load from Firestore ── */
+	async function loadItems() {
+		const grid = document.getElementById('tours-grid')!;
+		try {
+			const snap = await getDocs(query(collection(db, 'toursCatalog'), orderBy('createdAt', 'desc')));
+			items = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<CatalogItem, 'id'>) }));
+			renderGrid();
+		} catch (e) {
+			console.error('Load error:', e);
+			grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-10">Could not load tours.</p>`;
+		}
+	}
+
+	/* ── Form submit ── */
+	const form      = document.getElementById('tour-form')    as HTMLFormElement;
+	const statusEl  = document.getElementById('form-status')!;
+	const submitBtn = document.getElementById('submit-btn')   as HTMLButtonElement;
+
+	const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const imageUrl    = (document.getElementById('f-image')       as HTMLInputElement).value.trim();
+		const title       = (document.getElementById('f-title')       as HTMLInputElement).value.trim();
+		const description = (document.getElementById('f-description') as HTMLTextAreaElement).value.trim();
+		const price       = parseFloat((document.getElementById('f-price') as HTMLInputElement).value);
+
+		if (!imageUrl || !title || !description || isNaN(price)) {
+			setStatus('Please fill in all fields.', 'text-red-500'); return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Adding…';
+		setStatus('', '');
+
+		try {
+			const docRef = await addDoc(collection(db, 'toursCatalog'), {
+				imageUrl, title, description, price, createdAt: serverTimestamp(),
+			});
+			items.unshift({ id: docRef.id, imageUrl, title, description, price });
+			renderGrid();
+			form.reset();
+			imgPreview.classList.add('hidden');
+			imgPlaceholder.classList.remove('hidden');
+			setStatus('✓ Tour published successfully!', 'text-emerald-600 font-medium');
+			setTimeout(() => setStatus('', ''), 4000);
+		} catch (err) {
+			console.error(err);
+			setStatus('Error adding tour. Please try again.', 'text-red-500');
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Tour`;
+		}
+	});
+
+	/* ── Delete modal ── */
+	const closeModal = () => {
+		const m = document.getElementById('delete-modal')!;
+		m.classList.add('hidden'); m.classList.remove('flex');
+	};
+
+	document.getElementById('delete-no')?.addEventListener('click', closeModal);
+	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+
+	document.getElementById('delete-yes')?.addEventListener('click', async () => {
+		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
+		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
+		try {
+			await deleteDoc(doc(db, 'toursCatalog', pendingDeleteId));
+			items = items.filter(i => i.id !== pendingDeleteId);
+			renderGrid();
+		} catch (err) { console.error(err); }
+		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
+		closeModal();
+	});
+
+	/* ── Auth guard observer ── */
+	const authEl   = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>

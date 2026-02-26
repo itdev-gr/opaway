@@ -1,0 +1,162 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+	<main class="min-h-screen bg-white">
+
+		<!-- Hero -->
+		<section class="relative w-full h-[65vh] min-h-[460px] overflow-hidden bg-neutral-900">
+			<img
+				src="/image_tours.avif"
+				alt="Tours"
+				class="absolute inset-0 w-full h-full object-cover"
+			/>
+			<div class="absolute inset-0 bg-black/55"></div>
+			<div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 lg:px-10 max-w-4xl mx-auto">
+				<div class="flex items-center gap-2 mb-4">
+					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+					<span class="text-sm font-medium text-white/70 tracking-widest uppercase">What We Offer</span>
+				</div>
+				<h1 class="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">Tours</h1>
+				<p class="text-white/80 text-lg lg:text-xl leading-relaxed max-w-2xl">
+					Discover Greece with our exclusive tours — private chauffeurs, curated destinations, and unforgettable memories at every turn.
+				</p>
+			</div>
+			<div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent"></div>
+		</section>
+
+		<!-- Tours Catalog -->
+		<section class="py-20 lg:py-28 px-6 lg:px-10">
+			<div class="max-w-6xl mx-auto">
+
+				<!-- Section header -->
+				<div class="mb-12 text-center">
+					<div class="flex items-center justify-center gap-2 mb-4">
+						<span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span>
+						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Tours</span>
+					</div>
+					<h2 class="text-4xl font-bold text-neutral-900 mb-4">Explore Our Offerings</h2>
+					<div class="w-16 h-1 bg-[#0C6B95] rounded-full mx-auto mb-4"></div>
+					<p class="text-neutral-500 text-base max-w-xl mx-auto leading-relaxed">
+						Choose from a curated selection of private tours, each crafted to give you an extraordinary taste of Greece.
+					</p>
+				</div>
+
+				<!-- Loading -->
+				<div id="tours-loading" class="flex flex-col items-center justify-center py-24 gap-4">
+					<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+					</svg>
+					<p class="text-neutral-400 text-sm">Loading tours…</p>
+				</div>
+
+				<!-- Empty state -->
+				<div id="tours-empty" class="hidden text-center py-24">
+					<div class="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+						<svg class="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+						</svg>
+					</div>
+					<p class="text-neutral-500 text-lg font-medium mb-2">No tours available yet</p>
+					<p class="text-neutral-400 text-sm">Check back soon — exciting tours are on their way!</p>
+				</div>
+
+				<!-- Cards grid -->
+				<div id="tours-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+				<!-- CTA strip -->
+				<div id="tours-cta" class="hidden mt-16 text-center">
+					<p class="text-neutral-500 text-sm mb-4">Can't find what you're looking for?</p>
+					<a
+						href="/contact"
+						class="inline-flex items-center gap-2 bg-neutral-900 hover:bg-[#0C6B95] text-white text-sm font-semibold px-8 py-4 rounded-xl transition-colors duration-200"
+					>
+						Request a Custom Tour
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+						</svg>
+					</a>
+				</div>
+
+			</div>
+		</section>
+
+	</main>
+</Layout>
+
+<script>
+	import { db } from '../lib/firebase';
+	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+
+	const esc = (s: string) => String(s)
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	async function loadTours() {
+		const loadingEl = document.getElementById('tours-loading')!;
+		const emptyEl   = document.getElementById('tours-empty')!;
+		const gridEl    = document.getElementById('tours-grid')!;
+		const ctaEl     = document.getElementById('tours-cta')!;
+
+		try {
+			const snap = await getDocs(query(collection(db, 'toursCatalog'), orderBy('createdAt', 'desc')));
+			loadingEl.classList.add('hidden');
+
+			if (snap.empty) {
+				emptyEl.classList.remove('hidden');
+				return;
+			}
+
+			gridEl.innerHTML = snap.docs.map(d => {
+				const item = d.data() as { title: string; description: string; price: number; imageUrl: string };
+				return `
+					<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
+						<!-- Image -->
+						<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
+							<img
+								src="${esc(item.imageUrl)}"
+								alt="${esc(item.title)}"
+								class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+								onerror="this.closest('[class*=aspect]').innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-neutral-100\\'><svg class=\\'w-12 h-12 text-neutral-300\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14\\'/></svg></div>'"
+							/>
+						</div>
+						<!-- Content -->
+						<div class="p-6">
+							<h3 class="text-xl font-bold text-neutral-900 mb-2 leading-snug">${esc(item.title)}</h3>
+							<p class="text-neutral-500 text-sm leading-relaxed mb-5 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${esc(item.description)}</p>
+							<div class="flex items-center justify-between">
+								<div>
+									<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider">From</span>
+									<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">€${Number(item.price).toFixed(2)}</p>
+								</div>
+								<a
+									href="/contact"
+									class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
+								>
+									Book Now
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+									</svg>
+								</a>
+							</div>
+						</div>
+					</div>`;
+			}).join('');
+
+			gridEl.classList.remove('hidden');
+			ctaEl.classList.remove('hidden');
+
+		} catch (err) {
+			console.error('Tours load error:', err);
+			loadingEl.classList.add('hidden');
+			emptyEl.innerHTML = `
+				<p class="text-neutral-500 text-lg font-medium mb-2">Could not load tours</p>
+				<p class="text-neutral-400 text-sm">Please try again later or <a href="/contact" class="text-[#0C6B95] underline">contact us</a>.</p>`;
+			emptyEl.classList.remove('hidden');
+		}
+	}
+
+	loadTours();
+</script>

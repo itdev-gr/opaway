@@ -40,5 +40,17 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ── Tours Catalog (public read, admin write) ────────────────────────
+    match /toursCatalog/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Experiences Catalog (public read, admin write) ──────────────────
+    match /experiencesCatalog/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
   }
 }
