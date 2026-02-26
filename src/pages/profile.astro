@@ -3,14 +3,8 @@ import ProfileLayout from '../components/ProfileLayout.astro';
 ---
 
 <ProfileLayout>
-	<div class="relative z-10 w-full max-w-md">
-		<div class="flex justify-center mb-8">
-			<a href="/" aria-label="Go to homepage">
-				<img src="/logo-opawey.png" alt="Opawey" class="h-16 w-auto object-contain" />
-			</a>
-		</div>
-
-		<div class="bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10">
+	<div class="relative z-10 w-full flex-1 min-h-0 flex flex-col">
+		<div class="flex-1 min-h-0 flex flex-col bg-white rounded-3xl border border-neutral-200 shadow-xl shadow-neutral-200/60 p-8 lg:p-10 overflow-auto">
 			<div id="profile-loading" class="text-center py-8 text-neutral-500 text-sm min-h-[120px]"></div>
 
 			<div id="profile-content" class="hidden">
