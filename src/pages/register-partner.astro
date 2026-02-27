@@ -454,7 +454,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
 	import { auth, db } from '../lib/firebase';
 	import { createUserWithEmailAndPassword } from 'firebase/auth';
-	import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 	/* ── Type metadata ── */
 	const TYPE_META: Record<string, { label: string; color: string; icon: string }> = {
@@ -629,22 +629,22 @@ import Layout from '../layouts/Layout.astro';
 			// 1. Create Firebase Auth account
 			const { user } = await createUserWithEmailAndPassword(auth, authEmail, password);
 
-			// 2. Save to users collection
-			await setDoc(doc(db, 'users', user.uid), {
+			// 2. Build partners document
+			//    type field: hotel | agency | driver
+			const TYPE_MAP: Record<string, string> = {
+				hotel:  'hotel',
+				agency: 'agency',
+				driver: 'driver',
+			};
+
+			const partnerData: Record<string, unknown> = {
 				uid:         user.uid,
 				email:       authEmail,
 				displayName,
+				type:        TYPE_MAP[type],
+				status:      'pending',
 				provider:    'email',
-				type:        'partner_pending',
-				partnerType: type,
 				createdAt:   serverTimestamp(),
-				lastLoginAt: serverTimestamp(),
-			});
-
-			// 3. Build partner-specific payload
-			const partnerData: Record<string, unknown> = {
-				uid: user.uid, email: authEmail, displayName,
-				partnerType: type, status: 'pending', createdAt: serverTimestamp(),
 			};
 
 			if (type === 'hotel') {
@@ -681,10 +681,10 @@ import Layout from '../layouts/Layout.astro';
 				partnerData.carTypes       = carTypes;
 			}
 
-			// 4. Save to partnerApplications collection
-			await addDoc(collection(db, 'partnerApplications'), partnerData);
+			// 3. Save to partners collection (keyed by uid)
+			await setDoc(doc(db, 'partners', user.uid), partnerData);
 
-			// 5. Redirect
+			// 4. Redirect
 			window.location.href = '/';
 
 		} catch (err: unknown) {
