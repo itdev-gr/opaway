@@ -5,6 +5,7 @@ service cloud.firestore {
     // Helper: check if the requesting user is an admin
     function isAdmin() {
       return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.type == 'admin';
     }
 

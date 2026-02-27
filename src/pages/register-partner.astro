@@ -453,7 +453,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
 	import { auth, db } from '../lib/firebase';
-	import { createUserWithEmailAndPassword } from 'firebase/auth';
+	import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 	/* ── Type metadata ── */
@@ -629,7 +629,10 @@ import Layout from '../layouts/Layout.astro';
 			// 1. Create Firebase Auth account
 			const { user } = await createUserWithEmailAndPassword(auth, authEmail, password);
 
-			// 2. Build partners document
+			// 2. Force token propagation so Firestore rules can verify the uid
+			await user.getIdToken(true);
+
+			// 3. Build partners document
 			//    type field: hotel | agency | driver
 			const TYPE_MAP: Record<string, string> = {
 				hotel:  'hotel',
@@ -681,11 +684,32 @@ import Layout from '../layouts/Layout.astro';
 				partnerData.carTypes       = carTypes;
 			}
 
-			// 3. Save to partners collection (keyed by uid)
+			// 4. Save to partners collection (keyed by uid)
 			await setDoc(doc(db, 'partners', user.uid), partnerData);
 
-			// 4. Redirect
-			window.location.href = '/';
+			// 5. Sign out immediately so the partner is NOT shown as logged in
+			await signOut(auth);
+
+			// 6. Replace card with success state
+			const card = document.querySelector('.bg-white.rounded-3xl') as HTMLElement;
+			if (card) {
+				card.innerHTML = `
+					<div class="flex flex-col items-center text-center py-8 gap-5">
+						<div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+							<svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<div>
+							<h2 class="text-2xl font-bold text-neutral-900 mb-2">Application Submitted!</h2>
+							<p class="text-neutral-500 text-sm leading-relaxed max-w-xs mx-auto">
+								Thank you for applying to become an Opawey partner. Our team will review your application and get back to you shortly.
+							</p>
+						</div>
+						<div class="w-full h-px bg-neutral-100"></div>
+						<a href="/" class="text-[#0C6B95] text-sm font-semibold hover:text-[#0a5c82] transition-colors">← Back to Homepage</a>
+					</div>`;
+			}
 
 		} catch (err: unknown) {
 			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
