@@ -66,5 +66,13 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ── Partner Applications ─────────────────────────────────────────────
+    // Any authenticated user can submit their own partner application.
+    // Only admins can read and manage all applications.
+    match /partnerApplications/{docId} {
+      allow create: if request.auth != null;
+      allow read, write: if isAdmin();
+    }
+
   }
 }
