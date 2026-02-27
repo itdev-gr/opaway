@@ -1,0 +1,372 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Partners" pageDescription="All registered partner accounts." activeSection="partners">
+
+	<!-- Filters -->
+	<div class="mb-5 flex flex-wrap items-center gap-3">
+		<!-- Search -->
+		<div class="relative flex-1 min-w-[200px] max-w-sm">
+			<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0118 0z" />
+				</svg>
+			</span>
+			<input
+				id="partners-search"
+				type="text"
+				placeholder="Search by name or email…"
+				class="w-full pl-9 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+			/>
+		</div>
+		<!-- Type filter -->
+		<select
+			id="partners-type-filter"
+			class="bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm cursor-pointer"
+		>
+			<option value="all">All types</option>
+			<option value="hotel">Hotels &amp; Boutiques</option>
+			<option value="agency">Travel Agencies</option>
+			<option value="driver">Drivers</option>
+		</select>
+		<!-- Status filter -->
+		<select
+			id="partners-status-filter"
+			class="bg-white border border-neutral-200 rounded-xl text-sm text-neutral-700 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm cursor-pointer"
+		>
+			<option value="all">All statuses</option>
+			<option value="pending">Pending</option>
+			<option value="approved">Approved</option>
+			<option value="rejected">Rejected</option>
+		</select>
+	</div>
+
+	<!-- Table -->
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+			<h2 class="text-base font-semibold text-neutral-800">All Partners</h2>
+			<span id="partners-count" class="text-xs text-neutral-400 font-medium"></span>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="bg-neutral-50 text-left">
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Contact / Name</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Business</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Registered</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody id="partners-tbody">
+					<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Confirmation modal -->
+	<div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+			<div id="modal-icon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+			<h3 id="modal-title" class="text-base font-bold text-neutral-900 text-center mb-1"></h3>
+			<p id="modal-body" class="text-sm text-neutral-500 text-center mb-6"></p>
+			<div class="flex gap-3">
+				<button id="modal-no"  class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50 transition-colors">Cancel</button>
+				<button id="modal-yes" class="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white transition-colors">Confirm</button>
+			</div>
+		</div>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { auth, db } from '../../lib/firebase';
+	import { collection, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+
+	/* ── Types ── */
+	interface PartnerRow {
+		uid:          string;
+		displayName:  string;
+		businessName: string;
+		email:        string;
+		type:         string;
+		status:       string;
+		createdAt:    string;
+	}
+	type ActionType = 'approve' | 'reject' | 'delete';
+
+	/* ── Helpers ── */
+	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
+		if (!ts?.toDate) return '—';
+		try { return ts.toDate().toLocaleDateString('el-GR'); } catch { return '—'; }
+	};
+
+	const typeBadge = (type: string) => {
+		const map: Record<string, { cls: string; label: string }> = {
+			hotel:  { cls: 'bg-sky-50 text-sky-700 border-sky-200',       label: 'Hotel'   },
+			agency: { cls: 'bg-violet-50 text-violet-700 border-violet-200', label: 'Agency' },
+			driver: { cls: 'bg-neutral-50 text-neutral-600 border-neutral-200', label: 'Driver' },
+		};
+		const { cls, label } = map[type] ?? { cls: 'bg-neutral-50 text-neutral-600 border-neutral-200', label: type };
+		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls}">${label}</span>`;
+	};
+
+	const statusBadge = (status: string) => {
+		const map: Record<string, string> = {
+			pending:  'bg-amber-50 text-amber-700 border-amber-200',
+			approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+			rejected: 'bg-red-50 text-red-600 border-red-200',
+		};
+		const cls = map[status] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${status}</span>`;
+	};
+
+	/* ── Action dropdown per partner ── */
+	const actionDropdown = (uid: string, status: string) => {
+		const approveItem = status !== 'approved'
+			? `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
+					data-uid="${uid}" data-action="approve">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+					Approve
+				</button>` : '';
+
+		const rejectItem = status !== 'rejected'
+			? `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+					data-uid="${uid}" data-action="reject">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+					Reject
+				</button>` : '';
+
+		return `
+			<div class="relative flex justify-end" id="dd-wrap-${uid}">
+				<button class="dd-trigger flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 text-xs font-medium transition-colors shadow-sm"
+					data-uid="${uid}" type="button">
+					Actions
+					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				<div class="dd-menu absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl border border-neutral-200 shadow-lg z-20 hidden overflow-hidden py-1" id="dd-menu-${uid}">
+					${approveItem}
+					${rejectItem}
+					${(approveItem || rejectItem) ? '<div class="border-t border-neutral-100 my-1"></div>' : ''}
+					<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+						data-uid="${uid}" data-action="delete">
+						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+						Delete
+					</button>
+				</div>
+			</div>`;
+	};
+
+	/* ── State ── */
+	let allPartners: PartnerRow[] = [];
+	let currentSearch      = '';
+	let currentTypeFilter  = 'all';
+	let currentStatusFilter = 'all';
+
+	/* ── Render ── */
+	function renderTable() {
+		const tbody   = document.getElementById('partners-tbody')!;
+		const countEl = document.getElementById('partners-count');
+
+		const filtered = allPartners.filter(p => {
+			const matchSearch = !currentSearch
+				|| p.displayName.toLowerCase().includes(currentSearch)
+				|| p.email.toLowerCase().includes(currentSearch)
+				|| p.businessName.toLowerCase().includes(currentSearch);
+			const matchType   = currentTypeFilter   === 'all' || p.type   === currentTypeFilter;
+			const matchStatus = currentStatusFilter === 'all' || p.status === currentStatusFilter;
+			return matchSearch && matchType && matchStatus;
+		});
+
+		if (countEl) countEl.textContent = `${filtered.length} of ${allPartners.length} partner${allPartners.length !== 1 ? 's' : ''}`;
+
+		if (filtered.length === 0) {
+			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partners match your filter.</td></tr>`;
+			return;
+		}
+
+		tbody.innerHTML = filtered.map(p => `
+			<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors" data-uid="${p.uid}">
+				<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${p.displayName}</td>
+				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${p.businessName}</td>
+				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${p.email}</td>
+				<td class="px-6 py-3">${typeBadge(p.type)}</td>
+				<td class="px-6 py-3" id="status-cell-${p.uid}">${statusBadge(p.status)}</td>
+				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${p.createdAt}</td>
+				<td class="px-6 py-3" id="action-cell-${p.uid}">${actionDropdown(p.uid, p.status)}</td>
+			</tr>`).join('');
+
+		attachDropdownListeners();
+	}
+
+	/* ── Dropdown logic ── */
+	let openDropdownUid: string | null = null;
+
+	function closeAllDropdowns() {
+		document.querySelectorAll('.dd-menu').forEach(m => m.classList.add('hidden'));
+		openDropdownUid = null;
+	}
+
+	function attachDropdownListeners() {
+		document.querySelectorAll<HTMLButtonElement>('.dd-trigger').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const uid  = btn.dataset.uid!;
+				const menu = document.getElementById(`dd-menu-${uid}`)!;
+				if (openDropdownUid === uid) { closeAllDropdowns(); }
+				else { closeAllDropdowns(); menu.classList.remove('hidden'); openDropdownUid = uid; }
+			});
+		});
+
+		document.querySelectorAll<HTMLButtonElement>('.dd-item').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				closeAllDropdowns();
+				const uid    = btn.dataset.uid!;
+				const action = btn.dataset.action as ActionType;
+				const partner = allPartners.find(p => p.uid === uid)!;
+				openModal(uid, partner.displayName, action);
+			});
+		});
+	}
+
+	document.addEventListener('click', closeAllDropdowns);
+
+	/* ── Load from Firestore ── */
+	async function loadPartners() {
+		const tbody = document.getElementById('partners-tbody')!;
+		try {
+			const snap = await getDocs(query(collection(db, 'partners'), orderBy('createdAt', 'desc')));
+			if (snap.empty) {
+				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partner accounts found.</td></tr>`;
+				return;
+			}
+			allPartners = snap.docs.map(d => {
+				const data = d.data() as Record<string, unknown>;
+				// Determine business name based on partner type
+				let businessName = '—';
+				if (data.type === 'hotel')  businessName = String(data.hotelName  ?? '—');
+				if (data.type === 'agency') businessName = String(data.agencyName ?? '—');
+				return {
+					uid:          d.id,
+					displayName:  String(data.displayName ?? '—'),
+					businessName,
+					email:        String(data.email  ?? '—'),
+					type:         String(data.type   ?? '—'),
+					status:       String(data.status ?? 'pending'),
+					createdAt:    fmtDate(data.createdAt as { toDate?: () => Date } | undefined),
+				};
+			});
+			renderTable();
+		} catch (e) {
+			console.error('Partners load error:', e);
+			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
+		}
+	}
+
+	/* ── Confirmation modal ── */
+	let pendingUid    = '';
+	let pendingAction: ActionType = 'approve';
+
+	const modalConfig: Record<ActionType, { title: string; body: (name: string) => string; icon: string; iconBg: string; yesCls: string }> = {
+		approve: {
+			title:  'Approve Partner',
+			body:   (n) => `Approve "${n}" as a partner? They will gain partner access.`,
+			icon:   `<svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+			iconBg: 'bg-emerald-100',
+			yesCls: 'bg-emerald-600 hover:bg-emerald-700',
+		},
+		reject: {
+			title:  'Reject Partner',
+			body:   (n) => `Reject the application from "${n}"? Their status will be set to rejected.`,
+			icon:   `<svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+			iconBg: 'bg-amber-100',
+			yesCls: 'bg-amber-500 hover:bg-amber-600',
+		},
+		delete: {
+			title:  'Delete Partner',
+			body:   (n) => `Permanently delete "${n}"? This action cannot be undone.`,
+			icon:   `<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`,
+			iconBg: 'bg-red-100',
+			yesCls: 'bg-red-600 hover:bg-red-700',
+		},
+	};
+
+	function openModal(uid: string, name: string, action: ActionType) {
+		pendingUid    = uid;
+		pendingAction = action;
+		const cfg = modalConfig[action];
+		document.getElementById('modal-icon')!.className  = `w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${cfg.iconBg}`;
+		document.getElementById('modal-icon')!.innerHTML  = cfg.icon;
+		document.getElementById('modal-title')!.textContent = cfg.title;
+		document.getElementById('modal-body')!.textContent  = cfg.body(name);
+		const yesBtn = document.getElementById('modal-yes') as HTMLButtonElement;
+		yesBtn.className = `flex-1 py-2.5 rounded-xl font-semibold text-sm text-white transition-colors ${cfg.yesCls}`;
+		yesBtn.textContent = 'Confirm';
+		yesBtn.disabled = false;
+		document.getElementById('confirm-modal')!.classList.remove('hidden');
+		document.getElementById('confirm-modal')!.classList.add('flex');
+	}
+
+	function closeModal() {
+		document.getElementById('confirm-modal')!.classList.add('hidden');
+		document.getElementById('confirm-modal')!.classList.remove('flex');
+	}
+
+	async function confirmAction() {
+		const yesBtn = document.getElementById('modal-yes') as HTMLButtonElement;
+		yesBtn.textContent = 'Processing…';
+		yesBtn.disabled = true;
+
+		try {
+			if (pendingAction === 'delete') {
+				await deleteDoc(doc(db, 'partners', pendingUid));
+				allPartners = allPartners.filter(p => p.uid !== pendingUid);
+			} else {
+				const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected';
+				await updateDoc(doc(db, 'partners', pendingUid), { status: newStatus });
+				const partner = allPartners.find(p => p.uid === pendingUid);
+				if (partner) partner.status = newStatus;
+			}
+			closeModal();
+			renderTable();
+		} catch (e) {
+			console.error('Action error:', e);
+			yesBtn.textContent = 'Error — retry';
+			yesBtn.disabled = false;
+		}
+	}
+
+	document.getElementById('modal-no')?.addEventListener('click', closeModal);
+	document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
+	document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
+		if (e.target === e.currentTarget) closeModal();
+	});
+
+	/* ── Search + filters ── */
+	document.getElementById('partners-search')?.addEventListener('input', (e) => {
+		currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		renderTable();
+	});
+	document.getElementById('partners-type-filter')?.addEventListener('change', (e) => {
+		currentTypeFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
+	document.getElementById('partners-status-filter')?.addEventListener('change', (e) => {
+		currentStatusFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
+
+	/* ── Auth guard observer ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadPartners(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>
