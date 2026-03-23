@@ -1,0 +1,402 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Settings" activeSection="settings">
+
+	<!-- Profile Information -->
+	<section id="section-profile" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8 mb-6">
+		<h2 class="text-lg font-bold text-neutral-900 mb-6 flex items-center gap-2">
+			<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+				<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+			</svg>
+			Profile Information
+		</h2>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+			<!-- Display Name -->
+			<div>
+				<label for="profile-name" class="block text-sm font-medium text-neutral-700 mb-1">Display Name</label>
+				<input
+					type="text"
+					id="profile-name"
+					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+					placeholder="Loading..."
+					disabled
+				/>
+			</div>
+
+			<!-- Email -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+				<input
+					type="email"
+					id="profile-email"
+					class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500 cursor-not-allowed"
+					readonly
+					disabled
+					placeholder="Loading..."
+				/>
+			</div>
+
+			<!-- Provider -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
+				<div id="profile-provider" class="mt-0.5">
+					<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500">Loading...</span>
+				</div>
+			</div>
+
+			<!-- Role -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 mb-1">Role</label>
+				<div class="mt-0.5">
+					<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+						<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+						Admin
+					</span>
+				</div>
+			</div>
+
+			<!-- Member Since -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 mb-1">Member Since</label>
+				<p id="profile-member-since" class="text-sm text-neutral-600 mt-0.5">Loading...</p>
+			</div>
+		</div>
+
+		<!-- Save -->
+		<div class="mt-6 flex items-center gap-3">
+			<button
+				type="button"
+				id="btn-save-profile"
+				disabled
+				class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0C6B95] text-white text-sm font-medium hover:bg-[#0a5c82] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+			>
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+				</svg>
+				Save Profile
+			</button>
+			<span id="profile-status" class="text-sm hidden"></span>
+		</div>
+	</section>
+
+	<!-- Platform Settings -->
+	<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8 mb-6">
+		<h2 class="text-lg font-bold text-neutral-900 mb-6 flex items-center gap-2">
+			<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+			</svg>
+			Platform Settings
+		</h2>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+			<!-- Commission Rate -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-sm font-medium text-neutral-700 mb-1">Commission Rate</p>
+				<p class="text-2xl font-bold text-neutral-900">20%</p>
+				<p class="text-xs text-neutral-400 mt-1">Contact development team to change</p>
+			</div>
+
+			<!-- Card On-site Fee -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-sm font-medium text-neutral-700 mb-1">Card On-site Fee</p>
+				<p class="text-2xl font-bold text-neutral-900">5%</p>
+				<p class="text-xs text-neutral-400 mt-1">Contact development team to change</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Change Password (email provider only) -->
+	<section id="section-password" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8 mb-6 hidden">
+		<h2 class="text-lg font-bold text-neutral-900 mb-6 flex items-center gap-2">
+			<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+			</svg>
+			Change Password
+		</h2>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+			<div>
+				<label for="pw-current" class="block text-sm font-medium text-neutral-700 mb-1">Current Password</label>
+				<input
+					type="password"
+					id="pw-current"
+					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+					placeholder="Enter current password"
+				/>
+			</div>
+			<div>
+				<label for="pw-new" class="block text-sm font-medium text-neutral-700 mb-1">New Password</label>
+				<input
+					type="password"
+					id="pw-new"
+					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+					placeholder="Enter new password"
+				/>
+			</div>
+			<div>
+				<label for="pw-confirm" class="block text-sm font-medium text-neutral-700 mb-1">Confirm New Password</label>
+				<input
+					type="password"
+					id="pw-confirm"
+					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+					placeholder="Confirm new password"
+				/>
+			</div>
+		</div>
+
+		<div class="mt-6 flex items-center gap-3">
+			<button
+				type="button"
+				id="btn-update-password"
+				class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0C6B95] text-white text-sm font-medium hover:bg-[#0a5c82] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+			>
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+				</svg>
+				Update Password
+			</button>
+			<span id="password-status" class="text-sm hidden"></span>
+		</div>
+	</section>
+
+	<!-- System Information -->
+	<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+		<h2 class="text-lg font-bold text-neutral-900 mb-6 flex items-center gap-2">
+			<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+			</svg>
+			System Information
+		</h2>
+
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<!-- Project ID -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Firebase Project</p>
+				<p id="sys-project-id" class="text-sm font-semibold text-neutral-900 break-all">Loading...</p>
+			</div>
+
+			<!-- Total Users -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Total Users</p>
+				<p id="sys-total-users" class="text-2xl font-bold text-neutral-900">
+					<span class="inline-block w-5 h-5 border-2 border-neutral-300 border-t-[#0C6B95] rounded-full animate-spin"></span>
+				</p>
+			</div>
+
+			<!-- Total Partners -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Total Partners</p>
+				<p id="sys-total-partners" class="text-2xl font-bold text-neutral-900">
+					<span class="inline-block w-5 h-5 border-2 border-neutral-300 border-t-[#0C6B95] rounded-full animate-spin"></span>
+				</p>
+			</div>
+
+			<!-- Total Bookings -->
+			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Total Bookings</p>
+				<p id="sys-total-bookings" class="text-2xl font-bold text-neutral-900">
+					<span class="inline-block w-5 h-5 border-2 border-neutral-300 border-t-[#0C6B95] rounded-full animate-spin"></span>
+				</p>
+			</div>
+		</div>
+	</section>
+
+</AdminLayout>
+
+<script>
+	import { auth, db } from '../../lib/firebase';
+	import { onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+	import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+
+	/* ── DOM refs ── */
+	const nameInput      = document.getElementById('profile-name') as HTMLInputElement;
+	const emailInput     = document.getElementById('profile-email') as HTMLInputElement;
+	const providerEl     = document.getElementById('profile-provider')!;
+	const memberSinceEl  = document.getElementById('profile-member-since')!;
+	const btnSave        = document.getElementById('btn-save-profile') as HTMLButtonElement;
+	const profileStatus  = document.getElementById('profile-status')!;
+
+	const sectionPw      = document.getElementById('section-password')!;
+	const pwCurrent      = document.getElementById('pw-current') as HTMLInputElement;
+	const pwNew          = document.getElementById('pw-new') as HTMLInputElement;
+	const pwConfirm      = document.getElementById('pw-confirm') as HTMLInputElement;
+	const btnPw          = document.getElementById('btn-update-password') as HTMLButtonElement;
+	const pwStatus       = document.getElementById('password-status')!;
+
+	const sysProjectId   = document.getElementById('sys-project-id')!;
+	const sysTotalUsers  = document.getElementById('sys-total-users')!;
+	const sysTotalPartners = document.getElementById('sys-total-partners')!;
+	const sysTotalBookings = document.getElementById('sys-total-bookings')!;
+
+	/* ── Helpers ── */
+	function showStatus(el: HTMLElement, msg: string, ok: boolean) {
+		el.textContent = msg;
+		el.className = `text-sm ${ok ? 'text-emerald-600' : 'text-red-600'}`;
+		el.classList.remove('hidden');
+		setTimeout(() => el.classList.add('hidden'), 4000);
+	}
+
+	function formatDate(ts: any): string {
+		if (!ts) return 'N/A';
+		const d = ts.toDate ? ts.toDate() : new Date(ts);
+		return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+	}
+
+	function providerBadge(provider: string): string {
+		const map: Record<string, { label: string; color: string }> = {
+			'google.com':   { label: 'Google',   color: 'bg-blue-50 text-blue-700 border-blue-200' },
+			'password':     { label: 'Email',    color: 'bg-amber-50 text-amber-700 border-amber-200' },
+			'facebook.com': { label: 'Facebook', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+		};
+		const info = map[provider] || { label: provider, color: 'bg-neutral-100 text-neutral-600 border-neutral-200' };
+		return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border ${info.color}">${info.label}</span>`;
+	}
+
+	/* ── Wait for AdminLayout auth guard ── */
+	const authCheck = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authCheck?.classList.contains('hidden')) {
+			observer.disconnect();
+			init();
+		}
+	});
+	if (authCheck) {
+		if (authCheck.classList.contains('hidden')) {
+			init();
+		} else {
+			observer.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
+
+	/* ── Init ── */
+	async function init() {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		// Load profile data
+		const userDoc = await getDoc(doc(db, 'users', user.uid));
+		const data = userDoc.exists() ? userDoc.data() : null;
+
+		// Fill fields
+		nameInput.value = data?.displayName || user.displayName || '';
+		nameInput.disabled = false;
+		nameInput.placeholder = 'Enter display name';
+		emailInput.value = user.email || '';
+
+		const provider = data?.provider || user.providerData[0]?.providerId || 'unknown';
+		providerEl.innerHTML = providerBadge(provider);
+		memberSinceEl.textContent = formatDate(data?.createdAt);
+
+		btnSave.disabled = false;
+
+		// Show password section for email provider
+		if (provider === 'password') {
+			sectionPw.classList.remove('hidden');
+		}
+
+		// System info
+		sysProjectId.textContent = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'N/A';
+
+		// Fetch counts in parallel
+		loadSystemCounts();
+	}
+
+	async function loadSystemCounts() {
+		try {
+			const [usersSnap, partnersSnap, transfersSnap, toursSnap, experiencesSnap] = await Promise.all([
+				getDocs(collection(db, 'users')),
+				getDocs(collection(db, 'partners')),
+				getDocs(collection(db, 'transfers')),
+				getDocs(collection(db, 'tours')),
+				getDocs(collection(db, 'experiences')),
+			]);
+
+			sysTotalUsers.textContent = usersSnap.size.toString();
+			sysTotalPartners.textContent = partnersSnap.size.toString();
+			sysTotalBookings.textContent = (transfersSnap.size + toursSnap.size + experiencesSnap.size).toString();
+		} catch (err) {
+			console.error('Failed to load system counts:', err);
+			sysTotalUsers.textContent = '—';
+			sysTotalPartners.textContent = '—';
+			sysTotalBookings.textContent = '—';
+		}
+	}
+
+	/* ── Save Profile ── */
+	btnSave.addEventListener('click', async () => {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		const newName = nameInput.value.trim();
+		if (!newName) {
+			showStatus(profileStatus, 'Display name cannot be empty.', false);
+			return;
+		}
+
+		btnSave.disabled = true;
+		try {
+			await Promise.all([
+				updateProfile(user, { displayName: newName }),
+				updateDoc(doc(db, 'users', user.uid), { displayName: newName }),
+			]);
+			showStatus(profileStatus, 'Profile updated successfully.', true);
+
+			// Update sidebar name
+			const sidebarName = document.getElementById('admin-user-name');
+			if (sidebarName) sidebarName.textContent = newName;
+		} catch (err: any) {
+			showStatus(profileStatus, err.message || 'Failed to update profile.', false);
+		} finally {
+			btnSave.disabled = false;
+		}
+	});
+
+	/* ── Update Password ── */
+	btnPw.addEventListener('click', async () => {
+		const user = auth.currentUser;
+		if (!user || !user.email) return;
+
+		const current = pwCurrent.value;
+		const next = pwNew.value;
+		const confirm = pwConfirm.value;
+
+		if (!current || !next || !confirm) {
+			showStatus(pwStatus, 'All password fields are required.', false);
+			return;
+		}
+		if (next.length < 6) {
+			showStatus(pwStatus, 'New password must be at least 6 characters.', false);
+			return;
+		}
+		if (next !== confirm) {
+			showStatus(pwStatus, 'New passwords do not match.', false);
+			return;
+		}
+
+		btnPw.disabled = true;
+		try {
+			const credential = EmailAuthProvider.credential(user.email, current);
+			await reauthenticateWithCredential(user, credential);
+			await updatePassword(user, next);
+
+			pwCurrent.value = '';
+			pwNew.value = '';
+			pwConfirm.value = '';
+			showStatus(pwStatus, 'Password updated successfully.', true);
+		} catch (err: any) {
+			const msg = err.code === 'auth/wrong-password'
+				? 'Current password is incorrect.'
+				: err.code === 'auth/too-many-requests'
+				? 'Too many attempts. Try again later.'
+				: err.message || 'Failed to update password.';
+			showStatus(pwStatus, msg, false);
+		} finally {
+			btnPw.disabled = false;
+		}
+	});
+</script>

@@ -5,15 +5,358 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 <ProfileLayout>
 	<ProfileContent label="Account" title="Settings" description="Manage your account preferences.">
-		<p class="text-neutral-500 text-sm">Settings options will appear here.</p>
+
+		<!-- Profile Information -->
+		<section class="mb-10">
+			<h2 class="text-xl font-semibold text-neutral-900 mb-4">Profile Information</h2>
+			<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
+				<div>
+					<label for="displayName" class="block text-sm font-medium text-neutral-700 mb-1">Display Name</label>
+					<input
+						type="text"
+						id="displayName"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors"
+						placeholder="Your name"
+					/>
+				</div>
+				<div>
+					<label for="email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+					<input
+						type="email"
+						id="email"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-500 cursor-not-allowed"
+						readonly
+					/>
+				</div>
+				<div class="flex flex-wrap items-center gap-4">
+					<div>
+						<span class="block text-sm font-medium text-neutral-700 mb-1">Provider</span>
+						<span id="providerBadge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600"></span>
+					</div>
+					<div>
+						<span class="block text-sm font-medium text-neutral-700 mb-1">Member since</span>
+						<span id="memberSince" class="text-sm text-neutral-600">—</span>
+					</div>
+				</div>
+				<div id="profileMsg" class="hidden text-sm rounded-lg px-4 py-2"></div>
+				<div>
+					<button
+						type="button"
+						id="saveProfileBtn"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-medium rounded-xl hover:bg-[#0a5c82] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Save Changes
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Change Password (email provider only) -->
+		<section id="passwordSection" class="mb-10 hidden">
+			<h2 class="text-xl font-semibold text-neutral-900 mb-4">Change Password</h2>
+			<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
+				<div>
+					<label for="currentPassword" class="block text-sm font-medium text-neutral-700 mb-1">Current Password</label>
+					<input
+						type="password"
+						id="currentPassword"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors"
+						placeholder="Enter current password"
+					/>
+				</div>
+				<div>
+					<label for="newPassword" class="block text-sm font-medium text-neutral-700 mb-1">New Password</label>
+					<input
+						type="password"
+						id="newPassword"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors"
+						placeholder="Enter new password"
+					/>
+					<div id="strengthBar" class="mt-2 h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+						<div id="strengthFill" class="h-full rounded-full transition-all duration-300" style="width:0%"></div>
+					</div>
+					<p id="strengthLabel" class="text-xs mt-1 text-neutral-400"></p>
+				</div>
+				<div>
+					<label for="confirmPassword" class="block text-sm font-medium text-neutral-700 mb-1">Confirm New Password</label>
+					<input
+						type="password"
+						id="confirmPassword"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors"
+						placeholder="Confirm new password"
+					/>
+				</div>
+				<div id="passwordMsg" class="hidden text-sm rounded-lg px-4 py-2"></div>
+				<div>
+					<button
+						type="button"
+						id="updatePasswordBtn"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-medium rounded-xl hover:bg-[#0a5c82] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Update Password
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Danger Zone -->
+		<section class="mb-10">
+			<h2 class="text-xl font-semibold text-red-600 mb-4">Danger Zone</h2>
+			<div class="bg-white rounded-2xl border border-red-200 shadow-sm p-6">
+				<p class="text-sm text-neutral-600 mb-4">Once you delete your account, there is no going back. All your data will be permanently removed.</p>
+				<button
+					type="button"
+					id="deleteAccountBtn"
+					class="px-6 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
+				>
+					Delete Account
+				</button>
+			</div>
+		</section>
+
+		<!-- Delete Confirmation Modal -->
+		<div id="deleteModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50">
+			<div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+				<h3 class="text-lg font-bold text-neutral-900 mb-2">Delete your account?</h3>
+				<p class="text-sm text-neutral-600 mb-6">This action is irreversible. Your profile, data, and all associated information will be permanently deleted.</p>
+				<div id="deleteModalMsg" class="hidden text-sm rounded-lg px-4 py-2 mb-4"></div>
+				<div class="flex items-center gap-3 justify-end">
+					<button
+						type="button"
+						id="cancelDeleteBtn"
+						class="px-5 py-2.5 text-sm font-medium text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 transition-colors"
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						id="confirmDeleteBtn"
+						class="px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Yes, delete my account
+					</button>
+				</div>
+			</div>
+		</div>
+
 	</ProfileContent>
 </ProfileLayout>
 
 <script>
-	import { auth } from '../../lib/firebase';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { auth, db } from '../../lib/firebase';
+	import { onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser } from 'firebase/auth';
+	import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-	onAuthStateChanged(auth, (user) => {
-		if (!user) window.location.href = '/login';
+	// Elements
+	const displayNameInput = document.getElementById('displayName') as HTMLInputElement;
+	const emailInput = document.getElementById('email') as HTMLInputElement;
+	const providerBadge = document.getElementById('providerBadge')!;
+	const memberSince = document.getElementById('memberSince')!;
+	const profileMsg = document.getElementById('profileMsg')!;
+	const saveProfileBtn = document.getElementById('saveProfileBtn') as HTMLButtonElement;
+
+	const passwordSection = document.getElementById('passwordSection')!;
+	const currentPasswordInput = document.getElementById('currentPassword') as HTMLInputElement;
+	const newPasswordInput = document.getElementById('newPassword') as HTMLInputElement;
+	const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+	const strengthFill = document.getElementById('strengthFill')!;
+	const strengthLabel = document.getElementById('strengthLabel')!;
+	const passwordMsg = document.getElementById('passwordMsg')!;
+	const updatePasswordBtn = document.getElementById('updatePasswordBtn') as HTMLButtonElement;
+
+	const deleteAccountBtn = document.getElementById('deleteAccountBtn')!;
+	const deleteModal = document.getElementById('deleteModal')!;
+	const cancelDeleteBtn = document.getElementById('cancelDeleteBtn')!;
+	const confirmDeleteBtn = document.getElementById('confirmDeleteBtn') as HTMLButtonElement;
+	const deleteModalMsg = document.getElementById('deleteModalMsg')!;
+
+	let currentProvider = '';
+
+	// Helpers
+	function showMsg(el: HTMLElement, text: string, type: 'success' | 'error') {
+		el.textContent = text;
+		el.className = `text-sm rounded-lg px-4 py-2 ${type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`;
+		el.classList.remove('hidden');
+	}
+
+	function hideMsg(el: HTMLElement) {
+		el.classList.add('hidden');
+	}
+
+	// Password strength
+	function getStrength(pw: string): { pct: number; label: string; color: string } {
+		let score = 0;
+		if (pw.length >= 6) score++;
+		if (pw.length >= 10) score++;
+		if (/[A-Z]/.test(pw)) score++;
+		if (/[0-9]/.test(pw)) score++;
+		if (/[^A-Za-z0-9]/.test(pw)) score++;
+		if (score <= 1) return { pct: 20, label: 'Weak', color: 'bg-red-500' };
+		if (score <= 2) return { pct: 40, label: 'Fair', color: 'bg-orange-400' };
+		if (score <= 3) return { pct: 60, label: 'Good', color: 'bg-yellow-400' };
+		if (score <= 4) return { pct: 80, label: 'Strong', color: 'bg-green-400' };
+		return { pct: 100, label: 'Very strong', color: 'bg-green-600' };
+	}
+
+	newPasswordInput?.addEventListener('input', () => {
+		const val = newPasswordInput.value;
+		if (!val) {
+			strengthFill.style.width = '0%';
+			strengthFill.className = 'h-full rounded-full transition-all duration-300';
+			strengthLabel.textContent = '';
+			return;
+		}
+		const s = getStrength(val);
+		strengthFill.style.width = `${s.pct}%`;
+		strengthFill.className = `h-full rounded-full transition-all duration-300 ${s.color}`;
+		strengthLabel.textContent = s.label;
+		strengthLabel.className = `text-xs mt-1 ${s.pct <= 40 ? 'text-red-500' : s.pct <= 60 ? 'text-yellow-600' : 'text-green-600'}`;
+	});
+
+	// Auth state
+	onAuthStateChanged(auth, async (user) => {
+		if (!user) {
+			window.location.href = '/login';
+			return;
+		}
+
+		emailInput.value = user.email || '';
+
+		// Load Firestore profile
+		try {
+			const snap = await getDoc(doc(db, 'users', user.uid));
+			if (snap.exists()) {
+				const data = snap.data();
+				displayNameInput.value = data.displayName || user.displayName || '';
+				currentProvider = data.provider || 'email';
+
+				// Provider badge
+				if (currentProvider === 'google') {
+					providerBadge.textContent = 'Google';
+					providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700';
+				} else {
+					providerBadge.textContent = 'Email';
+					providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600';
+				}
+
+				// Member since
+				if (data.createdAt) {
+					const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+					memberSince.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
+				}
+
+				// Show password section only for email provider
+				if (currentProvider === 'email') {
+					passwordSection.classList.remove('hidden');
+				}
+			}
+		} catch (err) {
+			console.error('Failed to load profile:', err);
+		}
+	});
+
+	// Save profile
+	saveProfileBtn?.addEventListener('click', async () => {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		const newName = displayNameInput.value.trim();
+		if (!newName) {
+			showMsg(profileMsg, 'Display name cannot be empty.', 'error');
+			return;
+		}
+
+		saveProfileBtn.disabled = true;
+		hideMsg(profileMsg);
+
+		try {
+			await updateProfile(user, { displayName: newName });
+			await updateDoc(doc(db, 'users', user.uid), { displayName: newName });
+			showMsg(profileMsg, 'Profile updated successfully.', 'success');
+		} catch (err: any) {
+			showMsg(profileMsg, err.message || 'Failed to update profile.', 'error');
+		} finally {
+			saveProfileBtn.disabled = false;
+		}
+	});
+
+	// Update password
+	updatePasswordBtn?.addEventListener('click', async () => {
+		const user = auth.currentUser;
+		if (!user || !user.email) return;
+
+		const current = currentPasswordInput.value;
+		const newPw = newPasswordInput.value;
+		const confirm = confirmPasswordInput.value;
+
+		hideMsg(passwordMsg);
+
+		if (!current) {
+			showMsg(passwordMsg, 'Please enter your current password.', 'error');
+			return;
+		}
+		if (newPw.length < 6) {
+			showMsg(passwordMsg, 'New password must be at least 6 characters.', 'error');
+			return;
+		}
+		if (newPw !== confirm) {
+			showMsg(passwordMsg, 'Passwords do not match.', 'error');
+			return;
+		}
+
+		updatePasswordBtn.disabled = true;
+
+		try {
+			const credential = EmailAuthProvider.credential(user.email, current);
+			await reauthenticateWithCredential(user, credential);
+			await updatePassword(user, newPw);
+			showMsg(passwordMsg, 'Password updated successfully.', 'success');
+			currentPasswordInput.value = '';
+			newPasswordInput.value = '';
+			confirmPasswordInput.value = '';
+			strengthFill.style.width = '0%';
+			strengthLabel.textContent = '';
+		} catch (err: any) {
+			if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+				showMsg(passwordMsg, 'Current password is incorrect.', 'error');
+			} else {
+				showMsg(passwordMsg, err.message || 'Failed to update password.', 'error');
+			}
+		} finally {
+			updatePasswordBtn.disabled = false;
+		}
+	});
+
+	// Delete account
+	deleteAccountBtn?.addEventListener('click', () => {
+		deleteModal.classList.remove('hidden');
+		deleteModal.classList.add('flex');
+		hideMsg(deleteModalMsg);
+	});
+
+	cancelDeleteBtn?.addEventListener('click', () => {
+		deleteModal.classList.add('hidden');
+		deleteModal.classList.remove('flex');
+	});
+
+	confirmDeleteBtn?.addEventListener('click', async () => {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		confirmDeleteBtn.disabled = true;
+		hideMsg(deleteModalMsg);
+
+		try {
+			await deleteDoc(doc(db, 'users', user.uid));
+			await deleteUser(user);
+			window.location.href = '/';
+		} catch (err: any) {
+			if (err.code === 'auth/requires-recent-login') {
+				showMsg(deleteModalMsg, 'For security, please log out and log back in, then try again.', 'error');
+			} else {
+				showMsg(deleteModalMsg, err.message || 'Failed to delete account.', 'error');
+			}
+			confirmDeleteBtn.disabled = false;
+		}
 	});
 </script>

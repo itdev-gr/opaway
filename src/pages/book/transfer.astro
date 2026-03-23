@@ -3,32 +3,32 @@ import Layout from '../../layouts/Layout.astro';
 
 const vehicles = [
 	{
-		title: 'Business Class',
+		title: 'Sedan',
 		models: 'Mercedes-Benz E-Class, or similar.',
 		image: '/car.avif',
 		features: [
-			'Fits up to 4 people',
-			'Fits 2 carry-on bags, or 2 standard check-in, or 1 extra large check-in bag',
+			'Fits up to 3 people',
+			'1 big + 1 small luggage per person',
 			'Available for airport transfers & city tours',
 		],
 	},
 	{
-		title: 'Premium Van',
-		models: 'Mercedes Vito Tourer PRO Extra Long, or similar.',
+		title: 'Van',
+		models: 'Mercedes Vito Tourer, or similar.',
 		image: '/mini_van.avif',
 		features: [
 			'Fits up to 8 people',
-			'Fits 6 carry-on bags, or 6 standard check-in bags',
+			'1 big + 1 small luggage per person',
 			'Ideal for group transfers & private tours',
 		],
 	},
 	{
-		title: 'Group Class',
+		title: 'Minibus (or two Vans)',
 		models: 'Mercedes Sprinter, or similar.',
 		image: '/van.avif',
 		features: [
-			'Fits up to 14 people',
-			'Fits 10 carry-on bags, or large luggage loads',
+			'Fits up to 18 people',
+			'1 big + 1 small luggage per person',
 			'Perfect for large groups & corporate events',
 		],
 	},
@@ -46,6 +46,12 @@ const vehicles = [
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
 					</svg>
 					Book a Transfer
+				</a>
+				<a href="/book/hourly" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					Rent per Hour
 				</a>
 				<a href="/book/tour" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -69,7 +75,7 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
@@ -80,7 +86,7 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
@@ -92,7 +98,7 @@ const vehicles = [
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
 								</span>
-								<input type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								<input id="tf-date" type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
 						</div>
 						<div>
@@ -101,7 +107,7 @@ const vehicles = [
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 								</span>
-								<input type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								<input id="tf-time" type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
 						</div>
 					</div>
@@ -126,7 +132,7 @@ const vehicles = [
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
 								</span>
-								<input type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								<input id="tf-return-date" type="text" placeholder="Select date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
 						</div>
 						<div>
@@ -135,7 +141,7 @@ const vehicles = [
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 								</span>
-								<input type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								<input id="tf-return-time" type="text" placeholder="Select time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
 						</div>
 					</div>
@@ -154,7 +160,7 @@ const vehicles = [
 					</div>
 
 					<!-- See prices -->
-					<button type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
+					<button id="see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 						See prices
 					</button>
@@ -315,6 +321,26 @@ const vehicles = [
 		if (returnBtn.lastChild?.nodeType === Node.TEXT_NODE) {
 			returnBtn.lastChild.textContent = returnOpen ? ' Remove Return' : ' Add Return';
 		}
+	});
+
+	// See prices navigation
+	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
+		const from = (document.getElementById('tf-from') as HTMLInputElement)?.value.trim();
+		const to = (document.getElementById('tf-to') as HTMLInputElement)?.value.trim();
+		const date = (document.getElementById('tf-date') as HTMLInputElement)?.value.trim();
+		const time = (document.getElementById('tf-time') as HTMLInputElement)?.value.trim();
+		const passengers = document.getElementById('passenger-count')?.textContent?.trim() || '2';
+		const returnDate = (document.getElementById('tf-return-date') as HTMLInputElement)?.value.trim() || '';
+		const returnTime = (document.getElementById('tf-return-time') as HTMLInputElement)?.value.trim() || '';
+
+		if (!from || !to) {
+			alert('Please fill in both the pickup and destination locations.');
+			return;
+		}
+
+		const params = new URLSearchParams({ from, to, date: date || '', time: time || '', passengers });
+		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
+		window.location.href = `/book/transfer/results?${params.toString()}`;
 	});
 </script>
 

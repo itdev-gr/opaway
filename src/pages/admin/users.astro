@@ -30,12 +30,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	</div>
 
 	<!-- Table -->
-	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
 			<h2 class="text-base font-semibold text-neutral-800">All Users</h2>
 			<span id="users-count" class="text-xs text-neutral-400 font-medium"></span>
 		</div>
-		<div class="overflow-x-auto">
+		<div class="overflow-x-auto overflow-y-visible">
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="bg-neutral-50 text-left">
@@ -121,7 +121,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
 					</svg>
 				</button>
-				<div class="dd-menu absolute right-0 top-full mt-1.5 w-48 bg-white rounded-xl border border-neutral-200 shadow-lg z-20 hidden overflow-hidden py-1" id="dd-menu-${uid}">
+				<div class="dd-menu fixed w-48 bg-white rounded-xl border border-neutral-200 shadow-lg z-[100] hidden overflow-hidden py-1" id="dd-menu-${uid}">
 					${roleItem}
 					<div class="border-t border-neutral-100 my-1"></div>
 					<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -189,6 +189,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					closeAllDropdowns();
 				} else {
 					closeAllDropdowns();
+					const rect = btn.getBoundingClientRect();
+					menu.style.top = `${rect.bottom + 6}px`;
+					menu.style.left = `${rect.right - 192}px`;
 					menu.classList.remove('hidden');
 					openDropdownUid = uid;
 				}

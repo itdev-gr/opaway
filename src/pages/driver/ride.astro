@@ -1,0 +1,519 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Ride Details" activeSection="">
+
+	<!-- Back button -->
+	<button
+		id="back-btn"
+		type="button"
+		class="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 transition-colors mb-6"
+	>
+		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+		</svg>
+		Back
+	</button>
+
+	<!-- Loading state -->
+	<div id="ride-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Error state -->
+	<div id="ride-error" class="hidden text-center py-20">
+		<p class="text-neutral-500 text-sm">Ride not found or you don't have access.</p>
+		<a href="/driver/upcoming" class="mt-4 inline-block text-[#0C6B95] text-sm font-medium hover:underline">Go to Upcoming Rides</a>
+	</div>
+
+	<!-- Ride content -->
+	<div id="ride-content" class="hidden space-y-6 max-w-3xl">
+
+		<!-- 1. Lead Passenger -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Lead Passenger</p>
+				<p id="r-passenger-name" class="text-base font-semibold text-neutral-900">—</p>
+				<div class="flex items-center gap-2 mt-2 text-sm text-neutral-500">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+					</svg>
+					<span class="text-neutral-400 italic">Contact the company for passenger details</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- 2. Date/Time of Service -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Date / Time of Service</p>
+				<div class="flex items-center gap-4">
+					<div class="flex items-center gap-2 text-sm text-neutral-800">
+						<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+						</svg>
+						<span id="r-date" class="font-medium">—</span>
+					</div>
+					<div class="flex items-center gap-2 text-sm text-neutral-800">
+						<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+						<span id="r-time" class="font-medium">—</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 3. Customer Comments -->
+		<div id="section-comments" class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Customer Comments</p>
+				<p id="r-driver-notes" class="text-sm text-neutral-700 whitespace-pre-wrap"></p>
+				<p id="r-sign-name-comment" class="text-sm text-neutral-500 mt-2 hidden">
+					Sign name: <span id="r-sign-name-val" class="font-medium text-neutral-800"></span>
+				</p>
+			</div>
+		</div>
+
+		<!-- 4. Welcome Tag (Meet & Greet) -->
+		<div id="section-welcome" class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Welcome Tag (Meet &amp; Greet)</p>
+				<div class="flex items-center gap-3">
+					<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-[#0C6B95]/10 text-[#0C6B95]">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+						</svg>
+					</div>
+					<span id="r-sign-name" class="text-base font-semibold text-neutral-900"></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- 5. Route -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Route</p>
+
+				<!-- From -->
+				<div class="flex items-start gap-3 mb-3">
+					<div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 shrink-0 mt-0.5">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<circle cx="12" cy="12" r="3" />
+						</svg>
+					</div>
+					<div>
+						<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">From</p>
+						<p id="r-from" class="text-sm font-medium text-neutral-900">—</p>
+					</div>
+				</div>
+
+				<!-- Dotted line -->
+				<div class="ml-4 border-l-2 border-dashed border-neutral-200 h-4"></div>
+
+				<!-- To -->
+				<div class="flex items-start gap-3 mt-3">
+					<div class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-500 shrink-0 mt-0.5">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+						</svg>
+					</div>
+					<div>
+						<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">To</p>
+						<p id="r-to" class="text-sm font-medium text-neutral-900">—</p>
+					</div>
+				</div>
+
+				<!-- Info badges -->
+				<div id="r-route-badges" class="flex flex-wrap items-center gap-2 mt-4"></div>
+			</div>
+		</div>
+
+		<!-- 6. Vehicle Class -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Vehicle Class</p>
+				<div class="flex items-center gap-3">
+					<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-100 text-neutral-500">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M8 17h.01M16 17h.01M3 11l1.5-5A2 2 0 016.4 4h11.2a2 2 0 011.9 1.4L21 11M3 11v6a1 1 0 001 1h1m16-7v6a1 1 0 01-1 1h-1M3 11h18" />
+						</svg>
+					</div>
+					<div>
+						<p id="r-vehicle" class="text-sm font-semibold text-neutral-900">—</p>
+						<p id="r-vehicle-info" class="text-xs text-neutral-400 mt-0.5"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 7. Ride Status Button (upcoming only) -->
+		<div id="section-status-btn" class="hidden">
+			<button
+				id="r-status-btn"
+				type="button"
+				class="w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-sm"
+			></button>
+		</div>
+
+		<!-- 8. Payout Section -->
+		<div id="section-payout" class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Payout</p>
+
+				<!-- Payment badge -->
+				<div class="mb-4">
+					<span id="r-payment-badge" class="inline-block px-3 py-1 text-xs font-bold uppercase rounded-full"></span>
+				</div>
+
+				<!-- Breakdown lines -->
+				<div id="r-payout-breakdown" class="space-y-2 text-sm"></div>
+
+				<!-- Large payout display -->
+				<div class="mt-5 pt-5 border-t border-neutral-100 text-center">
+					<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Your Net Payout</p>
+					<p id="r-payout-amount" class="text-3xl font-bold text-emerald-600"></p>
+					<p class="text-xs text-neutral-400 mt-1">This is your net payout.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- 9. Invoice Section (cash/card-onsite only) -->
+		<div id="section-invoice" class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden hidden">
+			<div class="px-6 py-4">
+				<p class="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Invoice Details</p>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</label>
+						<input id="inv-name" type="text" placeholder="Full name"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Country</label>
+						<input id="inv-country" type="text" placeholder="Country"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Address</label>
+						<input id="inv-address" type="text" placeholder="Street address"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">ZIP Code</label>
+						<input id="inv-zip" type="text" placeholder="ZIP / Postal code"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<button
+					type="button"
+					class="mt-4 w-full py-2.5 rounded-xl border-2 border-dashed border-neutral-300 text-sm font-medium text-neutral-500 hover:border-[#0C6B95] hover:text-[#0C6B95] transition-colors"
+				>
+					<svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+					</svg>
+					Upload Invoice
+				</button>
+			</div>
+		</div>
+
+		<!-- 10. Available ride — Accept / Reject -->
+		<div id="section-available-actions" class="hidden flex gap-3">
+			<button
+				id="r-reject-btn"
+				type="button"
+				class="flex-1 py-3.5 rounded-2xl bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold text-sm transition-colors"
+			>
+				Reject
+			</button>
+			<button
+				id="r-accept-btn"
+				type="button"
+				class="flex-1 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-colors shadow-sm"
+			>
+				Accept Ride
+			</button>
+		</div>
+
+	</div>
+
+</DriverLayout>
+
+<script>
+	import { auth, db } from '../../lib/firebase';
+	import { onAuthStateChanged } from 'firebase/auth';
+	import { doc, getDoc, updateDoc } from 'firebase/firestore';
+
+	/* ── Query params ── */
+	const params = new URLSearchParams(window.location.search);
+	const docId = params.get('id');
+	const collectionName = params.get('type') || 'transfers'; // transfers | tours | experiences
+
+	/* ── DOM refs ── */
+	const loadingEl    = document.getElementById('ride-loading')!;
+	const errorEl      = document.getElementById('ride-error')!;
+	const contentEl    = document.getElementById('ride-content')!;
+	const backBtn      = document.getElementById('back-btn')!;
+
+	/* ── Back button ── */
+	backBtn.addEventListener('click', () => {
+		if (window.history.length > 1) { window.history.back(); }
+		else { window.location.href = '/driver/upcoming'; }
+	});
+
+	/* ── Guard: wait for auth then load ── */
+	onAuthStateChanged(auth, async (user) => {
+		if (!user || !docId) return;
+
+		try {
+			const snap = await getDoc(doc(db, collectionName, docId));
+			if (!snap.exists()) { showError(); return; }
+
+			const d = snap.data() as Record<string, any>;
+
+			/* Also load partner doc for driver's name */
+			let driverName = '';
+			try {
+				const partnerSnap = await getDoc(doc(db, 'partners', user.uid));
+				if (partnerSnap.exists()) {
+					const pd = partnerSnap.data();
+					driverName = (pd.fullName as string) || (pd.companyName as string) || '';
+				}
+			} catch { /* ignore */ }
+
+			const isAvailable = !d.driverUid;
+
+			render(d, isAvailable, user.uid, driverName);
+		} catch (e) {
+			console.error('Error loading ride:', e);
+			showError();
+		}
+	});
+
+	function showError() {
+		loadingEl.classList.add('hidden');
+		errorEl.classList.remove('hidden');
+	}
+
+	/* ── Render ── */
+	function render(d: Record<string, any>, isAvailable: boolean, currentUid: string, driverName: string) {
+		loadingEl.classList.add('hidden');
+		contentEl.classList.remove('hidden');
+
+		/* 1. Lead Passenger */
+		const nameEl = document.getElementById('r-passenger-name')!;
+		if (isAvailable) {
+			nameEl.textContent = 'Passenger details hidden';
+			nameEl.classList.add('text-neutral-400', 'italic');
+		} else {
+			nameEl.textContent = [d.firstName, d.lastName].filter(Boolean).join(' ') || '—';
+		}
+
+		/* 2. Date / Time */
+		document.getElementById('r-date')!.textContent = d.date || '—';
+		document.getElementById('r-time')!.textContent = d.time || '—';
+
+		/* 3. Customer Comments */
+		const hasNotes = d.driverNotes?.trim();
+		const hasSign  = d.signName?.trim();
+		if (hasNotes || hasSign) {
+			document.getElementById('section-comments')!.classList.remove('hidden');
+			document.getElementById('r-driver-notes')!.textContent = hasNotes || '';
+			if (hasSign) {
+				document.getElementById('r-sign-name-comment')!.classList.remove('hidden');
+				document.getElementById('r-sign-name-val')!.textContent = d.signName;
+			}
+		}
+
+		/* 4. Welcome Tag */
+		if (hasSign) {
+			document.getElementById('section-welcome')!.classList.remove('hidden');
+			document.getElementById('r-sign-name')!.textContent = d.signName;
+		}
+
+		/* 5. Route */
+		document.getElementById('r-from')!.textContent = d.from || '—';
+		document.getElementById('r-to')!.textContent   = d.to   || '—';
+
+		const badgesEl = document.getElementById('r-route-badges')!;
+		const badge = (icon: string, text: string) =>
+			`<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 text-xs font-medium text-neutral-600">${icon} ${text}</span>`;
+
+		let badgesHtml = '';
+		if (d.passengers)  badgesHtml += badge(passengerIcon(), `${d.passengers} pax`);
+		if (d.flightNumber) badgesHtml += badge(planeIcon(), d.flightNumber);
+		if (d.trainNumber)  badgesHtml += badge(trainIcon(), d.trainNumber);
+		badgesEl.innerHTML = badgesHtml;
+
+		/* 6. Vehicle */
+		document.getElementById('r-vehicle')!.textContent = d.vehicleName || '—';
+		const vInfo: string[] = [];
+		if (d.maxPassengers) vInfo.push(`Max ${d.maxPassengers} passengers`);
+		if (d.maxLuggage)    vInfo.push(`${d.maxLuggage} luggage`);
+		document.getElementById('r-vehicle-info')!.textContent = vInfo.join(' · ');
+
+		/* 7. Ride Status Button (only for assigned rides) */
+		const status = d.rideStatus as string | undefined;
+		if (!isAvailable && (status === 'assigned' || status === 'pickup' || status === 'onboard')) {
+			const sectionBtn = document.getElementById('section-status-btn')!;
+			const btn        = document.getElementById('r-status-btn')! as HTMLButtonElement;
+			sectionBtn.classList.remove('hidden');
+
+			setStatusButton(btn, status);
+
+			btn.addEventListener('click', async () => {
+				const currentStatus = btn.dataset.currentStatus;
+				let nextStatus = '';
+				if (currentStatus === 'assigned') nextStatus = 'pickup';
+				else if (currentStatus === 'pickup') nextStatus = 'onboard';
+				else if (currentStatus === 'onboard') nextStatus = 'completed';
+				if (!nextStatus) return;
+
+				btn.disabled = true;
+				btn.textContent = 'Updating...';
+				try {
+					await updateDoc(doc(db, collectionName, docId!), { rideStatus: nextStatus });
+					if (nextStatus === 'completed') {
+						sectionBtn.classList.add('hidden');
+					} else {
+						setStatusButton(btn, nextStatus);
+					}
+				} catch (e) {
+					console.error('Failed to update status:', e);
+					alert('Failed to update ride status. Please try again.');
+					setStatusButton(btn, currentStatus!);
+				}
+				btn.disabled = false;
+			});
+		}
+
+		/* 8. Payout (hide for available rides) */
+		if (!isAvailable) {
+			const payoutSection = document.getElementById('section-payout')!;
+			payoutSection.classList.remove('hidden');
+
+			const paymentMethod = (d.paymentMethod || 'stripe') as string;
+			const basePrice = d.basePrice ?? d.totalPrice ?? 0;
+			const driverPayout = basePrice * 0.80;
+			const commission   = basePrice * 0.20;
+
+			/* Payment badge */
+			const badgeEl = document.getElementById('r-payment-badge')!;
+			if (paymentMethod === 'cash') {
+				badgeEl.textContent = 'CASH';
+				badgeEl.className = 'inline-block px-3 py-1 text-xs font-bold uppercase rounded-full bg-amber-100 text-amber-700';
+			} else if (paymentMethod === 'card-onsite') {
+				badgeEl.textContent = 'CARD';
+				badgeEl.className = 'inline-block px-3 py-1 text-xs font-bold uppercase rounded-full bg-blue-100 text-blue-700';
+			} else {
+				badgeEl.textContent = 'PREPAID';
+				badgeEl.className = 'inline-block px-3 py-1 text-xs font-bold uppercase rounded-full bg-emerald-100 text-emerald-700';
+			}
+
+			/* Breakdown */
+			const breakdownEl = document.getElementById('r-payout-breakdown')!;
+			const fmt = (n: number) => `\u20AC${n.toFixed(2)}`;
+			let html = '';
+
+			if (paymentMethod === 'cash') {
+				html += line(`Total TO BE PAID by customer: <strong>${fmt(basePrice)}</strong>`, 'CASH', 'amber');
+				html += line(`Amount for the Driver: <strong>${fmt(driverPayout)}</strong>`, 'This is your net payout', 'emerald');
+				html += line(`Commission for Opawey: <strong>${fmt(commission)}</strong>`, '', 'neutral');
+			} else if (paymentMethod === 'card-onsite') {
+				html += line(`Total TO BE PAID by customer: <strong>${fmt(basePrice)}</strong> (+5% POS)`, 'CARD', 'blue');
+				html += line(`Amount for the Driver: <strong>${fmt(driverPayout)}</strong>`, 'This is your net payout', 'emerald');
+				html += line(`Commission for Opawey: <strong>${fmt(commission)}</strong>`, '', 'neutral');
+			} else {
+				html += line(`Total paid by customer: <strong>${fmt(basePrice)}</strong>`, 'PAID', 'emerald');
+				html += line(`Amount for the Driver: <strong>${fmt(driverPayout)}</strong>`, 'This is your net payout', 'emerald');
+				html += line(`Commission for Opawey: <strong>${fmt(commission)}</strong>`, '', 'neutral');
+			}
+			breakdownEl.innerHTML = html;
+
+			/* Large payout */
+			document.getElementById('r-payout-amount')!.textContent = `EUR ${driverPayout.toFixed(2)}`;
+
+			/* 9. Invoice (only cash / card-onsite) */
+			if (paymentMethod === 'cash' || paymentMethod === 'card-onsite') {
+				document.getElementById('section-invoice')!.classList.remove('hidden');
+			}
+		}
+
+		/* 10. Available rides — Accept / Reject */
+		if (isAvailable) {
+			const actionsEl = document.getElementById('section-available-actions')!;
+			actionsEl.classList.remove('hidden');
+			actionsEl.classList.add('flex');
+
+			document.getElementById('r-accept-btn')!.addEventListener('click', async () => {
+				const acceptBtn = document.getElementById('r-accept-btn')! as HTMLButtonElement;
+				const rejectBtn = document.getElementById('r-reject-btn')! as HTMLButtonElement;
+				acceptBtn.disabled = true;
+				rejectBtn.disabled = true;
+				acceptBtn.textContent = 'Accepting...';
+				try {
+					await updateDoc(doc(db, collectionName, docId!), {
+						driverUid: currentUid,
+						driverName: driverName,
+						rideStatus: 'assigned',
+					});
+					acceptBtn.textContent = 'Accepted!';
+					acceptBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+					acceptBtn.classList.add('bg-emerald-500', 'cursor-default');
+					setTimeout(() => { window.location.href = '/driver/upcoming'; }, 1200);
+				} catch (e) {
+					console.error('Failed to accept ride:', e);
+					alert('Failed to accept ride. Please try again.');
+					acceptBtn.disabled = false;
+					rejectBtn.disabled = false;
+					acceptBtn.textContent = 'Accept Ride';
+				}
+			});
+
+			document.getElementById('r-reject-btn')!.addEventListener('click', () => {
+				window.history.back();
+			});
+		}
+	}
+
+	/* ── Helpers ── */
+
+	function setStatusButton(btn: HTMLButtonElement, status: string) {
+		btn.dataset.currentStatus = status;
+		if (status === 'assigned') {
+			btn.textContent = 'At Pickup Point';
+			btn.className = 'w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-700';
+		} else if (status === 'pickup') {
+			btn.textContent = 'Passenger on Board';
+			btn.className = 'w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-700';
+		} else if (status === 'onboard') {
+			btn.textContent = 'Ride Completed';
+			btn.className = 'w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-700';
+		}
+	}
+
+	function line(text: string, tag: string, color: string): string {
+		const tagHtml = tag
+			? `<span class="ml-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-${color}-100 text-${color}-600">${tag}</span>`
+			: '';
+		return `<div class="flex items-center justify-between py-2 px-3 rounded-lg bg-neutral-50">
+			<span class="text-neutral-700">${text}${tagHtml}</span>
+		</div>`;
+	}
+
+	function passengerIcon() {
+		return '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+	}
+	function planeIcon() {
+		return '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>';
+	}
+	function trainIcon() {
+		return '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17l-5 5m0 0l5 5m-5-5h16M15 7l5-5m0 0l-5-5m5 5H4"/></svg>';
+	}
+</script>

@@ -1,0 +1,370 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="Payment — Opawey">
+	<main class="min-h-screen bg-sky-50/40 pt-28 pb-16 px-4 sm:px-6">
+		<div class="max-w-7xl mx-auto">
+
+			<!-- ── Step indicator ── -->
+			<div class="flex items-center justify-center gap-0 mb-8">
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+					</span>
+					<span class="text-sm font-medium text-emerald-600">Passenger</span>
+				</div>
+				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">2</span>
+					<span class="text-sm font-semibold text-[#0C6B95]">Payment</span>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+				<!-- LEFT COLUMN -->
+				<div class="lg:col-span-2">
+
+					<!-- Payment form -->
+					<div id="payment-form-section" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 lg:p-8">
+						<h2 class="text-xl font-bold text-neutral-900 mb-5">Complete your booking</h2>
+
+						<div class="bg-neutral-50 rounded-xl p-4 mb-6 space-y-2">
+							<div class="flex items-center justify-between text-sm">
+								<span class="text-neutral-500">Pickup</span>
+								<span class="font-medium text-neutral-800" id="os-pickup">—</span>
+							</div>
+							<div class="flex items-center justify-between text-sm">
+								<span class="text-neutral-500">Date & time</span>
+								<span class="font-medium text-neutral-800"><span id="os-date">—</span> at <span id="os-time">—</span></span>
+							</div>
+							<div class="flex items-center justify-between text-sm">
+								<span class="text-neutral-500">Duration</span>
+								<span class="font-medium text-neutral-800" id="os-hours">—</span>
+							</div>
+							<div class="flex items-center justify-between text-sm">
+								<span class="text-neutral-500">Vehicle</span>
+								<span class="font-medium text-neutral-800" id="os-vehicle">—</span>
+							</div>
+							<div class="flex items-center justify-between text-sm">
+								<span class="text-neutral-500">Passenger</span>
+								<span class="font-medium text-neutral-800" id="os-passenger">—</span>
+							</div>
+							<div class="flex items-center justify-between text-sm border-t border-neutral-200 pt-2 mt-2">
+								<span class="font-bold text-neutral-900">Total</span>
+								<span class="font-bold text-xl text-[#0C6B95]" id="os-total">—</span>
+							</div>
+						</div>
+
+						<!-- Payment method selection -->
+						<h3 class="text-base font-bold text-neutral-900 mb-4">Choose payment method</h3>
+
+						<div class="space-y-3 mb-6">
+							<label class="pay-method-option block cursor-pointer rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 transition-all p-4" data-method="stripe">
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<input type="radio" name="pay-method" value="stripe" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
+										<div>
+											<span class="font-semibold text-sm text-neutral-900">Prepayment (Online)</span>
+											<p class="text-xs text-neutral-500 mt-0.5">Pay now with credit/debit card</p>
+										</div>
+									</div>
+									<span class="font-bold text-neutral-900" id="method-stripe-price">—</span>
+								</div>
+								<div id="stripe-expand" class="hidden mt-4 pt-4 border-t border-neutral-100">
+									<div id="stripe-available" class="hidden">
+										<div id="card-element" class="px-4 py-3.5 bg-white border border-neutral-200 rounded-xl mb-2"></div>
+										<p id="card-errors" class="text-sm text-red-500 mb-2 hidden"></p>
+										<p class="text-xs text-neutral-400 flex items-center gap-1.5">
+											<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+											Secured by Stripe. Encrypted end-to-end.
+										</p>
+									</div>
+									<div id="stripe-not-configured" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3">
+										<p class="text-xs text-amber-800 font-medium">Stripe not configured — add <code class="bg-amber-100 px-1 rounded">PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to <code class="bg-amber-100 px-1 rounded">.env</code></p>
+									</div>
+								</div>
+							</label>
+
+							<label class="pay-method-option block cursor-pointer rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 transition-all p-4" data-method="cash">
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<input type="radio" name="pay-method" value="cash" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
+										<div>
+											<span class="font-semibold text-sm text-neutral-900">Cash on-site</span>
+											<p class="text-xs text-neutral-500 mt-0.5">Pay your driver in cash on arrival</p>
+										</div>
+									</div>
+									<span class="font-bold text-neutral-900" id="method-cash-price">—</span>
+								</div>
+							</label>
+
+							<label class="pay-method-option block cursor-pointer rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 transition-all p-4" data-method="card-onsite">
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<input type="radio" name="pay-method" value="card-onsite" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
+										<div>
+											<span class="font-semibold text-sm text-neutral-900">Card on-site</span>
+											<p class="text-xs text-neutral-500 mt-0.5">Pay your driver by card on arrival</p>
+										</div>
+									</div>
+									<span class="font-bold text-neutral-900" id="method-card-price">—</span>
+								</div>
+								<p class="text-xs text-amber-600 mt-2 ml-7 flex items-center gap-1.5">
+									<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+									5% transaction fee applies (<span id="card-fee-amount">+€0.00</span>)
+								</p>
+							</label>
+						</div>
+
+						<button id="complete-btn" type="button"
+							class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+							Complete Booking
+						</button>
+
+						<div class="mt-6 pt-4 border-t border-neutral-100">
+							<button id="back-btn" type="button"
+								class="px-5 py-3 border border-neutral-200 rounded-xl text-neutral-600 font-semibold hover:bg-neutral-50 transition-colors flex items-center gap-2">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+								Back
+							</button>
+						</div>
+					</div>
+
+					<!-- Success -->
+					<div id="success-section" class="hidden bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 lg:p-10 text-center">
+						<div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
+							<svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+						</div>
+						<h2 class="text-2xl font-bold text-neutral-900 mb-2">Booking confirmed!</h2>
+						<p class="text-neutral-500 mb-6">Your hourly rental has been booked successfully.</p>
+						<div class="bg-neutral-50 rounded-xl p-5 mb-6 max-w-md mx-auto text-left space-y-2">
+							<div class="flex justify-between text-sm"><span class="text-neutral-500">Reference</span><span id="success-ref" class="font-mono font-bold text-[#0C6B95]">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500">Pickup</span><span id="success-pickup" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500">Duration</span><span id="success-hours" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500">Vehicle</span><span id="success-vehicle" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm border-t border-neutral-200 pt-2"><span class="font-bold text-neutral-900">Total</span><span id="success-total" class="font-bold text-[#0C6B95]">—</span></div>
+						</div>
+						<p class="text-sm text-neutral-500 mb-6">A confirmation email will be sent to <strong id="success-email">—</strong></p>
+						<a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+							Back to home
+						</a>
+					</div>
+				</div>
+
+				<!-- RIGHT COLUMN — Sidebar -->
+				<div class="lg:col-span-1">
+					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
+						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
+						<div class="flex items-center justify-between text-sm">
+							<span class="font-semibold text-neutral-700">Hourly rental</span>
+							<span class="flex items-center gap-1.5 text-neutral-500">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+								<span id="sb-passengers">—</span> Passengers
+							</span>
+						</div>
+						<div class="text-sm border-t border-neutral-100 pt-4 space-y-1">
+							<div class="flex justify-between"><span class="text-neutral-500">Pickup</span><span id="sb-pickup" class="font-medium text-neutral-800 text-right max-w-[60%] truncate">—</span></div>
+							<div class="flex justify-between"><span class="text-neutral-500">Duration</span><span id="sb-hours" class="font-medium text-neutral-700">—</span></div>
+						</div>
+						<div class="border-t border-neutral-100 pt-4">
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Your choice</p>
+							<div class="flex items-center gap-3">
+								<div class="w-16 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
+									<img id="sb-vehicle-img" src="" alt="" class="w-full h-full object-cover" />
+								</div>
+								<p id="sb-vehicle-name" class="text-sm font-bold text-neutral-900">—</p>
+							</div>
+						</div>
+						<div class="border-t border-neutral-100 pt-4 space-y-2">
+							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
+							<div class="flex justify-between text-sm">
+								<span class="font-semibold text-neutral-900">Total</span>
+								<span id="sb-total" class="font-bold text-neutral-900">—</span>
+							</div>
+							<div class="flex justify-between text-xs text-neutral-500">
+								<span>Rate</span>
+								<span id="sb-rate">—</span>
+							</div>
+						</div>
+						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Free cancellation
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Licensed chauffeurs
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script>
+	import { db, auth } from '../../../lib/firebase';
+	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+	import { loadStripe } from '@stripe/stripe-js';
+
+	const params = new URLSearchParams(window.location.search);
+	const pickup = params.get('pickup') || '';
+	const date = params.get('date') || '';
+	const time = params.get('time') || '';
+	const hours = params.get('hours') || '3';
+	const passengers = params.get('passengers') || '2';
+	const vehicleSlug = params.get('vehicleSlug') || '';
+	const vehicleName = params.get('vehicleName') || '';
+	const vehicleImage = params.get('vehicleImage') || '';
+	const totalPrice = params.get('totalPrice') || '0';
+	const perHour = params.get('perHour') || '0';
+	const firstName = params.get('firstName') || '';
+	const lastName = params.get('lastName') || '';
+	const email = params.get('email') || '';
+	const phone = params.get('phone') || '';
+	const driverNotes = params.get('driverNotes') || '';
+
+	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+	// Order summary
+	setText('os-pickup', pickup);
+	setText('os-date', date);
+	setText('os-time', time);
+	setText('os-hours', `${hours} hours`);
+	setText('os-vehicle', vehicleName);
+	setText('os-passenger', `${firstName} ${lastName}`);
+	setText('os-total', `\u20AC${totalPrice}`);
+
+	// Sidebar
+	setText('sb-pickup', pickup);
+	setText('sb-hours', `${hours} hours`);
+	setText('sb-passengers', passengers);
+	setText('sb-vehicle-name', vehicleName);
+	setText('sb-total', `\u20AC ${totalPrice}`);
+	setText('sb-rate', `\u20AC${perHour}/hour \u00D7 ${hours}h`);
+	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
+	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
+
+	// Payment method state
+	const baseTotal = parseFloat(totalPrice);
+	const cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
+	const cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
+	let selectedMethod = '';
+	let stripeInstance: any = null;
+	let cardEl: any = null;
+
+	setText('method-stripe-price', `\u20AC${baseTotal.toFixed(2)}`);
+	setText('method-cash-price', `\u20AC${baseTotal.toFixed(2)}`);
+	setText('method-card-price', `\u20AC${cardOnsiteTotal.toFixed(2)}`);
+	setText('card-fee-amount', `+\u20AC${cardOnsiteFee.toFixed(2)}`);
+
+	function selectMethod(method: string) {
+		selectedMethod = method;
+		document.querySelectorAll<HTMLLabelElement>('.pay-method-option').forEach(label => {
+			const isActive = label.dataset.method === method;
+			label.classList.toggle('border-[#0C6B95]', isActive);
+			label.classList.toggle('ring-2', isActive);
+			label.classList.toggle('ring-[#0C6B95]/20', isActive);
+			label.classList.toggle('border-neutral-200', !isActive);
+			const radio = label.querySelector('input[type="radio"]') as HTMLInputElement;
+			if (radio) radio.checked = isActive;
+		});
+		document.getElementById('stripe-expand')?.classList.toggle('hidden', method !== 'stripe');
+		const displayTotal = method === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		setText('os-total', `\u20AC${displayTotal.toFixed(2)}`);
+		setText('sb-total', `\u20AC ${displayTotal.toFixed(2)}`);
+	}
+
+	document.querySelectorAll<HTMLLabelElement>('.pay-method-option').forEach(label => {
+		label.addEventListener('click', () => selectMethod(label.dataset.method || ''));
+	});
+
+	// Stripe
+	const STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY;
+	if (STRIPE_KEY) {
+		document.getElementById('stripe-available')?.classList.remove('hidden');
+		(async () => {
+			stripeInstance = await loadStripe(STRIPE_KEY);
+			if (!stripeInstance) return;
+			const elements = stripeInstance.elements();
+			cardEl = elements.create('card', { style: { base: { fontSize: '16px', color: '#1a1a1a', '::placeholder': { color: '#a3a3a3' } } } });
+			cardEl.mount('#card-element');
+			const errorsEl = document.getElementById('card-errors')!;
+			cardEl.on('change', (event: any) => {
+				if (event.error) { errorsEl.textContent = event.error.message; errorsEl.classList.remove('hidden'); }
+				else { errorsEl.classList.add('hidden'); }
+			});
+		})();
+	} else {
+		document.getElementById('stripe-not-configured')?.classList.remove('hidden');
+	}
+
+	async function saveBooking(paymentMethod: string, paymentToken = '') {
+		const btn = document.getElementById('complete-btn') as HTMLButtonElement;
+		btn.disabled = true; btn.textContent = 'Processing...';
+		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		try {
+			const docRef = await addDoc(collection(db, 'transfers'), {
+				bookingType: 'hourly',
+				from: pickup, to: pickup,
+				date, time,
+				hours: parseInt(hours, 10),
+				passengers: parseInt(passengers, 10),
+				vehicleSlug, vehicleName,
+				firstName, lastName, email, phone,
+				driverNotes: driverNotes || null,
+				totalPrice: finalTotal,
+				basePrice: baseTotal,
+				perHour: parseFloat(perHour),
+				cardSurcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+				rideStatus: 'new',
+				paymentStatus: paymentMethod === 'stripe' ? 'paid' : 'pending',
+				paymentMethod,
+				paymentToken: paymentToken || null,
+				uid: auth.currentUser?.uid || null,
+				createdAt: serverTimestamp(),
+			});
+			document.getElementById('payment-form-section')?.classList.add('hidden');
+			document.getElementById('success-section')?.classList.remove('hidden');
+			setText('success-ref', docRef.id.substring(0, 8).toUpperCase());
+			setText('success-pickup', pickup);
+			setText('success-hours', `${hours} hours`);
+			setText('success-vehicle', vehicleName);
+			setText('success-total', `\u20AC${finalTotal.toFixed(2)}`);
+			setText('success-email', email);
+		} catch (err) {
+			console.error('Failed to save booking:', err);
+			alert('Failed to save booking. Please try again.');
+			btn.disabled = false;
+			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
+		}
+	}
+
+	document.getElementById('complete-btn')?.addEventListener('click', async () => {
+		if (!selectedMethod) { alert('Please select a payment method.'); return; }
+		if (selectedMethod === 'stripe') {
+			if (!stripeInstance || !cardEl) { alert('Stripe is not loaded yet.'); return; }
+			const btn = document.getElementById('complete-btn') as HTMLButtonElement;
+			btn.disabled = true; btn.textContent = 'Processing...';
+			const { error, token } = await stripeInstance.createToken(cardEl);
+			if (error) {
+				const errorsEl = document.getElementById('card-errors')!;
+				errorsEl.textContent = error.message || 'Payment failed.';
+				errorsEl.classList.remove('hidden');
+				btn.disabled = false;
+				btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
+				return;
+			}
+			await saveBooking('stripe', token?.id || '');
+		} else {
+			await saveBooking(selectedMethod);
+		}
+	});
+
+	document.getElementById('back-btn')?.addEventListener('click', () => window.history.back());
+</script>

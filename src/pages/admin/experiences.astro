@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <AdminLayout pageTitle="Experiences" pageDescription="All experience bookings." activeSection="experiences">
 
-	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4">
 			<div class="flex items-center gap-3">
 				<h2 class="text-base font-semibold text-neutral-800">All Experiences</h2>
@@ -22,17 +22,22 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="bg-neutral-50 text-left">
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Experience</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Participants</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Notes</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">From</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">To</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Driver</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</th>
+						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Payment Status</th>
 					</tr>
 				</thead>
 				<tbody id="experiences-tbody">
-					<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+					<tr><td colspan="12" class="px-4 py-10 text-center text-neutral-400">Loading…</td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -78,6 +83,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					</select>
 				</div>
 
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup Location *</label>
+					<input id="ex-pickup" type="text" placeholder="Hotel, address or landmark..." required
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+				</div>
+
 				<div class="grid grid-cols-2 gap-4">
 					<div class="flex flex-col gap-1.5">
 						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date *</label>
@@ -92,7 +103,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 
 				<div class="flex flex-col gap-1.5">
-					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Participants *</label>
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers *</label>
 					<input id="ex-participants" type="number" min="1" max="60" placeholder="1" required
 						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
 				</div>
@@ -104,15 +115,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 
 				<div class="flex flex-col gap-1.5">
-					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</label>
-					<select id="ex-status"
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</label>
+					<select id="ex-rideStatus"
 						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
 						<option value="new">New</option>
-						<option value="pending">Pending</option>
-						<option value="payed">Payed</option>
-						<option value="planning">Planning</option>
+						<option value="assigned">Assigned</option>
+						<option value="pickup">Pickup</option>
+						<option value="onboard">Onboard</option>
+						<option value="completed">Completed</option>
 						<option value="cancelled">Cancelled</option>
-						<option value="done">Done</option>
 					</select>
 				</div>
 
@@ -137,29 +148,47 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	import { db } from '../../lib/firebase';
 	import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
 
-	/* ── Status colours ── */
-	const STATUS_COLORS: Record<string, string> = {
+	/* ── Ride Status colours ── */
+	const RIDE_STATUS_COLORS: Record<string, string> = {
 		new:       'bg-sky-50 text-sky-700 border-sky-200',
-		pending:   'bg-amber-50 text-amber-700 border-amber-200',
-		payed:     'bg-emerald-50 text-emerald-700 border-emerald-200',
-		planning:  'bg-violet-50 text-violet-700 border-violet-200',
+		assigned:  'bg-amber-50 text-amber-700 border-amber-200',
+		pickup:    'bg-violet-50 text-violet-700 border-violet-200',
+		onboard:   'bg-indigo-50 text-indigo-700 border-indigo-200',
+		completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 		cancelled: 'bg-red-50 text-red-600 border-red-200',
-		done:      'bg-neutral-100 text-neutral-600 border-neutral-300',
 	};
 
-	const STATUS_OPTIONS = ['new', 'pending', 'payed', 'planning', 'cancelled', 'done'];
+	const RIDE_STATUS_OPTIONS = ['new', 'assigned', 'pickup', 'onboard', 'completed', 'cancelled'];
 
-	const applySelectColor = (sel: HTMLSelectElement) => {
-		const cls = STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
-		sel.className = `status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	/* ── Payment Status colours ── */
+	const PAYMENT_STATUS_COLORS: Record<string, string> = {
+		paid:    'bg-emerald-50 text-emerald-700',
+		pending: 'bg-amber-50 text-amber-700',
 	};
 
-	const buildStatusSelect = (docId: string, current: string) => {
+	const applyRideStatusColor = (sel: HTMLSelectElement) => {
+		const cls = RIDE_STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		sel.className = `ride-status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	};
+
+	const buildRideStatusSelect = (docId: string, current: string) => {
 		const val = current?.toLowerCase() ?? 'new';
-		const opts = STATUS_OPTIONS.map(s =>
+		const opts = RIDE_STATUS_OPTIONS.map(s =>
 			`<option value="${s}" ${val === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
 		).join('');
-		return `<select class="status-select" data-id="${docId}" data-col="experiences">${opts}</select>`;
+		return `<select class="ride-status-select" data-id="${docId}" data-col="experiences">${opts}</select>`;
+	};
+
+	const buildPaymentBadge = (method: string, status: string) => {
+		const m = (method || 'cash').charAt(0).toUpperCase() + (method || 'cash').slice(1);
+		const s = (status || 'pending').charAt(0).toUpperCase() + (status || 'pending').slice(1);
+		const cls = PAYMENT_STATUS_COLORS[(status || 'pending').toLowerCase()] ?? 'bg-neutral-100 text-neutral-600';
+		return `<span class="text-xs font-medium px-2 py-0.5 rounded-full ${cls}">${m} &middot; ${s}</span>`;
+	};
+
+	const buildDriverCell = (docId: string, current: string) => {
+		const display = current || '—';
+		return `<span class="driver-display cursor-pointer hover:text-[#0C6B95] transition-colors" data-id="${docId}" data-col="experiences" title="Click to edit">${display}</span>`;
 	};
 
 	/* ── Load experience catalog into select ── */
@@ -184,42 +213,82 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const snap = await getDocs(query(collection(db, 'experiences'), orderBy('createdAt', 'desc')));
 			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
 			if (snap.empty) {
-				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No experiences found.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-10 text-center text-neutral-400">No experiences found.</td></tr>`;
 				return;
 			}
 			tbody.innerHTML = snap.docs.map(document => {
 				const d = document.data() as Record<string, unknown>;
-				const date = d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—';
+				const date = d.date ? String(d.date) : (d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—');
+				const time = d.time ? String(d.time) : '—';
+				const rideStatus = String(d.rideStatus ?? d.status ?? 'new');
+				const paymentMethod = String(d.paymentMethod ?? 'cash');
+				const paymentStatus = String(d.paymentStatus ?? 'pending');
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
-					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${d.experience ?? d.experienceName ?? d.type ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600 text-center">${d.participants ?? d.guests ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-500 max-w-[200px] truncate">${d.notes ?? d.specialRequests ?? '—'}</td>
-					<td class="px-6 py-3">${buildStatusSelect(document.id, String(d.status ?? 'new'))}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${time}</td>
+					<td class="px-4 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.phone ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.pickup ?? d.pickupLocation ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.experience ?? d.experienceName ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 text-center">${d.participants ?? d.passengers ?? d.guests ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.vehicle ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${buildDriverCell(document.id, String(d.driver ?? ''))}</td>
+					<td class="px-4 py-3">${buildRideStatusSelect(document.id, rideStatus)}</td>
+					<td class="px-4 py-3">${buildPaymentBadge(paymentMethod, paymentStatus)}</td>
 				</tr>`;
 			}).join('');
 
-			/* Apply colours to all selects */
-			document.querySelectorAll<HTMLSelectElement>('.status-select').forEach(applySelectColor);
+			/* Apply colours to all ride status selects */
+			document.querySelectorAll<HTMLSelectElement>('.ride-status-select').forEach(applyRideStatusColor);
 		} catch {
-			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
 		}
 	}
 
-	/* ── Status change delegation ── */
+	/* ── Ride Status change delegation ── */
 	document.getElementById('experiences-tbody')?.addEventListener('change', async (e) => {
 		const sel = e.target as HTMLSelectElement;
-		if (!sel.classList.contains('status-select')) return;
+		if (!sel.classList.contains('ride-status-select')) return;
 		const docId = sel.dataset.id!;
 		const newStatus = sel.value;
-		applySelectColor(sel);
+		applyRideStatusColor(sel);
 		try {
-			await updateDoc(doc(db, 'experiences', docId), { status: newStatus });
+			await updateDoc(doc(db, 'experiences', docId), { rideStatus: newStatus });
 		} catch (err) {
-			console.error('Failed to update status:', err);
+			console.error('Failed to update ride status:', err);
 		}
+	});
+
+	/* ── Driver inline edit delegation ── */
+	document.getElementById('experiences-tbody')?.addEventListener('click', (e) => {
+		const target = e.target as HTMLElement;
+		if (!target.classList.contains('driver-display')) return;
+		const docId = target.dataset.id!;
+		const current = target.textContent === '—' ? '' : target.textContent ?? '';
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.value = current;
+		input.className = 'px-2 py-0.5 border border-neutral-300 rounded-lg text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] w-24';
+		const save = async () => {
+			const val = input.value.trim();
+			const span = document.createElement('span');
+			span.className = 'driver-display cursor-pointer hover:text-[#0C6B95] transition-colors';
+			span.dataset.id = docId;
+			span.dataset.col = 'experiences';
+			span.title = 'Click to edit';
+			span.textContent = val || '—';
+			input.replaceWith(span);
+			try {
+				await updateDoc(doc(db, 'experiences', docId), { driver: val });
+			} catch (err) {
+				console.error('Failed to update driver:', err);
+			}
+		};
+		input.addEventListener('blur', save);
+		input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); } if (ev.key === 'Escape') { input.value = current; input.blur(); } });
+		target.replaceWith(input);
+		input.focus();
 	});
 
 	/* ── Modal ── */
@@ -246,13 +315,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const expSel       = document.getElementById('ex-experience') as HTMLSelectElement;
 		const experienceId = expSel.value;
 		const experienceName = experienceId ? expSel.options[expSel.selectedIndex]?.text : '';
+		const pickup       = val('ex-pickup');
 		const date         = val('ex-date');
 		const time         = val('ex-time');
 		const participants = parseInt(val('ex-participants') || '1', 10);
 		const notes        = val('ex-notes');
-		const status       = val('ex-status') || 'new';
+		const rideStatus   = val('ex-rideStatus') || 'new';
 
-		if (!name || !email || !experienceId || !date || !participants) {
+		if (!name || !email || !experienceId || !pickup || !date || !participants) {
 			errorEl.textContent = 'Please fill in all required fields.';
 			errorEl.classList.remove('hidden');
 			return;
@@ -264,10 +334,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			await addDoc(collection(db, 'experiences'), {
 				name, email, phone: phone || '',
 				experience: experienceName, experienceId,
+				pickup, pickupLocation: pickup,
 				date, time: time || '',
 				participants,
 				notes: notes || '',
-				status,
+				rideStatus,
+				paymentStatus: 'pending',
+				paymentMethod: 'cash',
 				createdAt: serverTimestamp(),
 				addedByAdmin: true,
 			});

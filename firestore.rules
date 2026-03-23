@@ -9,6 +9,14 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.type == 'admin';
     }
 
+    // Helper: check if the requesting user is an approved driver
+    function isApprovedDriver() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/partners/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/partners/$(request.auth.uid)).data.type == 'driver' &&
+        get(/databases/$(database)/documents/partners/$(request.auth.uid)).data.status == 'approved';
+    }
+
     // ── Users ──────────────────────────────────────────────────────────────
     match /users/{userId} {
       // Every authenticated user can read & write their own document
@@ -19,11 +27,16 @@ service cloud.firestore {
 
     // ── Transfers ──────────────────────────────────────────────────────────
     match /transfers/{docId} {
-      // Any authenticated user can create a booking
       allow create: if request.auth != null;
-      // Only the owner can read their own booking
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
-      // Admins can read, update, and delete all transfers
+      // Drivers can read rides assigned to them or available (unassigned) rides
+      allow read: if isApprovedDriver() &&
+        (resource.data.driverUid == request.auth.uid || resource.data.driverUid == null || resource.data.driverUid == '');
+      // Drivers can update rideStatus on their assigned rides
+      allow update: if isApprovedDriver() && resource.data.driverUid == request.auth.uid;
+      // Drivers can claim unassigned rides
+      allow update: if isApprovedDriver() &&
+        (resource.data.driverUid == null || resource.data.driverUid == '');
       allow read, write: if isAdmin();
     }
 
@@ -31,6 +44,11 @@ service cloud.firestore {
     match /tours/{docId} {
       allow create: if request.auth != null;
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow read: if isApprovedDriver() &&
+        (resource.data.driverUid == request.auth.uid || resource.data.driverUid == null || resource.data.driverUid == '');
+      allow update: if isApprovedDriver() && resource.data.driverUid == request.auth.uid;
+      allow update: if isApprovedDriver() &&
+        (resource.data.driverUid == null || resource.data.driverUid == '');
       allow read, write: if isAdmin();
     }
 
@@ -38,6 +56,11 @@ service cloud.firestore {
     match /experiences/{docId} {
       allow create: if request.auth != null;
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow read: if isApprovedDriver() &&
+        (resource.data.driverUid == request.auth.uid || resource.data.driverUid == null || resource.data.driverUid == '');
+      allow update: if isApprovedDriver() && resource.data.driverUid == request.auth.uid;
+      allow update: if isApprovedDriver() &&
+        (resource.data.driverUid == null || resource.data.driverUid == '');
       allow read, write: if isAdmin();
     }
 
@@ -65,6 +88,14 @@ service cloud.firestore {
     match /requests/{docId} {
       allow create: if true;
       allow read, write: if isAdmin();
+    }
+
+    // ── Vehicles (public read, admin + owner write) ────────────────────
+    match /vehicles/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin() ||
+        (request.auth != null && resource.data.ownerId == request.auth.uid);
     }
 
     // ── Partners ──────────────────────────────────────────────────────────

@@ -7,10 +7,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "migrate:user-type": "node scripts/migrate-user-type.mjs"
+    "migrate:user-type": "node scripts/migrate-user-type.mjs",
+    "seed:vehicles": "node scripts/seed-vehicles.mjs"
   },
   "dependencies": {
     "@dataconnect/generated": "file:src/dataconnect-generated",
+    "@stripe/stripe-js": "^8.11.0",
     "@tailwindcss/vite": "^4.2.1",
     "astro": "^5.17.1",
     "firebase": "^12.9.0",

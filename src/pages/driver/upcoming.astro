@@ -1,0 +1,191 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Upcoming Rides" activeSection="upcoming">
+
+	<!-- Search -->
+	<div class="mb-6">
+		<div class="relative max-w-md">
+			<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+			</svg>
+			<input
+				id="search-input"
+				type="text"
+				placeholder="Search by reference or location..."
+				class="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-white"
+			/>
+		</div>
+	</div>
+
+	<!-- Rides list -->
+	<div id="rides-list" class="space-y-3">
+		<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Loading...</div>
+	</div>
+
+	<!-- Empty state -->
+	<div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
+		<svg class="w-12 h-12 text-neutral-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 17H3v-5l2-5h14l2 5v5h-2m-9 0h6" />
+		</svg>
+		<p class="text-neutral-500 font-medium">No upcoming rides</p>
+		<p class="text-sm text-neutral-400 mt-1">When you have assigned rides, they will appear here.</p>
+	</div>
+
+</DriverLayout>
+
+<script>
+	import { db, auth } from '../../lib/firebase';
+	import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+
+	interface Ride {
+		id: string;
+		date: string;
+		time: string;
+		from: string;
+		to: string;
+		vehicleName: string;
+		passengers: number;
+		rideStatus: string;
+	}
+
+	let allRides: Ride[] = [];
+
+	const STATUS_COLORS: Record<string, string> = {
+		assigned: 'bg-amber-50 text-amber-700 border-amber-200',
+		pickup:   'bg-violet-50 text-violet-700 border-violet-200',
+		onboard:  'bg-indigo-50 text-indigo-700 border-indigo-200',
+	};
+
+	const escHtml = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+	function renderRides(rides: Ride[]) {
+		const listEl = document.getElementById('rides-list')!;
+		const emptyEl = document.getElementById('empty-state')!;
+
+		if (rides.length === 0) {
+			listEl.innerHTML = '';
+			emptyEl.classList.remove('hidden');
+			return;
+		}
+
+		emptyEl.classList.add('hidden');
+
+		listEl.innerHTML = rides.map(r => {
+			const ref = r.id.substring(0, 8).toUpperCase();
+			const statusCls = STATUS_COLORS[r.rideStatus] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
+			const statusLabel = r.rideStatus.charAt(0).toUpperCase() + r.rideStatus.slice(1);
+
+			return `
+				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=transfers"
+				   class="block bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md hover:border-neutral-300 transition-all cursor-pointer">
+					<div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-5">
+						<!-- Booking Ref + Date -->
+						<div class="flex flex-col gap-1">
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Booking Ref</p>
+							<p class="text-sm font-bold text-neutral-900 font-mono">${escHtml(ref)}</p>
+							<p class="text-xs text-neutral-500 mt-1">${escHtml(r.date || '—')} ${escHtml(r.time || '')}</p>
+						</div>
+						<!-- Pickup -->
+						<div class="flex flex-col gap-1">
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup</p>
+							<div class="flex items-start gap-2">
+								<svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+									<circle cx="12" cy="12" r="3" />
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+								</svg>
+								<p class="text-sm text-neutral-800">${escHtml(r.from || '—')}</p>
+							</div>
+						</div>
+						<!-- Dropoff -->
+						<div class="flex flex-col gap-1">
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Dropoff</p>
+							<div class="flex items-start gap-2">
+								<svg class="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+									<path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+								</svg>
+								<p class="text-sm text-neutral-800">${escHtml(r.to || '—')}</p>
+							</div>
+						</div>
+						<!-- Details -->
+						<div class="flex flex-col gap-2">
+							<div class="flex items-center gap-2 flex-wrap">
+								${r.vehicleName ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicleName)}</span>` : ''}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusCls}">${escHtml(statusLabel)}</span>
+							</div>
+							<div class="flex items-center gap-1.5 text-xs text-neutral-500">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+								</svg>
+								${r.passengers || '—'} passenger${(r.passengers || 0) !== 1 ? 's' : ''}
+							</div>
+						</div>
+					</div>
+				</a>
+			`;
+		}).join('');
+	}
+
+	async function loadRides() {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		try {
+			const ridesQuery = query(
+				collection(db, 'transfers'),
+				where('driverUid', '==', user.uid),
+				where('rideStatus', 'in', ['assigned', 'pickup', 'onboard']),
+				orderBy('createdAt', 'desc')
+			);
+			const snap = await getDocs(ridesQuery);
+
+			allRides = snap.docs.map(d => {
+				const data = d.data();
+				return {
+					id: d.id,
+					date: data.date || '',
+					time: data.time || '',
+					from: data.from || '',
+					to: data.to || '',
+					vehicleName: data.vehicleName || '',
+					passengers: data.passengers || 0,
+					rideStatus: data.rideStatus || '',
+				};
+			});
+
+			renderRides(allRides);
+		} catch (err) {
+			console.error('Failed to load upcoming rides:', err);
+			document.getElementById('rides-list')!.innerHTML =
+				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
+		}
+	}
+
+	// Search filtering
+	document.getElementById('search-input')?.addEventListener('input', (e) => {
+		const term = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		if (!term) {
+			renderRides(allRides);
+			return;
+		}
+		const filtered = allRides.filter(r => {
+			const ref = r.id.substring(0, 8).toLowerCase();
+			return ref.includes(term) ||
+				r.from.toLowerCase().includes(term) ||
+				r.to.toLowerCase().includes(term);
+		});
+		renderRides(filtered);
+	});
+
+	// Auth guard
+	const authEl = document.getElementById('driver-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) {
+			observer.disconnect();
+			loadRides();
+		}
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>

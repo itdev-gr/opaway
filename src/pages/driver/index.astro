@@ -1,0 +1,227 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Dashboard" activeSection="dashboard">
+
+	<!-- Row 1: Performance stats -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+
+		<!-- Rides To-Do -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">To Do</span>
+				<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 17H3v-5l2-5h14l2 5v5h-2m-9 0h6" />
+				</svg>
+			</div>
+			<p id="stat-todo" class="text-3xl font-bold text-neutral-900">--</p>
+			<p class="text-sm text-neutral-500 mt-1">Rides To-Do</p>
+		</div>
+
+		<!-- Rides Done -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Done</span>
+				<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 17H3v-5l2-5h14l2 5v5h-2m-9 0h6" />
+				</svg>
+			</div>
+			<p id="stat-done" class="text-3xl font-bold text-neutral-900">--</p>
+			<p class="text-sm text-neutral-500 mt-1">Rides Done</p>
+		</div>
+
+		<!-- Customer Reviews -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Reviews</span>
+				<svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+				</svg>
+			</div>
+			<p id="stat-reviews" class="text-3xl font-bold text-neutral-900">4.93</p>
+			<p class="text-sm text-neutral-500 mt-1">Customer Reviews</p>
+		</div>
+
+		<!-- Current Month Revenue -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Revenues</span>
+				<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+			</div>
+			<p id="stat-revenue" class="text-3xl font-bold text-neutral-900">--</p>
+			<p class="text-sm text-neutral-500 mt-1">Current Month Revenue</p>
+		</div>
+
+	</div>
+
+	<!-- Row 2: Quality metrics -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+		<!-- No-Show Rate -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Last 3 months</span>
+			</div>
+			<p id="stat-noshow" class="text-3xl font-bold text-neutral-900">--</p>
+			<p class="text-sm font-medium text-neutral-700 mt-1">No-Show Rate</p>
+			<p class="text-xs text-neutral-400 mt-2">The no-show percentage should remain below 5% to maintain good standing.</p>
+		</div>
+
+		<!-- Return Rate -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Last 3 months</span>
+			</div>
+			<p id="stat-return" class="text-3xl font-bold text-neutral-900">2%</p>
+			<p class="text-sm font-medium text-neutral-700 mt-1">Return Rate</p>
+			<p class="text-xs text-neutral-400 mt-2">The percentage of returned rides must remain below 3% to avoid penalties.</p>
+		</div>
+
+		<!-- T-Score -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">Last 3 months</span>
+			</div>
+			<p id="stat-tscore" class="text-3xl font-bold text-neutral-900">8/10</p>
+			<p class="text-sm font-medium text-neutral-700 mt-1">T-Score</p>
+			<p class="text-xs text-neutral-400 mt-2">This score is updated daily based on timeliness, behaviour, and customer feedback.</p>
+		</div>
+
+		<!-- Account Status -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 relative">
+			<div class="flex items-center justify-between mb-4">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">Account</span>
+			</div>
+			<p id="stat-account-status" class="text-3xl font-bold text-neutral-900">--</p>
+			<p class="text-sm font-medium text-neutral-700 mt-1">Account Status</p>
+		</div>
+
+	</div>
+
+</DriverLayout>
+
+<script>
+	import { db, auth } from '../../lib/firebase';
+	import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+
+	async function loadDashboard() {
+		const user = auth.currentUser;
+		if (!user) return;
+
+		try {
+			// Load all rides for this driver
+			const ridesQuery = query(collection(db, 'transfers'), where('driverUid', '==', user.uid));
+			const snap = await getDocs(ridesQuery);
+
+			let todoCount = 0;
+			let doneCount = 0;
+			let monthRevenue = 0;
+			let cancelledLast3 = 0;
+			let totalLast3 = 0;
+
+			const now = new Date();
+			const currentMonth = now.getMonth();
+			const currentYear = now.getFullYear();
+
+			// 3 months ago boundary
+			const threeMonthsAgo = new Date(currentYear, currentMonth - 3, 1);
+
+			snap.forEach(d => {
+				const data = d.data();
+				const status = data.rideStatus || '';
+
+				// To-Do: assigned, pickup, onboard
+				if (['assigned', 'pickup', 'onboard'].includes(status)) {
+					todoCount++;
+				}
+
+				// Done: completed
+				if (status === 'completed') {
+					doneCount++;
+				}
+
+				// Current month revenue (completed rides only)
+				if (status === 'completed' && data.date) {
+					const dateStr = typeof data.date === 'string' ? data.date : '';
+					const parts = dateStr.split('-');
+					if (parts.length === 3) {
+						const rideYear = parseInt(parts[0]);
+						const rideMonth = parseInt(parts[1]) - 1;
+						if (rideYear === currentYear && rideMonth === currentMonth) {
+							const price = parseFloat(data.totalPrice) || 0;
+							monthRevenue += price * 0.80;
+						}
+					}
+				}
+
+				// Last 3 months no-show rate
+				if (data.date) {
+					const dateStr = typeof data.date === 'string' ? data.date : '';
+					const rideDate = new Date(dateStr + 'T00:00:00');
+					if (rideDate >= threeMonthsAgo) {
+						totalLast3++;
+						if (status === 'cancelled') {
+							cancelledLast3++;
+						}
+					}
+				}
+			});
+
+			// Update stat cards
+			const todoEl = document.getElementById('stat-todo');
+			const doneEl = document.getElementById('stat-done');
+			const revenueEl = document.getElementById('stat-revenue');
+			const noshowEl = document.getElementById('stat-noshow');
+
+			if (todoEl) todoEl.textContent = String(todoCount);
+			if (doneEl) doneEl.textContent = String(doneCount);
+			if (revenueEl) revenueEl.textContent = `€${monthRevenue.toFixed(2)}`;
+
+			const noshowRate = totalLast3 > 0 ? ((cancelledLast3 / totalLast3) * 100).toFixed(1) : '0.0';
+			if (noshowEl) noshowEl.textContent = `${noshowRate}%`;
+
+			// Load partner doc for account status
+			const partnerRef = doc(db, 'partners', user.uid);
+			const partnerSnap = await getDoc(partnerRef);
+			const statusEl = document.getElementById('stat-account-status');
+
+			if (partnerSnap.exists()) {
+				const partnerData = partnerSnap.data();
+				const accountStatus = partnerData.status || 'Pending';
+				const displayStatus = accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1);
+				if (statusEl) {
+					statusEl.textContent = displayStatus;
+					// Color the status
+					if (accountStatus.toLowerCase() === 'active' || accountStatus.toLowerCase() === 'approved') {
+						statusEl.classList.add('text-emerald-600');
+					} else if (accountStatus.toLowerCase() === 'rejected') {
+						statusEl.classList.add('text-red-600');
+					} else {
+						statusEl.classList.add('text-amber-600');
+					}
+				}
+			} else {
+				if (statusEl) {
+					statusEl.textContent = 'Pending';
+					statusEl.classList.add('text-amber-600');
+				}
+			}
+
+		} catch (err) {
+			console.error('Failed to load dashboard:', err);
+		}
+	}
+
+	// Auth guard
+	const authEl = document.getElementById('driver-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) {
+			observer.disconnect();
+			loadDashboard();
+		}
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>

@@ -43,26 +43,27 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	</div>
 
 	<!-- Table -->
-	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
 			<h2 class="text-base font-semibold text-neutral-800">All Partners</h2>
 			<span id="partners-count" class="text-xs text-neutral-400 font-medium"></span>
 		</div>
-		<div class="overflow-x-auto">
+		<div class="overflow-x-auto overflow-y-visible">
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="bg-neutral-50 text-left">
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Contact / Name</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Business</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Registered</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="type">Type <span class="sort-icon text-neutral-300">↕</span></th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="status">Status <span class="sort-icon text-neutral-300">↕</span></th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Discount</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="createdAt">Registered <span class="sort-icon text-neutral-300">↕</span></th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
 					</tr>
 				</thead>
 				<tbody id="partners-tbody">
-					<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+					<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -95,6 +96,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		email:        string;
 		type:         string;
 		status:       string;
+		discount:     number;
 		createdAt:    string;
 	}
 	type ActionType = 'approve' | 'reject' | 'delete';
@@ -150,7 +152,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
 					</svg>
 				</button>
-				<div class="dd-menu absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl border border-neutral-200 shadow-lg z-20 hidden overflow-hidden py-1" id="dd-menu-${uid}">
+				<div class="dd-menu fixed w-44 bg-white rounded-xl border border-neutral-200 shadow-lg z-[100] hidden overflow-hidden py-1" id="dd-menu-${uid}">
 					${approveItem}
 					${rejectItem}
 					${(approveItem || rejectItem) ? '<div class="border-t border-neutral-100 my-1"></div>' : ''}
@@ -168,6 +170,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	let currentSearch      = '';
 	let currentTypeFilter  = 'all';
 	let currentStatusFilter = 'all';
+	let sortField: 'type' | 'status' | 'createdAt' | null = null;
+	let sortDirection: 'asc' | 'desc' = 'asc';
 
 	/* ── Render ── */
 	function renderTable() {
@@ -186,8 +190,33 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		if (countEl) countEl.textContent = `${filtered.length} of ${allPartners.length} partner${allPartners.length !== 1 ? 's' : ''}`;
 
+		// Sort
+		if (sortField) {
+			filtered.sort((a, b) => {
+				const aVal = (a[sortField!] || '').toLowerCase();
+				const bVal = (b[sortField!] || '').toLowerCase();
+				const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+				return sortDirection === 'asc' ? cmp : -cmp;
+			});
+		}
+
+		// Update sort indicators
+		document.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
+			const icon = th.querySelector('.sort-icon');
+			if (!icon) return;
+			if (th.dataset.sort === sortField) {
+				icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
+				icon.classList.remove('text-neutral-300');
+				icon.classList.add('text-[#0C6B95]');
+			} else {
+				icon.textContent = '↕';
+				icon.classList.remove('text-[#0C6B95]');
+				icon.classList.add('text-neutral-300');
+			}
+		});
+
 		if (filtered.length === 0) {
-			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partners match your filter.</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">No partners match your filter.</td></tr>`;
 			return;
 		}
 
@@ -198,11 +227,52 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${p.email}</td>
 				<td class="px-6 py-3">${typeBadge(p.type)}</td>
 				<td class="px-6 py-3" id="status-cell-${p.uid}">${statusBadge(p.status)}</td>
+				<td class="px-6 py-3">
+					<span class="discount-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit discount">
+						${p.discount ? `<span class="text-emerald-700 font-semibold">${p.discount}%</span>` : '<span class="text-neutral-300">—</span>'}
+					</span>
+				</td>
 				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${p.createdAt}</td>
 				<td class="px-6 py-3" id="action-cell-${p.uid}">${actionDropdown(p.uid, p.status)}</td>
 			</tr>`).join('');
 
 		attachDropdownListeners();
+		attachDiscountListeners();
+	}
+
+	/* ── Discount inline edit ── */
+	function attachDiscountListeners() {
+		document.querySelectorAll<HTMLSpanElement>('.discount-cell').forEach(cell => {
+			cell.addEventListener('click', () => {
+				const uid = cell.dataset.uid!;
+				const partner = allPartners.find(p => p.uid === uid);
+				if (!partner) return;
+
+				const currentVal = partner.discount || 0;
+				cell.innerHTML = `
+					<input type="number" min="0" max="100" step="1" value="${currentVal}"
+						class="w-16 px-2 py-1 text-sm border border-[#0C6B95] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20"
+						id="discount-input-${uid}" />
+					<button class="ml-1 px-2 py-1 bg-[#0C6B95] text-white text-xs rounded-lg hover:bg-[#0a5c82]" id="discount-save-${uid}">Save</button>
+				`;
+
+				const input = document.getElementById(`discount-input-${uid}`) as HTMLInputElement;
+				input.focus();
+				input.select();
+
+				const saveDiscount = async () => {
+					const val = Math.max(0, Math.min(100, parseInt(input.value) || 0));
+					try {
+						await updateDoc(doc(db, 'partners', uid), { discount: val });
+						partner.discount = val;
+						renderTable();
+					} catch (err) { console.error('Failed to save discount:', err); }
+				};
+
+				document.getElementById(`discount-save-${uid}`)?.addEventListener('click', saveDiscount);
+				input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveDiscount(); if (e.key === 'Escape') renderTable(); });
+			});
+		});
 	}
 
 	/* ── Dropdown logic ── */
@@ -220,7 +290,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const uid  = btn.dataset.uid!;
 				const menu = document.getElementById(`dd-menu-${uid}`)!;
 				if (openDropdownUid === uid) { closeAllDropdowns(); }
-				else { closeAllDropdowns(); menu.classList.remove('hidden'); openDropdownUid = uid; }
+				else {
+					closeAllDropdowns();
+					// Position the fixed dropdown below the trigger button
+					const rect = btn.getBoundingClientRect();
+					menu.style.top = `${rect.bottom + 6}px`;
+					menu.style.left = `${rect.right - 176}px`; // 176 = w-44 (11rem)
+					menu.classList.remove('hidden');
+					openDropdownUid = uid;
+				}
 			});
 		});
 
@@ -260,13 +338,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					email:        String(data.email  ?? '—'),
 					type:         String(data.type   ?? '—'),
 					status:       String(data.status ?? 'pending'),
+					discount:     Number(data.discount ?? 0),
 					createdAt:    fmtDate(data.createdAt as { toDate?: () => Date } | undefined),
 				};
 			});
 			renderTable();
 		} catch (e) {
 			console.error('Partners load error:', e);
-			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
 		}
 	}
 
@@ -361,6 +440,20 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	document.getElementById('partners-status-filter')?.addEventListener('change', (e) => {
 		currentStatusFilter = (e.target as HTMLSelectElement).value;
 		renderTable();
+	});
+
+	/* ── Sortable headers ── */
+	document.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
+		th.addEventListener('click', () => {
+			const field = th.dataset.sort as 'type' | 'status' | 'createdAt';
+			if (sortField === field) {
+				sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+			} else {
+				sortField = field;
+				sortDirection = 'asc';
+			}
+			renderTable();
+		});
 	});
 
 	/* ── Auth guard observer ── */

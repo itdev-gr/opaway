@@ -14,6 +14,12 @@ import Layout from '../../layouts/Layout.astro';
 					</svg>
 					Book a Transfer
 				</a>
+				<a href="/book/hourly" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					Rent per Hour
+				</a>
 				<a href="/book/tour" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0C6B95] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -216,7 +222,30 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
 	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+	import { onAuthStateChanged } from 'firebase/auth';
+	import { applyPartnerDiscount } from '../../lib/pricing';
+
+	let partnerDiscount = 0;
+
+	async function detectPartnerDiscount(): Promise<number> {
+		return new Promise((resolve) => {
+			onAuthStateChanged(auth, async (user) => {
+				if (!user) { resolve(0); return; }
+				try {
+					const snap = await getDoc(doc(db, 'partners', user.uid));
+					if (snap.exists()) {
+						const data = snap.data();
+						if (data.status === 'approved' && data.discount > 0) {
+							resolve(data.discount);
+							return;
+						}
+					}
+				} catch {}
+				resolve(0);
+			});
+		});
+	}
 
 	interface TourItem {
 		title: string; description: string; price: number; imageUrl: string;
@@ -351,8 +380,10 @@ import Layout from '../../layouts/Layout.astro';
 			const catalogSection = document.getElementById('catalog-section')!;
 			const catalogGrid    = document.getElementById('tours-catalog-grid')!;
 
-			catalogGrid.innerHTML = docs.map(d => {
+			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(d => {
 				const t = d.data() as TourItem;
+				const dp = applyPartnerDiscount(Number(t.price), partnerDiscount);
+				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
 				return `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
 					<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
@@ -369,7 +400,8 @@ import Layout from '../../layouts/Layout.astro';
 						<div class="flex items-center justify-between">
 							<div>
 								<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider">From</span>
-								<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">€${Number(t.price).toFixed(2)}</p>
+								${showOriginal ? `<del class="text-neutral-400 text-sm block">&euro;${dp.originalPrice.toFixed(2)}</del>` : ""}
+								<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">&euro;${dp.discountedPrice.toFixed(2)}</p>
 							</div>
 							<a
 								href="/book/tour"
@@ -467,5 +499,8 @@ import Layout from '../../layouts/Layout.astro';
 		}
 	});
 
-	loadTours();
+	detectPartnerDiscount().then(d => {
+		partnerDiscount = d;
+		loadTours();
+	});
 </script>

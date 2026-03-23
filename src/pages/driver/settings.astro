@@ -1,0 +1,348 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Settings" activeSection="settings">
+
+	<!-- Loading state -->
+	<div id="settings-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Settings content (hidden until data loads) -->
+	<div id="settings-content" class="hidden space-y-8">
+
+		<!-- Personal Information -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Personal Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Update your personal details.</p>
+
+			<form id="personal-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="fullName" class="block text-sm font-medium text-neutral-700 mb-1.5">Full Name</label>
+						<input type="text" id="fullName" name="fullName"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="phone" class="block text-sm font-medium text-neutral-700 mb-1.5">Phone</label>
+						<input type="tel" id="phone" name="phone"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="email" class="block text-sm font-medium text-neutral-700 mb-1.5">Email</label>
+						<input type="email" id="email" name="email" readonly
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 cursor-not-allowed" />
+					</div>
+					<div>
+						<label for="vat" class="block text-sm font-medium text-neutral-700 mb-1.5">VAT Number</label>
+						<input type="text" id="vat" name="vat"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="personal-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+		<!-- Vehicle Information -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Vehicle Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Manage your fleet details.</p>
+
+			<form id="vehicle-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="numVehicles" class="block text-sm font-medium text-neutral-700 mb-1.5">Number of Vehicles</label>
+						<input type="number" id="numVehicles" name="numVehicles" min="1"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="primaryCarType" class="block text-sm font-medium text-neutral-700 mb-1.5">Primary Car Type</label>
+						<select id="primaryCarType" name="primaryCarType"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors">
+							<option value="">Select type...</option>
+							<option value="Sedan">Sedan</option>
+							<option value="SUV">SUV</option>
+							<option value="Van">Van</option>
+							<option value="Minibus">Minibus</option>
+							<option value="Bus">Bus</option>
+							<option value="Luxury">Luxury</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
+				</div>
+
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-3">Fleet Types</label>
+					<div class="flex flex-wrap gap-3" id="fleet-types-group">
+						{['Sedan', 'SUV', 'Van', 'Minibus', 'Bus', 'Luxury', 'Other'].map((type) => (
+							<label class="flex items-center gap-2 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 cursor-pointer hover:border-[#0C6B95]/40 transition-colors has-[:checked]:bg-[#0C6B95]/5 has-[:checked]:border-[#0C6B95]/40 has-[:checked]:text-[#0C6B95]">
+								<input type="checkbox" name="carTypes" value={type}
+									class="w-4 h-4 rounded border-neutral-300 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+								{type}
+							</label>
+						))}
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Vehicle Info
+					</button>
+					<span id="vehicle-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+		<!-- Account Information -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Account Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Your account details.</p>
+
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1.5">Account Status</p>
+					<span id="account-status-badge"></span>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1.5">Member Since</p>
+					<p id="member-since" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1.5">Partner Type</p>
+					<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#0C6B95]/10 text-[#0C6B95]">Driver</span>
+				</div>
+			</div>
+		</section>
+
+		<!-- Change Password -->
+		<section id="password-section" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Change Password</h2>
+			<p class="text-sm text-neutral-500 mb-6">Update your account password.</p>
+
+			<form id="password-form" class="space-y-5 max-w-md">
+				<div>
+					<label for="currentPassword" class="block text-sm font-medium text-neutral-700 mb-1.5">Current Password</label>
+					<input type="password" id="currentPassword" name="currentPassword" required
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+				</div>
+				<div>
+					<label for="newPassword" class="block text-sm font-medium text-neutral-700 mb-1.5">New Password</label>
+					<input type="password" id="newPassword" name="newPassword" required minlength="6"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+				</div>
+				<div>
+					<label for="confirmPassword" class="block text-sm font-medium text-neutral-700 mb-1.5">Confirm New Password</label>
+					<input type="password" id="confirmPassword" name="confirmPassword" required minlength="6"
+						class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Update Password
+					</button>
+					<span id="password-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { auth, db } from '../../lib/firebase';
+	import { onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+	import { doc, getDoc, updateDoc } from 'firebase/firestore';
+
+	const loadingEl = document.getElementById('settings-loading');
+	const contentEl = document.getElementById('settings-content');
+	const authCheck = document.getElementById('driver-auth-check');
+
+	/* ── Wait for DriverLayout auth check to pass ── */
+	function waitForAuth(): Promise<void> {
+		return new Promise((resolve) => {
+			if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+			const obs = new MutationObserver(() => {
+				if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+			});
+			if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+		});
+	}
+
+	/* ── Status flash helper ── */
+	function showStatus(el: HTMLElement | null, msg: string, success: boolean) {
+		if (!el) return;
+		el.textContent = msg;
+		el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+		el.classList.remove('hidden');
+		setTimeout(() => el.classList.add('hidden'), 4000);
+	}
+
+	/* ── Status badge helper ── */
+	function renderStatusBadge(status: string): string {
+		const map: Record<string, { bg: string; text: string; label: string }> = {
+			approved: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Approved' },
+			pending:  { bg: 'bg-amber-50 border-amber-200',    text: 'text-amber-700',   label: 'Pending'  },
+			rejected: { bg: 'bg-red-50 border-red-200',         text: 'text-red-700',      label: 'Rejected' },
+		};
+		const s = map[status] || map.pending;
+		return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
+	}
+
+	/* ── Main ── */
+	onAuthStateChanged(auth, async (user) => {
+		if (!user) return;
+		await waitForAuth();
+
+		// Load partner data
+		let partnerData: any = {};
+		try {
+			const snap = await getDoc(doc(db, 'partners', user.uid));
+			if (snap.exists()) partnerData = snap.data();
+		} catch (e) {
+			console.error('Failed to load partner data', e);
+		}
+
+		// Populate personal info
+		(document.getElementById('fullName') as HTMLInputElement).value = partnerData.fullName || '';
+		(document.getElementById('phone') as HTMLInputElement).value = partnerData.phone || '';
+		(document.getElementById('email') as HTMLInputElement).value = user.email || '';
+		(document.getElementById('vat') as HTMLInputElement).value = partnerData.vat || '';
+
+		// Populate vehicle info
+		(document.getElementById('numVehicles') as HTMLInputElement).value = partnerData.numVehicles?.toString() || '';
+		(document.getElementById('primaryCarType') as HTMLSelectElement).value = partnerData.primaryCarType || '';
+
+		// Check fleet type checkboxes
+		const carTypes: string[] = partnerData.carTypes || [];
+		document.querySelectorAll<HTMLInputElement>('input[name="carTypes"]').forEach((cb) => {
+			cb.checked = carTypes.includes(cb.value);
+		});
+
+		// Account info
+		const badgeEl = document.getElementById('account-status-badge');
+		if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partnerData.status || 'pending');
+
+		const memberSinceEl = document.getElementById('member-since');
+		if (memberSinceEl && partnerData.createdAt) {
+			const d = partnerData.createdAt.toDate ? partnerData.createdAt.toDate() : new Date(partnerData.createdAt);
+			memberSinceEl.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+		}
+
+		// Hide password section for non-email providers
+		const provider = partnerData.provider || user.providerData?.[0]?.providerId || '';
+		if (provider !== 'password' && provider !== 'email') {
+			document.getElementById('password-section')?.classList.add('hidden');
+		}
+
+		// Show content
+		loadingEl?.classList.add('hidden');
+		contentEl?.classList.remove('hidden');
+
+		/* ── Personal form submit ── */
+		document.getElementById('personal-form')?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const statusEl = document.getElementById('personal-status');
+			const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Saving...';
+
+			try {
+				await updateDoc(doc(db, 'partners', user.uid), {
+					fullName: (document.getElementById('fullName') as HTMLInputElement).value.trim(),
+					phone:    (document.getElementById('phone') as HTMLInputElement).value.trim(),
+					vat:      (document.getElementById('vat') as HTMLInputElement).value.trim(),
+				});
+				showStatus(statusEl, 'Changes saved successfully.', true);
+			} catch (err: any) {
+				showStatus(statusEl, err.message || 'Failed to save changes.', false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Save Changes';
+			}
+		});
+
+		/* ── Vehicle form submit ── */
+		document.getElementById('vehicle-form')?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const statusEl = document.getElementById('vehicle-status');
+			const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Saving...';
+
+			const checked: string[] = [];
+			document.querySelectorAll<HTMLInputElement>('input[name="carTypes"]:checked').forEach((cb) => {
+				checked.push(cb.value);
+			});
+
+			try {
+				await updateDoc(doc(db, 'partners', user.uid), {
+					numVehicles:    parseInt((document.getElementById('numVehicles') as HTMLInputElement).value) || 0,
+					primaryCarType: (document.getElementById('primaryCarType') as HTMLSelectElement).value,
+					carTypes:       checked,
+				});
+				showStatus(statusEl, 'Vehicle info saved successfully.', true);
+			} catch (err: any) {
+				showStatus(statusEl, err.message || 'Failed to save vehicle info.', false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Save Vehicle Info';
+			}
+		});
+
+		/* ── Password form submit ── */
+		document.getElementById('password-form')?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const statusEl = document.getElementById('password-status');
+			const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+
+			const currentPw = (document.getElementById('currentPassword') as HTMLInputElement).value;
+			const newPw     = (document.getElementById('newPassword') as HTMLInputElement).value;
+			const confirmPw = (document.getElementById('confirmPassword') as HTMLInputElement).value;
+
+			if (newPw !== confirmPw) {
+				showStatus(statusEl, 'New passwords do not match.', false);
+				return;
+			}
+			if (newPw.length < 6) {
+				showStatus(statusEl, 'Password must be at least 6 characters.', false);
+				return;
+			}
+
+			btn.disabled = true;
+			btn.textContent = 'Updating...';
+
+			try {
+				const credential = EmailAuthProvider.credential(user.email!, currentPw);
+				await reauthenticateWithCredential(user, credential);
+				await updatePassword(user, newPw);
+
+				(document.getElementById('currentPassword') as HTMLInputElement).value = '';
+				(document.getElementById('newPassword') as HTMLInputElement).value = '';
+				(document.getElementById('confirmPassword') as HTMLInputElement).value = '';
+
+				showStatus(statusEl, 'Password updated successfully.', true);
+			} catch (err: any) {
+				const msg = err.code === 'auth/wrong-password' ? 'Current password is incorrect.'
+					: err.code === 'auth/requires-recent-login' ? 'Please log in again and retry.'
+					: err.message || 'Failed to update password.';
+				showStatus(statusEl, msg, false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Update Password';
+			}
+		});
+	});
+</script>

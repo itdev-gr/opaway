@@ -50,8 +50,31 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 </Layout>
 
 <script>
-	import { db } from '../lib/firebase';
-	import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+	import { db, auth } from '../lib/firebase';
+	import { collection, getDocs, orderBy, query, doc, getDoc } from 'firebase/firestore';
+	import { onAuthStateChanged } from 'firebase/auth';
+	import { applyPartnerDiscount } from '../lib/pricing';
+
+	let partnerDiscount = 0;
+
+	async function detectPartnerDiscount(): Promise<number> {
+		return new Promise((resolve) => {
+			onAuthStateChanged(auth, async (user) => {
+				if (!user) { resolve(0); return; }
+				try {
+					const snap = await getDoc(doc(db, 'partners', user.uid));
+					if (snap.exists()) {
+						const data = snap.data();
+						if (data.status === 'approved' && data.discount > 0) {
+							resolve(data.discount);
+							return;
+						}
+					}
+				} catch {}
+				resolve(0);
+			});
+		});
+	}
 
 	const esc = (s: string) => String(s)
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -68,8 +91,10 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 			const docs = snap.docs.filter(d => d.data().published !== false);
 			if (docs.length === 0) return;
 
-			grid.innerHTML = docs.map(d => {
+			grid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : "") + docs.map(d => {
 				const item = d.data() as { title: string; description: string; price: number; imageUrl: string };
+				const dp = applyPartnerDiscount(Number(item.price), partnerDiscount);
+				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
 				return `
 					<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
 						<!-- Image -->
@@ -88,7 +113,8 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 							<div class="flex items-center justify-between">
 								<div>
 									<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider">From</span>
-									<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">€${Number(item.price).toFixed(2)}</p>
+									${showOriginal ? `<del class="text-neutral-400 text-sm block">&euro;${dp.originalPrice.toFixed(2)}</del>` : ""}
+									<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">&euro;${dp.discountedPrice.toFixed(2)}</p>
 								</div>
 								<a
 									href="/contact"
@@ -111,5 +137,8 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 		}
 	}
 
-	loadCatalog();
+	detectPartnerDiscount().then(d => {
+		partnerDiscount = d;
+		loadCatalog();
+	});
 </script>

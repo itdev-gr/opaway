@@ -2,9 +2,9 @@
 import AdminLayout from '../../components/AdminLayout.astro';
 ---
 
-<AdminLayout pageTitle="Transfers" pageDescription="All transfer bookings." activeSection="transfers">
+<AdminLayout pageTitle="Transfers" activeSection="transfers">
 
-	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm">
 		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4">
 			<div class="flex items-center gap-3">
 				<h2 class="text-base font-semibold text-neutral-800">All Transfers</h2>
@@ -23,17 +23,21 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				<thead>
 					<tr class="bg-neutral-50 text-left">
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">From</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">To</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Driver</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Payment</th>
 					</tr>
 				</thead>
 				<tbody id="transfers-tbody">
-					<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+					<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -54,21 +58,28 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 				<div class="grid grid-cols-2 gap-4">
 					<div class="flex flex-col gap-1.5">
-						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Full Name *</label>
-						<input id="tf-name" type="text" placeholder="John Smith" required
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">First Name *</label>
+						<input id="tf-firstName" type="text" placeholder="John" required
 							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
 					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Name *</label>
+						<input id="tf-lastName" type="text" placeholder="Smith" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
 					<div class="flex flex-col gap-1.5">
 						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email *</label>
 						<input id="tf-email" type="email" placeholder="john@example.com" required
 							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
 					</div>
-				</div>
-
-				<div class="flex flex-col gap-1.5">
-					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</label>
-					<input id="tf-phone" type="text" placeholder="+30 69..."
-						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</label>
+						<input id="tf-phone" type="text" placeholder="+30 69..."
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
 				</div>
 
 				<div class="grid grid-cols-2 gap-4">
@@ -124,15 +135,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 
 				<div class="flex flex-col gap-1.5">
-					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</label>
-					<select id="tf-status"
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</label>
+					<select id="tf-rideStatus"
 						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
 						<option value="new">New</option>
-						<option value="pending">Pending</option>
-						<option value="payed">Payed</option>
-						<option value="planning">Planning</option>
+						<option value="assigned">Assigned</option>
+						<option value="pickup">Pickup</option>
+						<option value="onboard">Onboard</option>
+						<option value="completed">Completed</option>
 						<option value="cancelled">Cancelled</option>
-						<option value="done">Done</option>
 					</select>
 				</div>
 
@@ -155,33 +166,57 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { db } from '../../lib/firebase';
-	import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { collection, getDocs, updateDoc, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 
-	/* ── Status colours ── */
-	const STATUS_COLORS: Record<string, string> = {
+	/* ── Ride-status colours ── */
+	const RIDE_STATUS_COLORS: Record<string, string> = {
 		new:       'bg-sky-50 text-sky-700 border-sky-200',
-		pending:   'bg-amber-50 text-amber-700 border-amber-200',
-		payed:     'bg-emerald-50 text-emerald-700 border-emerald-200',
-		planning:  'bg-violet-50 text-violet-700 border-violet-200',
-		cancelled: 'bg-red-50 text-red-600 border-red-200',
-		done:      'bg-neutral-100 text-neutral-600 border-neutral-300',
+		assigned:  'bg-amber-50 text-amber-700 border-amber-200',
+		pickup:    'bg-violet-50 text-violet-700 border-violet-200',
+		onboard:   'bg-indigo-50 text-indigo-700 border-indigo-200',
+		completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+		cancelled: 'bg-red-50 text-red-700 border-red-200',
 	};
 
-	const STATUS_OPTIONS = ['new', 'pending', 'payed', 'planning', 'cancelled', 'done'];
+	const RIDE_STATUS_OPTIONS = ['new', 'assigned', 'pickup', 'onboard', 'completed', 'cancelled'];
 
-	const applySelectColor = (sel: HTMLSelectElement) => {
-		const cls = STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
-		sel.className = `status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	/* ── Payment-status colours ── */
+	const PAYMENT_STATUS_COLORS: Record<string, string> = {
+		paid:    'bg-emerald-50 text-emerald-700',
+		pending: 'bg-amber-50 text-amber-700',
 	};
 
-	const buildStatusSelect = (docId: string, current: string) => {
+	/* ── Helpers ── */
+	const escHtml = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+	const applyRideStatusColor = (sel: HTMLSelectElement) => {
+		const cls = RIDE_STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		sel.className = `ride-status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	};
+
+	const buildRideStatusSelect = (docId: string, current: string) => {
 		const val = current?.toLowerCase() ?? 'new';
-		const opts = STATUS_OPTIONS.map(s =>
+		const opts = RIDE_STATUS_OPTIONS.map(s =>
 			`<option value="${s}" ${val === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
 		).join('');
-		return `<select class="status-select" data-id="${docId}" data-col="transfers">${opts}</select>`;
+		return `<select class="ride-status-select" data-id="${docId}">${opts}</select>`;
 	};
 
+	const buildPaymentBadge = (method: string, status: string) => {
+		const m = (method || 'cash').charAt(0).toUpperCase() + (method || 'cash').slice(1);
+		const s = (status || 'pending').toLowerCase();
+		const label = s.charAt(0).toUpperCase() + s.slice(1);
+		const cls = PAYMENT_STATUS_COLORS[s] ?? 'bg-neutral-50 text-neutral-600';
+		return `<span class="inline-flex items-center text-xs font-medium rounded-full px-2.5 py-0.5 whitespace-nowrap ${cls}">${escHtml(m)}&nbsp;&middot;&nbsp;${escHtml(label)}</span>`;
+	};
+
+	const buildDriverCell = (docId: string, driver: string) => {
+		const display = driver || 'Unassigned';
+		const cls = driver ? 'text-neutral-800' : 'text-neutral-400 italic';
+		return `<span class="driver-text cursor-pointer hover:underline ${cls}" data-id="${docId}" data-driver="${escHtml(driver)}">${escHtml(display)}</span>`;
+	};
+
+	/* ── Load transfers ── */
 	async function loadTransfers() {
 		const tbody = document.getElementById('transfers-tbody')!;
 		const countEl = document.getElementById('transfers-count');
@@ -189,43 +224,120 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const snap = await getDocs(query(collection(db, 'transfers'), orderBy('createdAt', 'desc')));
 			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
 			if (snap.empty) {
-				tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">No transfers found.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">No transfers found.</td></tr>`;
 				return;
 			}
 			tbody.innerHTML = snap.docs.map(document => {
 				const d = document.data() as Record<string, unknown>;
-				const date = d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—';
+
+				/* Date */
+				const dateVal = d.date ? String(d.date) : '—';
+
+				/* Time */
+				const timeVal = d.time ? String(d.time) : '—';
+
+				/* Name: firstName + lastName, fallback to name */
+				const firstName = d.firstName ? String(d.firstName) : '';
+				const lastName = d.lastName ? String(d.lastName) : '';
+				const fullName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : (d.name ? String(d.name) : '—');
+
+				/* Phone */
+				const phone = d.phone ? String(d.phone) : '—';
+
+				/* Vehicle */
+				const vehicle = d.vehicleName ? String(d.vehicleName) : (d.vehicle ? String(d.vehicle) : '—');
+
+				/* Ride status: rideStatus field, fallback to status for legacy */
+				const rideStatus = d.rideStatus ? String(d.rideStatus) : (d.status ? String(d.status) : 'new');
+
+				/* Payment */
+				const paymentMethod = d.paymentMethod ? String(d.paymentMethod) : 'cash';
+				const paymentStatus = d.paymentStatus ? String(d.paymentStatus) : 'pending';
+
+				/* Driver */
+				const driver = d.driver ? String(d.driver) : '';
+
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
-					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600">${d.from ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600">${d.to ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(dateVal)}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(timeVal)}</td>
+					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${escHtml(fullName)}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${escHtml(String(d.email ?? '—'))}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${escHtml(phone)}</td>
+					<td class="px-6 py-3 text-neutral-600">${escHtml(String(d.from ?? '—'))}</td>
+					<td class="px-6 py-3 text-neutral-600">${escHtml(String(d.to ?? '—'))}</td>
 					<td class="px-6 py-3 text-neutral-600 text-center">${d.passengers ?? '—'}</td>
-					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${d.vehicle ?? '—'}</td>
-					<td class="px-6 py-3">${buildStatusSelect(document.id, String(d.status ?? 'new'))}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(vehicle)}</td>
+					<td class="px-6 py-3 whitespace-nowrap">${buildDriverCell(document.id, driver)}</td>
+					<td class="px-6 py-3">${buildRideStatusSelect(document.id, rideStatus)}</td>
+					<td class="px-6 py-3">${buildPaymentBadge(paymentMethod, paymentStatus)}</td>
 				</tr>`;
 			}).join('');
 
-			/* Apply colours to all selects */
-			document.querySelectorAll<HTMLSelectElement>('.status-select').forEach(applySelectColor);
-		} catch {
-			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+			/* Apply colours to all ride-status selects */
+			document.querySelectorAll<HTMLSelectElement>('.ride-status-select').forEach(applyRideStatusColor);
+		} catch (err) {
+			console.error('Failed to load transfers:', err);
+			tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
 		}
 	}
 
-	/* ── Status change delegation ── */
+	/* ── Ride-status change delegation ── */
 	document.getElementById('transfers-tbody')?.addEventListener('change', async (e) => {
 		const sel = e.target as HTMLSelectElement;
-		if (!sel.classList.contains('status-select')) return;
+		if (!sel.classList.contains('ride-status-select')) return;
 		const docId = sel.dataset.id!;
 		const newStatus = sel.value;
-		applySelectColor(sel);
+		applyRideStatusColor(sel);
 		try {
-			await updateDoc(doc(db, 'transfers', docId), { status: newStatus });
+			await updateDoc(doc(db, 'transfers', docId), { rideStatus: newStatus });
 		} catch (err) {
-			console.error('Failed to update status:', err);
+			console.error('Failed to update ride status:', err);
 		}
+	});
+
+	/* ── Driver inline edit delegation ── */
+	document.getElementById('transfers-tbody')?.addEventListener('click', (e) => {
+		const span = (e.target as HTMLElement).closest('.driver-text') as HTMLElement | null;
+		if (!span) return;
+
+		const docId = span.dataset.id!;
+		const currentDriver = span.dataset.driver ?? '';
+		const td = span.parentElement!;
+
+		/* Replace span with input */
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.value = currentDriver;
+		input.placeholder = 'Driver name';
+		input.className = 'px-2 py-1 border border-[#0C6B95] rounded-lg text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 bg-white w-full min-w-[120px]';
+		td.replaceChild(input, span);
+		input.focus();
+		input.select();
+
+		const save = async () => {
+			const newDriver = input.value.trim();
+			try {
+				await updateDoc(doc(db, 'transfers', docId), { driver: newDriver });
+			} catch (err) {
+				console.error('Failed to update driver:', err);
+			}
+			/* Replace input back with span */
+			const newSpan = document.createElement('span');
+			const display = newDriver || 'Unassigned';
+			const cls = newDriver ? 'text-neutral-800' : 'text-neutral-400 italic';
+			newSpan.className = `driver-text cursor-pointer hover:underline ${cls}`;
+			newSpan.dataset.id = docId;
+			newSpan.dataset.driver = newDriver;
+			newSpan.textContent = display;
+			td.replaceChild(newSpan, input);
+		};
+
+		let saved = false;
+		input.addEventListener('blur', () => { if (!saved) { saved = true; save(); } });
+		input.addEventListener('keydown', (ev) => {
+			if (ev.key === 'Enter') { ev.preventDefault(); if (!saved) { saved = true; save(); } }
+			if (ev.key === 'Escape') { if (!saved) { saved = true; save(); } }
+		});
 	});
 
 	/* ── Modal ── */
@@ -246,7 +358,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
 
-		const name       = val('tf-name');
+		const firstName  = val('tf-firstName');
+		const lastName   = val('tf-lastName');
 		const email      = val('tf-email');
 		const phone      = val('tf-phone');
 		const from       = val('tf-from');
@@ -256,9 +369,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const passengers = parseInt(val('tf-passengers') || '1', 10);
 		const vehicle    = val('tf-vehicle');
 		const notes      = val('tf-notes');
-		const status     = val('tf-status') || 'new';
+		const rideStatus = val('tf-rideStatus') || 'new';
 
-		if (!name || !email || !from || !to || !date || !passengers) {
+		if (!firstName || !lastName || !email || !from || !to || !date || !passengers) {
 			errorEl.textContent = 'Please fill in all required fields.';
 			errorEl.classList.remove('hidden');
 			return;
@@ -268,9 +381,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.textContent = 'Saving…';
 		try {
 			await addDoc(collection(db, 'transfers'), {
-				name, email, phone: phone || '', from, to, date,
-				time: time || '', passengers, vehicle: vehicle || '',
-				notes: notes || '', status,
+				firstName, lastName, email,
+				phone: phone || '',
+				from, to, date,
+				time: time || '',
+				passengers,
+				vehicleName: vehicle || '',
+				notes: notes || '',
+				rideStatus,
+				paymentStatus: 'pending',
+				paymentMethod: 'cash',
+				driver: '',
 				createdAt: serverTimestamp(),
 				addedByAdmin: true,
 			});
