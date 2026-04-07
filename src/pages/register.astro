@@ -310,7 +310,7 @@ import Layout from '../layouts/Layout.astro';
 			});
 			if (error) throw error;
 			if (data.user) {
-				await ensureUserProfile({ id: data.user.id, email: data.user.email }, name || undefined);
+				ensureUserProfile({ id: data.user.id, email: data.user.email }, name || undefined).catch(() => {});
 			}
 			window.location.href = '/';
 		} catch (err: unknown) {
@@ -320,7 +320,6 @@ import Layout from '../layouts/Layout.astro';
 				return;
 			}
 			showError(msg || 'Registration failed. Please try again.');
-		} finally {
 			submitBtn.disabled = false;
 		}
 	});

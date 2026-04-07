@@ -194,12 +194,12 @@ import Layout from '../layouts/Layout.astro';
 		try {
 			const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 			if (error) throw error;
-			await ensureUserProfile({ id: data.user.id, email: data.user.email });
+			// Fire-and-forget — don't let profile sync block login
+			ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
 			window.location.href = '/';
 		} catch (err: unknown) {
 			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
 			showError(msg);
-		} finally {
 			submitBtn.disabled = false;
 		}
 	});

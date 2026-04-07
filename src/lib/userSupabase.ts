@@ -16,7 +16,7 @@ export async function ensureUserProfile(
 		.from('users')
 		.select('id, type')
 		.eq('id', user.id)
-		.single();
+		.maybeSingle();
 
 	if (!existing) {
 		await supabase.from('users').insert({
