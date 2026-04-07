@@ -156,11 +156,12 @@
 			nameEl.textContent = user.user_metadata?.full_name?.trim() || user.email || 'Account';
 			nameEl.setAttribute('title', nameEl.textContent);
 			try {
-				const { data } = await supabase
+				const { data, error } = await supabase
 					.from('users')
 					.select('display_name, type')
 					.eq('id', user.id)
-					.single();
+					.maybeSingle();
+				if (error) console.warn('Navbar user query error:', error.message);
 				if (data) {
 					if (data.display_name?.trim()) {
 						nameEl.textContent = data.display_name.trim();
@@ -199,14 +200,14 @@
 		});
 	}
 
-	// Run on first load
+	// Run on first load — use getSession() to ensure active JWT for DB queries
 	updateActiveLink();
-	supabase.auth.getUser().then(({ data }) => updateAuthNav(data.user));
+	supabase.auth.getSession().then(({ data }) => updateAuthNav(data.session?.user ?? null));
 
 	// Re-run on view transition navigation
 	document.addEventListener('astro:page-load', async () => {
 		updateActiveLink();
-		const { data } = await supabase.auth.getUser();
-		await updateAuthNav(data.user);
+		const { data } = await supabase.auth.getSession();
+		await updateAuthNav(data.session?.user ?? null);
 	});
 </script>
