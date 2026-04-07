@@ -22,6 +22,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span> Transfer</span>
 		<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Tour</span>
 		<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violet-500"></span> Experience</span>
+		<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Request</span>
 	</div>
 
 	<!-- Calendar -->
@@ -58,7 +59,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	interface Booking {
 		id: string;
-		type: 'transfer' | 'tour' | 'experience';
+		type: 'transfer' | 'tour' | 'experience' | 'request';
 		firstName: string;
 		lastName: string;
 		from: string;
@@ -77,9 +78,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	let selectedDay: string | null = null;
 
 	// Helpers
-	function parseBooking(row: any, type: 'transfer' | 'tour' | 'experience'): Booking {
+	function parseBooking(row: any, type: 'transfer' | 'tour' | 'experience' | 'request'): Booking {
 		const d = row;
 		let dateStr = d.date || '';
+		if (!dateStr && d.created_at) {
+			const cd = new Date(d.created_at);
+			if (!isNaN(cd.getTime())) dateStr = cd.toISOString().slice(0, 10);
+		}
 		return {
 			id: d.id,
 			type,
@@ -162,6 +167,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				if (types.has('transfer')) html += `<span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span>`;
 				if (types.has('tour')) html += `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>`;
 				if (types.has('experience')) html += `<span class="w-2 h-2 rounded-full bg-violet-500"></span>`;
+				if (types.has('request')) html += `<span class="w-2 h-2 rounded-full bg-amber-500"></span>`;
 				html += `</div>`;
 			}
 
@@ -214,6 +220,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				transfer: 'bg-sky-50 text-[#0C6B95] border-sky-200',
 				tour: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 				experience: 'bg-violet-50 text-violet-700 border-violet-200',
+				request: 'bg-amber-50 text-amber-700 border-amber-200',
 			};
 			const cls = map[type] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
 			return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls} capitalize">${type}</span>`;
@@ -258,16 +265,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	async function loadAllBookings() {
 		try {
-			const [transfersRes, toursRes, experiencesRes] = await Promise.all([
+			const [transfersRes, toursRes, experiencesRes, requestsRes] = await Promise.all([
 				supabase.from('transfers').select('*').order('created_at', { ascending: false }),
 				supabase.from('tours').select('*').order('created_at', { ascending: false }),
 				supabase.from('experiences').select('*').order('created_at', { ascending: false }),
+				supabase.from('requests').select('*').order('created_at', { ascending: false }),
 			]);
 
 			allBookings = [];
 			(transfersRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'transfer')));
 			(toursRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'tour')));
 			(experiencesRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'experience')));
+			(requestsRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'request')));
 
 			renderCalendar();
 		} catch (e) {
