@@ -244,7 +244,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			}
 			tbody.innerHTML = rows.map(d => {
 				/* Date */
-				const dateVal = d.date ? String(d.date) : '—';
+				const dateVal = d.date ? String(d.date) : (d.created_at ? new Date(d.created_at).toLocaleDateString('en-CA') : '—');
 
 				/* Time */
 				const timeVal = d.time ? String(d.time) : '—';

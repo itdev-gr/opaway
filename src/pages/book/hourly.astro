@@ -404,6 +404,7 @@ const vehicles = [
 		const errorText = document.getElementById('form-error-text')!;
 
 		if (!pickup) { errorText.textContent = 'Please enter a pickup location.'; errorEl.classList.remove('hidden'); return; }
+		if (!date) { errorText.textContent = 'Please select a pickup date.'; errorEl.classList.remove('hidden'); return; }
 		if (hours < 3) { errorText.textContent = 'Minimum rental is 3 hours.'; errorEl.classList.remove('hidden'); return; }
 		if (!selectedVehicle) { errorText.textContent = 'Please select a vehicle.'; errorEl.classList.remove('hidden'); return; }
 

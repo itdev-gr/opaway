@@ -337,6 +337,10 @@ const vehicles = [
 			alert('Please fill in both the pickup and destination locations.');
 			return;
 		}
+		if (!date) {
+			alert('Please select a pickup date.');
+			return;
+		}
 
 		const params = new URLSearchParams({ from, to, date: date || '', time: time || '', passengers });
 		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
