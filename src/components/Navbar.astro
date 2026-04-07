@@ -203,6 +203,10 @@
 	updateActiveLink();
 	supabase.auth.getUser().then(({ data }) => updateAuthNav(data.user));
 
-	// Re-run active link highlight on view transition navigation
-	document.addEventListener('astro:page-load', () => updateActiveLink());
+	// Re-run on view transition navigation
+	document.addEventListener('astro:page-load', async () => {
+		updateActiveLink();
+		const { data } = await supabase.auth.getUser();
+		await updateAuthNav(data.user);
+	});
 </script>
