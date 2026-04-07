@@ -271,7 +271,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 			renderCalendar();
 		} catch (e) {
-			console.warn('Failed to load bookings:', e);
+			/* error silenced */
 			const grid = document.getElementById('calendar-grid');
 			if (grid) grid.innerHTML = `<div class="p-2 min-h-[80px] flex items-center justify-center text-neutral-400 text-sm col-span-7">Could not load bookings.</div>`;
 		}

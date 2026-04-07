@@ -75,7 +75,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 					? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>'
 					: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>';
 				const monthLabel = monthNames[(r.month || 1) - 1] || '';
-				const amount = r.amount != null ? `€${parseFloat(r.amount).toFixed(2)}` : '-';
+				const amount = r.amount != null ? `€${(Number(r.amount) || 0).toFixed(2)}` : '-';
 				const reportBtn = r.report_url
 					? `<a href="${r.report_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[#0C6B95]/30 text-[#0C6B95] hover:bg-[#0C6B95]/5 transition-colors">
 						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>

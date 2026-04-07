@@ -266,7 +266,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						if (discErr) throw discErr;
 						partner.discount = val;
 						renderTable();
-					} catch (err) { console.error('Failed to save discount:', err); }
+					} catch (err) { /* error silenced */ }
 				};
 
 				document.getElementById(`discount-save-${uid}`)?.addEventListener('click', saveDiscount);
@@ -344,7 +344,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			});
 			renderTable();
 		} catch (e) {
-			console.error('Partners load error:', e);
+			/* error silenced */
 			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
 		}
 	}
@@ -418,7 +418,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			closeModal();
 			renderTable();
 		} catch (e) {
-			console.error('Action error:', e);
+			/* error silenced */
 			yesBtn.textContent = 'Error — retry';
 			yesBtn.disabled = false;
 		}

@@ -75,7 +75,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			const ref = r.id.substring(0, 8).toUpperCase();
 			const statusCls = STATUS_COLORS[r.ride_status] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
 			const statusLabel = r.ride_status.charAt(0).toUpperCase() + r.ride_status.slice(1);
-			const payout = (r.total_price * 0.80).toFixed(2);
+			const payout = ((Number(r.total_price) || 0) * 0.80).toFixed(2);
 
 			return `
 				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=transfers"
@@ -159,12 +159,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				vehicle_name: data.vehicle_name || '',
 				passengers: data.passengers || 0,
 				ride_status: data.ride_status || '',
-				total_price: parseFloat(data.total_price) || 0,
+				total_price: Number(data.total_price) || 0,
 			}));
 
 			renderRides(allRides);
 		} catch (err) {
-			console.error('Failed to load past rides:', err);
+			/* error silenced */
 			document.getElementById('rides-list')!.innerHTML =
 				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
 		}

@@ -5,13 +5,67 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 <ProfileLayout>
 	<ProfileContent label="Experiences" title="My experiences" description="View and manage your experience bookings.">
-		<p class="text-neutral-500 text-sm">No experiences yet. <a href="/experiences" class="text-[#0C6B95] font-medium hover:underline">Browse experiences</a>.</p>
+		<div id="experiences-container">
+			<p class="text-neutral-500 text-sm">Loading...</p>
+		</div>
 	</ProfileContent>
 </ProfileLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
 
-	const { data: { user } } = await supabase.auth.getUser();
-	if (!user) window.location.href = '/login';
+	async function init() {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) { window.location.href = '/login'; return; }
+
+		const container = document.getElementById('experiences-container');
+		if (!container) return;
+
+		const { data: experiences, error } = await supabase
+			.from('experiences')
+			.select('*')
+			.eq('uid', user.id)
+			.order('created_at', { ascending: false });
+
+		if (error) {
+			container.innerHTML = '<p class="text-red-500 text-sm">Failed to load experiences.</p>';
+			return;
+		}
+
+		if (!experiences || experiences.length === 0) {
+			container.innerHTML = '<p class="text-neutral-500 text-sm">No experiences yet. <a href="/experiences" class="text-[#0C6B95] font-medium hover:underline">Browse experiences</a>.</p>';
+			return;
+		}
+
+		const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+		const rows = experiences.map(t => `
+			<tr class="border-b border-neutral-100">
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.date)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.experience_name || t.experience)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.pickup)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.participants)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.status || t.ride_status)}</td>
+			</tr>
+		`).join('');
+
+		container.innerHTML = `
+			<div class="overflow-x-auto">
+				<table class="w-full text-left">
+					<thead>
+						<tr class="border-b border-neutral-200">
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Experience</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Participants</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+						</tr>
+					</thead>
+					<tbody>${rows}</tbody>
+				</table>
+			</div>
+		`;
+	}
+
+	document.addEventListener('astro:page-load', init);
 </script>

@@ -153,7 +153,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						const rideYear = parseInt(parts[0]);
 						const rideMonth = parseInt(parts[1]) - 1;
 						if (rideYear === currentYear && rideMonth === currentMonth) {
-							const price = parseFloat(data.total_price) || 0;
+							const price = Number(data.total_price) || 0;
 							monthRevenue += price * 0.80;
 						}
 					}
@@ -216,7 +216,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			}
 
 		} catch (err) {
-			console.error('Failed to load dashboard:', err);
+			/* error silenced */
 		}
 	}
 

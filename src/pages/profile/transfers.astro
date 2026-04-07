@@ -5,13 +5,69 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 <ProfileLayout>
 	<ProfileContent label="Bookings" title="My Transfers" description="View and manage your transfer bookings.">
-		<p class="text-neutral-500 text-sm">No transfers yet. <a href="/book/transfer" class="text-[#0C6B95] font-medium hover:underline">Book a transfer</a>.</p>
+		<div id="transfers-container">
+			<p class="text-neutral-500 text-sm">Loading...</p>
+		</div>
 	</ProfileContent>
 </ProfileLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
 
-	const { data: { user } } = await supabase.auth.getUser();
-	if (!user) window.location.href = '/login';
+	async function init() {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) { window.location.href = '/login'; return; }
+
+		const container = document.getElementById('transfers-container');
+		if (!container) return;
+
+		const { data: transfers, error } = await supabase
+			.from('transfers')
+			.select('*')
+			.eq('uid', user.id)
+			.order('created_at', { ascending: false });
+
+		if (error) {
+			container.innerHTML = '<p class="text-red-500 text-sm">Failed to load transfers.</p>';
+			return;
+		}
+
+		if (!transfers || transfers.length === 0) {
+			container.innerHTML = '<p class="text-neutral-500 text-sm">No transfers yet. <a href="/book/transfer" class="text-[#0C6B95] font-medium hover:underline">Book a transfer</a>.</p>';
+			return;
+		}
+
+		const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+		const rows = transfers.map(t => `
+			<tr class="border-b border-neutral-100">
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.date)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.from)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.to)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.vehicle_name)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.ride_status)}</td>
+				<td class="py-3 px-4 text-sm font-medium text-neutral-900">${t.total_price != null ? '€' + Number(t.total_price).toFixed(2) : '—'}</td>
+			</tr>
+		`).join('');
+
+		container.innerHTML = `
+			<div class="overflow-x-auto">
+				<table class="w-full text-left">
+					<thead>
+						<tr class="border-b border-neutral-200">
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">From</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">To</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Price</th>
+						</tr>
+					</thead>
+					<tbody>${rows}</tbody>
+				</table>
+			</div>
+		`;
+	}
+
+	document.addEventListener('astro:page-load', init);
 </script>

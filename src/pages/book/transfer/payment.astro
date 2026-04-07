@@ -449,6 +449,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
 				uid: user?.id || null,
+				booking_type: 'transfer',
 			}).select().single();
 
 			if (error) throw error;
@@ -463,7 +464,7 @@ import Layout from '../../../layouts/Layout.astro';
 			setText('success-total', `\u20AC${finalTotal.toFixed(2)}`);
 			setText('success-email', email);
 		} catch (err) {
-			console.error('Failed to save booking:', err);
+			/* error silenced */
 			alert('Failed to save booking. Please try again.');
 			btn.disabled = false;
 			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;

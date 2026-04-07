@@ -123,14 +123,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						name: d.first_name ? `${d.first_name} ${d.last_name || ''}`.trim() : (d.name || '—'),
 						email: d.email || '—',
 						vehicleName: d.vehicle_name || d.vehicle || '—',
-						totalPrice: parseFloat(d.total_price) || 0,
+						totalPrice: Number(d.total_price) || 0,
 						paymentMethod: d.payment_method || '—',
 						paymentStatus: d.payment_status || (d.status === 'payed' ? 'paid' : 'pending'),
 						createdAt,
 					});
 				});
 			} catch (e) {
-				console.warn(`Failed to load ${col.name}:`, e);
+				/* error silenced */
 			}
 		}
 

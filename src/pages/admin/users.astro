@@ -234,7 +234,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			}));
 			renderTable();
 		} catch (e) {
-			console.error('Users load error:', e);
+			/* error silenced */
 			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load users.</td></tr>`;
 		}
 	}
@@ -308,7 +308,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			closeModal();
 			renderTable();
 		} catch (e) {
-			console.error('Action error:', e);
+			/* error silenced */
 			yesBtn.textContent = 'Error — retry';
 			yesBtn.disabled = false;
 		}

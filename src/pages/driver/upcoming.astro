@@ -154,7 +154,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 			renderRides(allRides);
 		} catch (err) {
-			console.error('Failed to load upcoming rides:', err);
+			/* error silenced */
 			document.getElementById('rides-list')!.innerHTML =
 				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
 		}

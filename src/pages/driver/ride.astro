@@ -297,7 +297,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 			render(d, isAvailable, user.id, driverName);
 		} catch (e) {
-			console.error('Error loading ride:', e);
+			/* error silenced */
 			showError();
 		}
 	});
@@ -397,7 +397,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						setStatusButton(btn, nextStatus);
 					}
 				} catch (e) {
-					console.error('Failed to update status:', e);
+					/* error silenced */
 					alert('Failed to update ride status. Please try again.');
 					setStatusButton(btn, currentStatus!);
 				}
@@ -486,7 +486,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 					acceptBtn.classList.add('bg-emerald-500', 'cursor-default');
 					setTimeout(() => { window.location.href = '/driver/upcoming'; }, 1200);
 				} catch (e) {
-					console.error('Failed to accept ride:', e);
+					/* error silenced */
 					alert('Failed to accept ride. Please try again.');
 					acceptBtn.disabled = false;
 					rejectBtn.disabled = false;

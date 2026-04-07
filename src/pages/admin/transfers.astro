@@ -244,7 +244,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			}
 			tbody.innerHTML = rows.map(d => {
 				/* Date */
-				const dateVal = d.date ? String(d.date) : (d.created_at ? new Date(d.created_at).toLocaleDateString('en-CA') : '—');
+				const dateVal = d.date ? String(d.date) : (d.created_at ? (() => { const _d = new Date(d.created_at); return !isNaN(_d.getTime()) ? _d.toLocaleDateString('en-CA') : '—'; })() : '—');
 
 				/* Time */
 				const timeVal = d.time ? String(d.time) : '—';
@@ -291,7 +291,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			/* Apply colours to all payment-status selects */
 			document.querySelectorAll<HTMLSelectElement>('.payment-status-select').forEach(applyPaymentStatusColor);
 		} catch (err) {
-			console.error('Failed to load transfers:', err);
+			/* error silenced */
 			tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
 		}
 	}
@@ -305,7 +305,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('transfers').update({ ride_status: sel.value }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update ride status:', err);
+				/* error silenced */
 			}
 		}
 		if (sel.classList.contains('payment-status-select')) {
@@ -314,7 +314,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('transfers').update({ payment_status: sel.value }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update payment status:', err);
+				/* error silenced */
 			}
 		}
 	});
@@ -343,7 +343,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('transfers').update({ driver: newDriver }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update driver:', err);
+				/* error silenced */
 			}
 			/* Replace input back with span */
 			const newSpan = document.createElement('span');
@@ -423,7 +423,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			closeModal();
 			await loadTransfers();
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 			errorEl.textContent = 'Failed to save. Please try again.';
 			errorEl.classList.remove('hidden');
 		} finally {

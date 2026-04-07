@@ -388,7 +388,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					const item = items.find(i => i.id === id);
 					if (item) item.active = !isActive;
 					renderGrid();
-				} catch (err) { console.error(err); btn.disabled = false; }
+				} catch (err) { /* error silenced */ btn.disabled = false; }
 			});
 		});
 
@@ -419,7 +419,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			items = (data ?? []).map((d: any) => ({ id: d.id, slug: d.slug, name: d.name, models: d.models, image: d.image, maxPassengers: d.max_passengers, maxLuggage: d.max_luggage, badge: d.badge, sortOrder: d.sort_order, active: d.active }));
 			renderGrid();
 		} catch (e) {
-			console.error('Load error:', e);
+			/* error silenced */
 			grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-10">Could not load vehicles.</p>`;
 		}
 	}
@@ -465,7 +465,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			setStatus('Vehicle added successfully!', 'text-emerald-600 font-medium');
 			setTimeout(() => setStatus('', ''), 4000);
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 			setStatus('Error adding vehicle. Please try again.', 'text-red-500');
 		} finally {
 			submitBtn.disabled = false;
@@ -490,7 +490,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			if (delErr) throw delErr;
 			items = items.filter(i => i.id !== pendingDeleteId);
 			renderGrid();
-		} catch (err) { console.error(err); }
+		} catch (err) { /* error silenced */ }
 		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
 		closeDeleteModal();
 	});
@@ -559,7 +559,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			renderGrid();
 			closeEditModal();
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 			editStatus.textContent = 'Error saving changes. Please try again.';
 			editStatus.className = 'text-sm text-red-500';
 		} finally {

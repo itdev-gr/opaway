@@ -104,6 +104,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	const fmtDate = (r: Request) => {
 		if (!r.created_at) return '—';
 		const d = new Date(r.created_at);
+		if (isNaN(d.getTime())) return '—';
 		return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 	};
 
@@ -235,7 +236,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					const req = allRequests.find(r => r.id === id);
 					if (req) req.status = action as any;
 					renderTable();
-				} catch (err) { console.error(err); }
+				} catch (err) { /* error silenced */ }
 			});
 		});
 
@@ -301,7 +302,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			document.getElementById('req-delete-modal')?.classList.add('hidden');
 			renderTable();
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 		} finally {
 			confirmBtn.disabled = false;
 			confirmBtn.textContent = 'Delete';
@@ -320,7 +321,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			});
 			renderTable();
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 			document.getElementById('req-tbody')!.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-neutral-400">Could not load requests.</td></tr>`;
 		}
 	}

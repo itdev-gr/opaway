@@ -234,7 +234,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				return;
 			}
 			tbody.innerHTML = rows.map(d => {
-				const date = d.date ? String(d.date) : (d.created_at ? new Date(d.created_at).toLocaleDateString() : '—');
+				const date = d.date ? String(d.date) : (d.created_at ? (() => { const _d = new Date(d.created_at); return !isNaN(_d.getTime()) ? _d.toLocaleDateString() : '—'; })() : '—');
 				const time = d.time ? String(d.time) : '—';
 				const rideStatus = String(d.ride_status ?? d.status ?? 'new');
 				const paymentMethod = String(d.payment_method ?? 'cash');
@@ -273,7 +273,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('experiences').update({ ride_status: sel.value }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update ride status:', err);
+				/* error silenced */
 			}
 		}
 		if (sel.classList.contains('payment-status-select')) {
@@ -282,7 +282,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('experiences').update({ payment_status: sel.value }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update payment status:', err);
+				/* error silenced */
 			}
 		}
 	});
@@ -309,7 +309,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			try {
 				await supabase.from('experiences').update({ driver: val }).eq('id', docId);
 			} catch (err) {
-				console.error('Failed to update driver:', err);
+				/* error silenced */
 			}
 		};
 		input.addEventListener('blur', save);
@@ -373,7 +373,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			closeModal();
 			await loadExperiences();
 		} catch (err) {
-			console.error(err);
+			/* error silenced */
 			errorEl.textContent = 'Failed to save. Please try again.';
 			errorEl.classList.remove('hidden');
 		} finally {

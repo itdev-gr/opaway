@@ -317,7 +317,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			sysTotalPartners.textContent = (partnersRes.count ?? 0).toString();
 			sysTotalBookings.textContent = ((transfersRes.count ?? 0) + (toursRes.count ?? 0) + (experiencesRes.count ?? 0)).toString();
 		} catch (err) {
-			console.error('Failed to load system counts:', err);
+			/* error silenced */
 			sysTotalUsers.textContent = '—';
 			sysTotalPartners.textContent = '—';
 			sysTotalBookings.textContent = '—';

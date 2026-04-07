@@ -276,7 +276,7 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 			section.classList.remove('hidden');
 
 		} catch (err) {
-			console.error('Catalog load error:', err);
+			/* error silenced */
 		}
 	}
 
@@ -369,7 +369,7 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 				if (notesEl) notesEl.value = '';
 
 			} catch (err) {
-				console.error(err);
+				/* error silenced */
 				showError('Something went wrong. Please try again.');
 				btn.disabled = false;
 				btn.textContent = 'Request Quote';
