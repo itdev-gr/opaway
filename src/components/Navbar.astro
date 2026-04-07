@@ -1,7 +1,7 @@
 ---
 ---
 
-<nav transition:persist class="absolute top-0 left-0 right-0 z-50 bg-white/80 text-black font-sans flex items-center justify-between px-6 py-1 lg:px-10">
+<nav class="absolute top-0 left-0 right-0 z-50 bg-white/80 text-black font-sans flex items-center justify-between px-6 py-1 lg:px-10">
 	<!-- Logo -->
 	<a href="/" class="flex items-center shrink-0" aria-label="Opawey - Αρχική">
 		<img src="/logo-opawey.png" alt="Opawey" class="h-24 w-auto object-contain" width="280" height="96" />
@@ -133,7 +133,8 @@
 <script>
 	import { supabase } from '../lib/supabase';
 
-	function updateActiveLink() {
+	async function initNavbar() {
+		// Active link highlight
 		const pathname = window.location.pathname;
 		document.querySelectorAll('[data-navlink]').forEach((el) => {
 			const link = el as HTMLElement;
@@ -142,15 +143,18 @@
 			link.classList.toggle('border-black', isActive);
 			link.classList.toggle('border-transparent', !isActive);
 		});
-	}
 
-	function updateAuthUI(user: { id: string; email?: string | null; user_metadata?: Record<string, any> } | null, dbType?: string | null, dbName?: string | null, isDriver?: boolean) {
+		// Auth state — get current session from localStorage (instant, no network)
 		const guest = document.getElementById('nav-auth-guest');
 		const userEl = document.getElementById('nav-auth-user');
 		const nameEl = document.getElementById('nav-user-name');
 		const adminBtn = document.getElementById('nav-admin-btn');
 		const driverBtn = document.getElementById('nav-driver-btn');
 
+		const { data: { session } } = await supabase.auth.getSession();
+		const user = session?.user ?? null;
+
+		// Toggle guest vs logged-in UI
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
 
@@ -158,66 +162,42 @@
 		if (adminBtn) { adminBtn.classList.add('hidden'); adminBtn.classList.remove('inline-flex'); }
 		if (driverBtn) { driverBtn.classList.add('hidden'); driverBtn.classList.remove('inline-flex'); }
 
-		if (nameEl && user) {
-			const displayName = dbName?.trim() || user.user_metadata?.full_name?.trim() || user.email || 'Account';
-			nameEl.textContent = displayName;
-			nameEl.setAttribute('title', displayName);
+		if (!user || !nameEl) return;
+
+		// Set name from auth metadata first (instant)
+		nameEl.textContent = user.user_metadata?.full_name?.trim() || user.email || 'Account';
+		nameEl.setAttribute('title', nameEl.textContent);
+
+		// Then fetch DB data for role + display name
+		const { data: dbUser } = await supabase
+			.from('users')
+			.select('display_name, type')
+			.eq('id', user.id)
+			.maybeSingle();
+
+		if (dbUser?.display_name?.trim()) {
+			nameEl.textContent = dbUser.display_name.trim();
+			nameEl.setAttribute('title', dbUser.display_name.trim());
 		}
 
-		if (user && dbType === 'admin' && adminBtn) {
+		if (dbUser?.type === 'admin' && adminBtn) {
 			adminBtn.classList.remove('hidden');
 			adminBtn.classList.add('inline-flex');
 		}
 
-		if (user && isDriver && driverBtn) {
+		// Check driver status
+		const { data: pData } = await supabase
+			.from('partners')
+			.select('type, status')
+			.eq('id', user.id)
+			.maybeSingle();
+
+		if (pData?.type === 'driver' && pData?.status === 'approved' && driverBtn) {
 			driverBtn.classList.remove('hidden');
 			driverBtn.classList.add('inline-flex');
 		}
 	}
 
-	// Guard against duplicate subscriptions (Navbar uses transition:persist)
-	if (!(window as any).__navAuthBound) {
-		(window as any).__navAuthBound = true;
-		// onAuthStateChange fires on INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED
-		// The session passed in the callback is always current — use it for DB queries
-		supabase.auth.onAuthStateChange(async (_event, session) => {
-			if (!session?.user) {
-				updateAuthUI(null);
-				return;
-			}
-			const user = session.user;
-			let dbType: string | null = null;
-			let dbName: string | null = null;
-			let isDriver = false;
-
-			try {
-				const { data } = await supabase
-					.from('users')
-					.select('display_name, type')
-					.eq('id', user.id)
-					.maybeSingle();
-				if (data) {
-					dbType = data.type;
-					dbName = data.display_name;
-				}
-			} catch { /* ignore */ }
-
-			try {
-				const { data: pData } = await supabase
-					.from('partners')
-					.select('type, status')
-					.eq('id', user.id)
-					.maybeSingle();
-				if (pData?.type === 'driver' && pData?.status === 'approved') {
-					isDriver = true;
-				}
-			} catch { /* ignore */ }
-
-			updateAuthUI(user, dbType, dbName, isDriver);
-		});
-	}
-
-	// Active link highlight
-	updateActiveLink();
-	document.addEventListener('astro:page-load', () => updateActiveLink());
+	// Run on every page load (initial + view transitions)
+	document.addEventListener('astro:page-load', initNavbar);
 </script>

@@ -183,43 +183,45 @@ const nav = [
 <script>
 	import { supabase } from '../lib/supabase';
 
-	const overlay    = document.getElementById('driver-sidebar-overlay');
-	const sidebar    = document.getElementById('driver-sidebar');
-	const burger     = document.getElementById('driver-burger');
-	const authCheck  = document.getElementById('driver-auth-check');
-	const userNameEl = document.getElementById('driver-user-name');
+	function initDriverLayout() {
+		const overlay    = document.getElementById('driver-sidebar-overlay');
+		const sidebar    = document.getElementById('driver-sidebar');
+		const burger     = document.getElementById('driver-burger');
+		const authCheck  = document.getElementById('driver-auth-check');
+		const userNameEl = document.getElementById('driver-user-name');
 
-	/* ── Sidebar mobile toggle ── */
-	function openSidebar()  { sidebar?.classList.remove('-translate-x-full'); overlay?.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
-	function closeSidebar() { sidebar?.classList.add('-translate-x-full');    overlay?.classList.add('hidden');    document.body.style.overflow = ''; }
-	burger?.addEventListener('click', () => sidebar?.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar());
-	overlay?.addEventListener('click', closeSidebar);
-	sidebar?.querySelectorAll('a').forEach(l => l.addEventListener('click', closeSidebar));
+		function openSidebar()  { sidebar?.classList.remove('-translate-x-full'); overlay?.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+		function closeSidebar() { sidebar?.classList.add('-translate-x-full');    overlay?.classList.add('hidden');    document.body.style.overflow = ''; }
+		burger?.addEventListener('click', () => sidebar?.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar());
+		overlay?.addEventListener('click', closeSidebar);
+		sidebar?.querySelectorAll('a').forEach(l => l.addEventListener('click', closeSidebar));
 
-	/* ── Logout ── */
-	document.getElementById('driver-sidebar-logout')?.addEventListener('click', async () => {
-		closeSidebar();
-		try { await supabase.auth.signOut(); } catch { /* ignore */ }
-		window.location.href = '/login';
-	});
+		document.getElementById('driver-sidebar-logout')?.addEventListener('click', () => {
+			closeSidebar();
+			window.location.href = '/logout';
+		});
 
-	/* ── Driver guard ── */
-	supabase.auth.onAuthStateChange(async (_event, session) => {
-		if (!session?.user) { window.location.href = '/login'; return; }
-		try {
-			const { data } = await supabase
-				.from('partners')
-				.select('type, status, full_name')
-				.eq('id', session.user.id)
-				.single();
-			if (data?.type !== 'driver' || data?.status !== 'approved') { window.location.href = '/login'; return; }
-			if (userNameEl) {
-				userNameEl.textContent =
-					data?.full_name?.trim() ||
-					session.user.user_metadata?.full_name?.trim() ||
-					session.user.email || 'Driver';
-			}
-			authCheck?.classList.add('hidden');
-		} catch { window.location.href = '/login'; }
-	});
+		/* ── Driver guard (one-time check) ── */
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) { window.location.href = '/login'; return; }
+			try {
+				const { data } = await supabase
+					.from('partners')
+					.select('type, status, full_name')
+					.eq('id', session.user.id)
+					.maybeSingle();
+				if (data?.type !== 'driver' || data?.status !== 'approved') { window.location.href = '/login'; return; }
+				if (userNameEl) {
+					userNameEl.textContent =
+						data?.full_name?.trim() ||
+						session.user.user_metadata?.full_name?.trim() ||
+						session.user.email || 'Driver';
+				}
+				authCheck?.classList.add('hidden');
+			} catch { window.location.href = '/login'; }
+		})();
+	}
+
+	document.addEventListener('astro:page-load', initDriverLayout);
 </script>

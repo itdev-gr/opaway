@@ -191,26 +191,8 @@ import Layout from '../layouts/Layout.astro';
 	import { supabase } from '../lib/supabase';
 	import { ensureUserProfile } from '../lib/userSupabase';
 
-	// Toggle password visibility
-	const toggleBtn = document.getElementById('toggle-password');
-	const passwordInput = document.getElementById('password-input') as HTMLInputElement;
-	const confirmInput = document.getElementById('confirm-input') as HTMLInputElement;
-	const eyeIcon = document.getElementById('eye-icon');
-	const eyeOffIcon = document.getElementById('eye-off-icon');
-
-	toggleBtn?.addEventListener('click', () => {
-		const isHidden = passwordInput.type === 'password';
-		passwordInput.type = isHidden ? 'text' : 'password';
-		eyeIcon?.classList.toggle('hidden', isHidden);
-		eyeOffIcon?.classList.toggle('hidden', !isHidden);
-	});
-
-	// Password strength
-	const strengthBar = document.getElementById('strength-bar-wrap');
-	const strengthLabel = document.getElementById('strength-label');
-	const segments = ['s1', 's2', 's3', 's4'].map(id => document.getElementById(id));
 	const colors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500'];
-	const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+	const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
 
 	function getStrength(pwd: string): number {
 		let score = 0;
@@ -221,107 +203,93 @@ import Layout from '../layouts/Layout.astro';
 		return score;
 	}
 
-	passwordInput?.addEventListener('input', () => {
-		const val = passwordInput.value;
-		if (!val) {
-			strengthBar?.classList.add('hidden');
-			strengthLabel?.classList.add('hidden');
-			return;
+	function initRegister() {
+		const toggleBtn = document.getElementById('toggle-password');
+		const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+		const confirmInput = document.getElementById('confirm-input') as HTMLInputElement;
+		const eyeIcon = document.getElementById('eye-icon');
+		const eyeOffIcon = document.getElementById('eye-off-icon');
+		const strengthBar = document.getElementById('strength-bar-wrap');
+		const strengthLabel = document.getElementById('strength-label');
+		const segments = ['s1', 's2', 's3', 's4'].map(id => document.getElementById(id));
+		const matchMsg = document.getElementById('match-msg');
+		const registerForm = document.getElementById('register-form') as HTMLFormElement;
+		const authError = document.getElementById('auth-error') as HTMLElement;
+		const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+		function showError(message: string) {
+			if (authError) { authError.textContent = message; authError.classList.remove('hidden'); }
 		}
-		strengthBar?.classList.remove('hidden');
-		strengthLabel?.classList.remove('hidden');
-		const score = getStrength(val);
-		segments.forEach((seg, i) => {
-			if (!seg) return;
-			seg.className = `h-full rounded-full transition-all duration-300`;
-			if (i < score) {
-				seg.style.width = '100%';
-				seg.classList.add(colors[score - 1]);
-			} else {
-				seg.style.width = '0';
+		function hideError() { authError?.classList.add('hidden'); }
+
+		function checkMatch() {
+			if (!confirmInput?.value) { matchMsg?.classList.add('hidden'); return; }
+			const match = passwordInput?.value === confirmInput.value;
+			if (matchMsg) {
+				matchMsg.classList.remove('hidden');
+				matchMsg.textContent = match ? 'Passwords match' : 'Passwords do not match';
+				matchMsg.className = `text-xs ${match ? 'text-green-500' : 'text-red-400'}`;
+			}
+		}
+
+		toggleBtn?.addEventListener('click', () => {
+			const isHidden = passwordInput.type === 'password';
+			passwordInput.type = isHidden ? 'text' : 'password';
+			eyeIcon?.classList.toggle('hidden', isHidden);
+			eyeOffIcon?.classList.toggle('hidden', !isHidden);
+		});
+
+		passwordInput?.addEventListener('input', () => {
+			const val = passwordInput.value;
+			if (!val) { strengthBar?.classList.add('hidden'); strengthLabel?.classList.add('hidden'); return; }
+			strengthBar?.classList.remove('hidden');
+			strengthLabel?.classList.remove('hidden');
+			const score = getStrength(val);
+			segments.forEach((seg, i) => {
+				if (!seg) return;
+				seg.className = 'h-full rounded-full transition-all duration-300';
+				if (i < score) { seg.style.width = '100%'; seg.classList.add(colors[score - 1]); }
+				else { seg.style.width = '0'; }
+			});
+			if (strengthLabel) {
+				strengthLabel.textContent = strengthLabels[score - 1] ?? '';
+				strengthLabel.className = `text-xs ${['text-red-400','text-orange-400','text-yellow-500','text-green-500'][score - 1] ?? 'text-neutral-400'}`;
+			}
+			checkMatch();
+		});
+
+		confirmInput?.addEventListener('input', checkMatch);
+
+		registerForm?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			hideError();
+			const email = (registerForm.querySelector('[name="email"]') as HTMLInputElement)?.value?.trim();
+			const password = (registerForm.querySelector('[name="password"]') as HTMLInputElement)?.value;
+			const confirm = (registerForm.querySelector('[name="confirm_password"]') as HTMLInputElement)?.value;
+			if (!email || !password) { showError('Please enter email and password.'); return; }
+			if (password !== confirm) { showError('Passwords do not match.'); return; }
+			if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
+			submitBtn.disabled = true;
+			try {
+				const name = (registerForm.querySelector('[name="name"]') as HTMLInputElement)?.value?.trim();
+				const { data, error } = await supabase.auth.signUp({
+					email, password,
+					options: { data: { full_name: name || '' } }
+				});
+				if (error) throw error;
+				if (data.user) {
+					ensureUserProfile({ id: data.user.id, email: data.user.email }, name || undefined).catch(() => {});
+				}
+				window.location.href = '/';
+			} catch (err: unknown) {
+				const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
+				if (msg.includes('already registered')) { showError('This email is already registered. Try signing in instead.'); return; }
+				showError(msg || 'Registration failed. Please try again.');
+				submitBtn.disabled = false;
 			}
 		});
-		if (strengthLabel) {
-			strengthLabel.textContent = labels[score - 1] ?? '';
-			strengthLabel.className = `text-xs ${['text-red-400','text-orange-400','text-yellow-500','text-green-500'][score - 1] ?? 'text-neutral-400'}`;
-		}
-		checkMatch();
-	});
-
-	// Confirm password match
-	const matchMsg = document.getElementById('match-msg');
-	function checkMatch() {
-		if (!confirmInput.value) { matchMsg?.classList.add('hidden'); return; }
-		const match = passwordInput.value === confirmInput.value;
-		if (matchMsg) {
-			matchMsg.classList.remove('hidden');
-			matchMsg.textContent = match ? 'Passwords match' : 'Passwords do not match';
-			matchMsg.className = `text-xs ${match ? 'text-green-500' : 'text-red-400'}`;
-		}
-	}
-	confirmInput?.addEventListener('input', checkMatch);
-
-	// Supabase Auth: email/password sign-up
-	const registerForm = document.getElementById('register-form') as HTMLFormElement;
-	const authError = document.getElementById('auth-error') as HTMLElement;
-	const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-
-	function showError(message: string) {
-		if (authError) {
-			authError.textContent = message;
-			authError.classList.remove('hidden');
-		}
 	}
 
-	function hideError() {
-		authError?.classList.add('hidden');
-	}
-
-	registerForm?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		hideError();
-		const email = (registerForm.querySelector('[name="email"]') as HTMLInputElement)?.value?.trim();
-		const password = (registerForm.querySelector('[name="password"]') as HTMLInputElement)?.value;
-		const confirm = (registerForm.querySelector('[name="confirm_password"]') as HTMLInputElement)?.value;
-		if (!email || !password) {
-			showError('Please enter email and password.');
-			return;
-		}
-		if (password !== confirm) {
-			showError('Passwords do not match.');
-			return;
-		}
-		if (password.length < 8) {
-			showError('Password must be at least 8 characters.');
-			return;
-		}
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if (!emailRegex.test(email)) {
-			showError('Please enter a valid email address.');
-			return;
-		}
-		submitBtn.disabled = true;
-		try {
-			const name = (registerForm.querySelector('[name="name"]') as HTMLInputElement)?.value?.trim();
-			const { data, error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: { data: { full_name: name || '' } }
-			});
-			if (error) throw error;
-			if (data.user) {
-				ensureUserProfile({ id: data.user.id, email: data.user.email }, name || undefined).catch(() => {});
-			}
-			window.location.href = '/';
-		} catch (err: unknown) {
-			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
-			if (msg.includes('already registered')) {
-				showError('This email is already registered. Try signing in instead.');
-				return;
-			}
-			showError(msg || 'Registration failed. Please try again.');
-			submitBtn.disabled = false;
-		}
-	});
-
+	document.addEventListener('astro:page-load', initRegister);
 </script>
