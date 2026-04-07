@@ -1,0 +1,271 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Drivers" pageDescription="Manage your driver staff" activeSection="drivers">
+
+	<!-- Loading state -->
+	<div id="drivers-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Drivers content -->
+	<div id="drivers-content" class="hidden space-y-6">
+
+		<!-- Header -->
+		<div class="flex items-center justify-between">
+			<p class="text-sm text-neutral-500"><span id="drivers-count">0</span> driver(s) registered</p>
+			<button type="button" id="btn-add-driver"
+				class="px-5 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors flex items-center gap-2">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+				</svg>
+				Add Driver
+			</button>
+		</div>
+
+		<!-- Table -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm text-left">
+					<thead class="bg-neutral-50 border-b border-neutral-200">
+						<tr>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
+						</tr>
+					</thead>
+					<tbody id="drivers-tbody" class="divide-y divide-neutral-100">
+						<tr><td colspan="4" class="px-6 py-10 text-center text-neutral-400">No drivers yet.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Add/Edit Driver Modal -->
+		<div id="driver-modal" class="fixed inset-0 z-50 hidden">
+			<div class="absolute inset-0 bg-black/40" id="driver-modal-overlay"></div>
+			<div class="absolute inset-0 flex items-center justify-center p-4">
+				<div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+					<button type="button" id="driver-modal-close" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+					<h3 id="driver-modal-title" class="text-lg font-bold text-neutral-900 mb-6">Add Driver</h3>
+					<form id="driver-form" class="space-y-5">
+						<input type="hidden" id="df-id" />
+						<div class="grid grid-cols-1 gap-5">
+							<div>
+								<label for="df-name" class="block text-sm font-medium text-neutral-700 mb-1.5">Full Name *</label>
+								<input type="text" id="df-name" required
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="df-phone" class="block text-sm font-medium text-neutral-700 mb-1.5">Phone</label>
+								<input type="tel" id="df-phone"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="df-email" class="block text-sm font-medium text-neutral-700 mb-1.5">Email</label>
+								<input type="email" id="df-email"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="df-languages" class="block text-sm font-medium text-neutral-700 mb-1.5">Languages</label>
+								<input type="text" id="df-languages" placeholder="e.g. English, Greek"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+						</div>
+						<div class="flex items-center gap-3 pt-2">
+							<button type="submit" id="df-submit"
+								class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+								Save Driver
+							</button>
+							<span id="df-status" class="text-sm hidden"></span>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initDrivers() {
+		const loadingEl  = document.getElementById('drivers-loading');
+		const contentEl  = document.getElementById('drivers-content');
+		const authCheck  = document.getElementById('driver-auth-check');
+		const tbody      = document.getElementById('drivers-tbody');
+		const countEl    = document.getElementById('drivers-count');
+		const modal      = document.getElementById('driver-modal');
+		const modalTitle = document.getElementById('driver-modal-title');
+		const form       = document.getElementById('driver-form') as HTMLFormElement | null;
+
+		let userId = '';
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		function showStatus(msg: string, success: boolean) {
+			const el = document.getElementById('df-status');
+			if (!el) return;
+			el.textContent = msg;
+			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			el.classList.remove('hidden');
+			setTimeout(() => el.classList.add('hidden'), 4000);
+		}
+
+		function openModal(driver?: any) {
+			if (!modal || !form) return;
+			form.reset();
+			(document.getElementById('df-id') as HTMLInputElement).value = driver?.id || '';
+			if (driver) {
+				if (modalTitle) modalTitle.textContent = 'Edit Driver';
+				(document.getElementById('df-name') as HTMLInputElement).value = driver.full_name || '';
+				(document.getElementById('df-phone') as HTMLInputElement).value = driver.phone || '';
+				(document.getElementById('df-email') as HTMLInputElement).value = driver.email || '';
+				(document.getElementById('df-languages') as HTMLInputElement).value = driver.languages || '';
+			} else {
+				if (modalTitle) modalTitle.textContent = 'Add Driver';
+			}
+			modal.classList.remove('hidden');
+		}
+
+		function closeModal() {
+			modal?.classList.add('hidden');
+		}
+
+		function renderRows(drivers: any[]) {
+			if (!tbody) return;
+			if (countEl) countEl.textContent = String(drivers.length);
+			if (drivers.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-neutral-400">No drivers yet.</td></tr>';
+				return;
+			}
+			tbody.innerHTML = drivers.map(d => {
+				const active = d.status === 'active';
+				const badge = active
+					? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>'
+					: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">Inactive</span>';
+				return `<tr class="hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-4">${badge}</td>
+					<td class="px-6 py-4 font-medium text-neutral-800">${d.full_name || '-'}</td>
+					<td class="px-6 py-4 text-neutral-600">${d.phone || '-'}</td>
+					<td class="px-6 py-4">
+						<div class="flex items-center gap-2">
+							<button data-edit="${d.id}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors text-neutral-600">Edit</button>
+							<button data-toggle="${d.id}" data-current="${d.status}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors text-neutral-600">${active ? 'Deactivate' : 'Activate'}</button>
+							<button data-delete="${d.id}" class="text-xs px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors text-red-600">Delete</button>
+						</div>
+					</td>
+				</tr>`;
+			}).join('');
+
+			// Edit handlers
+			tbody.querySelectorAll<HTMLButtonElement>('[data-edit]').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					const { data } = await supabase.from('driver_staff').select('*').eq('id', btn.dataset.edit).single();
+					if (data) openModal(data);
+				});
+			});
+
+			// Toggle handlers
+			tbody.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					const newStatus = btn.dataset.current === 'active' ? 'inactive' : 'active';
+					await supabase.from('driver_staff').update({ status: newStatus }).eq('id', btn.dataset.toggle);
+					loadDrivers();
+				});
+			});
+
+			// Delete handlers
+			tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					if (!confirm('Delete this driver?')) return;
+					await supabase.from('driver_staff').delete().eq('id', btn.dataset.delete);
+					loadDrivers();
+				});
+			});
+		}
+
+		async function loadDrivers() {
+			const { data, error } = await supabase
+				.from('driver_staff')
+				.select('*')
+				.eq('partner_id', userId)
+				.order('created_at', { ascending: false });
+			if (!error) renderRows(data || []);
+		}
+
+		// Modal events
+		document.getElementById('btn-add-driver')?.addEventListener('click', () => openModal());
+		document.getElementById('driver-modal-overlay')?.addEventListener('click', closeModal);
+		document.getElementById('driver-modal-close')?.addEventListener('click', closeModal);
+
+		// Form submit
+		form?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const btn = document.getElementById('df-submit') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Saving...';
+
+			const payload = {
+				partner_id: userId,
+				full_name:  (document.getElementById('df-name') as HTMLInputElement).value.trim(),
+				phone:      (document.getElementById('df-phone') as HTMLInputElement).value.trim() || null,
+				email:      (document.getElementById('df-email') as HTMLInputElement).value.trim() || null,
+				languages:  (document.getElementById('df-languages') as HTMLInputElement).value.trim() || null,
+				status:     'active',
+			};
+
+			try {
+				const existingId = (document.getElementById('df-id') as HTMLInputElement).value;
+				if (existingId) {
+					const { error } = await supabase.from('driver_staff').update(payload).eq('id', existingId);
+					if (error) throw error;
+					showStatus('Driver updated.', true);
+				} else {
+					const { error } = await supabase.from('driver_staff').insert(payload);
+					if (error) throw error;
+					showStatus('Driver added.', true);
+				}
+				closeModal();
+				loadDrivers();
+			} catch (err: any) {
+				showStatus(err.message || 'Failed to save.', false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Save Driver';
+			}
+		});
+
+		// Init
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			userId = session.user.id;
+			await waitForAuth();
+			await loadDrivers();
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initDrivers();
+	document.addEventListener('astro:page-load', initDrivers);
+</script>

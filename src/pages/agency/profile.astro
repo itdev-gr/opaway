@@ -1,0 +1,186 @@
+---
+import AgencyLayout from '../../components/AgencyLayout.astro';
+---
+
+<AgencyLayout pageTitle="Profile" pageDescription="Your agency registration details" activeSection="profile">
+
+	<!-- Loading state -->
+	<div id="profile-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Profile content -->
+	<div id="profile-content" class="hidden space-y-8">
+
+		<!-- Agency Information -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Agency Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Your agency registration details. Contact support to update.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Agency Name</p>
+					<p id="p-agency-name" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Agency Type</p>
+					<p id="p-agency-type" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">VAT Number</p>
+					<p id="p-vat" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Agency Phone</p>
+					<p id="p-agency-phone" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Agency Email</p>
+					<p id="p-agency-email" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Contact Person -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Contact Person</h2>
+			<p class="text-sm text-neutral-500 mb-6">Primary contact for this agency account.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Contact Name</p>
+					<p id="p-contact-name" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Contact Phone</p>
+					<p id="p-contact-phone" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Contact Email</p>
+					<p id="p-contact-email" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Location & Status -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Location &amp; Status</h2>
+			<p class="text-sm text-neutral-500 mb-6">Your account status and registered location.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Location</p>
+					<p id="p-location" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Country</p>
+					<p id="p-country" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">ZIP Code</p>
+					<p id="p-zip" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Website</p>
+					<p id="p-website" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Partner Type</p>
+					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Account Status</p>
+					<span id="p-status-badge"></span>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Member Since</p>
+					<p id="p-created" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+			</div>
+		</section>
+
+	</div>
+</AgencyLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initAgencyProfile() {
+		const loadingEl = document.getElementById('profile-loading');
+		const contentEl = document.getElementById('profile-content');
+		const authCheck = document.getElementById('agency-auth-check');
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		function renderStatusBadge(status: string): string {
+			const map: Record<string, { bg: string; text: string; label: string }> = {
+				approved: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Approved' },
+				pending:  { bg: 'bg-amber-50 border-amber-200',    text: 'text-amber-700',   label: 'Pending'  },
+				rejected: { bg: 'bg-red-50 border-red-200',         text: 'text-red-700',      label: 'Rejected' },
+			};
+			const s = map[status] || map.pending;
+			return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
+		}
+
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			await waitForAuth();
+
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('*')
+				.eq('id', session.user.id)
+				.single();
+
+			if (!partner) {
+				if (loadingEl) loadingEl.innerHTML = '<p class="text-neutral-500 text-sm">Profile data not found.</p>';
+				return;
+			}
+
+			const set = (id: string, val: string) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = val || '-';
+			};
+
+			set('p-agency-name', partner.agency_name);
+			set('p-agency-type', partner.agency_type);
+			set('p-vat', partner.vat);
+			set('p-agency-phone', partner.phone);
+			set('p-agency-email', partner.email);
+			set('p-contact-name', partner.contact_name);
+			set('p-contact-phone', partner.contact_phone);
+			set('p-contact-email', partner.contact_email);
+			set('p-location', partner.location);
+			set('p-country', partner.country);
+			set('p-zip', partner.zip);
+			set('p-website', partner.website);
+			set('p-type', partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-');
+
+			const badgeEl = document.getElementById('p-status-badge');
+			if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partner.status || 'pending');
+
+			if (partner.created_at) {
+				const d = new Date(partner.created_at);
+				set('p-created', d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
+			}
+
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initAgencyProfile();
+	document.addEventListener('astro:page-load', initAgencyProfile);
+</script>

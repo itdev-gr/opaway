@@ -181,9 +181,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Payment-status colours ── */
 	const PAYMENT_STATUS_COLORS: Record<string, string> = {
-		paid:    'bg-emerald-50 text-emerald-700',
-		pending: 'bg-amber-50 text-amber-700',
+		pending:        'bg-amber-50 text-amber-700',
+		paid:           'bg-emerald-50 text-emerald-700',
+		paid_to_driver: 'bg-teal-50 text-teal-700',
+		cancelled:      'bg-red-50 text-red-700',
 	};
+
+	const PAYMENT_STATUS_OPTIONS = [
+		{ value: 'pending',        label: 'Pending Payment' },
+		{ value: 'paid',           label: 'Paid' },
+		{ value: 'paid_to_driver', label: 'Paid to Driver' },
+		{ value: 'cancelled',      label: 'Cancelled' },
+	];
 
 	/* ── Helpers ── */
 	const escHtml = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -201,12 +210,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		return `<select class="ride-status-select" data-id="${docId}">${opts}</select>`;
 	};
 
-	const buildPaymentBadge = (method: string, status: string) => {
-		const m = (method || 'cash').charAt(0).toUpperCase() + (method || 'cash').slice(1);
+	const applyPaymentStatusColor = (sel: HTMLSelectElement) => {
+		const cls = PAYMENT_STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600';
+		sel.className = `payment-status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer ${cls}`;
+	};
+
+	const buildPaymentBadge = (docId: string, method: string, status: string) => {
 		const s = (status || 'pending').toLowerCase();
-		const label = s.charAt(0).toUpperCase() + s.slice(1);
-		const cls = PAYMENT_STATUS_COLORS[s] ?? 'bg-neutral-50 text-neutral-600';
-		return `<span class="inline-flex items-center text-xs font-medium rounded-full px-2.5 py-0.5 whitespace-nowrap ${cls}">${escHtml(m)}&nbsp;&middot;&nbsp;${escHtml(label)}</span>`;
+		const opts = PAYMENT_STATUS_OPTIONS.map(o =>
+			`<option value="${o.value}" ${s === o.value ? 'selected' : ''}>${o.label}</option>`
+		).join('');
+		return `<select class="payment-status-select" data-id="${docId}">${opts}</select>`;
 	};
 
 	const buildDriverCell = (docId: string, driver: string) => {
@@ -268,12 +282,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(vehicle)}</td>
 					<td class="px-6 py-3 whitespace-nowrap">${buildDriverCell(d.id, driver)}</td>
 					<td class="px-6 py-3">${buildRideStatusSelect(d.id, rideStatus)}</td>
-					<td class="px-6 py-3">${buildPaymentBadge(paymentMethod, paymentStatus)}</td>
+					<td class="px-6 py-3">${buildPaymentBadge(d.id, paymentMethod, paymentStatus)}</td>
 				</tr>`;
 			}).join('');
 
 			/* Apply colours to all ride-status selects */
 			document.querySelectorAll<HTMLSelectElement>('.ride-status-select').forEach(applyRideStatusColor);
+			/* Apply colours to all payment-status selects */
+			document.querySelectorAll<HTMLSelectElement>('.payment-status-select').forEach(applyPaymentStatusColor);
 		} catch (err) {
 			console.error('Failed to load transfers:', err);
 			tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
@@ -283,14 +299,23 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* ── Ride-status change delegation ── */
 	document.getElementById('transfers-tbody')?.addEventListener('change', async (e) => {
 		const sel = e.target as HTMLSelectElement;
-		if (!sel.classList.contains('ride-status-select')) return;
-		const docId = sel.dataset.id!;
-		const newStatus = sel.value;
-		applyRideStatusColor(sel);
-		try {
-			await supabase.from('transfers').update({ ride_status: newStatus }).eq('id', docId);
-		} catch (err) {
-			console.error('Failed to update ride status:', err);
+		if (sel.classList.contains('ride-status-select')) {
+			const docId = sel.dataset.id!;
+			applyRideStatusColor(sel);
+			try {
+				await supabase.from('transfers').update({ ride_status: sel.value }).eq('id', docId);
+			} catch (err) {
+				console.error('Failed to update ride status:', err);
+			}
+		}
+		if (sel.classList.contains('payment-status-select')) {
+			const docId = sel.dataset.id!;
+			applyPaymentStatusColor(sel);
+			try {
+				await supabase.from('transfers').update({ payment_status: sel.value }).eq('id', docId);
+			} catch (err) {
+				console.error('Failed to update payment status:', err);
+			}
 		}
 	});
 

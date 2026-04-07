@@ -1,0 +1,191 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Payment Data" pageDescription="Manage your payment method and bank details" activeSection="payment-data">
+
+	<!-- Loading state -->
+	<div id="pd-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Payment Data content -->
+	<div id="pd-content" class="hidden space-y-8">
+
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Payment Method</h2>
+			<p class="text-sm text-neutral-500 mb-6">Choose how you want to receive payments.</p>
+
+			<form id="pd-form" class="space-y-6">
+
+				<!-- Payment method radios -->
+				<div class="flex flex-wrap gap-4">
+					<label class="flex items-center gap-3 px-5 py-3 bg-neutral-50 border border-neutral-200 rounded-xl cursor-pointer hover:border-[#0C6B95]/40 transition-colors has-[:checked]:bg-[#0C6B95]/5 has-[:checked]:border-[#0C6B95]/40">
+						<input type="radio" name="payment_method" value="bank" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/20" checked />
+						<span class="text-sm font-medium text-neutral-700">Bank Transfer</span>
+					</label>
+					<label class="flex items-center gap-3 px-5 py-3 bg-neutral-50 border border-neutral-200 rounded-xl cursor-pointer hover:border-[#0C6B95]/40 transition-colors has-[:checked]:bg-[#0C6B95]/5 has-[:checked]:border-[#0C6B95]/40">
+						<input type="radio" name="payment_method" value="stripe" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+						<span class="text-sm font-medium text-neutral-700">Stripe</span>
+					</label>
+				</div>
+
+				<!-- Bank fields -->
+				<div id="bank-fields" class="space-y-5">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+						<div>
+							<label for="pd-bank-name" class="block text-sm font-medium text-neutral-700 mb-1.5">Bank Name</label>
+							<input type="text" id="pd-bank-name"
+								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+						</div>
+						<div>
+							<label for="pd-iban" class="block text-sm font-medium text-neutral-700 mb-1.5">IBAN</label>
+							<input type="text" id="pd-iban"
+								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+						</div>
+						<div>
+							<label for="pd-swift" class="block text-sm font-medium text-neutral-700 mb-1.5">SWIFT / BIC</label>
+							<input type="text" id="pd-swift"
+								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+						</div>
+					</div>
+				</div>
+
+				<!-- Stripe fields -->
+				<div id="stripe-fields" class="space-y-5 hidden">
+					<div class="max-w-md">
+						<label for="pd-stripe-id" class="block text-sm font-medium text-neutral-700 mb-1.5">Stripe Account ID</label>
+						<input type="text" id="pd-stripe-id" placeholder="acct_..."
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit" id="pd-submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Payment Data
+					</button>
+					<span id="pd-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initPaymentData() {
+		const loadingEl   = document.getElementById('pd-loading');
+		const contentEl   = document.getElementById('pd-content');
+		const authCheck   = document.getElementById('driver-auth-check');
+		const form        = document.getElementById('pd-form') as HTMLFormElement | null;
+		const bankFields  = document.getElementById('bank-fields');
+		const stripeFields = document.getElementById('stripe-fields');
+
+		let userId = '';
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		function showStatus(msg: string, success: boolean) {
+			const el = document.getElementById('pd-status');
+			if (!el) return;
+			el.textContent = msg;
+			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			el.classList.remove('hidden');
+			setTimeout(() => el.classList.add('hidden'), 4000);
+		}
+
+		function toggleFields() {
+			const selected = (form?.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value;
+			if (selected === 'stripe') {
+				bankFields?.classList.add('hidden');
+				stripeFields?.classList.remove('hidden');
+			} else {
+				bankFields?.classList.remove('hidden');
+				stripeFields?.classList.add('hidden');
+			}
+		}
+
+		// Listen for radio changes
+		form?.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+			radio.addEventListener('change', toggleFields);
+		});
+
+		// Form submit
+		form?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const btn = document.getElementById('pd-submit') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Saving...';
+
+			const method = (form.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value || 'bank';
+
+			const payload: any = {
+				partner_id:      userId,
+				payment_method:  method,
+				bank_name:       method === 'bank' ? (document.getElementById('pd-bank-name') as HTMLInputElement).value.trim() || null : null,
+				iban:            method === 'bank' ? (document.getElementById('pd-iban') as HTMLInputElement).value.trim() || null : null,
+				swift:           method === 'bank' ? (document.getElementById('pd-swift') as HTMLInputElement).value.trim() || null : null,
+				stripe_account_id: method === 'stripe' ? (document.getElementById('pd-stripe-id') as HTMLInputElement).value.trim() || null : null,
+			};
+
+			try {
+				const { error } = await supabase
+					.from('payment_data')
+					.upsert(payload, { onConflict: 'partner_id' });
+				if (error) throw error;
+				showStatus('Payment data saved successfully.', true);
+			} catch (err: any) {
+				showStatus(err.message || 'Failed to save.', false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Save Payment Data';
+			}
+		});
+
+		// Init
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			userId = session.user.id;
+			await waitForAuth();
+
+			// Load existing payment data
+			const { data } = await supabase
+				.from('payment_data')
+				.select('*')
+				.eq('partner_id', userId)
+				.maybeSingle();
+
+			if (data) {
+				const method = data.payment_method || 'bank';
+				const radio = form?.querySelector(`input[name="payment_method"][value="${method}"]`) as HTMLInputElement | null;
+				if (radio) radio.checked = true;
+				(document.getElementById('pd-bank-name') as HTMLInputElement).value = data.bank_name || '';
+				(document.getElementById('pd-iban') as HTMLInputElement).value = data.iban || '';
+				(document.getElementById('pd-swift') as HTMLInputElement).value = data.swift || '';
+				(document.getElementById('pd-stripe-id') as HTMLInputElement).value = data.stripe_account_id || '';
+				toggleFields();
+			}
+
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initPaymentData();
+	document.addEventListener('astro:page-load', initPaymentData);
+</script>

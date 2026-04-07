@@ -74,6 +74,40 @@ import Layout from '../layouts/Layout.astro';
 						</div>
 
 						<div class="flex flex-col gap-1.5">
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Country *</label>
+							<div class="relative">
+								<select id="h-country"
+									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
+									<option value="" disabled selected>Select country…</option>
+									<option value="Greece">Greece</option>
+									<option value="United Kingdom">United Kingdom</option>
+									<option value="United States">United States</option>
+									<option value="Germany">Germany</option>
+									<option value="France">France</option>
+									<option value="Italy">Italy</option>
+									<option value="Spain">Spain</option>
+									<option value="Netherlands">Netherlands</option>
+									<option value="Turkey">Turkey</option>
+									<option value="Cyprus">Cyprus</option>
+									<option value="Australia">Australia</option>
+									<option value="Canada">Canada</option>
+									<option value="Switzerland">Switzerland</option>
+									<option value="Austria">Austria</option>
+									<option value="Belgium">Belgium</option>
+									<option value="Sweden">Sweden</option>
+									<option value="Norway">Norway</option>
+									<option value="Denmark">Denmark</option>
+									<option value="Portugal">Portugal</option>
+									<option value="Ireland">Ireland</option>
+									<option value="Other">Other</option>
+								</select>
+								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+								</span>
+							</div>
+						</div>
+
+						<div class="flex flex-col gap-1.5">
 							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Hotel or Boutique Name *</label>
 							<input id="h-name" type="text" placeholder="e.g. Aegean Boutique Hotel"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
@@ -150,10 +184,17 @@ import Layout from '../layouts/Layout.astro';
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
-						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Location / Address *</label>
-							<input id="h-location" type="text" placeholder="e.g. Mykonos, Greece"
-								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Location / Address *</label>
+								<input id="h-location" type="text" placeholder="e.g. Mykonos, Greece"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">ZIP Code *</label>
+								<input id="h-zip" type="text" placeholder="e.g. 84600"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
@@ -174,6 +215,40 @@ import Layout from '../layouts/Layout.astro';
 							<div class="flex-1 h-px bg-neutral-100"></div>
 							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest">Business Information</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
+						</div>
+
+						<div class="flex flex-col gap-1.5">
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Country *</label>
+							<div class="relative">
+								<select id="a-country"
+									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
+									<option value="" disabled selected>Select country…</option>
+									<option value="Greece">Greece</option>
+									<option value="United Kingdom">United Kingdom</option>
+									<option value="United States">United States</option>
+									<option value="Germany">Germany</option>
+									<option value="France">France</option>
+									<option value="Italy">Italy</option>
+									<option value="Spain">Spain</option>
+									<option value="Netherlands">Netherlands</option>
+									<option value="Turkey">Turkey</option>
+									<option value="Cyprus">Cyprus</option>
+									<option value="Australia">Australia</option>
+									<option value="Canada">Canada</option>
+									<option value="Switzerland">Switzerland</option>
+									<option value="Austria">Austria</option>
+									<option value="Belgium">Belgium</option>
+									<option value="Sweden">Sweden</option>
+									<option value="Norway">Norway</option>
+									<option value="Denmark">Denmark</option>
+									<option value="Portugal">Portugal</option>
+									<option value="Ireland">Ireland</option>
+									<option value="Other">Other</option>
+								</select>
+								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+								</span>
+							</div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
@@ -252,10 +327,17 @@ import Layout from '../layouts/Layout.astro';
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
-						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Location / Address *</label>
-							<input id="a-location" type="text" placeholder="e.g. Athens, Greece"
-								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Location / Address *</label>
+								<input id="a-location" type="text" placeholder="e.g. Athens, Greece"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">ZIP Code *</label>
+								<input id="a-zip" type="text" placeholder="e.g. 10552"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
@@ -279,6 +361,40 @@ import Layout from '../layouts/Layout.astro';
 						</div>
 
 						<div class="flex flex-col gap-1.5">
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Country *</label>
+							<div class="relative">
+								<select id="d-country"
+									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
+									<option value="" disabled selected>Select country…</option>
+									<option value="Greece">Greece</option>
+									<option value="United Kingdom">United Kingdom</option>
+									<option value="United States">United States</option>
+									<option value="Germany">Germany</option>
+									<option value="France">France</option>
+									<option value="Italy">Italy</option>
+									<option value="Spain">Spain</option>
+									<option value="Netherlands">Netherlands</option>
+									<option value="Turkey">Turkey</option>
+									<option value="Cyprus">Cyprus</option>
+									<option value="Australia">Australia</option>
+									<option value="Canada">Canada</option>
+									<option value="Switzerland">Switzerland</option>
+									<option value="Austria">Austria</option>
+									<option value="Belgium">Belgium</option>
+									<option value="Sweden">Sweden</option>
+									<option value="Norway">Norway</option>
+									<option value="Denmark">Denmark</option>
+									<option value="Portugal">Portugal</option>
+									<option value="Ireland">Ireland</option>
+									<option value="Other">Other</option>
+								</select>
+								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+								</span>
+							</div>
+						</div>
+
+						<div class="flex flex-col gap-1.5">
 							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Full Name *</label>
 							<input id="d-name" type="text" placeholder="e.g. Kostas Nikolaou"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
@@ -297,9 +413,22 @@ import Layout from '../layouts/Layout.astro';
 							</div>
 						</div>
 
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">VAT Number *</label>
+								<input id="d-vat" type="text" placeholder="e.g. EL123456789"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
+							<div class="flex flex-col gap-1.5">
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">MITE Number *</label>
+								<input id="d-mite" type="text" placeholder="e.g. 123456"
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							</div>
+						</div>
+
 						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">VAT Number *</label>
-							<input id="d-vat" type="text" placeholder="e.g. EL123456789"
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">ZIP Code *</label>
+							<input id="d-zip" type="text" placeholder="e.g. 10552"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 						</div>
 
@@ -312,8 +441,19 @@ import Layout from '../layouts/Layout.astro';
 
 						<div class="flex flex-col gap-1.5">
 							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Number of Vehicles *</label>
-							<input id="d-num-vehicles" type="number" min="1" placeholder="e.g. 3"
-								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
+							<div class="relative">
+								<select id="d-num-vehicles"
+									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
+									<option value="" disabled selected>Select range…</option>
+									<option value="1-3">1-3</option>
+									<option value="4-6">4-6</option>
+									<option value="7-9">7-9</option>
+									<option value="10+">10+</option>
+								</select>
+								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+								</span>
+							</div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
@@ -586,6 +726,7 @@ import Layout from '../layouts/Layout.astro';
 		if (type === 'hotel') {
 			authEmail   = getInputVal('h-contact-email');
 			displayName = getInputVal('h-contact-name');
+			if (!getInputVal('h-country'))       { showError('Please select a country.'); return; }
 			if (!getInputVal('h-name'))          { showError('Please enter the hotel or boutique name.'); return; }
 			if (!getInputVal('h-type'))          { showError('Please select a property type.'); return; }
 			if (!getInputVal('h-vat'))           { showError('Please enter your VAT number.'); return; }
@@ -595,9 +736,11 @@ import Layout from '../layouts/Layout.astro';
 			if (!getInputVal('h-contact-phone')) { showError('Please enter the contact person phone.'); return; }
 			if (!authEmail)                      { showError('Please enter the contact person email.'); return; }
 			if (!getInputVal('h-location'))      { showError('Please enter the property location.'); return; }
+			if (!getInputVal('h-zip'))           { showError('Please enter the ZIP code.'); return; }
 		} else if (type === 'agency') {
 			authEmail   = getInputVal('a-contact-email');
 			displayName = getInputVal('a-contact-name');
+			if (!getInputVal('a-country'))       { showError('Please select a country.'); return; }
 			if (!getInputVal('a-name'))          { showError('Please enter the agency name.'); return; }
 			if (!getInputVal('a-type'))          { showError('Please select an agency type.'); return; }
 			if (!getInputVal('a-vat'))           { showError('Please enter your VAT number.'); return; }
@@ -607,14 +750,18 @@ import Layout from '../layouts/Layout.astro';
 			if (!authEmail)                      { showError('Please enter the contact person email.'); return; }
 			if (!getInputVal('a-contact-phone')) { showError('Please enter the contact person phone.'); return; }
 			if (!getInputVal('a-location'))      { showError('Please enter the agency location.'); return; }
+			if (!getInputVal('a-zip'))           { showError('Please enter the ZIP code.'); return; }
 		} else if (type === 'driver') {
 			authEmail   = getInputVal('d-email');
 			displayName = getInputVal('d-name');
+			if (!getInputVal('d-country'))       { showError('Please select a country.'); return; }
 			if (!displayName)                    { showError('Please enter your full name.'); return; }
 			if (!getInputVal('d-phone'))         { showError('Please enter your phone number.'); return; }
 			if (!authEmail)                      { showError('Please enter your email address.'); return; }
 			if (!getInputVal('d-vat'))           { showError('Please enter your VAT number.'); return; }
-			if (!getInputVal('d-num-vehicles'))  { showError('Please enter the number of vehicles.'); return; }
+			if (!getInputVal('d-mite'))          { showError('Please enter your MITE number.'); return; }
+			if (!getInputVal('d-zip'))           { showError('Please enter the ZIP code.'); return; }
+			if (!getInputVal('d-num-vehicles'))  { showError('Please select the number of vehicles.'); return; }
 			if (!getInputVal('d-car-type'))      { showError('Please select your primary car type.'); return; }
 		}
 
@@ -646,6 +793,7 @@ import Layout from '../layouts/Layout.astro';
 			};
 
 			if (type === 'hotel') {
+				partnerData.country        = getInputVal('h-country');
 				partnerData.hotel_name     = getInputVal('h-name');
 				partnerData.hotel_type     = getInputVal('h-type');
 				partnerData.vat            = getInputVal('h-vat');
@@ -655,8 +803,10 @@ import Layout from '../layouts/Layout.astro';
 				partnerData.contact_phone  = getInputVal('h-contact-phone');
 				partnerData.contact_email  = authEmail;
 				partnerData.location       = getInputVal('h-location');
+				partnerData.zip_code       = getInputVal('h-zip');
 				partnerData.website        = getInputVal('h-website') || null;
 			} else if (type === 'agency') {
+				partnerData.country        = getInputVal('a-country');
 				partnerData.agency_name    = getInputVal('a-name');
 				partnerData.agency_type    = getInputVal('a-type');
 				partnerData.vat            = getInputVal('a-vat');
@@ -666,17 +816,21 @@ import Layout from '../layouts/Layout.astro';
 				partnerData.contact_email  = authEmail;
 				partnerData.contact_phone  = getInputVal('a-contact-phone');
 				partnerData.location       = getInputVal('a-location');
+				partnerData.zip_code       = getInputVal('a-zip');
 				partnerData.website        = getInputVal('a-website') || null;
 			} else if (type === 'driver') {
 				const carTypes = Array.from(
 					document.querySelectorAll<HTMLInputElement>('input[name="d-car-types"]:checked')
 				).map(el => el.value);
-				partnerData.full_name       = displayName;
-				partnerData.phone           = getInputVal('d-phone');
-				partnerData.vat             = getInputVal('d-vat');
-				partnerData.num_vehicles    = getInputVal('d-num-vehicles');
+				partnerData.country          = getInputVal('d-country');
+				partnerData.full_name        = displayName;
+				partnerData.phone            = getInputVal('d-phone');
+				partnerData.vat              = getInputVal('d-vat');
+				partnerData.mite_number      = getInputVal('d-mite');
+				partnerData.zip_code         = getInputVal('d-zip');
+				partnerData.num_vehicles     = getInputVal('d-num-vehicles');
 				partnerData.primary_car_type = getInputVal('d-car-type');
-				partnerData.car_types       = carTypes;
+				partnerData.car_types        = carTypes;
 			}
 
 			// 3. Save to partners table

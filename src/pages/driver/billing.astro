@@ -1,0 +1,120 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Payment Reports" pageDescription="View your billing history and download reports" activeSection="billing">
+
+	<!-- Loading state -->
+	<div id="billing-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Billing content -->
+	<div id="billing-content" class="hidden space-y-6">
+
+		<p class="text-sm text-neutral-500"><span id="billing-count">0</span> report(s)</p>
+
+		<!-- Table -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm text-left">
+					<thead class="bg-neutral-50 border-b border-neutral-200">
+						<tr>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Amount</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Payment Report</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Invoice</th>
+						</tr>
+					</thead>
+					<tbody id="billing-tbody" class="divide-y divide-neutral-100">
+						<tr><td colspan="5" class="px-6 py-10 text-center text-neutral-400">No billing reports yet.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initBilling() {
+		const loadingEl = document.getElementById('billing-loading');
+		const contentEl = document.getElementById('billing-content');
+		const authCheck = document.getElementById('driver-auth-check');
+		const tbody     = document.getElementById('billing-tbody');
+		const countEl   = document.getElementById('billing-count');
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+		function renderRows(reports: any[]) {
+			if (!tbody) return;
+			if (countEl) countEl.textContent = String(reports.length);
+			if (reports.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-neutral-400">No billing reports yet.</td></tr>';
+				return;
+			}
+			tbody.innerHTML = reports.map(r => {
+				const isPaid = r.status === 'paid';
+				const badge = isPaid
+					? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>'
+					: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>';
+				const monthLabel = monthNames[(r.month || 1) - 1] || '';
+				const amount = r.amount != null ? `€${parseFloat(r.amount).toFixed(2)}` : '-';
+				const reportBtn = r.report_url
+					? `<a href="${r.report_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[#0C6B95]/30 text-[#0C6B95] hover:bg-[#0C6B95]/5 transition-colors">
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+						Download</a>`
+					: '<span class="text-neutral-400 text-xs">-</span>';
+				const invoiceBtn = r.invoice_url
+					? `<a href="${r.invoice_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[#0C6B95]/30 text-[#0C6B95] hover:bg-[#0C6B95]/5 transition-colors">
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+						Download</a>`
+					: '<span class="text-neutral-400 text-xs">-</span>';
+
+				return `<tr class="hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-4">${badge}</td>
+					<td class="px-6 py-4 font-medium text-neutral-800">${monthLabel} ${r.year || ''}</td>
+					<td class="px-6 py-4 text-neutral-800">${amount}</td>
+					<td class="px-6 py-4">${reportBtn}</td>
+					<td class="px-6 py-4">${invoiceBtn}</td>
+				</tr>`;
+			}).join('');
+		}
+
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			await waitForAuth();
+
+			const { data, error } = await supabase
+				.from('billing_reports')
+				.select('*')
+				.eq('partner_id', session.user.id)
+				.order('year', { ascending: false })
+				.order('month', { ascending: false });
+
+			renderRows(!error ? (data || []) : []);
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initBilling();
+	document.addEventListener('astro:page-load', initBilling);
+</script>

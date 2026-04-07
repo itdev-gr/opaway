@@ -1,0 +1,189 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Profile" pageDescription="Your company registration details" activeSection="profile">
+
+	<!-- Loading state -->
+	<div id="profile-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Profile content -->
+	<div id="profile-content" class="hidden space-y-8">
+
+		<!-- General Information -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">General Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Your registration details. Contact support to update.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Full Name</p>
+					<p id="p-full-name" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Email</p>
+					<p id="p-email" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Phone</p>
+					<p id="p-phone" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">VAT Number</p>
+					<p id="p-vat" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">MITE</p>
+					<p id="p-mite" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Partner Type</p>
+					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Status & Location -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Status & Location</h2>
+			<p class="text-sm text-neutral-500 mb-6">Your account status and registered location.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Account Status</p>
+					<span id="p-status-badge"></span>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Location</p>
+					<p id="p-location" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Country</p>
+					<p id="p-country" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">ZIP Code</p>
+					<p id="p-zip" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1">Member Since</p>
+					<p id="p-created" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Type-specific fields -->
+		<section id="type-specific-section" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8 hidden">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Additional Details</h2>
+			<p class="text-sm text-neutral-500 mb-6">Type-specific registration information.</p>
+
+			<div id="type-specific-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+		</section>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initProfile() {
+		const loadingEl = document.getElementById('profile-loading');
+		const contentEl = document.getElementById('profile-content');
+		const authCheck = document.getElementById('driver-auth-check');
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		function renderStatusBadge(status: string): string {
+			const map: Record<string, { bg: string; text: string; label: string }> = {
+				approved: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Approved' },
+				pending:  { bg: 'bg-amber-50 border-amber-200',    text: 'text-amber-700',   label: 'Pending'  },
+				rejected: { bg: 'bg-red-50 border-red-200',         text: 'text-red-700',      label: 'Rejected' },
+			};
+			const s = map[status] || map.pending;
+			return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
+		}
+
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			await waitForAuth();
+
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('*')
+				.eq('id', session.user.id)
+				.single();
+
+			if (!partner) {
+				if (loadingEl) loadingEl.innerHTML = '<p class="text-neutral-500 text-sm">Profile data not found.</p>';
+				return;
+			}
+
+			const set = (id: string, val: string) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = val || '-';
+			};
+
+			set('p-full-name', partner.full_name);
+			set('p-email', partner.email || session.user.email);
+			set('p-phone', partner.phone);
+			set('p-vat', partner.vat);
+			set('p-mite', partner.mite);
+			set('p-type', partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-');
+			set('p-location', partner.location);
+			set('p-country', partner.country);
+			set('p-zip', partner.zip);
+
+			const badgeEl = document.getElementById('p-status-badge');
+			if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partner.status || 'pending');
+
+			if (partner.created_at) {
+				const d = new Date(partner.created_at);
+				set('p-created', d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
+			}
+
+			// Type-specific fields
+			const typeFields: Record<string, { label: string; key: string }[]> = {
+				hotel:    [{ label: 'Hotel Name',  key: 'hotel_name'  }],
+				agency:   [{ label: 'Agency Name', key: 'agency_name' }],
+			};
+
+			const fields = typeFields[partner.type] || [];
+			if (fields.length > 0) {
+				const container = document.getElementById('type-specific-fields');
+				const section = document.getElementById('type-specific-section');
+				if (container && section) {
+					fields.forEach(({ label, key }) => {
+						const val = (partner as any)[key] || '-';
+						container.innerHTML += `
+							<div>
+								<p class="text-sm text-neutral-500 mb-1">${label}</p>
+								<p class="text-sm font-medium text-neutral-800">${val}</p>
+							</div>
+						`;
+					});
+					section.classList.remove('hidden');
+				}
+			}
+
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initProfile();
+	document.addEventListener('astro:page-load', initProfile);
+</script>

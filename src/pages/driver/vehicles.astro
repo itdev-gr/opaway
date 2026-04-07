@@ -1,0 +1,300 @@
+---
+import DriverLayout from '../../components/DriverLayout.astro';
+---
+
+<DriverLayout pageTitle="Vehicles" pageDescription="Manage your fleet" activeSection="vehicles">
+
+	<!-- Loading state -->
+	<div id="vehicles-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<!-- Vehicles content -->
+	<div id="vehicles-content" class="hidden space-y-6">
+
+		<!-- Header with Add button -->
+		<div class="flex items-center justify-between">
+			<p class="text-sm text-neutral-500"><span id="vehicles-count">0</span> vehicle(s) registered</p>
+			<button type="button" id="btn-add-vehicle"
+				class="px-5 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors flex items-center gap-2">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+				</svg>
+				Add Vehicle
+			</button>
+		</div>
+
+		<!-- Table -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm text-left">
+					<thead class="bg-neutral-50 border-b border-neutral-200">
+						<tr>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Category</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Max Pax</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Plate</th>
+							<th class="px-6 py-3.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
+						</tr>
+					</thead>
+					<tbody id="vehicles-tbody" class="divide-y divide-neutral-100">
+						<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No vehicles yet.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Add/Edit Vehicle Modal -->
+		<div id="vehicle-modal" class="fixed inset-0 z-50 hidden">
+			<div class="absolute inset-0 bg-black/40" id="vehicle-modal-overlay"></div>
+			<div class="absolute inset-0 flex items-center justify-center p-4">
+				<div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+					<button type="button" id="vehicle-modal-close" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+					<h3 id="vehicle-modal-title" class="text-lg font-bold text-neutral-900 mb-6">Add Vehicle</h3>
+					<form id="vehicle-form" class="space-y-5">
+						<input type="hidden" id="vf-id" />
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+							<div>
+								<label for="vf-brand" class="block text-sm font-medium text-neutral-700 mb-1.5">Brand *</label>
+								<input type="text" id="vf-brand" required
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-model" class="block text-sm font-medium text-neutral-700 mb-1.5">Model *</label>
+								<input type="text" id="vf-model" required
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-year" class="block text-sm font-medium text-neutral-700 mb-1.5">Year</label>
+								<input type="text" id="vf-year"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-color" class="block text-sm font-medium text-neutral-700 mb-1.5">Color</label>
+								<input type="text" id="vf-color"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-category" class="block text-sm font-medium text-neutral-700 mb-1.5">Category</label>
+								<select id="vf-category"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors">
+									<option value="">Select...</option>
+									<option value="Sedan">Sedan</option>
+									<option value="Van">Van</option>
+									<option value="Minibus">Minibus</option>
+								</select>
+							</div>
+							<div>
+								<label for="vf-max-pax" class="block text-sm font-medium text-neutral-700 mb-1.5">Max Passengers</label>
+								<input type="number" id="vf-max-pax" min="1" max="18"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-max-luggage" class="block text-sm font-medium text-neutral-700 mb-1.5">Max Luggage</label>
+								<input type="number" id="vf-max-luggage" min="0"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+							<div>
+								<label for="vf-plate" class="block text-sm font-medium text-neutral-700 mb-1.5">Plate Number *</label>
+								<input type="text" id="vf-plate" required
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+							</div>
+						</div>
+						<div class="flex items-center gap-3 pt-2">
+							<button type="submit" id="vf-submit"
+								class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+								Save Vehicle
+							</button>
+							<span id="vf-status" class="text-sm hidden"></span>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</DriverLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	function initVehicles() {
+		const loadingEl  = document.getElementById('vehicles-loading');
+		const contentEl  = document.getElementById('vehicles-content');
+		const authCheck  = document.getElementById('driver-auth-check');
+		const tbody      = document.getElementById('vehicles-tbody');
+		const countEl    = document.getElementById('vehicles-count');
+		const modal      = document.getElementById('vehicle-modal');
+		const modalTitle = document.getElementById('vehicle-modal-title');
+		const form       = document.getElementById('vehicle-form') as HTMLFormElement | null;
+
+		let userId = '';
+
+		function waitForAuth(): Promise<void> {
+			return new Promise((resolve) => {
+				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+				const obs = new MutationObserver(() => {
+					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+				});
+				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			});
+		}
+
+		function showStatus(msg: string, success: boolean) {
+			const el = document.getElementById('vf-status');
+			if (!el) return;
+			el.textContent = msg;
+			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			el.classList.remove('hidden');
+			setTimeout(() => el.classList.add('hidden'), 4000);
+		}
+
+		function openModal(vehicle?: any) {
+			if (!modal || !form) return;
+			form.reset();
+			(document.getElementById('vf-id') as HTMLInputElement).value = vehicle?.id || '';
+			if (vehicle) {
+				if (modalTitle) modalTitle.textContent = 'Edit Vehicle';
+				(document.getElementById('vf-brand') as HTMLInputElement).value = vehicle.brand || '';
+				(document.getElementById('vf-model') as HTMLInputElement).value = vehicle.model || '';
+				(document.getElementById('vf-year') as HTMLInputElement).value = vehicle.year || '';
+				(document.getElementById('vf-color') as HTMLInputElement).value = vehicle.color || '';
+				(document.getElementById('vf-category') as HTMLSelectElement).value = vehicle.category || '';
+				(document.getElementById('vf-max-pax') as HTMLInputElement).value = vehicle.max_passengers?.toString() || '';
+				(document.getElementById('vf-max-luggage') as HTMLInputElement).value = vehicle.max_luggage?.toString() || '';
+				(document.getElementById('vf-plate') as HTMLInputElement).value = vehicle.plate || '';
+			} else {
+				if (modalTitle) modalTitle.textContent = 'Add Vehicle';
+			}
+			modal.classList.remove('hidden');
+		}
+
+		function closeModal() {
+			modal?.classList.add('hidden');
+		}
+
+		function renderRows(vehicles: any[]) {
+			if (!tbody) return;
+			if (countEl) countEl.textContent = String(vehicles.length);
+			if (vehicles.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No vehicles yet.</td></tr>';
+				return;
+			}
+			tbody.innerHTML = vehicles.map(v => {
+				const active = v.status === 'active';
+				const badge = active
+					? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>'
+					: '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">Inactive</span>';
+				return `<tr class="hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-4">${badge}</td>
+					<td class="px-6 py-4 font-medium text-neutral-800">${v.brand || ''} ${v.model || ''}</td>
+					<td class="px-6 py-4 text-neutral-600">${v.category || '-'}</td>
+					<td class="px-6 py-4 text-neutral-600">${v.max_passengers ?? '-'}</td>
+					<td class="px-6 py-4 text-neutral-600">${v.plate || '-'}</td>
+					<td class="px-6 py-4">
+						<div class="flex items-center gap-2">
+							<button data-toggle="${v.id}" data-current="${v.status}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors text-neutral-600">${active ? 'Deactivate' : 'Activate'}</button>
+							<button data-delete="${v.id}" class="text-xs px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors text-red-600">Delete</button>
+						</div>
+					</td>
+				</tr>`;
+			}).join('');
+
+			// Toggle handlers
+			tbody.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					const id = btn.dataset.toggle;
+					const newStatus = btn.dataset.current === 'active' ? 'inactive' : 'active';
+					await supabase.from('driver_vehicles').update({ status: newStatus }).eq('id', id);
+					loadVehicles();
+				});
+			});
+
+			// Delete handlers
+			tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					if (!confirm('Delete this vehicle?')) return;
+					await supabase.from('driver_vehicles').delete().eq('id', btn.dataset.delete);
+					loadVehicles();
+				});
+			});
+		}
+
+		async function loadVehicles() {
+			const { data, error } = await supabase
+				.from('driver_vehicles')
+				.select('*')
+				.eq('partner_id', userId)
+				.order('created_at', { ascending: false });
+			if (!error) renderRows(data || []);
+		}
+
+		// Modal events
+		document.getElementById('btn-add-vehicle')?.addEventListener('click', () => openModal());
+		document.getElementById('vehicle-modal-overlay')?.addEventListener('click', closeModal);
+		document.getElementById('vehicle-modal-close')?.addEventListener('click', closeModal);
+
+		// Form submit
+		form?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const btn = document.getElementById('vf-submit') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Saving...';
+
+			const payload = {
+				partner_id:     userId,
+				brand:          (document.getElementById('vf-brand') as HTMLInputElement).value.trim(),
+				model:          (document.getElementById('vf-model') as HTMLInputElement).value.trim(),
+				year:           (document.getElementById('vf-year') as HTMLInputElement).value.trim() || null,
+				color:          (document.getElementById('vf-color') as HTMLInputElement).value.trim() || null,
+				category:       (document.getElementById('vf-category') as HTMLSelectElement).value || null,
+				max_passengers: parseInt((document.getElementById('vf-max-pax') as HTMLInputElement).value) || null,
+				max_luggage:    parseInt((document.getElementById('vf-max-luggage') as HTMLInputElement).value) || null,
+				plate:          (document.getElementById('vf-plate') as HTMLInputElement).value.trim(),
+				status:         'active',
+			};
+
+			try {
+				const existingId = (document.getElementById('vf-id') as HTMLInputElement).value;
+				if (existingId) {
+					const { error } = await supabase.from('driver_vehicles').update(payload).eq('id', existingId);
+					if (error) throw error;
+					showStatus('Vehicle updated.', true);
+				} else {
+					const { error } = await supabase.from('driver_vehicles').insert(payload);
+					if (error) throw error;
+					showStatus('Vehicle added.', true);
+				}
+				closeModal();
+				loadVehicles();
+			} catch (err: any) {
+				showStatus(err.message || 'Failed to save.', false);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Save Vehicle';
+			}
+		});
+
+		// Init
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) return;
+			userId = session.user.id;
+			await waitForAuth();
+			await loadVehicles();
+			loadingEl?.classList.add('hidden');
+			contentEl?.classList.remove('hidden');
+		})();
+	}
+
+	initVehicles();
+	document.addEventListener('astro:page-load', initVehicles);
+</script>
