@@ -142,66 +142,69 @@ import Layout from '../layouts/Layout.astro';
 	import { supabase } from '../lib/supabase';
 	import { ensureUserProfile } from '../lib/userSupabase';
 
-	// Toggle password visibility
-	const toggleBtn = document.getElementById('toggle-password');
-	const passwordInput = document.getElementById('password-input') as HTMLInputElement;
-	const eyeIcon = document.getElementById('eye-icon');
-	const eyeOffIcon = document.getElementById('eye-off-icon');
+	function initLogin() {
+		// Toggle password visibility
+		const toggleBtn = document.getElementById('toggle-password');
+		const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+		const eyeIcon = document.getElementById('eye-icon');
+		const eyeOffIcon = document.getElementById('eye-off-icon');
 
-	toggleBtn?.addEventListener('click', () => {
-		const isHidden = passwordInput.type === 'password';
-		passwordInput.type = isHidden ? 'text' : 'password';
-		eyeIcon?.classList.toggle('hidden', isHidden);
-		eyeOffIcon?.classList.toggle('hidden', !isHidden);
-	});
-
-	// Custom checkbox visual sync
-	document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-		const input = checkbox as HTMLInputElement;
-		const box = input.nextElementSibling as HTMLElement;
-		const checkmark = box?.querySelector('svg');
-		input.addEventListener('change', () => {
-			if (checkmark) checkmark.style.opacity = input.checked ? '1' : '0';
+		toggleBtn?.addEventListener('click', () => {
+			const isHidden = passwordInput.type === 'password';
+			passwordInput.type = isHidden ? 'text' : 'password';
+			eyeIcon?.classList.toggle('hidden', isHidden);
+			eyeOffIcon?.classList.toggle('hidden', !isHidden);
 		});
-	});
 
-	// Supabase Auth: email/password login
-	const loginForm = document.getElementById('login-form') as HTMLFormElement;
-	const authError = document.getElementById('auth-error') as HTMLElement;
-	const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+		// Custom checkbox visual sync
+		document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+			const input = checkbox as HTMLInputElement;
+			const box = input.nextElementSibling as HTMLElement;
+			const checkmark = box?.querySelector('svg');
+			input.addEventListener('change', () => {
+				if (checkmark) checkmark.style.opacity = input.checked ? '1' : '0';
+			});
+		});
 
-	function showError(message: string) {
-		if (authError) {
-			authError.textContent = message;
-			authError.classList.remove('hidden');
+		// Supabase Auth: email/password login
+		const loginForm = document.getElementById('login-form') as HTMLFormElement;
+		const authError = document.getElementById('auth-error') as HTMLElement;
+		const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+		function showError(message: string) {
+			if (authError) {
+				authError.textContent = message;
+				authError.classList.remove('hidden');
+			}
 		}
+
+		function hideError() {
+			authError?.classList.add('hidden');
+		}
+
+		loginForm?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			hideError();
+			const email = (loginForm.querySelector('[name="email"]') as HTMLInputElement)?.value?.trim();
+			const password = (loginForm.querySelector('[name="password"]') as HTMLInputElement)?.value;
+			if (!email || !password) {
+				showError('Please enter email and password.');
+				return;
+			}
+			submitBtn.disabled = true;
+			try {
+				const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+				if (error) throw error;
+				ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
+				window.location.href = '/';
+			} catch (err: unknown) {
+				const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
+				showError(msg);
+				submitBtn.disabled = false;
+			}
+		});
 	}
 
-	function hideError() {
-		authError?.classList.add('hidden');
-	}
-
-	loginForm?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		hideError();
-		const email = (loginForm.querySelector('[name="email"]') as HTMLInputElement)?.value?.trim();
-		const password = (loginForm.querySelector('[name="password"]') as HTMLInputElement)?.value;
-		if (!email || !password) {
-			showError('Please enter email and password.');
-			return;
-		}
-		submitBtn.disabled = true;
-		try {
-			const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-			if (error) throw error;
-			// Fire-and-forget — don't let profile sync block login
-			ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
-			window.location.href = '/';
-		} catch (err: unknown) {
-			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
-			showError(msg);
-			submitBtn.disabled = false;
-		}
-	});
-
+	initLogin();
+	document.addEventListener('astro:page-load', initLogin);
 </script>
