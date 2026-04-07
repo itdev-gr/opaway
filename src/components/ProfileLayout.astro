@@ -57,37 +57,40 @@ import Layout from '../layouts/Layout.astro';
 <script>
 	import { supabase } from '../lib/supabase';
 
-	const sidebar = document.getElementById('profile-sidebar');
-	const overlay = document.getElementById('profile-sidebar-overlay');
-	const burger = document.getElementById('profile-burger');
+	function initProfileSidebar() {
+		const sidebar = document.getElementById('profile-sidebar');
+		const overlay = document.getElementById('profile-sidebar-overlay');
+		const burger = document.getElementById('profile-burger');
 
-	function openSidebar() {
-		sidebar?.classList.remove('-translate-x-full');
-		overlay?.classList.remove('hidden');
-		document.body.style.overflow = 'hidden';
-	}
-	function closeSidebar() {
-		sidebar?.classList.add('-translate-x-full');
-		overlay?.classList.add('hidden');
-		document.body.style.overflow = '';
-	}
-	function toggleSidebar() {
-		if (sidebar?.classList.contains('-translate-x-full')) openSidebar();
-		else closeSidebar();
-	}
-
-	burger?.addEventListener('click', toggleSidebar);
-	overlay?.addEventListener('click', closeSidebar);
-	sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
-
-	const sidebarLogoutBtn = document.getElementById('profile-sidebar-logout');
-	sidebarLogoutBtn?.addEventListener('click', async () => {
-		closeSidebar();
-		try {
-			await supabase.auth.signOut();
-			window.location.href = '/';
-		} catch {
-			window.location.href = '/';
+		function openSidebar() {
+			sidebar?.classList.remove('-translate-x-full');
+			overlay?.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
 		}
-	});
+		function closeSidebar() {
+			sidebar?.classList.add('-translate-x-full');
+			overlay?.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+		function toggleSidebar() {
+			if (sidebar?.classList.contains('-translate-x-full')) openSidebar();
+			else closeSidebar();
+		}
+
+		burger?.addEventListener('click', toggleSidebar);
+		overlay?.addEventListener('click', closeSidebar);
+		sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
+
+		const sidebarLogoutBtn = document.getElementById('profile-sidebar-logout');
+		sidebarLogoutBtn?.addEventListener('click', async () => {
+			closeSidebar();
+			try {
+				await supabase.auth.signOut();
+			} catch { /* ignore */ }
+			window.location.href = '/';
+		});
+	}
+
+	initProfileSidebar();
+	document.addEventListener('astro:page-load', initProfileSidebar);
 </script>
