@@ -144,70 +144,80 @@
 		});
 	}
 
-	async function updateAuthNav(user: { id: string; email?: string | null; user_metadata?: Record<string, any> } | null) {
+	function updateAuthUI(user: { id: string; email?: string | null; user_metadata?: Record<string, any> } | null, dbType?: string | null, dbName?: string | null, isDriver?: boolean) {
 		const guest = document.getElementById('nav-auth-guest');
 		const userEl = document.getElementById('nav-auth-user');
 		const nameEl = document.getElementById('nav-user-name');
 		const adminBtn = document.getElementById('nav-admin-btn');
+		const driverBtn = document.getElementById('nav-driver-btn');
+
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
-		if (adminBtn) { adminBtn.classList.add('hidden'); adminBtn.classList.remove('inline-flex'); }
-		if (nameEl && user) {
-			nameEl.textContent = user.user_metadata?.full_name?.trim() || user.email || 'Account';
-			nameEl.setAttribute('title', nameEl.textContent);
-			try {
-				const { data, error } = await supabase
-					.from('users')
-					.select('display_name, type')
-					.eq('id', user.id)
-					.maybeSingle();
-				if (error) console.warn('Navbar user query error:', error.message);
-				if (data) {
-					if (data.display_name?.trim()) {
-						nameEl.textContent = data.display_name.trim();
-						nameEl.setAttribute('title', data.display_name.trim());
-					}
-					if (data.type === 'admin' && adminBtn) {
-						adminBtn.classList.remove('hidden');
-						adminBtn.classList.add('inline-flex');
-					}
-				}
 
-				// Check if user is an approved driver (partners table)
-				const driverBtn = document.getElementById('nav-driver-btn');
-				if (driverBtn) {
-					const { data: pData } = await supabase
-						.from('partners')
-						.select('type, status')
-						.eq('id', user.id)
-						.single();
-					if (pData?.type === 'driver' && pData?.status === 'approved') {
-						driverBtn.classList.remove('hidden');
-						driverBtn.classList.add('inline-flex');
-					}
-				}
-			} catch {
-				// Keep fallback; admin stays hidden
-			}
+		// Reset role buttons
+		if (adminBtn) { adminBtn.classList.add('hidden'); adminBtn.classList.remove('inline-flex'); }
+		if (driverBtn) { driverBtn.classList.add('hidden'); driverBtn.classList.remove('inline-flex'); }
+
+		if (nameEl && user) {
+			const displayName = dbName?.trim() || user.user_metadata?.full_name?.trim() || user.email || 'Account';
+			nameEl.textContent = displayName;
+			nameEl.setAttribute('title', displayName);
+		}
+
+		if (user && dbType === 'admin' && adminBtn) {
+			adminBtn.classList.remove('hidden');
+			adminBtn.classList.add('inline-flex');
+		}
+
+		if (user && isDriver && driverBtn) {
+			driverBtn.classList.remove('hidden');
+			driverBtn.classList.add('inline-flex');
 		}
 	}
 
 	// Guard against duplicate subscriptions (Navbar uses transition:persist)
 	if (!(window as any).__navAuthBound) {
 		(window as any).__navAuthBound = true;
+		// onAuthStateChange fires on INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED
+		// The session passed in the callback is always current — use it for DB queries
 		supabase.auth.onAuthStateChange(async (_event, session) => {
-			await updateAuthNav(session?.user ?? null);
+			if (!session?.user) {
+				updateAuthUI(null);
+				return;
+			}
+			const user = session.user;
+			let dbType: string | null = null;
+			let dbName: string | null = null;
+			let isDriver = false;
+
+			try {
+				const { data } = await supabase
+					.from('users')
+					.select('display_name, type')
+					.eq('id', user.id)
+					.maybeSingle();
+				if (data) {
+					dbType = data.type;
+					dbName = data.display_name;
+				}
+			} catch { /* ignore */ }
+
+			try {
+				const { data: pData } = await supabase
+					.from('partners')
+					.select('type, status')
+					.eq('id', user.id)
+					.maybeSingle();
+				if (pData?.type === 'driver' && pData?.status === 'approved') {
+					isDriver = true;
+				}
+			} catch { /* ignore */ }
+
+			updateAuthUI(user, dbType, dbName, isDriver);
 		});
 	}
 
-	// Run on first load — use getSession() to ensure active JWT for DB queries
+	// Active link highlight
 	updateActiveLink();
-	supabase.auth.getSession().then(({ data }) => updateAuthNav(data.session?.user ?? null));
-
-	// Re-run on view transition navigation
-	document.addEventListener('astro:page-load', async () => {
-		updateActiveLink();
-		const { data } = await supabase.auth.getSession();
-		await updateAuthNav(data.session?.user ?? null);
-	});
+	document.addEventListener('astro:page-load', () => updateActiveLink());
 </script>
