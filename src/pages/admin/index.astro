@@ -54,8 +54,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Booking {
 		id: string;
@@ -78,26 +77,22 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	let selectedDay: string | null = null;
 
 	// Helpers
-	function parseBooking(doc: any, type: 'transfer' | 'tour' | 'experience'): Booking {
-		const d = doc.data();
+	function parseBooking(row: any, type: 'transfer' | 'tour' | 'experience'): Booking {
+		const d = row;
 		let dateStr = d.date || '';
-		if (d.date && typeof d.date.toDate === 'function') {
-			const dt = d.date.toDate();
-			dateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-		}
 		return {
-			id: doc.id,
+			id: d.id,
 			type,
-			firstName: d.firstName || d.name || '',
-			lastName: d.lastName || '',
+			firstName: d.first_name || d.name || '',
+			lastName: d.last_name || '',
 			from: d.from || d.pickup || '',
 			to: d.to || d.dropoff || d.destination || '',
 			date: dateStr,
 			time: d.time || '',
-			vehicleName: d.vehicleName || '',
-			rideStatus: d.rideStatus || d.status || 'pending',
-			paymentStatus: d.paymentStatus || 'pending',
-			paymentMethod: d.paymentMethod || '',
+			vehicleName: d.vehicle_name || '',
+			rideStatus: d.ride_status || d.status || 'pending',
+			paymentStatus: d.payment_status || 'pending',
+			paymentMethod: d.payment_method || '',
 		};
 	}
 
@@ -263,16 +258,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	async function loadAllBookings() {
 		try {
-			const [transfersSnap, toursSnap, experiencesSnap] = await Promise.all([
-				getDocs(query(collection(db, 'transfers'), orderBy('createdAt', 'desc'))),
-				getDocs(query(collection(db, 'tours'), orderBy('createdAt', 'desc'))),
-				getDocs(query(collection(db, 'experiences'), orderBy('createdAt', 'desc'))),
+			const [transfersRes, toursRes, experiencesRes] = await Promise.all([
+				supabase.from('transfers').select('*').order('created_at', { ascending: false }),
+				supabase.from('tours').select('*').order('created_at', { ascending: false }),
+				supabase.from('experiences').select('*').order('created_at', { ascending: false }),
 			]);
 
 			allBookings = [];
-			transfersSnap.forEach(doc => allBookings.push(parseBooking(doc, 'transfer')));
-			toursSnap.forEach(doc => allBookings.push(parseBooking(doc, 'tour')));
-			experiencesSnap.forEach(doc => allBookings.push(parseBooking(doc, 'experience')));
+			(transfersRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'transfer')));
+			(toursRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'tour')));
+			(experiencesRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'experience')));
 
 			renderCalendar();
 		} catch (e) {

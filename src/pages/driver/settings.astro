@@ -162,9 +162,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-	import { doc, getDoc, updateDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	const loadingEl = document.getElementById('settings-loading');
 	const contentEl = document.getElementById('settings-content');
@@ -202,31 +200,37 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	}
 
 	/* ── Main ── */
-	onAuthStateChanged(auth, async (user) => {
-		if (!user) return;
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session?.user) return;
+		const user = session.user;
 		await waitForAuth();
 
 		// Load partner data
 		let partnerData: any = {};
 		try {
-			const snap = await getDoc(doc(db, 'partners', user.uid));
-			if (snap.exists()) partnerData = snap.data();
+			const { data } = await supabase
+				.from('partners')
+				.select('*')
+				.eq('id', user.id)
+				.single();
+
+			if (data) partnerData = data;
 		} catch (e) {
 			console.error('Failed to load partner data', e);
 		}
 
 		// Populate personal info
-		(document.getElementById('fullName') as HTMLInputElement).value = partnerData.fullName || '';
+		(document.getElementById('fullName') as HTMLInputElement).value = partnerData.full_name || '';
 		(document.getElementById('phone') as HTMLInputElement).value = partnerData.phone || '';
 		(document.getElementById('email') as HTMLInputElement).value = user.email || '';
 		(document.getElementById('vat') as HTMLInputElement).value = partnerData.vat || '';
 
 		// Populate vehicle info
-		(document.getElementById('numVehicles') as HTMLInputElement).value = partnerData.numVehicles?.toString() || '';
-		(document.getElementById('primaryCarType') as HTMLSelectElement).value = partnerData.primaryCarType || '';
+		(document.getElementById('numVehicles') as HTMLInputElement).value = partnerData.num_vehicles?.toString() || '';
+		(document.getElementById('primaryCarType') as HTMLSelectElement).value = partnerData.primary_car_type || '';
 
 		// Check fleet type checkboxes
-		const carTypes: string[] = partnerData.carTypes || [];
+		const carTypes: string[] = partnerData.car_types || [];
 		document.querySelectorAll<HTMLInputElement>('input[name="carTypes"]').forEach((cb) => {
 			cb.checked = carTypes.includes(cb.value);
 		});
@@ -236,13 +240,13 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partnerData.status || 'pending');
 
 		const memberSinceEl = document.getElementById('member-since');
-		if (memberSinceEl && partnerData.createdAt) {
-			const d = partnerData.createdAt.toDate ? partnerData.createdAt.toDate() : new Date(partnerData.createdAt);
+		if (memberSinceEl && partnerData.created_at) {
+			const d = new Date(partnerData.created_at);
 			memberSinceEl.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 		}
 
 		// Hide password section for non-email providers
-		const provider = partnerData.provider || user.providerData?.[0]?.providerId || '';
+		const provider = partnerData.provider || user.app_metadata?.provider || '';
 		if (provider !== 'password' && provider !== 'email') {
 			document.getElementById('password-section')?.classList.add('hidden');
 		}
@@ -260,11 +264,16 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			btn.textContent = 'Saving...';
 
 			try {
-				await updateDoc(doc(db, 'partners', user.uid), {
-					fullName: (document.getElementById('fullName') as HTMLInputElement).value.trim(),
-					phone:    (document.getElementById('phone') as HTMLInputElement).value.trim(),
-					vat:      (document.getElementById('vat') as HTMLInputElement).value.trim(),
-				});
+				const { error } = await supabase
+					.from('partners')
+					.update({
+						full_name: (document.getElementById('fullName') as HTMLInputElement).value.trim(),
+						phone:     (document.getElementById('phone') as HTMLInputElement).value.trim(),
+						vat:       (document.getElementById('vat') as HTMLInputElement).value.trim(),
+					})
+					.eq('id', user.id);
+
+				if (error) throw error;
 				showStatus(statusEl, 'Changes saved successfully.', true);
 			} catch (err: any) {
 				showStatus(statusEl, err.message || 'Failed to save changes.', false);
@@ -288,11 +297,16 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			});
 
 			try {
-				await updateDoc(doc(db, 'partners', user.uid), {
-					numVehicles:    parseInt((document.getElementById('numVehicles') as HTMLInputElement).value) || 0,
-					primaryCarType: (document.getElementById('primaryCarType') as HTMLSelectElement).value,
-					carTypes:       checked,
-				});
+				const { error } = await supabase
+					.from('partners')
+					.update({
+						num_vehicles:     parseInt((document.getElementById('numVehicles') as HTMLInputElement).value) || 0,
+						primary_car_type: (document.getElementById('primaryCarType') as HTMLSelectElement).value,
+						car_types:        checked,
+					})
+					.eq('id', user.id);
+
+				if (error) throw error;
 				showStatus(statusEl, 'Vehicle info saved successfully.', true);
 			} catch (err: any) {
 				showStatus(statusEl, err.message || 'Failed to save vehicle info.', false);
@@ -308,7 +322,6 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			const statusEl = document.getElementById('password-status');
 			const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
 
-			const currentPw = (document.getElementById('currentPassword') as HTMLInputElement).value;
 			const newPw     = (document.getElementById('newPassword') as HTMLInputElement).value;
 			const confirmPw = (document.getElementById('confirmPassword') as HTMLInputElement).value;
 
@@ -325,9 +338,8 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			btn.textContent = 'Updating...';
 
 			try {
-				const credential = EmailAuthProvider.credential(user.email!, currentPw);
-				await reauthenticateWithCredential(user, credential);
-				await updatePassword(user, newPw);
+				const { error } = await supabase.auth.updateUser({ password: newPw });
+				if (error) throw error;
 
 				(document.getElementById('currentPassword') as HTMLInputElement).value = '';
 				(document.getElementById('newPassword') as HTMLInputElement).value = '';
@@ -335,9 +347,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 				showStatus(statusEl, 'Password updated successfully.', true);
 			} catch (err: any) {
-				const msg = err.code === 'auth/wrong-password' ? 'Current password is incorrect.'
-					: err.code === 'auth/requires-recent-login' ? 'Please log in again and retry.'
-					: err.message || 'Failed to update password.';
+				const msg = err.message || 'Failed to update password.';
 				showStatus(statusEl, msg, false);
 			} finally {
 				btn.disabled = false;

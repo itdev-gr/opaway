@@ -9,12 +9,11 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth } from '../lib/firebase';
-	import { signOut } from 'firebase/auth';
+	import { supabase } from '../lib/supabase';
 
 	(async () => {
 		try {
-			await signOut(auth);
+			await supabase.auth.signOut();
 		} finally {
 			window.location.href = '/';
 		}

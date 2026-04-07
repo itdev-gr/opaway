@@ -265,8 +265,7 @@ import Layout from '../../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth } from '../../../lib/firebase';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { supabase } from '../../../lib/supabase';
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -309,16 +308,18 @@ import Layout from '../../../layouts/Layout.astro';
 		document.getElementById('sb-return-price-row')?.classList.remove('hidden');
 	}
 
-	/* ── Auto-fill from Firebase Auth ── */
-	onAuthStateChanged(auth, (user) => {
+	/* ── Auto-fill from Supabase Auth ── */
+	supabase.auth.onAuthStateChange((_event, session) => {
+		const user = session?.user;
 		if (!user) return;
 		const firstName = document.getElementById('pax-first') as HTMLInputElement;
 		const lastName = document.getElementById('pax-last') as HTMLInputElement;
 		const email = document.getElementById('pax-email') as HTMLInputElement;
 
 		if (user.email && !email.value) email.value = user.email;
-		if (user.displayName) {
-			const parts = user.displayName.split(' ');
+		const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || '';
+		if (displayName) {
+			const parts = displayName.split(' ');
 			if (!firstName.value) firstName.value = parts[0] || '';
 			if (!lastName.value) lastName.value = parts.slice(1).join(' ') || '';
 		}

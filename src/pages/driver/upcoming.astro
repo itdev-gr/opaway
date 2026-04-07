@@ -36,8 +36,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Ride {
 		id: string;
@@ -45,9 +44,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		time: string;
 		from: string;
 		to: string;
-		vehicleName: string;
+		vehicle_name: string;
 		passengers: number;
-		rideStatus: string;
+		ride_status: string;
 	}
 
 	let allRides: Ride[] = [];
@@ -74,8 +73,8 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 		listEl.innerHTML = rides.map(r => {
 			const ref = r.id.substring(0, 8).toUpperCase();
-			const statusCls = STATUS_COLORS[r.rideStatus] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
-			const statusLabel = r.rideStatus.charAt(0).toUpperCase() + r.rideStatus.slice(1);
+			const statusCls = STATUS_COLORS[r.ride_status] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
+			const statusLabel = r.ride_status.charAt(0).toUpperCase() + r.ride_status.slice(1);
 
 			return `
 				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=transfers"
@@ -112,7 +111,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						<!-- Details -->
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center gap-2 flex-wrap">
-								${r.vehicleName ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicleName)}</span>` : ''}
+								${r.vehicle_name ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicle_name)}</span>` : ''}
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusCls}">${escHtml(statusLabel)}</span>
 							</div>
 							<div class="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -129,31 +128,29 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	}
 
 	async function loadRides() {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		try {
-			const ridesQuery = query(
-				collection(db, 'transfers'),
-				where('driverUid', '==', user.uid),
-				where('rideStatus', 'in', ['assigned', 'pickup', 'onboard']),
-				orderBy('createdAt', 'desc')
-			);
-			const snap = await getDocs(ridesQuery);
+			const { data: rows, error } = await supabase
+				.from('transfers')
+				.select('*')
+				.eq('driver_uid', user.id)
+				.in('ride_status', ['assigned', 'pickup', 'onboard'])
+				.order('created_at', { ascending: false });
 
-			allRides = snap.docs.map(d => {
-				const data = d.data();
-				return {
-					id: d.id,
-					date: data.date || '',
-					time: data.time || '',
-					from: data.from || '',
-					to: data.to || '',
-					vehicleName: data.vehicleName || '',
-					passengers: data.passengers || 0,
-					rideStatus: data.rideStatus || '',
-				};
-			});
+			if (error) throw error;
+
+			allRides = (rows || []).map((data: any) => ({
+				id: data.id,
+				date: data.date || '',
+				time: data.time || '',
+				from: data.from || '',
+				to: data.to || '',
+				vehicle_name: data.vehicle_name || '',
+				passengers: data.passengers || 0,
+				ride_status: data.ride_status || '',
+			}));
 
 			renderRides(allRides);
 		} catch (err) {

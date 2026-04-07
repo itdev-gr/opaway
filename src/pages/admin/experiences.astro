@@ -145,8 +145,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Ride Status colours ── */
 	const RIDE_STATUS_COLORS: Record<string, string> = {
@@ -195,12 +194,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	async function loadExperienceOptions() {
 		const sel = document.getElementById('ex-experience') as HTMLSelectElement;
 		try {
-			const snap = await getDocs(query(collection(db, 'experiencesCatalog'), orderBy('createdAt', 'desc')));
-			const published = snap.docs.filter(d => d.data().published !== false);
+			const { data, error } = await supabase.from('experiences_catalog').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			const published = (data ?? []).filter(d => d.published !== false);
 			sel.innerHTML = published.length === 0
 				? '<option value="" disabled selected>No experiences available</option>'
 				: '<option value="" disabled selected>Select an experience…</option>' +
-				  published.map(d => `<option value="${d.id}">${d.data().title ?? '—'}</option>`).join('');
+				  published.map(d => `<option value="${d.id}">${d.title ?? '—'}</option>`).join('');
 		} catch {
 			sel.innerHTML = '<option value="" disabled selected>Could not load experiences</option>';
 		}
@@ -210,31 +210,32 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const tbody = document.getElementById('experiences-tbody')!;
 		const countEl = document.getElementById('experiences-count');
 		try {
-			const snap = await getDocs(query(collection(db, 'experiences'), orderBy('createdAt', 'desc')));
-			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
-			if (snap.empty) {
+			const { data, error } = await supabase.from('experiences').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			const rows = data ?? [];
+			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
+			if (rows.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-10 text-center text-neutral-400">No experiences found.</td></tr>`;
 				return;
 			}
-			tbody.innerHTML = snap.docs.map(document => {
-				const d = document.data() as Record<string, unknown>;
-				const date = d.date ? String(d.date) : (d.createdAt ? new Date((d.createdAt as { toDate?: () => Date }).toDate?.() ?? 0).toLocaleDateString() : '—');
+			tbody.innerHTML = rows.map(d => {
+				const date = d.date ? String(d.date) : (d.created_at ? new Date(d.created_at).toLocaleDateString() : '—');
 				const time = d.time ? String(d.time) : '—';
-				const rideStatus = String(d.rideStatus ?? d.status ?? 'new');
-				const paymentMethod = String(d.paymentMethod ?? 'cash');
-				const paymentStatus = String(d.paymentStatus ?? 'pending');
+				const rideStatus = String(d.ride_status ?? d.status ?? 'new');
+				const paymentMethod = String(d.payment_method ?? 'cash');
+				const paymentStatus = String(d.payment_status ?? 'pending');
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${time}</td>
 					<td class="px-4 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-500 whitespace-nowrap">${d.email ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.phone ?? '—'}</td>
-					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.pickup ?? d.pickupLocation ?? '—'}</td>
-					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.experience ?? d.experienceName ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.pickup ?? d.pickup_location ?? '—'}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.experience ?? d.experience_name ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-600 text-center">${d.participants ?? d.passengers ?? d.guests ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.vehicle ?? '—'}</td>
-					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${buildDriverCell(document.id, String(d.driver ?? ''))}</td>
-					<td class="px-4 py-3">${buildRideStatusSelect(document.id, rideStatus)}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${buildDriverCell(d.id, String(d.driver ?? ''))}</td>
+					<td class="px-4 py-3">${buildRideStatusSelect(d.id, rideStatus)}</td>
 					<td class="px-4 py-3">${buildPaymentBadge(paymentMethod, paymentStatus)}</td>
 				</tr>`;
 			}).join('');
@@ -254,7 +255,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const newStatus = sel.value;
 		applyRideStatusColor(sel);
 		try {
-			await updateDoc(doc(db, 'experiences', docId), { rideStatus: newStatus });
+			await supabase.from('experiences').update({ ride_status: newStatus }).eq('id', docId);
 		} catch (err) {
 			console.error('Failed to update ride status:', err);
 		}
@@ -280,7 +281,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			span.textContent = val || '—';
 			input.replaceWith(span);
 			try {
-				await updateDoc(doc(db, 'experiences', docId), { driver: val });
+				await supabase.from('experiences').update({ driver: val }).eq('id', docId);
 			} catch (err) {
 				console.error('Failed to update driver:', err);
 			}
@@ -331,19 +332,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.disabled = true;
 		submitBtn.textContent = 'Saving…';
 		try {
-			await addDoc(collection(db, 'experiences'), {
+			await supabase.from('experiences').insert({
 				name, email, phone: phone || '',
-				experience: experienceName, experienceId,
-				pickup, pickupLocation: pickup,
+				experience: experienceName, experience_id: experienceId,
+				pickup, pickup_location: pickup,
 				date, time: time || '',
 				participants,
 				notes: notes || '',
-				rideStatus,
-				paymentStatus: 'pending',
-				paymentMethod: 'cash',
-				createdAt: serverTimestamp(),
-				addedByAdmin: true,
-			});
+				ride_status: rideStatus,
+				payment_status: 'pending',
+				payment_method: 'cash',
+				added_by_admin: true,
+			}).select().single();
 			closeModal();
 			await loadExperiences();
 		} catch (err) {

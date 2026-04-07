@@ -452,9 +452,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth, db } from '../lib/firebase';
-	import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../lib/supabase';
 
 	/* ── Type metadata ── */
 	const TYPE_META: Record<string, { label: string; color: string; icon: string }> = {
@@ -626,69 +624,67 @@ import Layout from '../layouts/Layout.astro';
 		submitBtn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Submitting…`;
 
 		try {
-			// 1. Create Firebase Auth account
-			const { user } = await createUserWithEmailAndPassword(auth, authEmail, password);
+			// 1. Create Supabase Auth account
+			const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+				email: authEmail,
+				password,
+				options: { data: { full_name: displayName } }
+			});
+			if (signUpError) throw signUpError;
+			const user = signUpData.user;
+			if (!user) throw new Error('Registration failed. Please try again.');
 
-			// 2. Force token propagation so Firestore rules can verify the uid
-			await user.getIdToken(true);
-
-			// 3. Build partners document
-			//    type field: hotel | agency | driver
-			const TYPE_MAP: Record<string, string> = {
-				hotel:  'hotel',
-				agency: 'agency',
-				driver: 'driver',
-			};
-
+			// 2. Build partners record
 			const partnerData: Record<string, unknown> = {
-				uid:         user.uid,
-				email:       authEmail,
-				displayName,
-				type:        TYPE_MAP[type],
-				status:      'pending',
-				provider:    'email',
-				createdAt:   serverTimestamp(),
+				id:            user.id,
+				uid:           user.id,
+				email:         authEmail,
+				display_name:  displayName,
+				type,
+				status:        'pending',
+				provider:      'email',
 			};
 
 			if (type === 'hotel') {
-				partnerData.hotelName     = getInputVal('h-name');
-				partnerData.hotelType     = getInputVal('h-type');
-				partnerData.vat           = getInputVal('h-vat');
-				partnerData.businessPhone = getInputVal('h-phone');
-				partnerData.businessEmail = getInputVal('h-email');
-				partnerData.contactName   = displayName;
-				partnerData.contactPhone  = getInputVal('h-contact-phone');
-				partnerData.contactEmail  = authEmail;
-				partnerData.location      = getInputVal('h-location');
-				partnerData.website       = getInputVal('h-website') || null;
+				partnerData.hotel_name     = getInputVal('h-name');
+				partnerData.hotel_type     = getInputVal('h-type');
+				partnerData.vat            = getInputVal('h-vat');
+				partnerData.business_phone = getInputVal('h-phone');
+				partnerData.business_email = getInputVal('h-email');
+				partnerData.contact_name   = displayName;
+				partnerData.contact_phone  = getInputVal('h-contact-phone');
+				partnerData.contact_email  = authEmail;
+				partnerData.location       = getInputVal('h-location');
+				partnerData.website        = getInputVal('h-website') || null;
 			} else if (type === 'agency') {
-				partnerData.agencyName    = getInputVal('a-name');
-				partnerData.agencyType    = getInputVal('a-type');
-				partnerData.vat           = getInputVal('a-vat');
-				partnerData.agencyPhone   = getInputVal('a-phone');
-				partnerData.agencyEmail   = getInputVal('a-email');
-				partnerData.contactName   = displayName;
-				partnerData.contactEmail  = authEmail;
-				partnerData.contactPhone  = getInputVal('a-contact-phone');
-				partnerData.location      = getInputVal('a-location');
-				partnerData.website       = getInputVal('a-website') || null;
+				partnerData.agency_name    = getInputVal('a-name');
+				partnerData.agency_type    = getInputVal('a-type');
+				partnerData.vat            = getInputVal('a-vat');
+				partnerData.agency_phone   = getInputVal('a-phone');
+				partnerData.agency_email   = getInputVal('a-email');
+				partnerData.contact_name   = displayName;
+				partnerData.contact_email  = authEmail;
+				partnerData.contact_phone  = getInputVal('a-contact-phone');
+				partnerData.location       = getInputVal('a-location');
+				partnerData.website        = getInputVal('a-website') || null;
 			} else if (type === 'driver') {
 				const carTypes = Array.from(
 					document.querySelectorAll<HTMLInputElement>('input[name="d-car-types"]:checked')
 				).map(el => el.value);
-				partnerData.fullName       = displayName;
-				partnerData.phone          = getInputVal('d-phone');
-				partnerData.vat            = getInputVal('d-vat');
-				partnerData.numVehicles    = getInputVal('d-num-vehicles');
-				partnerData.primaryCarType = getInputVal('d-car-type');
-				partnerData.carTypes       = carTypes;
+				partnerData.full_name       = displayName;
+				partnerData.phone           = getInputVal('d-phone');
+				partnerData.vat             = getInputVal('d-vat');
+				partnerData.num_vehicles    = getInputVal('d-num-vehicles');
+				partnerData.primary_car_type = getInputVal('d-car-type');
+				partnerData.car_types       = carTypes;
 			}
 
-			// 4. Save to partners collection (keyed by uid)
-			await setDoc(doc(db, 'partners', user.uid), partnerData);
+			// 3. Save to partners table
+			const { error: insertError } = await supabase.from('partners').insert(partnerData);
+			if (insertError) throw insertError;
 
-			// 5. Sign out immediately so the partner is NOT shown as logged in
-			await signOut(auth);
+			// 4. Sign out immediately so the partner is NOT shown as logged in
+			await supabase.auth.signOut();
 
 			// 6. Replace card with success state
 			const card = document.querySelector('.bg-white.rounded-3xl') as HTMLElement;
@@ -712,12 +708,9 @@ import Layout from '../layouts/Layout.astro';
 			}
 
 		} catch (err: unknown) {
-			const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
-			const msg  = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
-			if (code === 'auth/email-already-in-use') {
+			const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '';
+			if (msg.includes('already registered')) {
 				showError('This email is already registered. Try signing in instead.');
-			} else if (code === 'auth/invalid-email') {
-				showError('Please enter a valid email address.');
 			} else {
 				showError(msg || 'Registration failed. Please try again.');
 			}

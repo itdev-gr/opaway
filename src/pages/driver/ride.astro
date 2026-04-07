@@ -246,9 +246,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { onAuthStateChanged } from 'firebase/auth';
-	import { doc, getDoc, updateDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Query params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -268,28 +266,36 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	});
 
 	/* ── Guard: wait for auth then load ── */
-	onAuthStateChanged(auth, async (user) => {
-		if (!user || !docId) return;
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session?.user || !docId) return;
+		const user = session.user;
 
 		try {
-			const snap = await getDoc(doc(db, collectionName, docId));
-			if (!snap.exists()) { showError(); return; }
+			const { data: d, error } = await supabase
+				.from(collectionName)
+				.select('*')
+				.eq('id', docId)
+				.single();
 
-			const d = snap.data() as Record<string, any>;
+			if (error || !d) { showError(); return; }
 
 			/* Also load partner doc for driver's name */
 			let driverName = '';
 			try {
-				const partnerSnap = await getDoc(doc(db, 'partners', user.uid));
-				if (partnerSnap.exists()) {
-					const pd = partnerSnap.data();
-					driverName = (pd.fullName as string) || (pd.companyName as string) || '';
+				const { data: pd } = await supabase
+					.from('partners')
+					.select('*')
+					.eq('id', user.id)
+					.single();
+
+				if (pd) {
+					driverName = (pd.full_name as string) || (pd.company_name as string) || '';
 				}
 			} catch { /* ignore */ }
 
-			const isAvailable = !d.driverUid;
+			const isAvailable = !d.driver_uid;
 
-			render(d, isAvailable, user.uid, driverName);
+			render(d, isAvailable, user.id, driverName);
 		} catch (e) {
 			console.error('Error loading ride:', e);
 			showError();
@@ -312,7 +318,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			nameEl.textContent = 'Passenger details hidden';
 			nameEl.classList.add('text-neutral-400', 'italic');
 		} else {
-			nameEl.textContent = [d.firstName, d.lastName].filter(Boolean).join(' ') || '—';
+			nameEl.textContent = [d.first_name, d.last_name].filter(Boolean).join(' ') || '—';
 		}
 
 		/* 2. Date / Time */
@@ -320,21 +326,21 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		document.getElementById('r-time')!.textContent = d.time || '—';
 
 		/* 3. Customer Comments */
-		const hasNotes = d.driverNotes?.trim();
-		const hasSign  = d.signName?.trim();
+		const hasNotes = d.driver_notes?.trim();
+		const hasSign  = d.sign_name?.trim();
 		if (hasNotes || hasSign) {
 			document.getElementById('section-comments')!.classList.remove('hidden');
 			document.getElementById('r-driver-notes')!.textContent = hasNotes || '';
 			if (hasSign) {
 				document.getElementById('r-sign-name-comment')!.classList.remove('hidden');
-				document.getElementById('r-sign-name-val')!.textContent = d.signName;
+				document.getElementById('r-sign-name-val')!.textContent = d.sign_name;
 			}
 		}
 
 		/* 4. Welcome Tag */
 		if (hasSign) {
 			document.getElementById('section-welcome')!.classList.remove('hidden');
-			document.getElementById('r-sign-name')!.textContent = d.signName;
+			document.getElementById('r-sign-name')!.textContent = d.sign_name;
 		}
 
 		/* 5. Route */
@@ -347,19 +353,19 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 		let badgesHtml = '';
 		if (d.passengers)  badgesHtml += badge(passengerIcon(), `${d.passengers} pax`);
-		if (d.flightNumber) badgesHtml += badge(planeIcon(), d.flightNumber);
-		if (d.trainNumber)  badgesHtml += badge(trainIcon(), d.trainNumber);
+		if (d.flight_number) badgesHtml += badge(planeIcon(), d.flight_number);
+		if (d.train_number)  badgesHtml += badge(trainIcon(), d.train_number);
 		badgesEl.innerHTML = badgesHtml;
 
 		/* 6. Vehicle */
-		document.getElementById('r-vehicle')!.textContent = d.vehicleName || '—';
+		document.getElementById('r-vehicle')!.textContent = d.vehicle_name || '—';
 		const vInfo: string[] = [];
-		if (d.maxPassengers) vInfo.push(`Max ${d.maxPassengers} passengers`);
-		if (d.maxLuggage)    vInfo.push(`${d.maxLuggage} luggage`);
+		if (d.max_passengers) vInfo.push(`Max ${d.max_passengers} passengers`);
+		if (d.max_luggage)    vInfo.push(`${d.max_luggage} luggage`);
 		document.getElementById('r-vehicle-info')!.textContent = vInfo.join(' · ');
 
 		/* 7. Ride Status Button (only for assigned rides) */
-		const status = d.rideStatus as string | undefined;
+		const status = d.ride_status as string | undefined;
 		if (!isAvailable && (status === 'assigned' || status === 'pickup' || status === 'onboard')) {
 			const sectionBtn = document.getElementById('section-status-btn')!;
 			const btn        = document.getElementById('r-status-btn')! as HTMLButtonElement;
@@ -378,7 +384,13 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				btn.disabled = true;
 				btn.textContent = 'Updating...';
 				try {
-					await updateDoc(doc(db, collectionName, docId!), { rideStatus: nextStatus });
+					const { error } = await supabase
+						.from(collectionName)
+						.update({ ride_status: nextStatus })
+						.eq('id', docId!);
+
+					if (error) throw error;
+
 					if (nextStatus === 'completed') {
 						sectionBtn.classList.add('hidden');
 					} else {
@@ -398,8 +410,8 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			const payoutSection = document.getElementById('section-payout')!;
 			payoutSection.classList.remove('hidden');
 
-			const paymentMethod = (d.paymentMethod || 'stripe') as string;
-			const basePrice = d.basePrice ?? d.totalPrice ?? 0;
+			const paymentMethod = (d.payment_method || 'stripe') as string;
+			const basePrice = d.base_price ?? d.total_price ?? 0;
 			const driverPayout = basePrice * 0.80;
 			const commission   = basePrice * 0.20;
 
@@ -458,11 +470,17 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				rejectBtn.disabled = true;
 				acceptBtn.textContent = 'Accepting...';
 				try {
-					await updateDoc(doc(db, collectionName, docId!), {
-						driverUid: currentUid,
-						driverName: driverName,
-						rideStatus: 'assigned',
-					});
+					const { error } = await supabase
+						.from(collectionName)
+						.update({
+							driver_uid: currentUid,
+							driver_name: driverName,
+							ride_status: 'assigned',
+						})
+						.eq('id', docId!);
+
+					if (error) throw error;
+
 					acceptBtn.textContent = 'Accepted!';
 					acceptBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
 					acceptBtn.classList.add('bg-emerald-500', 'cursor-default');

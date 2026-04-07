@@ -71,25 +71,24 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Request {
 		id: string;
 		source: 'tour' | 'contact';
 		status: 'new' | 'answered' | 'follow-up' | 'discarded';
-		createdAt: { toDate?: () => Date } | null;
-		userId?: string | null;
-		userDisplayName?: string | null;
-		userEmail?: string | null;
-		tourName?: string;
+		created_at: string | null;
+		user_id?: string | null;
+		user_display_name?: string | null;
+		user_email?: string | null;
+		tour_name?: string;
 		name?: string;
-		contactInfo?: string;
-		pickupLocation?: string;
+		contact_info?: string;
+		pickup_location?: string;
 		date?: string;
 		time?: string;
 		participants?: number;
-		specialRequests?: string;
+		special_requests?: string;
 		email?: string;
 		subject?: string;
 		message?: string;
@@ -103,8 +102,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	let openDropdownId: string | null = null;
 
 	const fmtDate = (r: Request) => {
-		if (!r.createdAt?.toDate) return '—';
-		const d = r.createdAt.toDate!();
+		if (!r.created_at) return '—';
+		const d = new Date(r.created_at);
 		return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 	};
 
@@ -166,11 +165,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const statusLabel = r.status === 'follow-up' ? 'Follow up' : r.status.charAt(0).toUpperCase() + r.status.slice(1);
 
 			const nameContact = isTour
-				? `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.contactInfo || r.email || '')}</div>`
+				? `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.contact_info || r.email || '')}</div>`
 				: `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.email || '')}</div>`;
 
 			const details = isTour
-				? `<div class="text-neutral-800">${esc(r.tourName || '—')}</div><div class="text-xs text-neutral-500">${esc(r.pickupLocation || '')}${r.date ? ` · ${esc(r.date)}` : ''}</div>`
+				? `<div class="text-neutral-800">${esc(r.tour_name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.pickup_location || '')}${r.date ? ` · ${esc(r.date)}` : ''}</div>`
 				: `<div class="text-neutral-800">${esc(r.subject || '—')}</div><div class="text-xs text-neutral-500 truncate max-w-[300px]">${esc(r.message || '')}</div>`;
 
 			// Action buttons for dropdown
@@ -232,7 +231,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const id = btn.dataset.id!;
 				const action = btn.dataset.action!;
 				try {
-					await updateDoc(doc(db, 'requests', id), { status: action });
+					await supabase.from('requests').update({ status: action }).eq('id', id);
 					const req = allRequests.find(r => r.id === id);
 					if (req) req.status = action as any;
 					renderTable();
@@ -296,7 +295,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		confirmBtn.disabled = true;
 		confirmBtn.textContent = 'Deleting…';
 		try {
-			await deleteDoc(doc(db, 'requests', deleteTargetId));
+			await supabase.from('requests').delete().eq('id', deleteTargetId);
 			allRequests = allRequests.filter(r => r.id !== deleteTargetId);
 			deleteTargetId = null;
 			document.getElementById('req-delete-modal')?.classList.add('hidden');
@@ -312,12 +311,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* ── Load ── */
 	async function loadRequests() {
 		try {
-			const snap = await getDocs(query(collection(db, 'requests'), orderBy('createdAt', 'desc')));
-			allRequests = snap.docs.map(d => {
-				const data = d.data();
+			const { data, error } = await supabase.from('requests').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			allRequests = (data ?? []).map(d => {
 				// Map legacy statuses to new ones
-				if (data.status === 'resolved' || data.status === 'read') data.status = 'answered';
-				return { id: d.id, ...data } as Request;
+				if (d.status === 'resolved' || d.status === 'read') d.status = 'answered';
+				return d as Request;
 			});
 			renderTable();
 		} catch (err) {

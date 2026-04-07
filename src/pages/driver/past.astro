@@ -36,8 +36,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Ride {
 		id: string;
@@ -45,10 +44,10 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		time: string;
 		from: string;
 		to: string;
-		vehicleName: string;
+		vehicle_name: string;
 		passengers: number;
-		rideStatus: string;
-		totalPrice: number;
+		ride_status: string;
+		total_price: number;
 	}
 
 	let allRides: Ride[] = [];
@@ -74,9 +73,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 		listEl.innerHTML = rides.map(r => {
 			const ref = r.id.substring(0, 8).toUpperCase();
-			const statusCls = STATUS_COLORS[r.rideStatus] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
-			const statusLabel = r.rideStatus.charAt(0).toUpperCase() + r.rideStatus.slice(1);
-			const payout = (r.totalPrice * 0.80).toFixed(2);
+			const statusCls = STATUS_COLORS[r.ride_status] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
+			const statusLabel = r.ride_status.charAt(0).toUpperCase() + r.ride_status.slice(1);
+			const payout = (r.total_price * 0.80).toFixed(2);
 
 			return `
 				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=transfers"
@@ -113,7 +112,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						<!-- Details -->
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center gap-2 flex-wrap">
-								${r.vehicleName ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicleName)}</span>` : ''}
+								${r.vehicle_name ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicle_name)}</span>` : ''}
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusCls}">${escHtml(statusLabel)}</span>
 							</div>
 							<div class="flex items-center gap-3">
@@ -123,7 +122,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 									</svg>
 									${r.passengers || '—'}
 								</div>
-								<div class="flex items-center gap-1.5 text-xs font-semibold ${r.rideStatus === 'completed' ? 'text-emerald-600' : 'text-neutral-400'}">
+								<div class="flex items-center gap-1.5 text-xs font-semibold ${r.ride_status === 'completed' ? 'text-emerald-600' : 'text-neutral-400'}">
 									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
@@ -138,32 +137,30 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	}
 
 	async function loadRides() {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		try {
-			const ridesQuery = query(
-				collection(db, 'transfers'),
-				where('driverUid', '==', user.uid),
-				where('rideStatus', 'in', ['completed', 'cancelled']),
-				orderBy('createdAt', 'desc')
-			);
-			const snap = await getDocs(ridesQuery);
+			const { data: rows, error } = await supabase
+				.from('transfers')
+				.select('*')
+				.eq('driver_uid', user.id)
+				.in('ride_status', ['completed', 'cancelled'])
+				.order('created_at', { ascending: false });
 
-			allRides = snap.docs.map(d => {
-				const data = d.data();
-				return {
-					id: d.id,
-					date: data.date || '',
-					time: data.time || '',
-					from: data.from || '',
-					to: data.to || '',
-					vehicleName: data.vehicleName || '',
-					passengers: data.passengers || 0,
-					rideStatus: data.rideStatus || '',
-					totalPrice: parseFloat(data.totalPrice) || 0,
-				};
-			});
+			if (error) throw error;
+
+			allRides = (rows || []).map((data: any) => ({
+				id: data.id,
+				date: data.date || '',
+				time: data.time || '',
+				from: data.from || '',
+				to: data.to || '',
+				vehicle_name: data.vehicle_name || '',
+				passengers: data.passengers || 0,
+				ride_status: data.ride_status || '',
+				total_price: parseFloat(data.total_price) || 0,
+			}));
 
 			renderRides(allRides);
 		} catch (err) {

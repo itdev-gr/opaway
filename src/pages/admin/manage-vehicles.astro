@@ -250,8 +250,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Types ── */
 	interface VehicleItem { id: string; slug: string; name: string; models: string; image: string; maxPassengers: number; maxLuggage: number; badge: string; sortOrder: number; active: boolean; }
@@ -384,7 +383,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const isActive = btn.dataset.active === 'true';
 				btn.disabled = true;
 				try {
-					await updateDoc(doc(db, 'vehicles', id), { active: !isActive });
+					const { error: togErr } = await supabase.from('vehicles').update({ active: !isActive }).eq('id', id);
+					if (togErr) throw togErr;
 					const item = items.find(i => i.id === id);
 					if (item) item.active = !isActive;
 					renderGrid();
@@ -410,12 +410,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		});
 	}
 
-	/* ── Load from Firestore ── */
+	/* ── Load from Supabase ── */
 	async function loadItems() {
 		const grid = document.getElementById('vehicles-grid')!;
 		try {
-			const snap = await getDocs(query(collection(db, 'vehicles'), orderBy('sortOrder', 'asc')));
-			items = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<VehicleItem, 'id'>) }));
+			const { data, error } = await supabase.from('vehicles').select('*').order('sort_order', { ascending: true });
+			if (error) throw error;
+			items = (data ?? []).map((d: any) => ({ id: d.id, slug: d.slug, name: d.name, models: d.models, image: d.image, maxPassengers: d.max_passengers, maxLuggage: d.max_luggage, badge: d.badge, sortOrder: d.sort_order, active: d.active }));
 			renderGrid();
 		} catch (e) {
 			console.error('Load error:', e);
@@ -450,11 +451,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		setStatus('', '');
 
 		try {
-			const docRef = await addDoc(collection(db, 'vehicles'), {
-				slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder,
-				active: true, ownerId: null, ownerType: 'platform', createdAt: serverTimestamp(),
-			});
-			items.push({ id: docRef.id, slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder, active: true });
+			const { data: inserted, error: insErr } = await supabase.from('vehicles').insert({
+				slug, name, models, image, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder,
+				active: true, owner_id: null, owner_type: 'platform',
+			}).select().single();
+			if (insErr) throw insErr;
+			items.push({ id: inserted.id, slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder, active: true });
 			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 			renderGrid();
 			form.reset();
@@ -484,7 +486,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
 		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
 		try {
-			await deleteDoc(doc(db, 'vehicles', pendingDeleteId));
+			const { error: delErr } = await supabase.from('vehicles').delete().eq('id', pendingDeleteId);
+			if (delErr) throw delErr;
 			items = items.filter(i => i.id !== pendingDeleteId);
 			renderGrid();
 		} catch (err) { console.error(err); }
@@ -548,7 +551,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		editStatus.textContent = '';
 
 		try {
-			await updateDoc(doc(db, 'vehicles', pendingEditId), { image, name, slug, models, maxPassengers, maxLuggage, badge, sortOrder });
+			const { error: updErr } = await supabase.from('vehicles').update({ image, name, slug, models, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder }).eq('id', pendingEditId);
+			if (updErr) throw updErr;
 			const item = items.find(i => i.id === pendingEditId);
 			if (item) Object.assign(item, { image, name, slug, models, maxPassengers, maxLuggage, badge, sortOrder });
 			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));

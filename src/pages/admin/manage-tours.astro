@@ -234,8 +234,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Types ── */
 	interface CatalogItem {
@@ -358,7 +357,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const isLive = btn.dataset.published === 'true';
 				btn.disabled = true;
 				try {
-					await updateDoc(doc(db, 'toursCatalog', id), { published: !isLive });
+					const { error: togErr } = await supabase.from('tours_catalog').update({ published: !isLive }).eq('id', id);
+					if (togErr) throw togErr;
 					const item = items.find(i => i.id === id);
 					if (item) item.published = !isLive;
 					renderGrid();
@@ -384,12 +384,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		});
 	}
 
-	/* ── Load from Firestore ── */
+	/* ── Load from Supabase ── */
 	async function loadItems() {
 		const grid = document.getElementById('tours-grid')!;
 		try {
-			const snap = await getDocs(query(collection(db, 'toursCatalog'), orderBy('createdAt', 'desc')));
-			items = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<CatalogItem, 'id'>) }));
+			const { data, error } = await supabase.from('tours_catalog').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			items = (data ?? []).map((d: any) => ({ id: d.id, title: d.title, description: d.description, price: d.price, imageUrl: d.image_url, published: d.published, duration: d.duration, highlight1: d.highlight1, highlight2: d.highlight2, highlight3: d.highlight3 }));
 			renderGrid();
 		} catch (e) {
 			console.error('Load error:', e);
@@ -424,12 +425,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		setStatus('', '');
 
 		try {
-			const docRef = await addDoc(collection(db, 'toursCatalog'), {
-				imageUrl, title, description, price, duration,
+			const { data: inserted, error: insErr } = await supabase.from('tours_catalog').insert({
+				image_url: imageUrl, title, description, price, duration,
 				highlight1: h1, highlight2: h2, highlight3: h3,
-				published: true, createdAt: serverTimestamp(),
-			});
-			items.unshift({ id: docRef.id, imageUrl, title, description, price, duration, highlight1: h1, highlight2: h2, highlight3: h3, published: true });
+				published: true,
+			}).select().single();
+			if (insErr) throw insErr;
+			items.unshift({ id: inserted.id, imageUrl, title, description, price, duration, highlight1: h1, highlight2: h2, highlight3: h3, published: true });
 			renderGrid();
 			form.reset();
 			imgPreview.classList.add('hidden');
@@ -458,7 +460,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
 		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
 		try {
-			await deleteDoc(doc(db, 'toursCatalog', pendingDeleteId));
+			const { error: delErr } = await supabase.from('tours_catalog').delete().eq('id', pendingDeleteId);
+			if (delErr) throw delErr;
 			items = items.filter(i => i.id !== pendingDeleteId);
 			renderGrid();
 		} catch (err) { console.error(err); }
@@ -521,10 +524,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		editStatus.textContent = '';
 
 		try {
-			await updateDoc(doc(db, 'toursCatalog', pendingEditId), {
-				imageUrl, title, description, price, duration,
+			const { error: updErr } = await supabase.from('tours_catalog').update({
+				image_url: imageUrl, title, description, price, duration,
 				highlight1: h1, highlight2: h2, highlight3: h3,
-			});
+			}).eq('id', pendingEditId);
+			if (updErr) throw updErr;
 			const item = items.find(i => i.id === pendingEditId);
 			if (item) Object.assign(item, { imageUrl, title, description, price, duration, highlight1: h1, highlight2: h2, highlight3: h3 });
 			renderGrid();

@@ -299,8 +299,7 @@ import Layout from '../../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { db, auth } from '../../../lib/firebase';
-	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../../lib/supabase';
 	import { loadStripe } from '@stripe/stripe-js';
 
 	/* ── Parse URL params ── */
@@ -421,40 +420,42 @@ import Layout from '../../../layouts/Layout.astro';
 		document.getElementById('stripe-not-configured')?.classList.remove('hidden');
 	}
 
-	/* ── Save booking to Firestore ── */
+	/* ── Save booking to Supabase ── */
 	async function saveBooking(paymentMethod: string, paymentToken: string = '') {
 		const btn = document.getElementById('complete-btn') as HTMLButtonElement;
 		btn.disabled = true; btn.textContent = 'Processing...';
 
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		const { data: { user } } = await supabase.auth.getUser();
 
 		try {
-			const docRef = await addDoc(collection(db, 'transfers'), {
+			const { data: inserted, error } = await supabase.from('transfers').insert({
 				from, to, date, time,
 				passengers: parseInt(passengers, 10),
-				returnDate: returnDate || null,
-				returnTime: returnTime || null,
-				vehicleSlug, vehicleName,
-				firstName, lastName, email, phone,
-				signName: signName || null,
-				childSeats: parseInt(childSeats, 10),
-				driverNotes: driverNotes || null,
-				totalPrice: finalTotal,
-				basePrice: baseTotal,
-				outwardPrice: parseFloat(outwardPrice),
-				returnPrice: parseFloat(returnPrice),
-				cardSurcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
-				rideStatus: 'new',
-				paymentStatus: paymentMethod === 'stripe' ? 'paid' : 'pending',
-				paymentMethod,
-				paymentToken: paymentToken || null,
-				uid: auth.currentUser?.uid || null,
-				createdAt: serverTimestamp(),
-			});
+				return_date: returnDate || null,
+				return_time: returnTime || null,
+				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
+				first_name: firstName, last_name: lastName, email, phone,
+				sign_name: signName || null,
+				child_seats: parseInt(childSeats, 10),
+				driver_notes: driverNotes || null,
+				total_price: finalTotal,
+				base_price: baseTotal,
+				outward_price: parseFloat(outwardPrice),
+				return_price: parseFloat(returnPrice),
+				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+				ride_status: 'new',
+				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
+				payment_method: paymentMethod,
+				payment_token: paymentToken || null,
+				user_id: user?.id || null,
+			}).select().single();
+
+			if (error) throw error;
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', docRef.id.substring(0, 8).toUpperCase());
+			setText('success-ref', inserted.id.substring(0, 8).toUpperCase());
 			setText('success-route', `${from} \u2192 ${to}`);
 			setText('success-date', `${date} at ${time}`);
 			setText('success-vehicle', vehicleName);

@@ -55,8 +55,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth } from '../lib/firebase';
-	import { signOut } from 'firebase/auth';
+	import { supabase } from '../lib/supabase';
 
 	const sidebar = document.getElementById('profile-sidebar');
 	const overlay = document.getElementById('profile-sidebar-overlay');
@@ -85,7 +84,7 @@ import Layout from '../layouts/Layout.astro';
 	sidebarLogoutBtn?.addEventListener('click', async () => {
 		closeSidebar();
 		try {
-			await signOut(auth);
+			await supabase.auth.signOut();
 			window.location.href = '/';
 		} catch {
 			window.location.href = '/';

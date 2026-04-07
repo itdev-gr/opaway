@@ -85,8 +85,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { collection, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Types ── */
 	interface PartnerRow {
@@ -102,9 +101,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	type ActionType = 'approve' | 'reject' | 'delete';
 
 	/* ── Helpers ── */
-	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
-		if (!ts?.toDate) return '—';
-		try { return ts.toDate().toLocaleDateString('el-GR'); } catch { return '—'; }
+	const fmtDate = (ts: string | null | undefined) => {
+		if (!ts) return '—';
+		try { return new Date(ts).toLocaleDateString('el-GR'); } catch { return '—'; }
 	};
 
 	const typeBadge = (type: string) => {
@@ -263,7 +262,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const saveDiscount = async () => {
 					const val = Math.max(0, Math.min(100, parseInt(input.value) || 0));
 					try {
-						await updateDoc(doc(db, 'partners', uid), { discount: val });
+						const { error: discErr } = await supabase.from('partners').update({ discount: val }).eq('id', uid);
+						if (discErr) throw discErr;
 						partner.discount = val;
 						renderTable();
 					} catch (err) { console.error('Failed to save discount:', err); }
@@ -316,30 +316,30 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	document.addEventListener('click', closeAllDropdowns);
 
-	/* ── Load from Firestore ── */
+	/* ── Load from Supabase ── */
 	async function loadPartners() {
 		const tbody = document.getElementById('partners-tbody')!;
 		try {
-			const snap = await getDocs(query(collection(db, 'partners'), orderBy('createdAt', 'desc')));
-			if (snap.empty) {
+			const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			if (!data || data.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partner accounts found.</td></tr>`;
 				return;
 			}
-			allPartners = snap.docs.map(d => {
-				const data = d.data() as Record<string, unknown>;
+			allPartners = data.map((d: any) => {
 				// Determine business name based on partner type
 				let businessName = '—';
-				if (data.type === 'hotel')  businessName = String(data.hotelName  ?? '—');
-				if (data.type === 'agency') businessName = String(data.agencyName ?? '—');
+				if (d.type === 'hotel')  businessName = String(d.hotel_name  ?? '—');
+				if (d.type === 'agency') businessName = String(d.agency_name ?? '—');
 				return {
 					uid:          d.id,
-					displayName:  String(data.displayName ?? '—'),
+					displayName:  String(d.display_name ?? '—'),
 					businessName,
-					email:        String(data.email  ?? '—'),
-					type:         String(data.type   ?? '—'),
-					status:       String(data.status ?? 'pending'),
-					discount:     Number(data.discount ?? 0),
-					createdAt:    fmtDate(data.createdAt as { toDate?: () => Date } | undefined),
+					email:        String(d.email  ?? '—'),
+					type:         String(d.type   ?? '—'),
+					status:       String(d.status ?? 'pending'),
+					discount:     Number(d.discount ?? 0),
+					createdAt:    fmtDate(d.created_at),
 				};
 			});
 			renderTable();
@@ -405,11 +405,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		try {
 			if (pendingAction === 'delete') {
-				await deleteDoc(doc(db, 'partners', pendingUid));
+				const { error } = await supabase.from('partners').delete().eq('id', pendingUid);
+				if (error) throw error;
 				allPartners = allPartners.filter(p => p.uid !== pendingUid);
 			} else {
 				const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected';
-				await updateDoc(doc(db, 'partners', pendingUid), { status: newStatus });
+				const { error } = await supabase.from('partners').update({ status: newStatus }).eq('id', pendingUid);
+				if (error) throw error;
 				const partner = allPartners.find(p => p.uid === pendingUid);
 				if (partner) partner.status = newStatus;
 			}

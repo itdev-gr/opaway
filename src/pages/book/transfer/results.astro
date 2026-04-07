@@ -247,30 +247,25 @@ import Layout from '../../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { db, auth } from '../../../lib/firebase';
-	import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { supabase } from '../../../lib/supabase';
 	import { calculatePrice } from '../../../lib/pricing';
 
 	let partnerDiscount = 0;
 
 	async function detectPartnerDiscount(): Promise<number> {
-		return new Promise((resolve) => {
-			onAuthStateChanged(auth, async (user) => {
-				if (!user) { resolve(0); return; }
-				try {
-					const snap = await getDoc(doc(db, 'partners', user.uid));
-					if (snap.exists()) {
-						const data = snap.data();
-						if (data.status === 'approved' && data.discount > 0) {
-							resolve(data.discount);
-							return;
-						}
-					}
-				} catch {}
-				resolve(0);
-			});
-		});
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return 0;
+		try {
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('status, discount')
+				.eq('id', user.id)
+				.single();
+			if (partner && partner.status === 'approved' && partner.discount > 0) {
+				return partner.discount;
+			}
+		} catch {}
+		return 0;
 	}
 
 	/* ── Parse URL params ── */
@@ -454,17 +449,31 @@ import Layout from '../../../layouts/Layout.astro';
 		});
 	}
 
-	/* ── Load vehicles from Firestore ── */
+	/* ── Load vehicles from Supabase ── */
 	async function loadVehicles() {
 		try {
-			const snap = await getDocs(query(
-				collection(db, 'vehicles'),
-				where('active', '==', true),
-				orderBy('sortOrder')
-			));
-			vehicles = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Vehicle, 'id'>) }));
-			if (vehicles.length === 0) {
-				// Fallback: use hardcoded defaults if collection is empty
+			const { data, error } = await supabase
+				.from('vehicles')
+				.select('*')
+				.eq('active', true)
+				.order('sort_order');
+
+			if (error) throw error;
+
+			if (data && data.length > 0) {
+				vehicles = data.map(d => ({
+					id: d.id,
+					slug: d.slug,
+					name: d.name,
+					models: d.models,
+					image: d.image,
+					maxPassengers: d.max_passengers,
+					maxLuggage: d.max_luggage,
+					badge: d.badge,
+					sortOrder: d.sort_order,
+				}));
+			} else {
+				// Fallback: use hardcoded defaults if table is empty
 				vehicles = [
 					{ id: '1', slug: 'sedan', name: 'Sedan', models: 'Mercedes-Benz E-Class, or similar.', image: '/car.avif', maxPassengers: 3, maxLuggage: 6, badge: 'BEST VALUE', sortOrder: 1 },
 					{ id: '2', slug: 'van', name: 'Van', models: 'Mercedes Vito Tourer, or similar.', image: '/mini_van.avif', maxPassengers: 8, maxLuggage: 16, badge: 'MOST POPULAR', sortOrder: 2 },
@@ -472,7 +481,7 @@ import Layout from '../../../layouts/Layout.astro';
 				];
 			}
 		} catch (e) {
-			console.warn('Could not load vehicles from Firestore, using defaults:', e);
+			console.warn('Could not load vehicles from Supabase, using defaults:', e);
 			vehicles = [
 				{ id: '1', slug: 'sedan', name: 'Sedan', models: 'Mercedes-Benz E-Class, or similar.', image: '/car.avif', maxPassengers: 3, maxLuggage: 6, badge: 'BEST VALUE', sortOrder: 1 },
 				{ id: '2', slug: 'van', name: 'Van', models: 'Mercedes Vito Tourer, or similar.', image: '/mini_van.avif', maxPassengers: 8, maxLuggage: 16, badge: 'MOST POPULAR', sortOrder: 2 },

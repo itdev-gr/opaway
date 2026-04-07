@@ -225,9 +225,7 @@ const nav = [
 </html>
 
 <script>
-	import { auth, db } from '../lib/firebase';
-	import { onAuthStateChanged, signOut } from 'firebase/auth';
-	import { doc, getDocFromServer } from 'firebase/firestore';
+	import { supabase } from '../lib/supabase';
 
 	const overlay    = document.getElementById('admin-sidebar-overlay');
 	const sidebar    = document.getElementById('admin-sidebar');
@@ -245,22 +243,25 @@ const nav = [
 	/* ── Logout ── */
 	document.getElementById('admin-sidebar-logout')?.addEventListener('click', async () => {
 		closeSidebar();
-		try { await signOut(auth); } catch { /* ignore */ }
-		window.close();
+		try { await supabase.auth.signOut(); } catch { /* ignore */ }
+		window.location.href = '/login';
 	});
 
 	/* ── Admin guard ── */
-	onAuthStateChanged(auth, async (user) => {
-		if (!user) { window.location.href = '/login'; return; }
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session?.user) { window.location.href = '/login'; return; }
 		try {
-			const snap = await getDocFromServer(doc(db, 'users', user.uid));
-			const data = snap.exists() ? snap.data() : null;
+			const { data } = await supabase
+				.from('users')
+				.select('type, display_name')
+				.eq('id', session.user.id)
+				.single();
 			if (data?.type !== 'admin') { window.location.href = '/'; return; }
 			if (userNameEl) {
 				userNameEl.textContent =
-					(data?.displayName as string | undefined)?.trim() ||
-					user.displayName?.trim() ||
-					user.email || 'Admin';
+					data?.display_name?.trim() ||
+					session.user.user_metadata?.full_name?.trim() ||
+					session.user.email || 'Admin';
 			}
 			authCheck?.classList.add('hidden');
 		} catch { window.location.href = '/'; }

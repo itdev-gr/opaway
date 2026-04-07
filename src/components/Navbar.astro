@@ -131,9 +131,7 @@
 </nav>
 
 <script>
-	import { auth, db } from '../lib/firebase';
-	import { onAuthStateChanged } from 'firebase/auth';
-	import { doc, getDocFromServer } from 'firebase/firestore';
+	import { supabase } from '../lib/supabase';
 
 	function updateActiveLink() {
 		const pathname = window.location.pathname;
@@ -146,71 +144,66 @@
 		});
 	}
 
-	async function updateAuthNav(user: { uid: string; displayName?: string | null; email?: string | null } | null) {
+	async function updateAuthNav(user: { id: string; email?: string | null; user_metadata?: Record<string, any> } | null) {
 		const guest = document.getElementById('nav-auth-guest');
 		const userEl = document.getElementById('nav-auth-user');
 		const nameEl = document.getElementById('nav-user-name');
 		const adminBtn = document.getElementById('nav-admin-btn');
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
-		// Admin button: hidden by default; show only when Firestore user.type === 'admin'
 		if (adminBtn) { adminBtn.classList.add('hidden'); adminBtn.classList.remove('inline-flex'); }
 		if (nameEl && user) {
-			nameEl.textContent = user.displayName?.trim() || user.email || 'Account';
+			nameEl.textContent = user.user_metadata?.full_name?.trim() || user.email || 'Account';
 			nameEl.setAttribute('title', nameEl.textContent);
 			try {
-				const snap = await getDocFromServer(doc(db, 'users', user.uid));
-				if (snap.exists()) {
-					const data = snap.data();
-					const displayName = data?.displayName as string | undefined;
-					if (displayName && typeof displayName === 'string' && displayName.trim()) {
-						nameEl.textContent = displayName.trim();
-						nameEl.setAttribute('title', displayName.trim());
+				const { data } = await supabase
+					.from('users')
+					.select('display_name, type')
+					.eq('id', user.id)
+					.single();
+				if (data) {
+					if (data.display_name?.trim()) {
+						nameEl.textContent = data.display_name.trim();
+						nameEl.setAttribute('title', data.display_name.trim());
 					}
-					// Show Admin only when type is exactly string 'admin'; user, undefined, or any other type → hidden
-					const isAdmin = data?.type === 'admin';
-					// eslint-disable-next-line no-console -- temporary debug: verify Firestore type for current user
-					console.log('Navbar user type:', data?.type, 'uid:', user.uid);
-					if (!adminBtn) return;
-					// When not admin: always hide (so we never leave it visible from a stale state).
-					// When admin: only show if this response is for the current user (stale check).
-					if (!isAdmin) {
-						adminBtn.classList.add('hidden');
-						adminBtn.classList.remove('inline-flex');
-					} else if (auth.currentUser?.uid === user.uid) {
+					if (data.type === 'admin' && adminBtn) {
 						adminBtn.classList.remove('hidden');
 						adminBtn.classList.add('inline-flex');
 					}
 				}
 
-				// Check if user is an approved driver (partners collection)
+				// Check if user is an approved driver (partners table)
 				const driverBtn = document.getElementById('nav-driver-btn');
 				if (driverBtn) {
-					try {
-						const partnerSnap = await getDocFromServer(doc(db, 'partners', user.uid));
-						if (partnerSnap.exists()) {
-							const pData = partnerSnap.data();
-							if (pData?.type === 'driver' && pData?.status === 'approved') {
-								driverBtn.classList.remove('hidden');
-								driverBtn.classList.add('inline-flex');
-							}
-						}
-					} catch { /* ignore */ }
+					const { data: pData } = await supabase
+						.from('partners')
+						.select('type, status')
+						.eq('id', user.id)
+						.single();
+					if (pData?.type === 'driver' && pData?.status === 'approved') {
+						driverBtn.classList.remove('hidden');
+						driverBtn.classList.add('inline-flex');
+					}
 				}
 			} catch {
-				// Keep fallback from Auth; admin stays hidden
+				// Keep fallback; admin stays hidden
 			}
 		}
 	}
 
-	onAuthStateChanged(auth, updateAuthNav);
+	// Listen for auth state changes
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		await updateAuthNav(session?.user ?? null);
+	});
 
 	// Run on first load
 	updateActiveLink();
+	supabase.auth.getUser().then(({ data }) => updateAuthNav(data.user));
 
 	// Re-run on every View Transitions page navigation
-	document.addEventListener('astro:page-load', () => {
+	document.addEventListener('astro:page-load', async () => {
 		updateActiveLink();
-		updateAuthNav(auth.currentUser);
+		const { data } = await supabase.auth.getUser();
+		updateAuthNav(data.user);
 	});
 </script>

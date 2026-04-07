@@ -168,8 +168,7 @@ import Layout from '../../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth } from '../../../lib/firebase';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { supabase } from '../../../lib/supabase';
 
 	const params = new URLSearchParams(window.location.search);
 	const pickup = params.get('pickup') || '';
@@ -198,14 +197,16 @@ import Layout from '../../../layouts/Layout.astro';
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
 
 	// Auto-fill from auth
-	onAuthStateChanged(auth, (user) => {
+	supabase.auth.onAuthStateChange((_event, session) => {
+		const user = session?.user;
 		if (!user) return;
 		const firstName = document.getElementById('pax-first') as HTMLInputElement;
 		const lastName = document.getElementById('pax-last') as HTMLInputElement;
 		const email = document.getElementById('pax-email') as HTMLInputElement;
 		if (user.email && !email.value) email.value = user.email;
-		if (user.displayName) {
-			const parts = user.displayName.split(' ');
+		const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || '';
+		if (displayName) {
+			const parts = displayName.split(' ');
 			if (!firstName.value) firstName.value = parts[0] || '';
 			if (!lastName.value) lastName.value = parts.slice(1).join(' ') || '';
 		}

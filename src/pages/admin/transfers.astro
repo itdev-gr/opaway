@@ -165,8 +165,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, updateDoc, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Ride-status colours ── */
 	const RIDE_STATUS_COLORS: Record<string, string> = {
@@ -221,38 +220,38 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const tbody = document.getElementById('transfers-tbody')!;
 		const countEl = document.getElementById('transfers-count');
 		try {
-			const snap = await getDocs(query(collection(db, 'transfers'), orderBy('createdAt', 'desc')));
-			if (countEl) countEl.textContent = `${snap.size} record${snap.size !== 1 ? 's' : ''}`;
-			if (snap.empty) {
+			const { data, error } = await supabase.from('transfers').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			const rows = data ?? [];
+			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
+			if (rows.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">No transfers found.</td></tr>`;
 				return;
 			}
-			tbody.innerHTML = snap.docs.map(document => {
-				const d = document.data() as Record<string, unknown>;
-
+			tbody.innerHTML = rows.map(d => {
 				/* Date */
 				const dateVal = d.date ? String(d.date) : '—';
 
 				/* Time */
 				const timeVal = d.time ? String(d.time) : '—';
 
-				/* Name: firstName + lastName, fallback to name */
-				const firstName = d.firstName ? String(d.firstName) : '';
-				const lastName = d.lastName ? String(d.lastName) : '';
+				/* Name: first_name + last_name, fallback to name */
+				const firstName = d.first_name ? String(d.first_name) : '';
+				const lastName = d.last_name ? String(d.last_name) : '';
 				const fullName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : (d.name ? String(d.name) : '—');
 
 				/* Phone */
 				const phone = d.phone ? String(d.phone) : '—';
 
 				/* Vehicle */
-				const vehicle = d.vehicleName ? String(d.vehicleName) : (d.vehicle ? String(d.vehicle) : '—');
+				const vehicle = d.vehicle_name ? String(d.vehicle_name) : (d.vehicle ? String(d.vehicle) : '—');
 
-				/* Ride status: rideStatus field, fallback to status for legacy */
-				const rideStatus = d.rideStatus ? String(d.rideStatus) : (d.status ? String(d.status) : 'new');
+				/* Ride status: ride_status field, fallback to status for legacy */
+				const rideStatus = d.ride_status ? String(d.ride_status) : (d.status ? String(d.status) : 'new');
 
 				/* Payment */
-				const paymentMethod = d.paymentMethod ? String(d.paymentMethod) : 'cash';
-				const paymentStatus = d.paymentStatus ? String(d.paymentStatus) : 'pending';
+				const paymentMethod = d.payment_method ? String(d.payment_method) : 'cash';
+				const paymentStatus = d.payment_status ? String(d.payment_status) : 'pending';
 
 				/* Driver */
 				const driver = d.driver ? String(d.driver) : '';
@@ -267,8 +266,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-6 py-3 text-neutral-600">${escHtml(String(d.to ?? '—'))}</td>
 					<td class="px-6 py-3 text-neutral-600 text-center">${d.passengers ?? '—'}</td>
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(vehicle)}</td>
-					<td class="px-6 py-3 whitespace-nowrap">${buildDriverCell(document.id, driver)}</td>
-					<td class="px-6 py-3">${buildRideStatusSelect(document.id, rideStatus)}</td>
+					<td class="px-6 py-3 whitespace-nowrap">${buildDriverCell(d.id, driver)}</td>
+					<td class="px-6 py-3">${buildRideStatusSelect(d.id, rideStatus)}</td>
 					<td class="px-6 py-3">${buildPaymentBadge(paymentMethod, paymentStatus)}</td>
 				</tr>`;
 			}).join('');
@@ -289,7 +288,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const newStatus = sel.value;
 		applyRideStatusColor(sel);
 		try {
-			await updateDoc(doc(db, 'transfers', docId), { rideStatus: newStatus });
+			await supabase.from('transfers').update({ ride_status: newStatus }).eq('id', docId);
 		} catch (err) {
 			console.error('Failed to update ride status:', err);
 		}
@@ -317,7 +316,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const save = async () => {
 			const newDriver = input.value.trim();
 			try {
-				await updateDoc(doc(db, 'transfers', docId), { driver: newDriver });
+				await supabase.from('transfers').update({ driver: newDriver }).eq('id', docId);
 			} catch (err) {
 				console.error('Failed to update driver:', err);
 			}
@@ -380,21 +379,22 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.disabled = true;
 		submitBtn.textContent = 'Saving…';
 		try {
-			await addDoc(collection(db, 'transfers'), {
-				firstName, lastName, email,
+			await supabase.from('transfers').insert({
+				first_name: firstName,
+				last_name: lastName,
+				email,
 				phone: phone || '',
 				from, to, date,
 				time: time || '',
 				passengers,
-				vehicleName: vehicle || '',
+				vehicle_name: vehicle || '',
 				notes: notes || '',
-				rideStatus,
-				paymentStatus: 'pending',
-				paymentMethod: 'cash',
+				ride_status: rideStatus,
+				payment_status: 'pending',
+				payment_method: 'cash',
 				driver: '',
-				createdAt: serverTimestamp(),
-				addedByAdmin: true,
-			});
+				added_by_admin: true,
+			}).select().single();
 			closeModal();
 			await loadTransfers();
 		} catch (err) {

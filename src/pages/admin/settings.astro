@@ -176,7 +176,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 			<!-- Project ID -->
 			<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Firebase Project</p>
+				<p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Supabase Project</p>
 				<p id="sys-project-id" class="text-sm font-semibold text-neutral-900 break-all">Loading...</p>
 			</div>
 
@@ -209,9 +209,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-	import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── DOM refs ── */
 	const nameInput      = document.getElementById('profile-name') as HTMLInputElement;
@@ -275,32 +273,31 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Init ── */
 	async function init() {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		// Load profile data
-		const userDoc = await getDoc(doc(db, 'users', user.uid));
-		const data = userDoc.exists() ? userDoc.data() : null;
+		const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single();
 
 		// Fill fields
-		nameInput.value = data?.displayName || user.displayName || '';
+		nameInput.value = userData?.display_name || user.user_metadata?.display_name || '';
 		nameInput.disabled = false;
 		nameInput.placeholder = 'Enter display name';
 		emailInput.value = user.email || '';
 
-		const provider = data?.provider || user.providerData[0]?.providerId || 'unknown';
-		providerEl.innerHTML = providerBadge(provider);
-		memberSinceEl.textContent = formatDate(data?.createdAt);
+		const provider = userData?.provider || user.app_metadata?.provider || 'unknown';
+		providerEl.innerHTML = providerBadge(provider === 'email' ? 'password' : provider);
+		memberSinceEl.textContent = formatDate(userData?.created_at);
 
 		btnSave.disabled = false;
 
 		// Show password section for email provider
-		if (provider === 'password') {
+		if (provider === 'password' || provider === 'email') {
 			sectionPw.classList.remove('hidden');
 		}
 
 		// System info
-		sysProjectId.textContent = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'N/A';
+		sysProjectId.textContent = import.meta.env.PUBLIC_SUPABASE_URL || 'N/A';
 
 		// Fetch counts in parallel
 		loadSystemCounts();
@@ -308,17 +305,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	async function loadSystemCounts() {
 		try {
-			const [usersSnap, partnersSnap, transfersSnap, toursSnap, experiencesSnap] = await Promise.all([
-				getDocs(collection(db, 'users')),
-				getDocs(collection(db, 'partners')),
-				getDocs(collection(db, 'transfers')),
-				getDocs(collection(db, 'tours')),
-				getDocs(collection(db, 'experiences')),
+			const [usersRes, partnersRes, transfersRes, toursRes, experiencesRes] = await Promise.all([
+				supabase.from('users').select('id', { count: 'exact', head: true }),
+				supabase.from('partners').select('id', { count: 'exact', head: true }),
+				supabase.from('transfers').select('id', { count: 'exact', head: true }),
+				supabase.from('tours').select('id', { count: 'exact', head: true }),
+				supabase.from('experiences').select('id', { count: 'exact', head: true }),
 			]);
 
-			sysTotalUsers.textContent = usersSnap.size.toString();
-			sysTotalPartners.textContent = partnersSnap.size.toString();
-			sysTotalBookings.textContent = (transfersSnap.size + toursSnap.size + experiencesSnap.size).toString();
+			sysTotalUsers.textContent = (usersRes.count ?? 0).toString();
+			sysTotalPartners.textContent = (partnersRes.count ?? 0).toString();
+			sysTotalBookings.textContent = ((transfersRes.count ?? 0) + (toursRes.count ?? 0) + (experiencesRes.count ?? 0)).toString();
 		} catch (err) {
 			console.error('Failed to load system counts:', err);
 			sysTotalUsers.textContent = '—';
@@ -329,7 +326,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Save Profile ── */
 	btnSave.addEventListener('click', async () => {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		const newName = nameInput.value.trim();
@@ -340,10 +337,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		btnSave.disabled = true;
 		try {
-			await Promise.all([
-				updateProfile(user, { displayName: newName }),
-				updateDoc(doc(db, 'users', user.uid), { displayName: newName }),
+			const [authRes, dbRes] = await Promise.all([
+				supabase.auth.updateUser({ data: { display_name: newName } }),
+				supabase.from('users').update({ display_name: newName }).eq('id', user.id),
 			]);
+			if (authRes.error) throw authRes.error;
+			if (dbRes.error) throw dbRes.error;
 			showStatus(profileStatus, 'Profile updated successfully.', true);
 
 			// Update sidebar name
@@ -358,7 +357,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Update Password ── */
 	btnPw.addEventListener('click', async () => {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user || !user.email) return;
 
 		const current = pwCurrent.value;
@@ -380,21 +379,19 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		btnPw.disabled = true;
 		try {
-			const credential = EmailAuthProvider.credential(user.email, current);
-			await reauthenticateWithCredential(user, credential);
-			await updatePassword(user, next);
+			// Verify current password by signing in
+			const { error: signInErr } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
+			if (signInErr) throw new Error('Current password is incorrect.');
+
+			const { error: updateErr } = await supabase.auth.updateUser({ password: next });
+			if (updateErr) throw updateErr;
 
 			pwCurrent.value = '';
 			pwNew.value = '';
 			pwConfirm.value = '';
 			showStatus(pwStatus, 'Password updated successfully.', true);
 		} catch (err: any) {
-			const msg = err.code === 'auth/wrong-password'
-				? 'Current password is incorrect.'
-				: err.code === 'auth/too-many-requests'
-				? 'Too many attempts. Try again later.'
-				: err.message || 'Failed to update password.';
-			showStatus(pwStatus, msg, false);
+			showStatus(pwStatus, err.message || 'Failed to update password.', false);
 		} finally {
 			btnPw.disabled = false;
 		}

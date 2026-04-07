@@ -72,8 +72,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { collection, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	/* ── Types ── */
 	interface UserRow {
@@ -83,9 +82,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	type ActionType = 'promote' | 'demote' | 'delete';
 
 	/* ── Helpers ── */
-	const fmtDate = (ts: { toDate?: () => Date } | undefined) => {
-		if (!ts?.toDate) return '—';
-		try { return ts.toDate().toLocaleDateString('el-GR'); } catch { return '—'; }
+	const fmtDate = (ts: string | null | undefined) => {
+		if (!ts) return '—';
+		try { return new Date(ts).toLocaleDateString('el-GR'); } catch { return '—'; }
 	};
 
 	const roleBadge = (type: string) => {
@@ -214,27 +213,25 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* Close dropdown when clicking outside */
 	document.addEventListener('click', closeAllDropdowns);
 
-	/* ── Load from Firestore ── */
+	/* ── Load from Supabase ── */
 	async function loadUsers() {
 		const tbody = document.getElementById('users-tbody')!;
 		try {
-			const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc')));
-			if (snap.empty) {
+			const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+			if (error) throw error;
+			if (!data || data.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No users found.</td></tr>`;
 				return;
 			}
-			allUsers = snap.docs.map(d => {
-				const data = d.data() as Record<string, unknown>;
-				return {
-					uid:         d.id,
-					displayName: String(data.displayName ?? '—'),
-					email:       String(data.email ?? '—'),
-					type:        String(data.type ?? 'user'),
-					provider:    String(data.provider ?? 'email'),
-					createdAt:   fmtDate(data.createdAt as { toDate?: () => Date } | undefined),
-					lastLoginAt: fmtDate(data.lastLoginAt as { toDate?: () => Date } | undefined),
-				};
-			});
+			allUsers = data.map((d: any) => ({
+				uid:         d.id,
+				displayName: String(d.display_name ?? '—'),
+				email:       String(d.email ?? '—'),
+				type:        String(d.type ?? 'user'),
+				provider:    String(d.provider ?? 'email'),
+				createdAt:   fmtDate(d.created_at),
+				lastLoginAt: fmtDate(d.last_login_at),
+			}));
 			renderTable();
 		} catch (e) {
 			console.error('Users load error:', e);
@@ -298,11 +295,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		try {
 			if (pendingAction === 'delete') {
-				await deleteDoc(doc(db, 'users', pendingUid));
+				const { error } = await supabase.from('users').delete().eq('id', pendingUid);
+				if (error) throw error;
 				allUsers = allUsers.filter(u => u.uid !== pendingUid);
 			} else {
 				const newType = pendingAction === 'promote' ? 'admin' : 'user';
-				await updateDoc(doc(db, 'users', pendingUid), { type: newType });
+				const { error } = await supabase.from('users').update({ type: newType }).eq('id', pendingUid);
+				if (error) throw error;
 				const user = allUsers.find(u => u.uid === pendingUid);
 				if (user) user.type = newType;
 			}

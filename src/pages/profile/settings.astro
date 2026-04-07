@@ -143,9 +143,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 </ProfileLayout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser } from 'firebase/auth';
-	import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	// Elements
 	const displayNameInput = document.getElementById('displayName') as HTMLInputElement;
@@ -214,20 +212,20 @@ import ProfileContent from '../../components/ProfileContent.astro';
 	});
 
 	// Auth state
-	onAuthStateChanged(auth, async (user) => {
-		if (!user) {
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session) {
 			window.location.href = '/login';
 			return;
 		}
 
+		const user = session.user;
 		emailInput.value = user.email || '';
 
-		// Load Firestore profile
+		// Load profile from users table
 		try {
-			const snap = await getDoc(doc(db, 'users', user.uid));
-			if (snap.exists()) {
-				const data = snap.data();
-				displayNameInput.value = data.displayName || user.displayName || '';
+			const { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
+			if (!error && data) {
+				displayNameInput.value = data.display_name || user.user_metadata?.display_name || '';
 				currentProvider = data.provider || 'email';
 
 				// Provider badge
@@ -240,8 +238,8 @@ import ProfileContent from '../../components/ProfileContent.astro';
 				}
 
 				// Member since
-				if (data.createdAt) {
-					const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+				if (data.created_at) {
+					const date = new Date(data.created_at);
 					memberSince.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
 				}
 
@@ -257,7 +255,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 	// Save profile
 	saveProfileBtn?.addEventListener('click', async () => {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		const newName = displayNameInput.value.trim();
@@ -270,8 +268,8 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		hideMsg(profileMsg);
 
 		try {
-			await updateProfile(user, { displayName: newName });
-			await updateDoc(doc(db, 'users', user.uid), { displayName: newName });
+			await supabase.auth.updateUser({ data: { display_name: newName } });
+			await supabase.from('users').update({ display_name: newName }).eq('id', user.id);
 			showMsg(profileMsg, 'Profile updated successfully.', 'success');
 		} catch (err: any) {
 			showMsg(profileMsg, err.message || 'Failed to update profile.', 'error');
@@ -282,19 +280,14 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 	// Update password
 	updatePasswordBtn?.addEventListener('click', async () => {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user || !user.email) return;
 
-		const current = currentPasswordInput.value;
 		const newPw = newPasswordInput.value;
 		const confirm = confirmPasswordInput.value;
 
 		hideMsg(passwordMsg);
 
-		if (!current) {
-			showMsg(passwordMsg, 'Please enter your current password.', 'error');
-			return;
-		}
 		if (newPw.length < 6) {
 			showMsg(passwordMsg, 'New password must be at least 6 characters.', 'error');
 			return;
@@ -307,9 +300,8 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		updatePasswordBtn.disabled = true;
 
 		try {
-			const credential = EmailAuthProvider.credential(user.email, current);
-			await reauthenticateWithCredential(user, credential);
-			await updatePassword(user, newPw);
+			const { error } = await supabase.auth.updateUser({ password: newPw });
+			if (error) throw error;
 			showMsg(passwordMsg, 'Password updated successfully.', 'success');
 			currentPasswordInput.value = '';
 			newPasswordInput.value = '';
@@ -317,11 +309,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 			strengthFill.style.width = '0%';
 			strengthLabel.textContent = '';
 		} catch (err: any) {
-			if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-				showMsg(passwordMsg, 'Current password is incorrect.', 'error');
-			} else {
-				showMsg(passwordMsg, err.message || 'Failed to update password.', 'error');
-			}
+			showMsg(passwordMsg, err.message || 'Failed to update password.', 'error');
 		} finally {
 			updatePasswordBtn.disabled = false;
 		}
@@ -340,22 +328,18 @@ import ProfileContent from '../../components/ProfileContent.astro';
 	});
 
 	confirmDeleteBtn?.addEventListener('click', async () => {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		confirmDeleteBtn.disabled = true;
 		hideMsg(deleteModalMsg);
 
 		try {
-			await deleteDoc(doc(db, 'users', user.uid));
-			await deleteUser(user);
+			await supabase.from('users').delete().eq('id', user.id);
+			await supabase.auth.signOut();
 			window.location.href = '/';
 		} catch (err: any) {
-			if (err.code === 'auth/requires-recent-login') {
-				showMsg(deleteModalMsg, 'For security, please log out and log back in, then try again.', 'error');
-			} else {
-				showMsg(deleteModalMsg, err.message || 'Failed to delete account.', 'error');
-			}
+			showMsg(deleteModalMsg, err.message || 'Failed to delete account.', 'error');
 			confirmDeleteBtn.disabled = false;
 		}
 	});

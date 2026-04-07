@@ -182,30 +182,25 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { auth, db } from '../../lib/firebase';
-	import { doc, getDoc } from 'firebase/firestore';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { supabase } from '../../lib/supabase';
 	import { calculateHourlyPrice } from '../../lib/pricing';
 
 	let partnerDiscount = 0;
 
 	async function detectPartnerDiscount(): Promise<number> {
-		return new Promise((resolve) => {
-			onAuthStateChanged(auth, async (user) => {
-				if (!user) { resolve(0); return; }
-				try {
-					const snap = await getDoc(doc(db, 'partners', user.uid));
-					if (snap.exists()) {
-						const data = snap.data();
-						if (data.status === 'approved' && data.discount > 0) {
-							resolve(data.discount);
-							return;
-						}
-					}
-				} catch {}
-				resolve(0);
-			});
-		});
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return 0;
+		try {
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('status, discount')
+				.eq('id', user.id)
+				.single();
+			if (partner && partner.status === 'approved' && partner.discount > 0) {
+				return partner.discount;
+			}
+		} catch {}
+		return 0;
 	}
 
 	/* ── State ── */

@@ -49,8 +49,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Ride {
 		id: string;
@@ -58,9 +57,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		time: string;
 		from: string;
 		to: string;
-		vehicleName: string;
+		vehicle_name: string;
 		passengers: number;
-		driverUid: string;
+		driver_uid: string;
 	}
 
 	let allRides: Ride[] = [];
@@ -123,7 +122,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						<!-- Details -->
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center gap-2 flex-wrap">
-								${r.vehicleName ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicleName)}</span>` : ''}
+								${r.vehicle_name ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicle_name)}</span>` : ''}
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">New</span>
 							</div>
 							<div class="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -185,40 +184,43 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	}
 
 	async function loadRides() {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		try {
 			// Load partner name
-			const partnerSnap = await getDoc(doc(db, 'partners', user.uid));
-			if (partnerSnap.exists()) {
-				partnerName = partnerSnap.data().fullName || partnerSnap.data().name || '';
+			const { data: partnerData } = await supabase
+				.from('partners')
+				.select('*')
+				.eq('id', user.id)
+				.single();
+
+			if (partnerData) {
+				partnerName = partnerData.full_name || partnerData.name || '';
 			}
 
 			// Load all rides with status 'new'
-			const ridesQuery = query(
-				collection(db, 'transfers'),
-				where('rideStatus', '==', 'new'),
-				orderBy('createdAt', 'desc')
-			);
-			const snap = await getDocs(ridesQuery);
+			const { data: rows, error } = await supabase
+				.from('transfers')
+				.select('*')
+				.eq('ride_status', 'new')
+				.order('created_at', { ascending: false });
+
+			if (error) throw error;
 
 			// Client-side filter: only rides without a driver assigned
-			allRides = snap.docs
-				.map(d => {
-					const data = d.data();
-					return {
-						id: d.id,
-						date: data.date || '',
-						time: data.time || '',
-						from: data.from || '',
-						to: data.to || '',
-						vehicleName: data.vehicleName || '',
-						passengers: data.passengers || 0,
-						driverUid: data.driverUid || '',
-					};
-				})
-				.filter(r => !r.driverUid || r.driverUid === '');
+			allRides = (rows || [])
+				.map((data: any) => ({
+					id: data.id,
+					date: data.date || '',
+					time: data.time || '',
+					from: data.from || '',
+					to: data.to || '',
+					vehicle_name: data.vehicle_name || '',
+					passengers: data.passengers || 0,
+					driver_uid: data.driver_uid || '',
+				}))
+				.filter(r => !r.driver_uid || r.driver_uid === '');
 
 			renderRides(getVisibleRides());
 		} catch (err) {
@@ -244,7 +246,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	document.getElementById('confirm-accept')?.addEventListener('click', async () => {
 		if (!pendingAcceptId) return;
 		const rideId = pendingAcceptId;
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		const btn = document.getElementById('confirm-accept') as HTMLButtonElement;
@@ -252,11 +254,16 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		btn.textContent = 'Accepting...';
 
 		try {
-			await updateDoc(doc(db, 'transfers', rideId), {
-				driverUid: user.uid,
-				driver: partnerName,
-				rideStatus: 'assigned',
-			});
+			const { error } = await supabase
+				.from('transfers')
+				.update({
+					driver_uid: user.id,
+					driver: partnerName,
+					ride_status: 'assigned',
+				})
+				.eq('id', rideId);
+
+			if (error) throw error;
 
 			// Remove from local list
 			allRides = allRides.filter(r => r.id !== rideId);

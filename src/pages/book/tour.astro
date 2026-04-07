@@ -221,34 +221,29 @@ import Layout from '../../layouts/Layout.astro';
 </script>
 
 <script>
-	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, addDoc, orderBy, query, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-	import { onAuthStateChanged } from 'firebase/auth';
+	import { supabase } from '../../lib/supabase';
 	import { applyPartnerDiscount } from '../../lib/pricing';
 
 	let partnerDiscount = 0;
 
 	async function detectPartnerDiscount(): Promise<number> {
-		return new Promise((resolve) => {
-			onAuthStateChanged(auth, async (user) => {
-				if (!user) { resolve(0); return; }
-				try {
-					const snap = await getDoc(doc(db, 'partners', user.uid));
-					if (snap.exists()) {
-						const data = snap.data();
-						if (data.status === 'approved' && data.discount > 0) {
-							resolve(data.discount);
-							return;
-						}
-					}
-				} catch {}
-				resolve(0);
-			});
-		});
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return 0;
+		try {
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('status, discount')
+				.eq('id', user.id)
+				.single();
+			if (partner && partner.status === 'approved' && partner.discount > 0) {
+				return partner.discount;
+			}
+		} catch {}
+		return 0;
 	}
 
 	interface TourItem {
-		title: string; description: string; price: number; imageUrl: string;
+		id: string; title: string; description: string; price: number; image_url: string;
 		duration: string; highlight1: string; highlight2: string; highlight3: string;
 		published: boolean;
 	}
@@ -259,8 +254,14 @@ import Layout from '../../layouts/Layout.astro';
 
 	async function loadTours() {
 		try {
-			const snap = await getDocs(query(collection(db, 'toursCatalog'), orderBy('createdAt', 'desc')));
-			const docs = snap.docs.filter(d => d.data().published !== false);
+			const { data: docs, error: loadErr } = await supabase
+				.from('tours_catalog')
+				.select('*')
+				.neq('published', false)
+				.order('created_at', { ascending: false });
+
+			if (loadErr) throw loadErr;
+			if (!docs) return;
 
 			/* ── Carousel ──────────────────────────────────────────────── */
 			const inner = document.getElementById('tour-carousel-inner')!;
@@ -271,14 +272,13 @@ import Layout from '../../layouts/Layout.astro';
 						<p class="text-neutral-400 text-sm text-center">No tours available at the moment.<br/>Check back soon.</p>
 					</div>`;
 			} else {
-				inner.innerHTML = docs.map((d, i) => {
-					const t = d.data() as TourItem;
+				inner.innerHTML = docs.map((t, i) => {
 					const highlights = [t.highlight1, t.highlight2, t.highlight3].filter(Boolean);
 					return `
 					<article data-tour-card class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
 						<div class="aspect-[16/9] overflow-hidden">
 							<img
-								src="${esc(t.imageUrl)}"
+								src="${esc(t.image_url)}"
 								alt="${esc(t.title)}"
 								class="w-full h-full object-cover"
 								onerror="this.parentElement.style.background='#e5e7eb';this.style.display='none'"
@@ -365,10 +365,9 @@ import Layout from '../../layouts/Layout.astro';
 			/* ── Select dropdown ───────────────────────────────────────── */
 			const select = document.getElementById('tour-select') as HTMLSelectElement;
 			if (select && docs.length > 0) {
-				docs.forEach(d => {
-					const t = d.data() as TourItem;
+				docs.forEach(t => {
 					const opt = document.createElement('option');
-					opt.value = d.id;
+					opt.value = t.id;
 					opt.textContent = t.title;
 					select.appendChild(opt);
 				});
@@ -380,15 +379,14 @@ import Layout from '../../layouts/Layout.astro';
 			const catalogSection = document.getElementById('catalog-section')!;
 			const catalogGrid    = document.getElementById('tours-catalog-grid')!;
 
-			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(d => {
-				const t = d.data() as TourItem;
+			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
 				const dp = applyPartnerDiscount(Number(t.price), partnerDiscount);
 				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
 				return `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
 					<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
 						<img
-							src="${esc(t.imageUrl)}"
+							src="${esc(t.image_url)}"
 							alt="${esc(t.title)}"
 							class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 							onerror="this.parentElement.style.background='#f3f4f6';this.style.display='none'"
@@ -457,27 +455,28 @@ import Layout from '../../layouts/Layout.astro';
 		btn.textContent = 'Sending…';
 
 		// Capture logged-in user info at the moment of submission
-		const currentUser = auth.currentUser;
+		const { data: { user: currentUser } } = await supabase.auth.getUser();
 
 		try {
-			await addDoc(collection(db, 'requests'), {
-				source:         'tour',
-				tourId,
-				tourName,
+			const { error: insertErr } = await supabase.from('requests').insert({
+				source:           'tour',
+				tour_id:          tourId,
+				tour_name:        tourName,
 				name,
-				contactInfo:    contact,
-				pickupLocation: pickup  || '',
+				contact_info:     contact,
+				pickup_location:  pickup  || '',
 				date,
-				time:           time    || '',
+				time:             time    || '',
 				participants,
-				specialRequests: notes  || '',
-				status:         'new',
-				createdAt:      serverTimestamp(),
+				special_requests: notes  || '',
+				status:           'new',
 				// User account info (null if not logged in)
-				userId:          currentUser?.uid         || null,
-				userDisplayName: currentUser?.displayName || null,
-				userEmail:       currentUser?.email       || null,
+				user_id:            currentUser?.id                                                || null,
+				user_display_name:  currentUser?.user_metadata?.display_name || currentUser?.user_metadata?.full_name || null,
+				user_email:         currentUser?.email                                             || null,
 			});
+
+			if (insertErr) throw insertErr;
 
 			successEl.classList.remove('hidden');
 			btn.classList.add('hidden');

@@ -208,8 +208,7 @@ import Layout from '../../../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { db, auth } from '../../../lib/firebase';
-	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+	import { supabase } from '../../../lib/supabase';
 	import { loadStripe } from '@stripe/stripe-js';
 
 	const params = new URLSearchParams(window.location.search);
@@ -308,30 +307,33 @@ import Layout from '../../../layouts/Layout.astro';
 		const btn = document.getElementById('complete-btn') as HTMLButtonElement;
 		btn.disabled = true; btn.textContent = 'Processing...';
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		const { data: { user } } = await supabase.auth.getUser();
 		try {
-			const docRef = await addDoc(collection(db, 'transfers'), {
-				bookingType: 'hourly',
+			const { data: inserted, error } = await supabase.from('transfers').insert({
+				booking_type: 'hourly',
 				from: pickup, to: pickup,
 				date, time,
 				hours: parseInt(hours, 10),
 				passengers: parseInt(passengers, 10),
-				vehicleSlug, vehicleName,
-				firstName, lastName, email, phone,
-				driverNotes: driverNotes || null,
-				totalPrice: finalTotal,
-				basePrice: baseTotal,
-				perHour: parseFloat(perHour),
-				cardSurcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
-				rideStatus: 'new',
-				paymentStatus: paymentMethod === 'stripe' ? 'paid' : 'pending',
-				paymentMethod,
-				paymentToken: paymentToken || null,
-				uid: auth.currentUser?.uid || null,
-				createdAt: serverTimestamp(),
-			});
+				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
+				first_name: firstName, last_name: lastName, email, phone,
+				driver_notes: driverNotes || null,
+				total_price: finalTotal,
+				base_price: baseTotal,
+				per_hour: parseFloat(perHour),
+				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+				ride_status: 'new',
+				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
+				payment_method: paymentMethod,
+				payment_token: paymentToken || null,
+				user_id: user?.id || null,
+			}).select().single();
+
+			if (error) throw error;
+
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', docRef.id.substring(0, 8).toUpperCase());
+			setText('success-ref', inserted.id.substring(0, 8).toUpperCase());
 			setText('success-pickup', pickup);
 			setText('success-hours', `${hours} hours`);
 			setText('success-vehicle', vehicleName);

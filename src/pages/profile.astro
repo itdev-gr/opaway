@@ -39,8 +39,7 @@ import ProfileContent from '../components/ProfileContent.astro';
 </ProfileLayout>
 
 <script>
-	import { auth } from '../lib/firebase';
-	import { onAuthStateChanged, signOut } from 'firebase/auth';
+	import { supabase } from '../lib/supabase';
 
 	const loadingEl = document.getElementById('profile-loading');
 	const contentEl = document.getElementById('profile-content');
@@ -52,7 +51,7 @@ import ProfileContent from '../components/ProfileContent.astro';
 
 	const doSignOut = async () => {
 		try {
-			await signOut(auth);
+			await supabase.auth.signOut();
 			window.location.href = '/';
 		} catch {
 			window.location.href = '/';
@@ -60,18 +59,20 @@ import ProfileContent from '../components/ProfileContent.astro';
 	};
 	signOutBtn?.addEventListener('click', doSignOut);
 
-	onAuthStateChanged(auth, (user) => {
-		if (!user) {
+	supabase.auth.onAuthStateChange((_event, session) => {
+		if (!session?.user) {
 			window.location.href = '/login';
 			return;
 		}
+		const user = session.user;
 		if (loadingEl) loadingEl.classList.add('hidden');
 		if (contentEl) contentEl.classList.remove('hidden');
-		if (displayNameEl) displayNameEl.textContent = user.displayName?.trim() || '—';
+		if (displayNameEl) displayNameEl.textContent = (user.user_metadata?.display_name || user.user_metadata?.full_name || '').trim() || '—';
 		if (emailEl) emailEl.textContent = user.email || '—';
-		if (user.photoURL && avatarWrap && avatarImg) {
-			avatarImg.src = user.photoURL;
-			avatarImg.alt = user.displayName || 'Profile photo';
+		const photoURL = user.user_metadata?.avatar_url;
+		if (photoURL && avatarWrap && avatarImg) {
+			avatarImg.src = photoURL;
+			avatarImg.alt = user.user_metadata?.display_name || user.user_metadata?.full_name || 'Profile photo';
 			avatarWrap.classList.remove('hidden');
 		}
 	});

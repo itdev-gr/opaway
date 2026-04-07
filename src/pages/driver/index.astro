@@ -104,17 +104,20 @@ import DriverLayout from '../../components/DriverLayout.astro';
 </DriverLayout>
 
 <script>
-	import { db, auth } from '../../lib/firebase';
-	import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	async function loadDashboard() {
-		const user = auth.currentUser;
+		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		try {
 			// Load all rides for this driver
-			const ridesQuery = query(collection(db, 'transfers'), where('driverUid', '==', user.uid));
-			const snap = await getDocs(ridesQuery);
+			const { data: rides, error } = await supabase
+				.from('transfers')
+				.select('*')
+				.eq('driver_uid', user.id);
+
+			if (error) throw error;
 
 			let todoCount = 0;
 			let doneCount = 0;
@@ -129,9 +132,8 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			// 3 months ago boundary
 			const threeMonthsAgo = new Date(currentYear, currentMonth - 3, 1);
 
-			snap.forEach(d => {
-				const data = d.data();
-				const status = data.rideStatus || '';
+			(rides || []).forEach((data: any) => {
+				const status = data.ride_status || '';
 
 				// To-Do: assigned, pickup, onboard
 				if (['assigned', 'pickup', 'onboard'].includes(status)) {
@@ -151,7 +153,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 						const rideYear = parseInt(parts[0]);
 						const rideMonth = parseInt(parts[1]) - 1;
 						if (rideYear === currentYear && rideMonth === currentMonth) {
-							const price = parseFloat(data.totalPrice) || 0;
+							const price = parseFloat(data.total_price) || 0;
 							monthRevenue += price * 0.80;
 						}
 					}
@@ -184,12 +186,15 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			if (noshowEl) noshowEl.textContent = `${noshowRate}%`;
 
 			// Load partner doc for account status
-			const partnerRef = doc(db, 'partners', user.uid);
-			const partnerSnap = await getDoc(partnerRef);
+			const { data: partnerData } = await supabase
+				.from('partners')
+				.select('*')
+				.eq('id', user.id)
+				.single();
+
 			const statusEl = document.getElementById('stat-account-status');
 
-			if (partnerSnap.exists()) {
-				const partnerData = partnerSnap.data();
+			if (partnerData) {
 				const accountStatus = partnerData.status || 'Pending';
 				const displayStatus = accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1);
 				if (statusEl) {

@@ -80,8 +80,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { db } from '../../lib/firebase';
-	import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+	import { supabase } from '../../lib/supabase';
 
 	interface Booking {
 		id: string;
@@ -113,20 +112,20 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		for (const col of collections) {
 			try {
-				const snap = await getDocs(query(collection(db, col.name), orderBy('createdAt', 'desc')));
-				snap.docs.forEach(d => {
-					const data = d.data();
-					const createdAt = data.createdAt?.toDate?.() ?? null;
+				const { data, error } = await supabase.from(col.name).select('*').order('created_at', { ascending: false });
+				if (error) throw error;
+				(data ?? []).forEach((d: any) => {
+					const createdAt = d.created_at ? new Date(d.created_at) : null;
 					allBookings.push({
 						id: d.id,
 						type: col.type,
-						date: data.date || (createdAt ? createdAt.toLocaleDateString() : '—'),
-						name: data.firstName ? `${data.firstName} ${data.lastName || ''}`.trim() : (data.name || '—'),
-						email: data.email || '—',
-						vehicleName: data.vehicleName || data.vehicle || '—',
-						totalPrice: parseFloat(data.totalPrice) || 0,
-						paymentMethod: data.paymentMethod || '—',
-						paymentStatus: data.paymentStatus || (data.status === 'payed' ? 'paid' : 'pending'),
+						date: d.date || (createdAt ? createdAt.toLocaleDateString() : '—'),
+						name: d.first_name ? `${d.first_name} ${d.last_name || ''}`.trim() : (d.name || '—'),
+						email: d.email || '—',
+						vehicleName: d.vehicle_name || d.vehicle || '—',
+						totalPrice: parseFloat(d.total_price) || 0,
+						paymentMethod: d.payment_method || '—',
+						paymentStatus: d.payment_status || (d.status === 'payed' ? 'paid' : 'pending'),
 						createdAt,
 					});
 				});
