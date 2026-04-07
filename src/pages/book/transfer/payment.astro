@@ -448,7 +448,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
-				user_id: user?.id || null,
+				uid: user?.id || null,
 			}).select().single();
 
 			if (error) throw error;

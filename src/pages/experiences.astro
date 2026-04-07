@@ -208,7 +208,7 @@ import ExperiencesList from '../components/experiences/ExperiencesList.astro';
 			supabase.auth.onAuthStateChange(async (_event, session) => {
 				if (!session?.user) { resolve(0); return; }
 				try {
-					const { data } = await supabase.from('partners').select('*').eq('id', session.user.id).single();
+					const { data } = await supabase.from('partners').select('*').eq('id', session.user.id).maybeSingle();
 					if (data && data.status === 'approved' && data.discount > 0) {
 						resolve(data.discount);
 						return;

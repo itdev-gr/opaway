@@ -125,7 +125,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				.from('partners')
 				.select('*')
 				.eq('id', session.user.id)
-				.single();
+				.maybeSingle();
 
 			if (!partner) {
 				if (loadingEl) loadingEl.innerHTML = '<p class="text-neutral-500 text-sm">Profile data not found.</p>';

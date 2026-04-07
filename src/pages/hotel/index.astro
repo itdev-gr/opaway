@@ -106,15 +106,15 @@ import HotelLayout from '../../components/HotelLayout.astro';
 				.from('partners')
 				.select('discount')
 				.eq('id', userId)
-				.single();
+				.maybeSingle();
 
 			const discount = partner?.discount ?? 0;
 
-			// Load bookings from all three tables
+			// Load bookings from all three tables (linked via partner_id)
 			const [transfersRes, toursRes, experiencesRes] = await Promise.all([
-				supabase.from('transfers').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-				supabase.from('tours').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-				supabase.from('experiences').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+				supabase.from('transfers').select('*').eq('partner_id', userId).order('created_at', { ascending: false }),
+				supabase.from('tours').select('*').eq('partner_id', userId).order('created_at', { ascending: false }),
+				supabase.from('experiences').select('*').eq('partner_id', userId).order('created_at', { ascending: false }),
 			]);
 
 			interface Booking {
