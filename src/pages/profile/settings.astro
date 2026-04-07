@@ -211,47 +211,45 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		strengthLabel.className = `text-xs mt-1 ${s.pct <= 40 ? 'text-red-500' : s.pct <= 60 ? 'text-yellow-600' : 'text-green-600'}`;
 	});
 
-	// Auth state
-	supabase.auth.onAuthStateChange(async (_event, session) => {
-		if (!session) {
+	// Auth check + load profile (one-time, no subscription)
+	{
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) {
 			window.location.href = '/login';
-			return;
-		}
+		} else {
+			emailInput.value = user.email || '';
 
-		const user = session.user;
-		emailInput.value = user.email || '';
+			try {
+				const { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
+				if (!error && data) {
+					displayNameInput.value = data.display_name || user.user_metadata?.display_name || '';
+					currentProvider = data.provider || 'email';
 
-		// Load profile from users table
-		try {
-			const { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
-			if (!error && data) {
-				displayNameInput.value = data.display_name || user.user_metadata?.display_name || '';
-				currentProvider = data.provider || 'email';
+					// Provider badge
+					if (currentProvider === 'google') {
+						providerBadge.textContent = 'Google';
+						providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700';
+					} else {
+						providerBadge.textContent = 'Email';
+						providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600';
+					}
 
-				// Provider badge
-				if (currentProvider === 'google') {
-					providerBadge.textContent = 'Google';
-					providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700';
-				} else {
-					providerBadge.textContent = 'Email';
-					providerBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600';
+					// Member since
+					if (data.created_at) {
+						const date = new Date(data.created_at);
+						memberSince.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
+					}
+
+					// Show password section only for email provider
+					if (currentProvider === 'email') {
+						passwordSection.classList.remove('hidden');
+					}
 				}
-
-				// Member since
-				if (data.created_at) {
-					const date = new Date(data.created_at);
-					memberSince.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
-				}
-
-				// Show password section only for email provider
-				if (currentProvider === 'email') {
-					passwordSection.classList.remove('hidden');
-				}
+			} catch (err) {
+				console.error('Failed to load profile:', err);
 			}
-		} catch (err) {
-			console.error('Failed to load profile:', err);
 		}
-	});
+	}
 
 	// Save profile
 	saveProfileBtn?.addEventListener('click', async () => {

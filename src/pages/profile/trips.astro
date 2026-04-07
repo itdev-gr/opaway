@@ -12,7 +12,6 @@ import ProfileContent from '../../components/ProfileContent.astro';
 <script>
 	import { supabase } from '../../lib/supabase';
 
-	supabase.auth.onAuthStateChange((_event, session) => {
-		if (!session) window.location.href = '/login';
-	});
+	const { data: { user } } = await supabase.auth.getUser();
+	if (!user) window.location.href = '/login';
 </script>
