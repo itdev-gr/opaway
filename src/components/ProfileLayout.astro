@@ -55,8 +55,6 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-	import { supabase } from '../lib/supabase';
-
 	document.addEventListener('astro:page-load', () => {
 		const sidebar = document.getElementById('profile-sidebar');
 		const overlay = document.getElementById('profile-sidebar-overlay');
@@ -80,14 +78,12 @@ import Layout from '../layouts/Layout.astro';
 		sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
 
 		const logoutBtn = document.getElementById('profile-sidebar-logout');
-		// Clone and replace to remove any stale listeners from previous navigations
 		if (logoutBtn) {
 			const fresh = logoutBtn.cloneNode(true) as HTMLElement;
 			logoutBtn.replaceWith(fresh);
-			fresh.addEventListener('click', async () => {
+			fresh.addEventListener('click', () => {
 				closeSidebar();
-				try { await supabase.auth.signOut(); } catch { /* ignore */ }
-				window.location.replace('/');
+				window.location.href = '/logout';
 			});
 		}
 	});

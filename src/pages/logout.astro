@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
-	<main class="min-h-screen bg-white flex items-center justify-center px-6">
+	<main class="min-h-screen bg-white flex items-center justify-center px-6" data-astro-reload>
 		<p class="text-neutral-500 text-sm">Signing out…</p>
 	</main>
 </Layout>
@@ -15,7 +15,8 @@ import Layout from '../layouts/Layout.astro';
 		try {
 			await supabase.auth.signOut();
 		} finally {
-			window.location.href = '/';
+			// Force a full page reload to clear all auth state and subscriptions
+			window.location.replace('/');
 		}
 	})();
 </script>

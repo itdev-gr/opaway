@@ -191,19 +191,18 @@
 		}
 	}
 
-	// Listen for auth state changes
-	supabase.auth.onAuthStateChange(async (_event, session) => {
-		await updateAuthNav(session?.user ?? null);
-	});
+	// Guard against duplicate subscriptions (Navbar uses transition:persist)
+	if (!(window as any).__navAuthBound) {
+		(window as any).__navAuthBound = true;
+		supabase.auth.onAuthStateChange(async (_event, session) => {
+			await updateAuthNav(session?.user ?? null);
+		});
+	}
 
 	// Run on first load
 	updateActiveLink();
 	supabase.auth.getUser().then(({ data }) => updateAuthNav(data.user));
 
-	// Re-run on every View Transitions page navigation
-	document.addEventListener('astro:page-load', async () => {
-		updateActiveLink();
-		const { data } = await supabase.auth.getUser();
-		updateAuthNav(data.user);
-	});
+	// Re-run active link highlight on view transition navigation
+	document.addEventListener('astro:page-load', () => updateActiveLink());
 </script>
