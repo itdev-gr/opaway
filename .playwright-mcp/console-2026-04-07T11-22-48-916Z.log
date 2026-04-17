@@ -1,0 +1,2 @@
+[    1329ms] Error: Missing PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY in .env
+    at https://opaway.vercel.app/_astro/supabase.igDcmTxI.js:44:43332

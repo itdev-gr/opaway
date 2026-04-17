@@ -1,0 +1,1 @@
+[ 4639822ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4321/src/components/Navbar.astro?astro&type=script&index=0&lang.ts:0

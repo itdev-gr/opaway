@@ -1,0 +1,2 @@
+[    1483ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:132
+[   54724ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134

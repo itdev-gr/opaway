@@ -1,0 +1,2 @@
+[  205091ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://js.stripe.com') does not match the recipient window's origin ('http://localhost:4321'). @ https://js.stripe.com/clover/stripe.js:0
+[  211738ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:151

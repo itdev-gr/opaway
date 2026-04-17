@@ -1,0 +1,5 @@
+[     706ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134
+[  185566ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134
+[  209340ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134
+[  217093ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134
+[  231744ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:134

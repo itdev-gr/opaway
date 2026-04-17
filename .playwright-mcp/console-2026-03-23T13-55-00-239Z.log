@@ -1,0 +1,1 @@
+[   44069ms] [ERROR] Load error: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/admin/manage-vehicles.astro?astro&type=script&index=0&lang.ts:146

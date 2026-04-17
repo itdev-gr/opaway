@@ -1,0 +1,6 @@
+[     568ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:151
+[  298172ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:151
+[  324604ms] [WARNING] Could not load vehicles from Firestore, using defaults: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/book/transfer/results.astro?astro&type=script&index=0&lang.ts:151
+[  326662ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4321/book/hourly:0
+[  332604ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4321/book/hourly:0
+[  332640ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4321/book/hourly:0

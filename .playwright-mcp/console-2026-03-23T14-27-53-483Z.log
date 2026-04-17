@@ -1,0 +1,12 @@
+[  673264ms] [ERROR] Load error: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/admin/manage-vehicles.astro?astro&type=script&index=0&lang.ts:146
+[  694652ms] [ERROR] Load error: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/admin/manage-vehicles.astro?astro&type=script&index=0&lang.ts:146
+[  725377ms] [WARNING] Scripts may close only the windows that were opened by them. @ http://localhost:4321/src/components/AdminLayout.astro?astro&type=script&index=0&lang.ts:27
+[  802150ms] [ERROR] Failed to load dashboard: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/index.astro?astro&type=script&index=0&lang.ts:82
+[  823193ms] [ERROR] Failed to load upcoming rides: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/upcoming.astro?astro&type=script&index=0&lang.ts:98
+[  825302ms] [ERROR] Failed to load past rides: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/past.astro?astro&type=script&index=0&lang.ts:107
+[  828438ms] [ERROR] Failed to load available rides: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/available.astro?astro&type=script&index=0&lang.ts:138
+[  939718ms] [ERROR] Failed to load dashboard: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/index.astro?astro&type=script&index=0&lang.ts:82
+[  963956ms] [ERROR] Failed to load dashboard: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/index.astro?astro&type=script&index=0&lang.ts:82
+[  980430ms] [ERROR] Failed to load dashboard: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/index.astro?astro&type=script&index=0&lang.ts:82
+[ 1000631ms] [ERROR] Failed to load dashboard: FirebaseError: Missing or insufficient permissions. @ http://localhost:4321/src/pages/driver/index.astro?astro&type=script&index=0&lang.ts:82
+[ 1027858ms] [WARNING] Scripts may close only the windows that were opened by them. @ http://localhost:4321/src/components/DriverLayout.astro?astro&type=script&index=0&lang.ts:27
