@@ -234,7 +234,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const tbody = document.getElementById('transfers-tbody')!;
 		const countEl = document.getElementById('transfers-count');
 		try {
-			const { data, error } = await supabase.from('transfers').select('*').order('created_at', { ascending: false });
+			const { data, error } = await supabase.from('transfers').select('*').neq('booking_type', 'hourly').order('created_at', { ascending: false });
 			if (error) throw error;
 			const rows = data ?? [];
 			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
@@ -405,6 +405,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.textContent = 'Saving…';
 		try {
 			await supabase.from('transfers').insert({
+				booking_type: 'transfer',
 				first_name: firstName,
 				last_name: lastName,
 				email,
