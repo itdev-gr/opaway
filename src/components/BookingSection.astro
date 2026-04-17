@@ -303,6 +303,7 @@ const vehicles = [
 </section>
 
 <script>
+document.addEventListener('astro:page-load', () => {
 	// ── Tab switching ──
 	const tabs = document.querySelectorAll('[data-booking-tab]') as NodeListOf<HTMLButtonElement>;
 	const formTransfer = document.getElementById('form-transfer') as HTMLElement;
@@ -427,4 +428,5 @@ const vehicles = [
 		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
 		window.location.href = `/book/transfer/results?${params.toString()}`;
 	});
+});
 </script>
