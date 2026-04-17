@@ -285,7 +285,7 @@ const vehicles = [
 	function initHourlyAutocomplete() {
 		const pickupInput = document.getElementById('h-pickup') as HTMLInputElement;
 		if (pickupInput) {
-			const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'] });
+			const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
 			ac.setFields(['formatted_address', 'name']);
 			ac.addListener('place_changed', () => {
 				const place = ac.getPlace();

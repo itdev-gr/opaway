@@ -431,7 +431,7 @@ const vehicles = [
 		const toInput = document.getElementById('tf-to') as HTMLInputElement;
 
 		if (fromInput) {
-			const ac = new google.maps.places.Autocomplete(fromInput, { types: ['geocode', 'establishment'] });
+			const ac = new google.maps.places.Autocomplete(fromInput, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
 			ac.setFields(['formatted_address', 'name']);
 			ac.addListener('place_changed', () => {
 				const place = ac.getPlace();
@@ -444,7 +444,7 @@ const vehicles = [
 		}
 
 		if (toInput) {
-			const ac = new google.maps.places.Autocomplete(toInput, { types: ['geocode', 'establishment'] });
+			const ac = new google.maps.places.Autocomplete(toInput, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
 			ac.setFields(['formatted_address', 'name']);
 			ac.addListener('place_changed', () => {
 				const place = ac.getPlace();

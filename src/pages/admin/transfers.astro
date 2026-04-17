@@ -450,7 +450,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		[fromInput, toInput].forEach(input => {
 			if (!input) return;
-			const ac = new google.maps.places.Autocomplete(input, { types: ['geocode', 'establishment'] });
+			const ac = new google.maps.places.Autocomplete(input, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
 			ac.setFields(['formatted_address', 'name']);
 			ac.addListener('place_changed', () => {
 				const place = ac.getPlace();
