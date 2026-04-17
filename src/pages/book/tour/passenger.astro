@@ -1,0 +1,291 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="Passenger Details — Opawey">
+	<main class="min-h-screen bg-sky-50/40 pt-28 pb-16 px-4 sm:px-6">
+		<div class="max-w-7xl mx-auto">
+
+			<!-- ── Step indicator ── -->
+			<div class="flex items-center justify-center gap-0 mb-8">
+				<!-- Step 1: Vehicle (completed) -->
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+					</span>
+					<span class="text-sm font-medium text-emerald-600">Vehicle</span>
+				</div>
+				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
+				<!-- Step 2: Passenger (active) -->
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">2</span>
+					<span class="text-sm font-semibold text-[#0C6B95]">Passenger</span>
+				</div>
+				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
+				<!-- Step 3: Payment (greyed) -->
+				<div class="flex items-center gap-2 opacity-40">
+					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">3</span>
+					<span class="text-sm font-medium text-neutral-400">Payment</span>
+				</div>
+			</div>
+
+			<!-- ── Main grid ── -->
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+				<!-- LEFT COLUMN — Form -->
+				<div class="lg:col-span-2">
+					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 lg:p-8">
+
+						<!-- Lead passenger -->
+						<h2 class="text-xl font-bold text-neutral-900 mb-6">Lead passenger</h2>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 mb-1.5">First name <span class="text-red-400">*</span></label>
+								<input id="pax-first" type="text" required placeholder="John"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 mb-1.5">Last name <span class="text-red-400">*</span></label>
+								<input id="pax-last" type="text" required placeholder="Doe"
+									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							</div>
+						</div>
+
+						<div class="mb-5">
+							<label class="block text-sm font-medium text-neutral-700 mb-1.5">Email address <span class="text-red-400">*</span></label>
+							<input id="pax-email" type="email" required placeholder="john@example.com"
+								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
+								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								We'll send your booking voucher here.
+							</p>
+						</div>
+
+						<div class="mb-8">
+							<label class="block text-sm font-medium text-neutral-700 mb-1.5">Mobile number <span class="text-red-400">*</span></label>
+							<div class="flex gap-3">
+								<div class="flex items-center gap-2 px-3 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 shrink-0">
+									<span>🇬🇷</span>
+									<span>+30</span>
+								</div>
+								<input id="pax-phone" type="tel" required placeholder="693 123 4567"
+									class="flex-1 px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							</div>
+							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
+								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								Please provide a contact number so our driver can reach the passenger if needed.
+							</p>
+						</div>
+
+						<!-- Special Requests -->
+						<div class="border-t border-neutral-100 pt-6 mb-6">
+							<label class="block text-sm font-medium text-neutral-700 mb-1.5 flex items-center gap-1.5">
+								Special Requests
+								<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-neutral-400 text-white text-[10px] font-bold cursor-help" title="Add any special requests or notes for your driver.">?</span>
+							</label>
+							<textarea id="pax-notes" rows="4" placeholder="Special requests, dietary needs, accessibility requirements..."
+								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] resize-y"></textarea>
+						</div>
+
+						<!-- Validation message -->
+						<p id="form-error" class="hidden text-sm text-red-500 mb-4 flex items-center gap-1.5">
+							<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+							<span id="form-error-text"></span>
+						</p>
+
+						<!-- Navigation -->
+						<div class="flex items-center gap-4 pt-2">
+							<button id="back-btn" type="button"
+								class="px-5 py-3 border border-neutral-200 rounded-xl text-neutral-600 font-semibold hover:bg-neutral-50 transition-colors flex items-center gap-2">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+								Back
+							</button>
+							<button id="continue-btn" type="button"
+								class="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-xl transition-colors text-center">
+								Continue
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- RIGHT COLUMN — Sidebar -->
+				<div class="lg:col-span-1">
+					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
+
+						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
+
+						<!-- Tour name -->
+						<div class="text-sm">
+							<span class="text-neutral-500">Tour</span>
+							<p id="sb-tour-name" class="font-semibold text-neutral-800 mt-0.5">—</p>
+						</div>
+
+						<!-- Pickup location -->
+						<div class="text-sm border-t border-neutral-100 pt-4">
+							<span class="text-neutral-500">Pickup location</span>
+							<p id="sb-pickup" class="font-medium text-neutral-700 mt-0.5">—</p>
+						</div>
+
+						<!-- Date + time -->
+						<div class="text-sm border-t border-neutral-100 pt-4">
+							<span class="text-neutral-500">Date</span>
+							<span class="mx-1 text-neutral-300">&middot;</span>
+							<span id="sb-date" class="font-medium text-neutral-700">—</span>
+							<span class="mx-1 text-neutral-300">&middot;</span>
+							<span id="sb-time" class="font-medium text-neutral-700">—</span>
+						</div>
+
+						<!-- Participants -->
+						<div class="flex items-center gap-1.5 text-sm border-t border-neutral-100 pt-4">
+							<svg class="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+							<span id="sb-participants" class="font-medium text-neutral-700">—</span>
+							<span class="text-neutral-500">Participants</span>
+						</div>
+
+						<!-- Your choice (vehicle) -->
+						<div class="border-t border-neutral-100 pt-4">
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Your choice</p>
+							<div class="flex items-center gap-3">
+								<div class="w-16 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
+									<img id="sb-vehicle-img" src="" alt="" class="w-full h-full object-cover" />
+								</div>
+								<div class="min-w-0">
+									<p id="sb-vehicle-name" class="text-sm font-bold text-neutral-900 truncate">—</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Price details -->
+						<div class="border-t border-neutral-100 pt-4 space-y-2">
+							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
+							<div class="flex justify-between text-sm">
+								<span class="font-semibold text-neutral-900">Total</span>
+								<span id="sb-total" class="font-bold text-neutral-900">—</span>
+							</div>
+						</div>
+
+						<!-- Feature badges -->
+						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Free cancellation
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Door-to-door service
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Licensed chauffeurs
+							</span>
+						</div>
+
+						<!-- Payment icons -->
+						<div class="flex items-center gap-3 border-t border-neutral-100 pt-4">
+							<span class="text-xs text-neutral-400 font-medium">Accepted:</span>
+							<div class="flex gap-2 text-xs font-bold text-neutral-500">
+								<span class="px-2 py-1 bg-neutral-100 rounded">VISA</span>
+								<span class="px-2 py-1 bg-neutral-100 rounded">MC</span>
+								<span class="px-2 py-1 bg-neutral-100 rounded">AMEX</span>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script>
+	import { supabase } from '../../../lib/supabase';
+
+	/* ── Parse URL params ── */
+	const params = new URLSearchParams(window.location.search);
+	const tourId = params.get('tourId') || '';
+	const tourName = params.get('tourName') || '';
+	const pickup = params.get('pickup') || '';
+	const date = params.get('date') || '';
+	const time = params.get('time') || '';
+	const participants = params.get('participants') || '1';
+	const vehicleSlug = params.get('vehicleSlug') || '';
+	const vehicleName = params.get('vehicleName') || '';
+	const vehicleImage = params.get('vehicleImage') || '';
+	const totalPrice = params.get('totalPrice') || '0';
+	const discount = params.get('discount') || '';
+
+	/* ── Populate sidebar ── */
+	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+	setText('sb-tour-name', tourName);
+	setText('sb-pickup', pickup);
+	setText('sb-date', date);
+	setText('sb-time', time);
+	setText('sb-participants', participants);
+	setText('sb-vehicle-name', vehicleName);
+	setText('sb-total', `\u20AC ${totalPrice}`);
+
+	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
+	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
+
+	/* ── Auto-fill from Supabase Auth ── */
+	supabase.auth.onAuthStateChange((_event, session) => {
+		const user = session?.user;
+		if (!user) return;
+		const firstName = document.getElementById('pax-first') as HTMLInputElement;
+		const lastName = document.getElementById('pax-last') as HTMLInputElement;
+		const email = document.getElementById('pax-email') as HTMLInputElement;
+
+		if (user.email && !email.value) email.value = user.email;
+		const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || '';
+		if (displayName) {
+			const parts = displayName.split(' ');
+			if (!firstName.value) firstName.value = parts[0] || '';
+			if (!lastName.value) lastName.value = parts.slice(1).join(' ') || '';
+		}
+	});
+
+	/* ── Back button ── */
+	document.getElementById('back-btn')?.addEventListener('click', () => {
+		window.history.back();
+	});
+
+	/* ── Continue button ── */
+	document.getElementById('continue-btn')?.addEventListener('click', () => {
+		const firstName = (document.getElementById('pax-first') as HTMLInputElement).value.trim();
+		const lastName = (document.getElementById('pax-last') as HTMLInputElement).value.trim();
+		const email = (document.getElementById('pax-email') as HTMLInputElement).value.trim();
+		const phone = (document.getElementById('pax-phone') as HTMLInputElement).value.trim();
+		const errorEl = document.getElementById('form-error')!;
+		const errorText = document.getElementById('form-error-text')!;
+
+		// Validate
+		if (!firstName || !lastName || !email || !phone) {
+			errorText.textContent = 'Please fill in all required fields.';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		if (!email.includes('@')) {
+			errorText.textContent = 'Please enter a valid email address.';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		errorEl.classList.add('hidden');
+
+		const driverNotes = (document.getElementById('pax-notes') as HTMLTextAreaElement)?.value.trim() || '';
+
+		const p = new URLSearchParams({
+			tourId, tourName, pickup, date, time, participants,
+			vehicleSlug, vehicleName, vehicleImage, totalPrice,
+			firstName, lastName, email, phone, driverNotes,
+			bookingType: 'tour',
+		});
+		if (discount) p.set('discount', discount);
+
+		window.location.href = `/book/tour/payment?${p.toString()}`;
+	});
+</script>

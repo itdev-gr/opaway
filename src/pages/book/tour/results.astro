@@ -1,0 +1,437 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="Select Vehicle — Opawey">
+	<main class="min-h-screen bg-sky-50/40 pt-28 pb-16 px-4 sm:px-6">
+		<div class="max-w-7xl mx-auto">
+
+			<!-- ── Step indicator ── -->
+			<div class="flex items-center justify-center gap-0 mb-8">
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">1</span>
+					<span class="text-sm font-semibold text-[#0C6B95]">Vehicle</span>
+				</div>
+				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
+				<div class="flex items-center gap-2 opacity-40">
+					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">2</span>
+					<span class="text-sm font-medium text-neutral-400">Passenger</span>
+				</div>
+				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
+				<div class="flex items-center gap-2 opacity-40">
+					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">3</span>
+					<span class="text-sm font-medium text-neutral-400">Payment</span>
+				</div>
+			</div>
+
+			<!-- ── Main grid ── -->
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+				<!-- LEFT COLUMN -->
+				<div class="lg:col-span-2 space-y-5">
+
+					<!-- Booking summary card -->
+					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-neutral-600">
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm0 0h9" /></svg>
+							<span id="summary-tour" class="font-medium">—</span>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+							<span id="summary-pickup" class="font-medium">—</span>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+							<span id="summary-date" class="font-medium">—</span>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							<span id="summary-time" class="font-medium">—</span>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+							<span id="summary-participants" class="font-medium">—</span> participants
+						</span>
+						<a href="#" id="sb-edit" class="ml-auto text-[#0C6B95] font-medium hover:underline flex items-center gap-1 text-sm">
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" /></svg>
+							Edit
+						</a>
+					</div>
+
+					<!-- Vehicle cards -->
+					<div id="vehicle-cards" class="space-y-4">
+						<div class="animate-pulse bg-white rounded-2xl border border-neutral-200 p-5 flex gap-5">
+							<div class="w-36 h-24 bg-neutral-200 rounded-xl shrink-0"></div>
+							<div class="flex-1 space-y-3"><div class="h-5 bg-neutral-200 rounded w-40"></div><div class="h-4 bg-neutral-200 rounded w-60"></div><div class="h-4 bg-neutral-200 rounded w-32"></div></div>
+							<div class="w-24 h-8 bg-neutral-200 rounded-lg self-center shrink-0"></div>
+						</div>
+						<div class="animate-pulse bg-white rounded-2xl border border-neutral-200 p-5 flex gap-5">
+							<div class="w-36 h-24 bg-neutral-200 rounded-xl shrink-0"></div>
+							<div class="flex-1 space-y-3"><div class="h-5 bg-neutral-200 rounded w-40"></div><div class="h-4 bg-neutral-200 rounded w-60"></div><div class="h-4 bg-neutral-200 rounded w-32"></div></div>
+							<div class="w-24 h-8 bg-neutral-200 rounded-lg self-center shrink-0"></div>
+						</div>
+						<div class="animate-pulse bg-white rounded-2xl border border-neutral-200 p-5 flex gap-5">
+							<div class="w-36 h-24 bg-neutral-200 rounded-xl shrink-0"></div>
+							<div class="flex-1 space-y-3"><div class="h-5 bg-neutral-200 rounded w-40"></div><div class="h-4 bg-neutral-200 rounded w-60"></div><div class="h-4 bg-neutral-200 rounded w-32"></div></div>
+							<div class="w-24 h-8 bg-neutral-200 rounded-lg self-center shrink-0"></div>
+						</div>
+					</div>
+
+					<!-- Selection bar (hidden until vehicle chosen) -->
+					<div id="selection-bar" class="hidden sticky bottom-4 bg-white rounded-2xl border border-[#0C6B95]/30 shadow-lg p-4 flex items-center justify-between z-10">
+						<div class="flex items-center gap-3">
+							<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+							<span class="font-semibold text-neutral-800">Your choice: <span id="selected-name" class="text-[#0C6B95]"></span></span>
+						</div>
+						<button id="continue-btn" class="bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold px-8 py-3 rounded-xl transition-colors flex items-center gap-2">
+							Continue
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+						</button>
+					</div>
+				</div>
+
+				<!-- RIGHT COLUMN — Sidebar -->
+				<div class="lg:col-span-1">
+					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
+
+						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
+
+						<!-- Type + participants -->
+						<div class="flex items-center justify-between text-sm">
+							<span id="sb-tour-name" class="font-semibold text-neutral-700">Tour</span>
+							<span class="flex items-center gap-1.5 text-neutral-500">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+								<span id="sb-participants">2</span> Participants
+							</span>
+						</div>
+
+						<!-- Booking details -->
+						<div class="space-y-3 border-t border-neutral-100 pt-4">
+							<div class="flex gap-3">
+								<div class="flex flex-col items-center">
+									<span class="w-3 h-3 rounded-full bg-[#0C6B95] shrink-0 mt-1"></span>
+								</div>
+								<div class="flex-1 min-w-0">
+									<p id="sb-pickup" class="text-sm font-semibold text-neutral-800 truncate">—</p>
+									<p class="text-xs text-neutral-400 mt-0.5">Pickup location</p>
+								</div>
+							</div>
+							<div class="flex items-center gap-4 text-sm text-neutral-600 pl-6">
+								<span class="flex items-center gap-1.5">
+									<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+									<span id="sb-date">—</span>
+								</span>
+								<span class="flex items-center gap-1.5">
+									<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+									<span id="sb-time">—</span>
+								</span>
+							</div>
+						</div>
+
+						<!-- Price details -->
+						<div class="border-t border-neutral-100 pt-4 space-y-2">
+							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
+							<div class="flex justify-between text-sm">
+								<span class="font-semibold text-neutral-900">Total</span>
+								<span id="sb-total" class="font-bold text-neutral-900">—</span>
+							</div>
+							<div id="sb-original-row" class="hidden flex justify-between text-sm text-neutral-400">
+								<span>Original price</span>
+								<del id="sb-original">—</del>
+							</div>
+						</div>
+
+						<!-- Feature badges -->
+						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Free cancellation
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Licensed chauffeurs
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Door-to-door service
+							</span>
+						</div>
+
+						<!-- Payment icons -->
+						<div class="flex items-center gap-3 border-t border-neutral-100 pt-4">
+							<span class="text-xs text-neutral-400 font-medium">Accepted:</span>
+							<div class="flex gap-2 text-xs font-bold text-neutral-500">
+								<span class="px-2 py-1 bg-neutral-100 rounded">VISA</span>
+								<span class="px-2 py-1 bg-neutral-100 rounded">MC</span>
+								<span class="px-2 py-1 bg-neutral-100 rounded">AMEX</span>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script>
+	import { supabase } from '../../../lib/supabase';
+	import { applyPartnerDiscount } from '../../../lib/pricing';
+
+	let partnerDiscount = 0;
+
+	async function detectPartnerDiscount(): Promise<number> {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return 0;
+		try {
+			const { data: partner } = await supabase
+				.from('partners')
+				.select('status, discount')
+				.eq('id', user.id)
+				.maybeSingle();
+			if (partner && partner.status === 'approved' && partner.discount > 0) {
+				return partner.discount;
+			}
+		} catch (e) { console.error('Partner discount check failed:', e); }
+		return 0;
+	}
+
+	/* ── Parse URL params ── */
+	const params = new URLSearchParams(window.location.search);
+	const tourId = params.get('tourId') || '';
+	const tourName = decodeURIComponent(params.get('tourName') || '');
+	const pickup = params.get('pickup') || '';
+	const date = params.get('date') || '';
+	const time = params.get('time') || '';
+	const participants = parseInt(params.get('participants') || '2', 10);
+
+	/* ── Populate sidebar & summary ── */
+	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+	setText('summary-tour', tourName);
+	setText('summary-pickup', pickup);
+	setText('summary-date', date);
+	setText('summary-time', time);
+	setText('summary-participants', String(participants));
+	setText('sb-tour-name', tourName);
+	setText('sb-pickup', pickup);
+	setText('sb-date', date);
+	setText('sb-time', time);
+	setText('sb-participants', String(participants));
+
+	document.getElementById('sb-edit')?.addEventListener('click', (e) => {
+		e.preventDefault();
+		window.history.back();
+	});
+
+	/* ── State ── */
+	let selectedVehicleSlug = '';
+	let tourPrices: Record<string, number> = { sedan: 0, van: 0, minibus: 0 };
+
+	interface Vehicle {
+		id: string;
+		slug: string;
+		name: string;
+		models: string;
+		image: string;
+		maxPassengers: number;
+		maxLuggage: number;
+		badge: string;
+		sortOrder: number;
+	}
+
+	let vehicles: Vehicle[] = [];
+
+	/* ── Update sidebar prices ── */
+	function updateSidebarPrices() {
+		if (!selectedVehicleSlug) return;
+		const basePrice = tourPrices[selectedVehicleSlug] || 0;
+		const { discountedPrice, originalPrice } = applyPartnerDiscount(basePrice, partnerDiscount);
+
+		setText('sb-total', `\u20AC ${discountedPrice.toFixed(2)}`);
+
+		const originalRow = document.getElementById('sb-original-row');
+		if (partnerDiscount > 0 && originalPrice !== discountedPrice) {
+			setText('sb-original', `\u20AC ${originalPrice.toFixed(2)}`);
+			originalRow?.classList.remove('hidden');
+		} else {
+			originalRow?.classList.add('hidden');
+		}
+	}
+
+	/* ── Escape HTML ── */
+	const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	/* ── Badge colors ── */
+	function badgeClasses(badge: string): string {
+		switch (badge) {
+			case 'BEST VALUE': return 'bg-emerald-100 text-emerald-700';
+			case 'MOST POPULAR': return 'bg-amber-100 text-amber-700';
+			case 'TOP CLASS': return 'bg-violet-100 text-violet-700';
+			default: return 'bg-neutral-100 text-neutral-600';
+		}
+	}
+
+	/* ── Render vehicle cards ── */
+	function renderVehicles() {
+		const container = document.getElementById('vehicle-cards')!;
+
+		const badgeHtml = partnerDiscount > 0
+			? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>`
+			: '';
+
+		container.innerHTML = badgeHtml + vehicles.map(v => {
+			const basePrice = tourPrices[v.slug] || 0;
+			const { discountedPrice, originalPrice } = applyPartnerDiscount(basePrice, partnerDiscount);
+			const isSelected = selectedVehicleSlug === v.slug;
+			const showOriginal = partnerDiscount > 0 && originalPrice !== discountedPrice;
+
+			return `
+			<div
+				class="vehicle-card cursor-pointer bg-white rounded-2xl border-2 ${isSelected ? 'border-[#0C6B95] ring-2 ring-[#0C6B95]/20' : 'border-neutral-200 hover:border-[#0C6B95]/40'} shadow-sm transition-all duration-200 p-4"
+				data-slug="${esc(v.slug)}" data-name="${esc(v.name)}" data-total="${discountedPrice.toFixed(2)}"
+			>
+				<div class="flex items-center gap-4">
+					<div class="w-28 h-20 bg-neutral-100 rounded-xl overflow-hidden shrink-0">
+						<img src="${esc(v.image)}" alt="${esc(v.name)}" class="w-full h-full object-cover" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<div class="flex items-center gap-2 mb-1 flex-wrap">
+							<h3 class="text-base font-bold text-neutral-900">${esc(v.name)}</h3>
+							<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClasses(v.badge)} whitespace-nowrap">${esc(v.badge)}</span>
+						</div>
+						<div class="flex items-center gap-3 text-xs text-neutral-500 mb-1">
+							<span class="flex items-center gap-1">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+								Up to ${v.maxPassengers}
+							</span>
+							<span class="flex items-center gap-1">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+								1+1/pax
+							</span>
+						</div>
+						<p class="text-xs text-neutral-400 truncate">${esc(v.models)}</p>
+					</div>
+					<div class="flex flex-col items-end justify-center shrink-0 pl-2">
+						${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${originalPrice.toFixed(2)}</del>` : ''}
+						<span class="text-xl font-bold text-neutral-900">&euro;${discountedPrice.toFixed(2)}</span>
+						<span class="text-[10px] text-neutral-400">per vehicle</span>
+					</div>
+				</div>
+			</div>`;
+		}).join('');
+
+		document.querySelectorAll<HTMLDivElement>('.vehicle-card').forEach(card => {
+			card.addEventListener('click', () => {
+				selectedVehicleSlug = card.dataset.slug || '';
+				const name = card.dataset.name || '';
+				const bar = document.getElementById('selection-bar')!;
+				bar.classList.remove('hidden');
+				setText('selected-name', name);
+				updateSidebarPrices();
+				renderVehicles();
+			});
+		});
+	}
+
+	/* ── Load tour prices from Supabase ── */
+	async function loadTourPrices() {
+		if (!tourId) {
+			console.error('No tourId provided');
+			return;
+		}
+		try {
+			const { data: tour, error } = await supabase
+				.from('tours_catalog')
+				.select('price, price_sedan, price_van, price_minibus')
+				.eq('id', tourId)
+				.maybeSingle();
+
+			if (error) throw error;
+
+			if (tour) {
+				tourPrices = {
+					sedan: tour.price_sedan ?? tour.price ?? 0,
+					van: tour.price_van ?? 0,
+					minibus: tour.price_minibus ?? 0,
+				};
+			}
+		} catch (e) {
+			console.error('Could not load tour prices:', e);
+		}
+	}
+
+	/* ── Load vehicles from Supabase ── */
+	async function loadVehicles() {
+		try {
+			const { data, error } = await supabase
+				.from('vehicles')
+				.select('*')
+				.eq('active', true)
+				.order('sort_order');
+
+			if (error) throw error;
+
+			if (data && data.length > 0) {
+				vehicles = data.map(d => ({
+					id: d.id,
+					slug: d.slug,
+					name: d.name,
+					models: d.models,
+					image: d.image,
+					maxPassengers: d.max_passengers,
+					maxLuggage: d.max_luggage,
+					badge: d.badge,
+					sortOrder: d.sort_order,
+				}));
+			} else {
+				vehicles = [
+					{ id: '1', slug: 'sedan', name: 'Sedan', models: 'Mercedes-Benz E-Class, or similar.', image: '/car.avif', maxPassengers: 3, maxLuggage: 6, badge: 'BEST VALUE', sortOrder: 1 },
+					{ id: '2', slug: 'van', name: 'Van', models: 'Mercedes Vito Tourer, or similar.', image: '/mini_van.avif', maxPassengers: 8, maxLuggage: 16, badge: 'MOST POPULAR', sortOrder: 2 },
+					{ id: '3', slug: 'minibus', name: 'Minibus (or two Vans)', models: 'Mercedes Sprinter, or similar.', image: '/van.avif', maxPassengers: 18, maxLuggage: 36, badge: 'TOP CLASS', sortOrder: 3 },
+				];
+			}
+		} catch (e) {
+			console.warn('Could not load vehicles from Supabase, using defaults:', e);
+			vehicles = [
+				{ id: '1', slug: 'sedan', name: 'Sedan', models: 'Mercedes-Benz E-Class, or similar.', image: '/car.avif', maxPassengers: 3, maxLuggage: 6, badge: 'BEST VALUE', sortOrder: 1 },
+				{ id: '2', slug: 'van', name: 'Van', models: 'Mercedes Vito Tourer, or similar.', image: '/mini_van.avif', maxPassengers: 8, maxLuggage: 16, badge: 'MOST POPULAR', sortOrder: 2 },
+				{ id: '3', slug: 'minibus', name: 'Minibus (or two Vans)', models: 'Mercedes Sprinter, or similar.', image: '/van.avif', maxPassengers: 18, maxLuggage: 36, badge: 'TOP CLASS', sortOrder: 3 },
+			];
+		}
+		renderVehicles();
+	}
+
+	/* ── Continue to passenger page ── */
+	document.getElementById('continue-btn')?.addEventListener('click', () => {
+		if (!selectedVehicleSlug) return;
+
+		const selectedVehicle = vehicles.find(v => v.slug === selectedVehicleSlug);
+		const basePrice = tourPrices[selectedVehicleSlug] || 0;
+		const { discountedPrice } = applyPartnerDiscount(basePrice, partnerDiscount);
+
+		const p = new URLSearchParams({
+			tourId,
+			tourName,
+			pickup,
+			date,
+			time,
+			participants: String(participants),
+			vehicleSlug: selectedVehicleSlug,
+			vehicleName: selectedVehicle?.name || selectedVehicleSlug,
+			vehicleImage: selectedVehicle?.image || '',
+			totalPrice: discountedPrice.toFixed(2),
+			bookingType: 'tour',
+		});
+		if (partnerDiscount > 0) p.set('discount', String(partnerDiscount));
+
+		window.location.href = `/book/tour/passenger?${p.toString()}`;
+	});
+
+	/* ── Init ── */
+	Promise.all([detectPartnerDiscount(), loadTourPrices()]).then(([d]) => {
+		partnerDiscount = d;
+		loadVehicles();
+	});
+</script>

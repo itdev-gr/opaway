@@ -100,24 +100,10 @@ import Layout from '../../layouts/Layout.astro';
 					</div>
 
 
-					<!-- Error message -->
-					<p id="tour-form-error" class="hidden text-sm text-red-600 mb-3 px-1"></p>
-
-					<!-- Success state -->
-					<div id="tour-form-success" class="hidden mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
-						<svg class="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-						<div>
-							<p class="text-sm font-semibold text-emerald-800">Request sent!</p>
-							<p class="text-xs text-emerald-600 mt-0.5">We'll be in touch shortly to confirm your tour.</p>
-						</div>
-					</div>
-
-					<!-- Request Button -->
-					<button id="tour-submit-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 disabled:opacity-60 disabled:cursor-not-allowed">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-						Request This Tour
+					<!-- See prices -->
+					<button id="tour-submit-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+						See prices
 					</button>
 				</div>
 
@@ -393,18 +379,8 @@ import Layout from '../../layouts/Layout.astro';
 		}
 	}
 
-	/* ── Form submission ─────────────────────────────────────────── */
-	document.getElementById('tour-submit-btn')?.addEventListener('click', async () => {
-		const errorEl   = document.getElementById('tour-form-error')!;
-		const successEl = document.getElementById('tour-form-success')!;
-		const btn       = document.getElementById('tour-submit-btn') as HTMLButtonElement;
-
-		const showError = (msg: string) => {
-			errorEl.textContent = msg;
-			errorEl.classList.remove('hidden');
-		};
-		errorEl.classList.add('hidden');
-
+	/* ── Navigate to vehicle selection ─────────────────────────── */
+	document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
 		const select   = document.getElementById('tour-select') as HTMLSelectElement;
 		const tourId   = select?.value || '';
 		const tourName = tourId ? select.options[select.selectedIndex]?.text : '';
@@ -412,51 +388,15 @@ import Layout from '../../layouts/Layout.astro';
 		const pickup   = (document.getElementById('tour-pickup')  as HTMLInputElement)?.value.trim();
 		const date     = (document.getElementById('tour-date')    as HTMLInputElement)?.value.trim();
 		const time     = (document.getElementById('tour-time')    as HTMLInputElement)?.value.trim();
-		const participants = parseInt(document.getElementById('participant-count')?.textContent || '2', 10);
+		const participants = document.getElementById('participant-count')?.textContent?.trim() || '2';
 
-		if (!tourId)   { showError('Please select a tour.'); return; }
-		if (!date)     { showError('Please select a tour date.'); return; }
+		if (!tourId) { alert('Please select a tour.'); return; }
+		if (!date)   { alert('Please select a tour date.'); return; }
 
-		btn.disabled = true;
-		btn.textContent = 'Sending…';
-
-		// Capture logged-in user info at the moment of submission
-		const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-		try {
-			const { error: insertErr } = await supabase.from('requests').insert({
-				source:           'tour',
-				tour_id:          tourId,
-				tour_name:        tourName,
-				pickup_location:  pickup  || '',
-				date,
-				time:             time    || '',
-				participants,
-				status:           'new',
-				// User account info (null if not logged in)
-				user_id:            currentUser?.id                                                || null,
-				user_display_name:  currentUser?.user_metadata?.display_name || currentUser?.user_metadata?.full_name || null,
-				user_email:         currentUser?.email                                             || null,
-			});
-
-			if (insertErr) throw insertErr;
-
-			successEl.classList.remove('hidden');
-			btn.classList.add('hidden');
-
-			// Reset form
-			select.value = '';
-			['tour-pickup','tour-date','tour-time'].forEach(id => {
-				const el = document.getElementById(id) as HTMLInputElement;
-				if (el) el.value = '';
-			});
-
-		} catch (err) {
-			console.error(err);
-			showError('Something went wrong. Please try again.');
-			btn.disabled = false;
-			btn.textContent = 'Request This Tour';
-		}
+		const params = new URLSearchParams({
+			tourId, tourName, pickup: pickup || '', date, time: time || '', participants,
+		});
+		window.location.href = `/book/tour/results?${params.toString()}`;
 	});
 
 	detectPartnerDiscount().then(d => {
