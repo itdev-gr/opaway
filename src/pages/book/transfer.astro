@@ -414,3 +414,47 @@ const vehicles = [
 
 	loadTransfersCatalog();
 </script>
+
+<script>
+	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
+
+	function initAutocomplete() {
+		const fromInput = document.getElementById('tf-from') as HTMLInputElement;
+		const toInput = document.getElementById('tf-to') as HTMLInputElement;
+
+		if (fromInput) {
+			const ac = new google.maps.places.Autocomplete(fromInput, { types: ['geocode', 'establishment'] });
+			ac.setFields(['formatted_address', 'name']);
+			ac.addListener('place_changed', () => {
+				const place = ac.getPlace();
+				if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
+					fromInput.value = `${place.name}, ${place.formatted_address}`;
+				} else {
+					fromInput.value = place?.formatted_address || place?.name || fromInput.value;
+				}
+			});
+		}
+
+		if (toInput) {
+			const ac = new google.maps.places.Autocomplete(toInput, { types: ['geocode', 'establishment'] });
+			ac.setFields(['formatted_address', 'name']);
+			ac.addListener('place_changed', () => {
+				const place = ac.getPlace();
+				if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
+					toInput.value = `${place.name}, ${place.formatted_address}`;
+				} else {
+					toInput.value = place?.formatted_address || place?.name || toInput.value;
+				}
+			});
+		}
+	}
+
+	if (MAPS_KEY) {
+		const script = document.createElement('script');
+		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAutocompleteCb`;
+		script.async = true;
+		script.defer = true;
+		(window as any).initAutocompleteCb = initAutocomplete;
+		document.head.appendChild(script);
+	}
+</script>

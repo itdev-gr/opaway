@@ -553,7 +553,7 @@ import Layout from '../../../layouts/Layout.astro';
 	// Load Maps script or use fallback
 	if (MAPS_KEY) {
 		const script = document.createElement('script');
-		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&callback=initMapCallback`;
+		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initMapCallback`;
 		script.async = true;
 		script.defer = true;
 		(window as any).initMapCallback = initMap;

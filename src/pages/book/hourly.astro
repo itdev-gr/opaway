@@ -429,3 +429,32 @@ const vehicles = [
 		window.location.href = `/book/hourly/passenger?${p.toString()}`;
 	});
 </script>
+
+<script>
+	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
+
+	function initHourlyAutocomplete() {
+		const pickupInput = document.getElementById('h-pickup') as HTMLInputElement;
+		if (pickupInput) {
+			const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'] });
+			ac.setFields(['formatted_address', 'name']);
+			ac.addListener('place_changed', () => {
+				const place = ac.getPlace();
+				if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
+					pickupInput.value = `${place.name}, ${place.formatted_address}`;
+				} else {
+					pickupInput.value = place?.formatted_address || place?.name || pickupInput.value;
+				}
+			});
+		}
+	}
+
+	if (MAPS_KEY) {
+		const script = document.createElement('script');
+		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initHourlyAutocompleteCb`;
+		script.async = true;
+		script.defer = true;
+		(window as any).initHourlyAutocompleteCb = initHourlyAutocomplete;
+		document.head.appendChild(script);
+	}
+</script>
