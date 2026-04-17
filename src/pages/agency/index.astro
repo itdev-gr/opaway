@@ -4,6 +4,54 @@ import AgencyLayout from '../../components/AgencyLayout.astro';
 
 <AgencyLayout pageTitle="Reservations" pageDescription="Bookings linked to your agency" activeSection="reservations">
 
+	<!-- Booking Calendar -->
+	<div id="calendar-section" class="mb-8 hidden">
+		<!-- Month Navigation -->
+		<div class="flex items-center justify-between mb-6">
+			<button id="prev-month" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-all">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+				Prev
+			</button>
+			<h2 id="month-label" class="text-lg font-semibold text-neutral-800"></h2>
+			<button id="next-month" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-all">
+				Next
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+			</button>
+		</div>
+
+		<!-- Legend -->
+		<div class="flex items-center gap-5 mb-4 text-xs text-neutral-500">
+			<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span> Transfer</span>
+			<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Tour</span>
+			<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violet-500"></span> Experience</span>
+		</div>
+
+		<!-- Calendar -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden mb-8">
+			<div class="grid grid-cols-7 bg-neutral-50 border-b border-neutral-100">
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Mon</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tue</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Wed</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Thu</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fri</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Sat</div>
+				<div class="px-2 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Sun</div>
+			</div>
+			<div id="calendar-grid" class="grid grid-cols-7">
+				<div class="p-2 min-h-[80px] flex items-center justify-center text-neutral-400 text-sm col-span-7">Loading…</div>
+			</div>
+		</div>
+
+		<!-- Selected day bookings -->
+		<div id="day-bookings" class="hidden">
+			<div class="flex items-center justify-between mb-4">
+				<h3 id="day-bookings-title" class="text-base font-semibold text-neutral-800"></h3>
+				<button id="close-day-bookings" class="text-neutral-400 hover:text-neutral-600 transition-colors text-sm">✕ Close</button>
+			</div>
+			<div id="day-bookings-list" class="space-y-3"></div>
+		</div>
+	</div>
+
 	<!-- Loading state -->
 	<div id="reservations-loading" class="flex items-center justify-center py-20">
 		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
@@ -158,6 +206,128 @@ import AgencyLayout from '../../components/AgencyLayout.astro';
 				const da = a.date || a.created_at || '';
 				const db = b.date || b.created_at || '';
 				return db.localeCompare(da);
+			});
+
+			// Calendar
+			const calendarSection = document.getElementById('calendar-section');
+			calendarSection?.classList.remove('hidden');
+
+			interface CalendarBooking {
+				id: string; type: string; firstName: string; lastName: string;
+				from: string; to: string; date: string; time: string;
+				rideStatus: string; paymentStatus: string;
+			}
+
+			const calBookings: CalendarBooking[] = allBookings.map(d => ({
+				id: d.id,
+				type: d.type.toLowerCase(),
+				firstName: d.first_name || d.name || '',
+				lastName: d.last_name || '',
+				from: d.from || d.pickup || '',
+				to: d.to || d.dropoff || '',
+				date: d.date || (d.created_at ? new Date(d.created_at).toISOString().slice(0, 10) : ''),
+				time: d.time || '',
+				rideStatus: d.ride_status || d.status || 'pending',
+				paymentStatus: d.payment_status || 'pending',
+			}));
+
+			let currentYear = new Date().getFullYear();
+			let currentMonth = new Date().getMonth();
+			let selectedDay: string | null = null;
+
+			function formatDateStr(y: number, m: number, d: number) {
+				return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+			}
+
+			function getForDate(dateStr: string) { return calBookings.filter(b => b.date === dateStr); }
+			function getTypesForDate(dateStr: string) {
+				const s = new Set<string>();
+				calBookings.forEach(b => { if (b.date === dateStr) s.add(b.type); });
+				return s;
+			}
+
+			function renderCalendar() {
+				const grid = document.getElementById('calendar-grid');
+				const label = document.getElementById('month-label');
+				if (!grid || !label) return;
+				const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+				label.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+				const firstDay = new Date(currentYear, currentMonth, 1);
+				const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+				let startDow = firstDay.getDay() - 1; if (startDow < 0) startDow = 6;
+				const today = new Date();
+				const todayStr = formatDateStr(today.getFullYear(), today.getMonth(), today.getDate());
+				let html = '';
+				for (let i = 0; i < startDow; i++) html += `<div class="p-2 min-h-[80px] border border-neutral-100 rounded-lg bg-neutral-50/50"></div>`;
+				for (let day = 1; day <= totalDays; day++) {
+					const ds = formatDateStr(currentYear, currentMonth, day);
+					const bk = getForDate(ds);
+					const types = getTypesForDate(ds);
+					const isToday = ds === todayStr;
+					const isSel = ds === selectedDay;
+					let cls = 'p-2 min-h-[80px] border border-neutral-100 rounded-lg cursor-pointer hover:bg-neutral-50 transition-all';
+					if (isToday) cls = 'p-2 min-h-[80px] border border-sky-200 rounded-lg bg-sky-50 cursor-pointer hover:bg-sky-100 transition-all';
+					if (isSel) cls += ' ring-2 ring-[#0C6B95]';
+					html += `<div class="${cls}" data-date="${ds}"><div class="flex items-center justify-between mb-1"><span class="text-sm font-medium ${isToday ? 'text-[#0C6B95]' : 'text-neutral-700'}">${day}</span>`;
+					if (bk.length > 0) html += `<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-neutral-200 text-[10px] font-bold text-neutral-700">${bk.length}</span>`;
+					html += `</div>`;
+					if (types.size > 0) {
+						html += `<div class="flex items-center gap-1 mt-1 flex-wrap">`;
+						if (types.has('transfer')) html += `<span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span>`;
+						if (types.has('tour')) html += `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>`;
+						if (types.has('experience')) html += `<span class="w-2 h-2 rounded-full bg-violet-500"></span>`;
+						html += `</div>`;
+					}
+					html += `</div>`;
+				}
+				const totalCells = startDow + totalDays;
+				const rem = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+				for (let i = 0; i < rem; i++) html += `<div class="p-2 min-h-[80px] border border-neutral-100 rounded-lg bg-neutral-50/50"></div>`;
+				grid.innerHTML = html;
+				grid.querySelectorAll('[data-date]').forEach(cell => {
+					cell.addEventListener('click', () => { const dt = cell.getAttribute('data-date'); if (dt) { selectedDay = dt; renderCalendar(); renderDayBookings(dt); } });
+				});
+			}
+
+			function renderDayBookings(dateStr: string) {
+				const container = document.getElementById('day-bookings');
+				const title = document.getElementById('day-bookings-title');
+				const list = document.getElementById('day-bookings-list');
+				if (!container || !title || !list) return;
+				const bk = getForDate(dateStr);
+				const d = new Date(dateStr + 'T00:00:00');
+				title.textContent = `Bookings for ${d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+				if (bk.length === 0) { list.innerHTML = `<p class="text-sm text-neutral-400 py-6 text-center">No bookings on this day.</p>`; container.classList.remove('hidden'); return; }
+				const typeBadge = (t: string) => {
+					const m: Record<string,string> = { transfer:'bg-sky-50 text-[#0C6B95] border-sky-200', tour:'bg-emerald-50 text-emerald-700 border-emerald-200', experience:'bg-violet-50 text-violet-700 border-violet-200' };
+					return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${m[t]||'bg-neutral-50 text-neutral-600 border-neutral-200'} capitalize">${t}</span>`;
+				};
+				const sBadge = (s: string, p: string) => {
+					const m: Record<string,string> = { pending:'bg-amber-50 text-amber-700 border-amber-200', completed:'bg-sky-50 text-sky-700 border-sky-200', cancelled:'bg-red-50 text-red-600 border-red-200', paid:'bg-emerald-50 text-emerald-700 border-emerald-200' };
+					return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${m[s.toLowerCase()]||'bg-neutral-50 text-neutral-600 border-neutral-200'} capitalize">${p}: ${s}</span>`;
+				};
+				list.innerHTML = bk.map(b => `
+					<div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+						<div class="flex items-center gap-3 flex-1 min-w-0">${typeBadge(b.type)}<span class="font-medium text-sm text-neutral-900 truncate">${b.firstName} ${b.lastName}</span></div>
+						<div class="flex items-center gap-2 text-sm text-neutral-600 flex-1 min-w-0"><span class="truncate">${b.from||'\u2014'}</span><svg class="w-4 h-4 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg><span class="truncate">${b.to||'\u2014'}</span></div>
+						<div class="text-sm text-neutral-500 whitespace-nowrap">${b.time||'\u2014'}</div>
+						<div class="flex items-center gap-2 flex-shrink-0">${sBadge(b.rideStatus,'Ride')} ${sBadge(b.paymentStatus,'Pay')}</div>
+					</div>`).join('');
+				container.classList.remove('hidden');
+			}
+
+			renderCalendar();
+
+			document.getElementById('prev-month')?.addEventListener('click', () => {
+				currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+				selectedDay = null; document.getElementById('day-bookings')?.classList.add('hidden'); renderCalendar();
+			});
+			document.getElementById('next-month')?.addEventListener('click', () => {
+				currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+				selectedDay = null; document.getElementById('day-bookings')?.classList.add('hidden'); renderCalendar();
+			});
+			document.getElementById('close-day-bookings')?.addEventListener('click', () => {
+				selectedDay = null; document.getElementById('day-bookings')?.classList.add('hidden'); renderCalendar();
 			});
 
 			loadingEl?.classList.add('hidden');
