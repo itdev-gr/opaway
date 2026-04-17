@@ -32,7 +32,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						placeholder="https://example.com/vehicle.jpg"
 						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 					/>
-					<p class="text-xs text-neutral-400 mt-1.5">Paste a direct link to the vehicle image (JPG, PNG, WebP)</p>
+					<p class="text-xs text-neutral-400 mt-1.5">Paste a URL or upload an image (JPG, PNG, WebP, AVIF)</p>
+					<label class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+						Upload Image
+						<input id="f-file" type="file" accept="image/*" class="hidden" />
+					</label>
+					<span id="f-upload-status" class="hidden text-xs text-[#0C6B95] ml-2"></span>
 				</div>
 				<div class="sm:w-48 h-32 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
 					<img id="img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
@@ -176,6 +182,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 							id="e-image" type="url"
 							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 						/>
+						<label class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+							Upload
+							<input id="e-file" type="file" accept="image/*" class="hidden" />
+						</label>
+						<span id="e-upload-status" class="hidden text-xs text-[#0C6B95] ml-2"></span>
 					</div>
 					<div class="sm:w-36 h-24 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
 						<img id="e-img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
@@ -259,6 +271,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { uploadImage } from '../../lib/upload';
 
 	/* ── Types ── */
 	interface VehicleItem { id: string; slug: string; name: string; models: string; image: string; maxPassengers: number; maxLuggage: number; badge: string; sortOrder: number; active: boolean; }
@@ -306,6 +319,42 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	eImgInput.addEventListener('input', () => {
 		clearTimeout(ePreviewTimer);
 		ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
+	});
+
+	/* ── File upload handlers ── */
+	async function handleFileUpload(fileInput: HTMLInputElement, urlInput: HTMLInputElement, preview: HTMLImageElement, placeholder: Element, statusEl: HTMLElement, folder: string) {
+		const file = fileInput.files?.[0];
+		if (!file) return;
+		statusEl.textContent = 'Uploading…';
+		statusEl.classList.remove('hidden');
+		try {
+			const url = await uploadImage(file, folder);
+			urlInput.value = url;
+			applyPreview(urlInput, preview, placeholder);
+			statusEl.textContent = 'Uploaded';
+			setTimeout(() => statusEl.classList.add('hidden'), 2000);
+		} catch (err) {
+			console.error('Upload failed:', err);
+			statusEl.textContent = 'Upload failed';
+			setTimeout(() => statusEl.classList.add('hidden'), 3000);
+		}
+		fileInput.value = '';
+	}
+
+	document.getElementById('f-file')?.addEventListener('change', () => {
+		handleFileUpload(
+			document.getElementById('f-file') as HTMLInputElement,
+			imgInput, imgPreview, imgPlaceholder,
+			document.getElementById('f-upload-status')!, 'vehicles'
+		);
+	});
+
+	document.getElementById('e-file')?.addEventListener('change', () => {
+		handleFileUpload(
+			document.getElementById('e-file') as HTMLInputElement,
+			eImgInput, eImgPreview, eImgPlaceholder,
+			document.getElementById('e-upload-status')!, 'vehicles'
+		);
 	});
 
 	/* ── Render grid ── */
