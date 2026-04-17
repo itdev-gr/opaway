@@ -24,37 +24,42 @@ import Layout from '../../../layouts/Layout.astro';
 				</div>
 			</div>
 
-			<!-- ── Main grid: left (map + vehicles) | right (sidebar) ── -->
+			<!-- ── Main grid ── -->
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
 				<!-- LEFT COLUMN -->
 				<div class="lg:col-span-2 space-y-5">
 
-					<!-- Map -->
-					<div id="map" class="w-full h-80 rounded-2xl border border-neutral-200 bg-neutral-100 overflow-hidden flex items-center justify-center">
-						<div id="map-fallback" class="text-center text-neutral-400 p-8">
-							<svg class="w-10 h-10 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-							<p class="font-medium">Loading map...</p>
-							<p class="text-sm mt-1" id="map-status">Calculating route</p>
-						</div>
-					</div>
-
-					<!-- Route info bar -->
-					<div id="route-info" class="hidden flex items-center gap-4 text-sm text-neutral-500 px-1">
+					<!-- Booking summary card -->
+					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-neutral-600">
 						<span class="flex items-center gap-1.5">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-							<span id="route-distance">—</span>
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+							<span id="summary-pickup" class="font-medium">—</span>
 						</span>
 						<span class="flex items-center gap-1.5">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-							<span id="route-duration">—</span>
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+							<span id="summary-date" class="font-medium">—</span>
 						</span>
-						<span class="ml-auto text-xs">All prices include VAT, taxes & tolls</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							<span id="summary-time" class="font-medium">—</span>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							<span id="summary-hours" class="font-medium">—</span> hours
+						</span>
+						<span class="flex items-center gap-1.5">
+							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+							<span id="summary-passengers" class="font-medium">—</span> passengers
+						</span>
+						<a href="#" id="sb-edit" class="ml-auto text-[#0C6B95] font-medium hover:underline flex items-center gap-1 text-sm">
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" /></svg>
+							Edit
+						</a>
 					</div>
 
 					<!-- Vehicle cards -->
 					<div id="vehicle-cards" class="space-y-4">
-						<!-- Skeleton loaders -->
 						<div class="animate-pulse bg-white rounded-2xl border border-neutral-200 p-5 flex gap-5">
 							<div class="w-36 h-24 bg-neutral-200 rounded-xl shrink-0"></div>
 							<div class="flex-1 space-y-3"><div class="h-5 bg-neutral-200 rounded w-40"></div><div class="h-4 bg-neutral-200 rounded w-60"></div><div class="h-4 bg-neutral-200 rounded w-32"></div></div>
@@ -91,99 +96,39 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
 
-						<!-- Trip type + passengers -->
+						<!-- Type + passengers -->
 						<div class="flex items-center justify-between text-sm">
-							<span id="sb-trip-type" class="font-semibold text-neutral-700">One way</span>
+							<span class="font-semibold text-neutral-700">Hourly rental</span>
 							<span class="flex items-center gap-1.5 text-neutral-500">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span id="sb-passengers">2</span> Passengers
 							</span>
 						</div>
 
-						<!-- Date -->
-						<div class="flex items-center justify-between text-sm border-t border-neutral-100 pt-4">
-							<div>
-								<span class="text-neutral-500">Outward</span>
-								<span class="mx-1 text-neutral-300">&middot;</span>
-								<span id="sb-date" class="font-medium text-neutral-700">—</span>
-							</div>
-							<a href="#" id="sb-edit" class="text-[#0C6B95] font-medium hover:underline flex items-center gap-1">
-								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" /></svg>
-								Edit
-							</a>
-						</div>
-
-						<!-- Route -->
-						<div class="space-y-3">
-							<!-- From -->
-							<div class="flex gap-3">
-								<div class="flex flex-col items-center">
-									<span class="w-3 h-3 rounded-full bg-[#0C6B95] shrink-0 mt-1"></span>
-									<span class="w-px flex-1 bg-neutral-200"></span>
-								</div>
-								<div class="flex-1 min-w-0">
-									<p id="sb-from" class="text-sm font-semibold text-neutral-800 truncate">—</p>
-									<p class="text-xs text-neutral-400 mt-0.5" id="sb-from-time">—</p>
-								</div>
-								<span id="sb-pickup-time" class="text-sm font-medium text-neutral-600 shrink-0">—</span>
-							</div>
-
-							<!-- Distance -->
-							<div class="flex gap-3">
-								<div class="flex flex-col items-center">
-									<span class="w-px flex-1 bg-neutral-200"></span>
-								</div>
-								<p class="text-xs text-neutral-400 flex items-center gap-1.5" id="sb-route-meta">
-									<span id="sb-dist">—</span>
-									<span class="mx-0.5">&middot;</span>
-									<span id="sb-dur">—</span>
-								</p>
-							</div>
-
-							<!-- To -->
-							<div class="flex gap-3">
-								<div class="flex flex-col items-center">
-									<span class="w-3 h-3 rounded-full bg-neutral-400 shrink-0 mt-1"></span>
-								</div>
-								<div class="flex-1 min-w-0">
-									<p id="sb-to" class="text-sm font-semibold text-neutral-800 truncate">—</p>
-									<p class="text-xs text-neutral-400 mt-0.5" id="sb-to-detail"></p>
-								</div>
-								<span id="sb-arrival-time" class="text-sm font-medium text-neutral-600 shrink-0">—</span>
-							</div>
-						</div>
-
-						<!-- Add return -->
-						<button id="sb-add-return" class="w-full py-2.5 border border-dashed border-[#0C6B95]/40 text-[#0C6B95] font-semibold text-sm rounded-xl hover:bg-[#0C6B95]/5 transition-colors flex items-center justify-center gap-2">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-							Add return
-						</button>
-
-						<!-- Return section (hidden until toggled) -->
-						<div id="sb-return-section" class="hidden space-y-3 border-t border-neutral-100 pt-4">
-							<div class="flex items-center justify-between">
-								<span class="text-neutral-500 text-sm">Return</span>
-								<button id="sb-remove-return" class="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
-									<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-									Remove
-								</button>
-							</div>
-							<div class="flex gap-3">
-								<div class="flex flex-col items-center">
-									<span class="w-3 h-3 rounded-full bg-neutral-400 shrink-0 mt-1"></span>
-									<span class="w-px flex-1 bg-neutral-200"></span>
-								</div>
-								<div class="flex-1 min-w-0">
-									<p id="sb-return-from" class="text-sm font-semibold text-neutral-800 truncate">—</p>
-								</div>
-							</div>
+						<!-- Booking details -->
+						<div class="space-y-3 border-t border-neutral-100 pt-4">
 							<div class="flex gap-3">
 								<div class="flex flex-col items-center">
 									<span class="w-3 h-3 rounded-full bg-[#0C6B95] shrink-0 mt-1"></span>
 								</div>
 								<div class="flex-1 min-w-0">
-									<p id="sb-return-to" class="text-sm font-semibold text-neutral-800 truncate">—</p>
+									<p id="sb-pickup" class="text-sm font-semibold text-neutral-800 truncate">—</p>
+									<p class="text-xs text-neutral-400 mt-0.5">Pickup location</p>
 								</div>
+							</div>
+							<div class="flex items-center gap-4 text-sm text-neutral-600 pl-6">
+								<span class="flex items-center gap-1.5">
+									<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+									<span id="sb-date">—</span>
+								</span>
+								<span class="flex items-center gap-1.5">
+									<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+									<span id="sb-time">—</span>
+								</span>
+							</div>
+							<div class="flex items-center gap-1.5 text-sm text-neutral-600 pl-6">
+								<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								<span id="sb-hours">—</span> hours
 							</div>
 						</div>
 
@@ -195,12 +140,8 @@ import Layout from '../../../layouts/Layout.astro';
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
 							<div class="flex justify-between text-sm text-neutral-500">
-								<span>Outward</span>
-								<span id="sb-outward">—</span>
-							</div>
-							<div id="sb-return-price-row" class="hidden flex justify-between text-sm text-neutral-500">
-								<span>Return</span>
-								<span id="sb-return-price">—</span>
+								<span>Rate</span>
+								<span id="sb-rate">—</span>
 							</div>
 						</div>
 
@@ -212,19 +153,11 @@ import Layout from '../../../layouts/Layout.astro';
 							</span>
 							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-								Door-to-door service
-							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
-								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-								Meet & Greet
-							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
-								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-								Flight tracking
-							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
-								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Licensed chauffeurs
+							</span>
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+								Door-to-door service
 							</span>
 						</div>
 
@@ -248,7 +181,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
-	import { calculatePrice } from '../../../lib/pricing';
+	import { calculateHourlyPrice } from '../../../lib/pricing';
 
 	let partnerDiscount = 0;
 
@@ -270,60 +203,32 @@ import Layout from '../../../layouts/Layout.astro';
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
-	const from = params.get('from') || '';
-	const to = params.get('to') || '';
+	const pickup = params.get('pickup') || '';
 	const date = params.get('date') || '';
 	const time = params.get('time') || '';
+	const hours = parseInt(params.get('hours') || '3', 10);
 	const passengers = parseInt(params.get('passengers') || '2', 10);
-	const returnDate = params.get('returnDate') || '';
-	const returnTime = params.get('returnTime') || '';
-	let hasReturn = !!returnDate;
 
-	/* ── Populate sidebar ── */
+	/* ── Populate sidebar & summary ── */
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
-	setText('sb-from', from);
-	setText('sb-to', to);
+	setText('summary-pickup', pickup);
+	setText('summary-date', date);
+	setText('summary-time', time);
+	setText('summary-hours', String(hours));
+	setText('summary-passengers', String(passengers));
+	setText('sb-pickup', pickup);
 	setText('sb-date', date);
-	setText('sb-pickup-time', time);
+	setText('sb-time', time);
+	setText('sb-hours', String(hours));
 	setText('sb-passengers', String(passengers));
-	setText('sb-from-time', `Pickup at ${time}`);
 
-	function setReturnState(enabled: boolean) {
-		hasReturn = enabled;
-		setText('sb-trip-type', enabled ? 'Round trip' : 'One way');
-		document.getElementById('sb-add-return')?.classList.toggle('hidden', enabled);
-		document.getElementById('sb-return-section')?.classList.toggle('hidden', !enabled);
-		document.getElementById('sb-return-price-row')?.classList.toggle('hidden', !enabled);
-
-		if (enabled) {
-			setText('sb-return-from', to);   // return goes: To → From
-			setText('sb-return-to', from);
-		}
-
-		renderVehicles();
-		updateSidebarPrices();
-	}
-
-	if (hasReturn) {
-		setReturnState(true);
-	}
-
-	// Add return
-	document.getElementById('sb-add-return')?.addEventListener('click', () => setReturnState(true));
-
-	// Remove return
-	document.getElementById('sb-remove-return')?.addEventListener('click', () => setReturnState(false));
-
-	// Edit link — navigate back
 	document.getElementById('sb-edit')?.addEventListener('click', (e) => {
 		e.preventDefault();
 		window.history.back();
 	});
 
 	/* ── State ── */
-	let routeDistanceKm = 0;
-	let routeDurationMin = 0;
 	let selectedVehicleSlug = '';
 
 	interface Vehicle {
@@ -343,17 +248,9 @@ import Layout from '../../../layouts/Layout.astro';
 	/* ── Update sidebar prices ── */
 	function updateSidebarPrices() {
 		if (!selectedVehicleSlug) return;
-		const price = calculatePrice({
-			vehicleSlug: selectedVehicleSlug,
-			distanceKm: routeDistanceKm,
-			durationMinutes: routeDurationMin,
-			passengers,
-			isReturn: hasReturn,
-			discount: partnerDiscount,
-		});
+		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount });
 		setText('sb-total', `\u20AC ${price.totalPrice.toFixed(2)}`);
-		setText('sb-outward', `\u20AC ${price.outwardPrice.toFixed(2)}`);
-		setText('sb-return-price', hasReturn ? `\u20AC ${price.returnPrice.toFixed(2)}` : '—');
+		setText('sb-rate', `\u20AC${price.perHour}/hour \u00D7 ${hours}h`);
 	}
 
 	/* ── Escape HTML ── */
@@ -378,14 +275,7 @@ import Layout from '../../../layouts/Layout.astro';
 			: '';
 
 		container.innerHTML = badgeHtml + vehicles.map(v => {
-			const price = calculatePrice({
-				vehicleSlug: v.slug,
-				distanceKm: routeDistanceKm,
-				durationMinutes: routeDurationMin,
-				passengers,
-				isReturn: hasReturn,
-				discount: partnerDiscount,
-			});
+			const price = calculateHourlyPrice({ vehicleSlug: v.slug, hours, discount: partnerDiscount });
 			const isSelected = selectedVehicleSlug === v.slug;
 			const showOriginal = partnerDiscount > 0 && price.originalTotal !== price.totalPrice;
 
@@ -395,12 +285,9 @@ import Layout from '../../../layouts/Layout.astro';
 				data-slug="${esc(v.slug)}" data-name="${esc(v.name)}" data-total="${price.totalPrice}"
 			>
 				<div class="flex items-center gap-4">
-					<!-- Image -->
 					<div class="w-28 h-20 bg-neutral-100 rounded-xl overflow-hidden shrink-0">
 						<img src="${esc(v.image)}" alt="${esc(v.name)}" class="w-full h-full object-cover" />
 					</div>
-
-					<!-- Info -->
 					<div class="flex-1 min-w-0">
 						<div class="flex items-center gap-2 mb-1 flex-wrap">
 							<h3 class="text-base font-bold text-neutral-900">${esc(v.name)}</h3>
@@ -418,32 +305,23 @@ import Layout from '../../../layouts/Layout.astro';
 						</div>
 						<p class="text-xs text-neutral-400 truncate">${esc(v.models)}</p>
 					</div>
-
-					<!-- Price -->
 					<div class="flex flex-col items-end justify-center shrink-0 pl-2">
 						${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${price.originalTotal.toFixed(2)}</del>` : ''}
 						<span class="text-xl font-bold text-neutral-900">&euro;${price.totalPrice.toFixed(2)}</span>
-						<span class="text-[10px] text-neutral-400">${hasReturn ? 'round trip' : 'total price'}</span>
+						<span class="text-[10px] text-neutral-400">\u20AC${price.perHour}/hr \u00D7 ${hours}h</span>
 					</div>
 				</div>
 			</div>`;
 		}).join('');
 
-		// Attach click handlers
 		document.querySelectorAll<HTMLDivElement>('.vehicle-card').forEach(card => {
 			card.addEventListener('click', () => {
 				selectedVehicleSlug = card.dataset.slug || '';
 				const name = card.dataset.name || '';
-
-				// Update selection bar
 				const bar = document.getElementById('selection-bar')!;
 				bar.classList.remove('hidden');
 				setText('selected-name', name);
-
-				// Update sidebar prices
 				updateSidebarPrices();
-
-				// Re-render to update border highlight
 				renderVehicles();
 			});
 		});
@@ -473,7 +351,6 @@ import Layout from '../../../layouts/Layout.astro';
 					sortOrder: d.sort_order,
 				}));
 			} else {
-				// Fallback: use hardcoded defaults if table is empty
 				vehicles = [
 					{ id: '1', slug: 'sedan', name: 'Sedan', models: 'Mercedes-Benz E-Class, or similar.', image: '/car.avif', maxPassengers: 3, maxLuggage: 6, badge: 'BEST VALUE', sortOrder: 1 },
 					{ id: '2', slug: 'van', name: 'Van', models: 'Mercedes Vito Tourer, or similar.', image: '/mini_van.avif', maxPassengers: 8, maxLuggage: 16, badge: 'MOST POPULAR', sortOrder: 2 },
@@ -491,125 +368,29 @@ import Layout from '../../../layouts/Layout.astro';
 		renderVehicles();
 	}
 
-	/* ── Google Maps ── */
-	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
-
-	function initMap() {
-		const mapEl = document.getElementById('map')!;
-		const fallback = document.getElementById('map-fallback')!;
-
-		const map = new google.maps.Map(mapEl, {
-			zoom: 10,
-			center: { lat: 37.9838, lng: 23.7275 }, // Athens default
-			disableDefaultUI: true,
-			zoomControl: true,
-			styles: [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }],
-		});
-
-		fallback.classList.add('hidden');
-
-		const directionsService = new google.maps.DirectionsService();
-		const directionsRenderer = new google.maps.DirectionsRenderer({
-			map,
-			suppressMarkers: false,
-			polylineOptions: { strokeColor: '#0C6B95', strokeWeight: 5 },
-		});
-
-		directionsService.route(
-			{ origin: from, destination: to, travelMode: google.maps.TravelMode.DRIVING },
-			(result, status) => {
-				if (status === 'OK' && result) {
-					directionsRenderer.setDirections(result);
-
-					const leg = result.routes[0]?.legs[0];
-					if (leg) {
-						routeDistanceKm = (leg.distance?.value || 0) / 1000;
-						routeDurationMin = (leg.duration?.value || 0) / 60;
-
-						setText('route-distance', leg.distance?.text || '—');
-						setText('route-duration', leg.duration?.text || '—');
-						setText('sb-dist', leg.distance?.text || '—');
-						setText('sb-dur', leg.duration?.text || '—');
-						setText('sb-arrival-time', `~${Math.round(routeDurationMin)} min`);
-
-						document.getElementById('route-info')?.classList.remove('hidden');
-
-						// Re-render vehicles with actual distance-based prices
-						renderVehicles();
-					}
-				} else {
-					console.warn('Directions request failed:', status);
-					setText('map-status', `Could not calculate route. Showing estimated prices.`);
-					fallback.classList.remove('hidden');
-					// Use fallback distance
-					routeDistanceKm = 30;
-					routeDurationMin = 35;
-					renderVehicles();
-				}
-			}
-		);
-	}
-
-	// Load Maps script or use fallback
-	if (MAPS_KEY) {
-		if (typeof google !== 'undefined' && google.maps) {
-			initMap();
-		} else {
-			const script = document.createElement('script');
-			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initMapCallback`;
-			script.async = true;
-			script.defer = true;
-			(window as any).initMapCallback = initMap;
-			script.onerror = () => {
-				console.warn('Google Maps failed to load');
-				setText('map-status', 'Map unavailable. Showing estimated prices.');
-				routeDistanceKm = 30;
-				routeDurationMin = 35;
-				renderVehicles();
-			};
-			document.head.appendChild(script);
-		}
-	} else {
-		setText('map-status', 'Map API key not configured. Showing estimated prices.');
-		routeDistanceKm = 30;
-		routeDurationMin = 35;
-	}
-
 	/* ── Continue to passenger page ── */
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
 		if (!selectedVehicleSlug) return;
 
 		const selectedVehicle = vehicles.find(v => v.slug === selectedVehicleSlug);
-		const price = calculatePrice({
-			vehicleSlug: selectedVehicleSlug,
-			distanceKm: routeDistanceKm,
-			durationMinutes: routeDurationMin,
-			passengers,
-			isReturn: hasReturn,
-			discount: partnerDiscount,
-		});
+		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount });
+
+		const vehicleImages: Record<string, string> = { sedan: '/car.avif', van: '/mini_van.avif', minibus: '/van.avif' };
 
 		const p = new URLSearchParams({
-			from, to, date, time,
+			pickup, date, time,
+			hours: String(hours),
 			passengers: String(passengers),
 			vehicleSlug: selectedVehicleSlug,
-			vehicleName: selectedVehicle?.name || '',
-			vehicleImage: selectedVehicle?.image || '',
-			vehicleMaxPax: String(selectedVehicle?.maxPassengers || 0),
-			vehicleMaxLug: String(selectedVehicle?.maxLuggage || 0),
+			vehicleName: selectedVehicle?.name || selectedVehicleSlug,
+			vehicleImage: selectedVehicle?.image || vehicleImages[selectedVehicleSlug] || '',
 			totalPrice: price.totalPrice.toFixed(2),
-			outwardPrice: price.outwardPrice.toFixed(2),
-			returnPrice: price.returnPrice.toFixed(2),
+			perHour: price.perHour.toFixed(2),
+			bookingType: 'hourly',
 		});
-		if (partnerDiscount > 0) {
-			p.set('discount', String(partnerDiscount));
-		}
-		if (hasReturn) {
-			p.set('returnDate', returnDate || date);
-			p.set('returnTime', returnTime || time);
-		}
+		if (partnerDiscount > 0) p.set('discount', String(partnerDiscount));
 
-		window.location.href = `/book/transfer/passenger?${p.toString()}`;
+		window.location.href = `/book/hourly/passenger?${p.toString()}`;
 	});
 
 	/* ── Init ── */

@@ -453,6 +453,7 @@ import Layout from '../../../layouts/Layout.astro';
 			}).select().single();
 
 			if (error) throw error;
+			if (!inserted) throw new Error('Booking was not returned after insert');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');

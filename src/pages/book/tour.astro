@@ -245,11 +245,11 @@ import Layout from '../../layouts/Layout.astro';
 				.from('partners')
 				.select('status, discount')
 				.eq('id', user.id)
-				.single();
+				.maybeSingle();
 			if (partner && partner.status === 'approved' && partner.discount > 0) {
 				return partner.discount;
 			}
-		} catch {}
+		} catch (e) { console.error('Partner discount check failed:', e); }
 		return 0;
 	}
 
@@ -544,11 +544,16 @@ import Layout from '../../layouts/Layout.astro';
 	}
 
 	if (MAPS_KEY) {
-		const script = document.createElement('script');
-		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initTourAutocompleteCb`;
-		script.async = true;
-		script.defer = true;
-		(window as any).initTourAutocompleteCb = initTourAutocomplete;
-		document.head.appendChild(script);
+		if (typeof google !== 'undefined' && google.maps) {
+			initTourAutocomplete();
+		} else {
+			const script = document.createElement('script');
+			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initTourAutocompleteCb`;
+			script.async = true;
+			script.defer = true;
+			(window as any).initTourAutocompleteCb = initTourAutocomplete;
+			script.onerror = () => console.error('Google Maps failed to load');
+			document.head.appendChild(script);
+		}
 	}
 </script>

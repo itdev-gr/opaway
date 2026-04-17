@@ -346,6 +346,14 @@ const vehicles = [
 			return;
 		}
 
+		const selectedDate = new Date(date + 'T00:00:00');
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		if (selectedDate < today) {
+			alert('Please select a future date.');
+			return;
+		}
+
 		const params = new URLSearchParams({ from, to, date: date || '', time: time || '', passengers });
 		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
 		window.location.href = `/book/transfer/results?${params.toString()}`;
@@ -450,11 +458,16 @@ const vehicles = [
 	}
 
 	if (MAPS_KEY) {
-		const script = document.createElement('script');
-		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAutocompleteCb`;
-		script.async = true;
-		script.defer = true;
-		(window as any).initAutocompleteCb = initAutocomplete;
-		document.head.appendChild(script);
+		if (typeof google !== 'undefined' && google.maps) {
+			initAutocomplete();
+		} else {
+			const script = document.createElement('script');
+			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAutocompleteCb`;
+			script.async = true;
+			script.defer = true;
+			(window as any).initAutocompleteCb = initAutocomplete;
+			script.onerror = () => console.error('Google Maps failed to load');
+			document.head.appendChild(script);
+		}
 	}
 </script>

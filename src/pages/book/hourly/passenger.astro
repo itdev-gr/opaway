@@ -8,13 +8,23 @@ import Layout from '../../../layouts/Layout.astro';
 
 			<!-- ── Step indicator ── -->
 			<div class="flex items-center justify-center gap-0 mb-8">
+				<!-- Step 1: Vehicle (completed) -->
 				<div class="flex items-center gap-2">
-					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">1</span>
+					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+					</span>
+					<span class="text-sm font-medium text-emerald-600">Vehicle</span>
+				</div>
+				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
+				<!-- Step 2: Passenger (active) -->
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">2</span>
 					<span class="text-sm font-semibold text-[#0C6B95]">Passenger</span>
 				</div>
 				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
+				<!-- Step 3: Payment (greyed) -->
 				<div class="flex items-center gap-2 opacity-40">
-					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">2</span>
+					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">3</span>
 					<span class="text-sm font-medium text-neutral-400">Payment</span>
 				</div>
 			</div>

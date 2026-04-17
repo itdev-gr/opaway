@@ -131,77 +131,6 @@ const vehicles = [
 						</div>
 					</div>
 
-					<!-- Vehicle selection -->
-					<div class="border-t border-neutral-100 pt-6 mb-6">
-						<h3 class="text-base font-bold text-neutral-900 mb-4">Select your vehicle</h3>
-						<div id="vehicle-cards" class="space-y-3">
-
-							<!-- Sedan -->
-							<label class="vehicle-option flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 cursor-pointer transition-all" data-slug="sedan">
-								<input type="radio" name="vehicle" value="sedan" class="hidden" />
-								<div class="w-20 h-14 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
-									<img src="/car.avif" alt="Sedan" class="w-full h-full object-cover" />
-								</div>
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center gap-2">
-										<span class="font-bold text-neutral-900 text-sm">Sedan</span>
-										<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">BEST VALUE</span>
-									</div>
-									<div class="text-xs text-neutral-500 mt-0.5">Up to 3 people &middot; 1 big + 1 small luggage per person</div>
-								</div>
-								<div class="text-right shrink-0">
-									<span class="text-lg font-bold text-neutral-900" data-price-sedan></span>
-									<div class="text-[10px] text-neutral-400">total</div>
-								</div>
-							</label>
-
-							<!-- Van -->
-							<label class="vehicle-option flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 cursor-pointer transition-all" data-slug="van">
-								<input type="radio" name="vehicle" value="van" class="hidden" />
-								<div class="w-20 h-14 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
-									<img src="/mini_van.avif" alt="Van" class="w-full h-full object-cover" />
-								</div>
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center gap-2">
-										<span class="font-bold text-neutral-900 text-sm">Van</span>
-										<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">MOST POPULAR</span>
-									</div>
-									<div class="text-xs text-neutral-500 mt-0.5">Up to 8 people &middot; 1 big + 1 small luggage per person</div>
-								</div>
-								<div class="text-right shrink-0">
-									<span class="text-lg font-bold text-neutral-900" data-price-van></span>
-									<div class="text-[10px] text-neutral-400">total</div>
-								</div>
-							</label>
-
-							<!-- Minibus -->
-							<label class="vehicle-option flex items-center gap-4 p-4 rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 cursor-pointer transition-all" data-slug="minibus">
-								<input type="radio" name="vehicle" value="minibus" class="hidden" />
-								<div class="w-20 h-14 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
-									<img src="/van.avif" alt="Minibus" class="w-full h-full object-cover" />
-								</div>
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center gap-2">
-										<span class="font-bold text-neutral-900 text-sm">Minibus (or two Vans)</span>
-										<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">TOP CLASS</span>
-									</div>
-									<div class="text-xs text-neutral-500 mt-0.5">Up to 18 people &middot; 1 big + 1 small luggage per person</div>
-								</div>
-								<div class="text-right shrink-0">
-									<span class="text-lg font-bold text-neutral-900" data-price-minibus></span>
-									<div class="text-[10px] text-neutral-400">total</div>
-								</div>
-							</label>
-
-						</div>
-					</div>
-
-					<!-- Error -->
-					<p id="form-error" class="hidden text-sm text-red-500 mb-4 flex items-center gap-1.5">
-						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-						<span id="form-error-text"></span>
-					</p>
-
 					<!-- See prices -->
 					<button id="continue-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -303,76 +232,22 @@ const vehicles = [
 </script>
 
 <script>
-	import { supabase } from '../../lib/supabase';
-	import { calculateHourlyPrice } from '../../lib/pricing';
-
-	let partnerDiscount = 0;
-
-	async function detectPartnerDiscount(): Promise<number> {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return 0;
-		try {
-			const { data: partner } = await supabase
-				.from('partners')
-				.select('status, discount')
-				.eq('id', user.id)
-				.maybeSingle();
-			if (partner && partner.status === 'approved' && partner.discount > 0) {
-				return partner.discount;
-			}
-		} catch {}
-		return 0;
-	}
-
-	/* ── State ── */
 	let hours = 3;
 	let paxCount = 2;
-	let selectedVehicle = '';
 
 	const hoursEl = document.getElementById('hours-count')!;
 	const hoursWarning = document.getElementById('hours-warning')!;
 	const paxEl = document.getElementById('pax-count')!;
 
-	/* ── Update prices ── */
-	function updatePrices() {
-		let badgeEl = document.getElementById('partner-discount-badge');
-		if (partnerDiscount > 0) {
-			if (!badgeEl) {
-				badgeEl = document.createElement('div');
-				badgeEl.id = 'partner-discount-badge';
-				badgeEl.className = 'bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium';
-				const vehicleCards = document.getElementById('vehicle-cards');
-				vehicleCards?.parentElement?.insertBefore(badgeEl, vehicleCards);
-			}
-			badgeEl.textContent = `Partner discount: ${partnerDiscount}% applied`;
-		}
-
-		['sedan', 'van', 'minibus'].forEach(slug => {
-			const { totalPrice, originalTotal } = calculateHourlyPrice({ vehicleSlug: slug, hours, discount: partnerDiscount });
-			const el = document.querySelector(`[data-price-${slug}]`);
-			if (el) {
-				const showOriginal = partnerDiscount > 0 && originalTotal !== totalPrice;
-				el.innerHTML = (showOriginal ? `<del class="text-neutral-400 text-sm">\u20AC${originalTotal.toFixed(2)}</del> ` : '') + `\u20AC${totalPrice.toFixed(2)}`;
-			}
-		});
-	}
-
-	detectPartnerDiscount().then(d => {
-		partnerDiscount = d;
-		updatePrices();
-	});
-
-	/* ── Hours counter ── */
 	document.getElementById('hours-minus')?.addEventListener('click', () => {
-		if (hours > 1) { hours--; hoursEl.textContent = String(hours); updatePrices(); }
+		if (hours > 1) { hours--; hoursEl.textContent = String(hours); }
 		hoursWarning.classList.toggle('hidden', hours >= 3);
 	});
 	document.getElementById('hours-plus')?.addEventListener('click', () => {
-		hours++; hoursEl.textContent = String(hours); updatePrices();
+		hours++; hoursEl.textContent = String(hours);
 		hoursWarning.classList.toggle('hidden', hours >= 3);
 	});
 
-	/* ── Passenger counter ── */
 	document.getElementById('pax-minus')?.addEventListener('click', () => {
 		if (paxCount > 1) { paxCount--; paxEl.textContent = String(paxCount); }
 	});
@@ -380,53 +255,27 @@ const vehicles = [
 		paxCount++; paxEl.textContent = String(paxCount);
 	});
 
-	/* ── Vehicle selection ── */
-	document.querySelectorAll<HTMLLabelElement>('.vehicle-option').forEach(label => {
-		label.addEventListener('click', () => {
-			selectedVehicle = label.dataset.slug || '';
-			document.querySelectorAll('.vehicle-option').forEach(l => {
-				const isActive = l.dataset.slug === selectedVehicle;
-				l.classList.toggle('border-[#0C6B95]', isActive);
-				l.classList.toggle('ring-2', isActive);
-				l.classList.toggle('ring-[#0C6B95]/20', isActive);
-				l.classList.toggle('border-neutral-200', !isActive);
-			});
-		});
-	});
-
-	/* ── Continue ── */
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
 		const pickup = (document.getElementById('h-pickup') as HTMLInputElement).value.trim();
 		const date = (document.getElementById('h-date') as HTMLInputElement).value.trim();
 		const time = (document.getElementById('h-time') as HTMLInputElement).value.trim();
-		const errorEl = document.getElementById('form-error')!;
-		const errorText = document.getElementById('form-error-text')!;
 
-		if (!pickup) { errorText.textContent = 'Please enter a pickup location.'; errorEl.classList.remove('hidden'); return; }
-		if (!date) { errorText.textContent = 'Please select a pickup date.'; errorEl.classList.remove('hidden'); return; }
-		if (!time) { errorText.textContent = 'Please select a pickup time.'; errorEl.classList.remove('hidden'); return; }
-		if (hours < 3) { errorText.textContent = 'Minimum rental is 3 hours.'; errorEl.classList.remove('hidden'); return; }
-		if (!selectedVehicle) { errorText.textContent = 'Please select a vehicle.'; errorEl.classList.remove('hidden'); return; }
+		if (!pickup) { alert('Please enter a pickup location.'); return; }
+		if (!date) { alert('Please select a pickup date.'); return; }
+		if (!time) { alert('Please select a pickup time.'); return; }
+		if (hours < 3) { alert('Minimum rental is 3 hours.'); return; }
 
-		errorEl.classList.add('hidden');
+		const selectedDate = new Date(date + 'T00:00:00');
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		if (selectedDate < today) { alert('Please select a future date.'); return; }
 
-		const vehicleNames: Record<string, string> = { sedan: 'Sedan', van: 'Van', minibus: 'Minibus (or two Vans)' };
-		const vehicleImages: Record<string, string> = { sedan: '/car.avif', van: '/mini_van.avif', minibus: '/van.avif' };
-		const { totalPrice, perHour } = calculateHourlyPrice({ vehicleSlug: selectedVehicle, hours, discount: partnerDiscount });
-
-		const p = new URLSearchParams({
-			pickup, date: date || '', time: time || '',
-			hours: String(hours), passengers: String(paxCount),
-			vehicleSlug: selectedVehicle,
-			vehicleName: vehicleNames[selectedVehicle] || selectedVehicle,
-			vehicleImage: vehicleImages[selectedVehicle] || '',
-			totalPrice: totalPrice.toFixed(2),
-			perHour: perHour.toFixed(2),
-			bookingType: 'hourly',
+		const params = new URLSearchParams({
+			pickup, date, time,
+			hours: String(hours),
+			passengers: String(paxCount),
 		});
-		if (partnerDiscount > 0) p.set('discount', String(partnerDiscount));
-
-		window.location.href = `/book/hourly/passenger?${p.toString()}`;
+		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
 </script>
 
@@ -450,11 +299,16 @@ const vehicles = [
 	}
 
 	if (MAPS_KEY) {
-		const script = document.createElement('script');
-		script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initHourlyAutocompleteCb`;
-		script.async = true;
-		script.defer = true;
-		(window as any).initHourlyAutocompleteCb = initHourlyAutocomplete;
-		document.head.appendChild(script);
+		if (typeof google !== 'undefined' && google.maps) {
+			initHourlyAutocomplete();
+		} else {
+			const script = document.createElement('script');
+			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initHourlyAutocompleteCb`;
+			script.async = true;
+			script.defer = true;
+			(window as any).initHourlyAutocompleteCb = initHourlyAutocomplete;
+			script.onerror = () => console.error('Google Maps failed to load');
+			document.head.appendChild(script);
+		}
 	}
 </script>

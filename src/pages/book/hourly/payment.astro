@@ -12,11 +12,18 @@ import Layout from '../../../layouts/Layout.astro';
 					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 					</span>
+					<span class="text-sm font-medium text-emerald-600">Vehicle</span>
+				</div>
+				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
+				<div class="flex items-center gap-2">
+					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+					</span>
 					<span class="text-sm font-medium text-emerald-600">Passenger</span>
 				</div>
 				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
 				<div class="flex items-center gap-2">
-					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">2</span>
+					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">3</span>
 					<span class="text-sm font-semibold text-[#0C6B95]">Payment</span>
 				</div>
 			</div>
@@ -330,6 +337,7 @@ import Layout from '../../../layouts/Layout.astro';
 			}).select().single();
 
 			if (error) throw error;
+			if (!inserted) throw new Error('Booking was not returned after insert');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
