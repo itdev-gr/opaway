@@ -1,0 +1,318 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+
+const transferBrackets = [
+	{ id: 'transfer_0_15', label: '0 - 15 Km' },
+	{ id: 'transfer_16_25', label: '16 - 25 Km' },
+	{ id: 'transfer_26_35', label: '26 - 35 Km' },
+	{ id: 'transfer_36_45', label: '36 - 45 Km' },
+	{ id: 'transfer_45_60', label: '45 - 60 Km' },
+	{ id: 'transfer_60_99', label: '60 - 99 Km' },
+	{ id: 'transfer_100_plus', label: '100+ (per Km)' },
+];
+---
+
+<AdminLayout pageTitle="Prices" pageDescription="Manage transfer and hourly rental pricing." activeSection="prices">
+
+	<!-- Status message -->
+	<div id="save-status" class="hidden mb-6 p-4 rounded-xl border text-sm font-medium"></div>
+
+	<!-- ═══ TRANSFERS ═══ -->
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden mb-8">
+		<div class="px-6 py-4 bg-neutral-900 text-white">
+			<h2 class="text-base font-semibold">TRANSFERS</h2>
+			<p class="text-xs text-white/60 mt-0.5">Pick up in point A and Drop off in a different point</p>
+		</div>
+
+		<!-- Day Schedule -->
+		<div class="px-6 pt-5 pb-2">
+			<div class="flex items-center gap-2 mb-4">
+				<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+				<span class="text-sm font-semibold text-neutral-700">Regular Schedule <span class="text-neutral-400 font-normal">07:00 - 22:59</span></span>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50">
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase w-36">KM</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Sedan</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Van</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Minibus</th>
+						</tr>
+					</thead>
+					<tbody>
+						{transferBrackets.map((b) => (
+							<tr class="border-t border-neutral-100">
+								<td class="px-4 py-2 text-neutral-700 font-medium text-sm">{b.label}</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-sedan`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-van`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-minibus`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Night Schedule -->
+		<div class="px-6 pt-5 pb-5 border-t border-neutral-100">
+			<div class="flex items-center gap-2 mb-4">
+				<span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+				<span class="text-sm font-semibold text-neutral-700">Night Schedule <span class="text-neutral-400 font-normal">23:00 - 06:59</span></span>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50">
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase w-36">KM</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Sedan</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Van</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Minibus</th>
+						</tr>
+					</thead>
+					<tbody>
+						{transferBrackets.map((b) => (
+							<tr class="border-t border-neutral-100">
+								<td class="px-4 py-2 text-neutral-700 font-medium text-sm">{b.label}</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-sedan-night`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-van-night`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+								<td class="px-4 py-2 text-center">
+									<div class="inline-flex items-center gap-1">
+										<span class="text-neutral-400 text-xs">€</span>
+										<input id={`${b.id}-minibus-night`} type="number" min="0" step="0.01"
+											class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══ RENT PER HOUR ═══ -->
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden mb-8">
+		<div class="px-6 py-4 bg-neutral-900 text-white">
+			<h2 class="text-base font-semibold">RENT PER HOUR</h2>
+			<p class="text-xs text-white/60 mt-0.5">Pick up in Point A and drop off in the same point</p>
+		</div>
+
+		<div class="px-6 py-5">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50">
+							<th class="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase w-36">Schedule</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Sedan</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Van</th>
+							<th class="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500 uppercase">Minibus</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="border-t border-neutral-100">
+							<td class="px-4 py-2 text-neutral-700 font-medium text-sm">
+								<div class="flex items-center gap-2">
+									<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+									Regular <span class="text-neutral-400 font-normal text-xs">07:00-22:59</span>
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-sedan" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-van" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-minibus" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+						</tr>
+						<tr class="border-t border-neutral-100">
+							<td class="px-4 py-2 text-neutral-700 font-medium text-sm">
+								<div class="flex items-center gap-2">
+									<span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+									Night <span class="text-neutral-400 font-normal text-xs">23:00-06:59</span>
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-sedan-night" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-van-night" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+							<td class="px-4 py-2 text-center">
+								<div class="inline-flex items-center gap-1">
+									<span class="text-neutral-400 text-xs">€</span>
+									<input id="hourly-minibus-night" type="number" min="0" step="0.01"
+										class="w-20 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm text-center text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Save -->
+	<div class="flex justify-end">
+		<button id="save-btn" type="button"
+			class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-8 py-3 rounded-xl transition-colors shadow-sm disabled:opacity-50">
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+			</svg>
+			Save All Prices
+		</button>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	const TRANSFER_IDS = [
+		'transfer_0_15', 'transfer_16_25', 'transfer_26_35', 'transfer_36_45',
+		'transfer_45_60', 'transfer_60_99', 'transfer_100_plus',
+	];
+	const VEHICLES = ['sedan', 'van', 'minibus'];
+
+	function setVal(id: string, val: number) {
+		const el = document.getElementById(id) as HTMLInputElement;
+		if (el) el.value = String(val);
+	}
+	function getVal(id: string): number {
+		return parseFloat((document.getElementById(id) as HTMLInputElement)?.value) || 0;
+	}
+
+	async function loadPrices() {
+		const { data, error } = await supabase.from('pricing').select('*');
+		if (error || !data) return;
+
+		data.forEach(row => {
+			if (TRANSFER_IDS.includes(row.id)) {
+				VEHICLES.forEach(v => {
+					setVal(`${row.id}-${v}`, Number(row[v]));
+					setVal(`${row.id}-${v}-night`, Number(row[`${v}_night`]));
+				});
+			}
+			if (row.id === 'hourly') {
+				VEHICLES.forEach(v => {
+					setVal(`hourly-${v}`, Number(row[v]));
+					setVal(`hourly-${v}-night`, Number(row[`${v}_night`]));
+				});
+			}
+		});
+	}
+
+	async function savePrices() {
+		const btn = document.getElementById('save-btn') as HTMLButtonElement;
+		const status = document.getElementById('save-status')!;
+		btn.disabled = true;
+		btn.textContent = 'Saving…';
+		status.classList.add('hidden');
+
+		try {
+			const updates: Promise<any>[] = [];
+
+			TRANSFER_IDS.forEach(tid => {
+				updates.push(
+					supabase.from('pricing').update({
+						sedan: getVal(`${tid}-sedan`),
+						van: getVal(`${tid}-van`),
+						minibus: getVal(`${tid}-minibus`),
+						sedan_night: getVal(`${tid}-sedan-night`),
+						van_night: getVal(`${tid}-van-night`),
+						minibus_night: getVal(`${tid}-minibus-night`),
+					}).eq('id', tid)
+				);
+			});
+
+			updates.push(
+				supabase.from('pricing').update({
+					sedan: getVal('hourly-sedan'),
+					van: getVal('hourly-van'),
+					minibus: getVal('hourly-minibus'),
+					sedan_night: getVal('hourly-sedan-night'),
+					van_night: getVal('hourly-van-night'),
+					minibus_night: getVal('hourly-minibus-night'),
+				}).eq('id', 'hourly')
+			);
+
+			const results = await Promise.all(updates);
+			const hasError = results.some(r => r.error);
+
+			if (hasError) throw new Error('Some updates failed');
+
+			status.textContent = 'Prices saved successfully!';
+			status.className = 'mb-6 p-4 rounded-xl border text-sm font-medium bg-emerald-50 border-emerald-200 text-emerald-700';
+			status.classList.remove('hidden');
+			setTimeout(() => status.classList.add('hidden'), 4000);
+		} catch (err) {
+			console.error(err);
+			status.textContent = 'Failed to save prices. Please try again.';
+			status.className = 'mb-6 p-4 rounded-xl border text-sm font-medium bg-red-50 border-red-200 text-red-700';
+			status.classList.remove('hidden');
+		} finally {
+			btn.disabled = false;
+			btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg> Save All Prices`;
+		}
+	}
+
+	document.getElementById('save-btn')?.addEventListener('click', savePrices);
+
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadPrices(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>

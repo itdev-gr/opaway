@@ -181,9 +181,10 @@ import Layout from '../../../layouts/Layout.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
-	import { calculateHourlyPrice } from '../../../lib/pricing';
+	import { calculateHourlyPrice, loadPricing, type PricingData } from '../../../lib/pricing';
 
 	let partnerDiscount = 0;
+	let pricingData: PricingData;
 
 	async function detectPartnerDiscount(): Promise<number> {
 		const { data: { user } } = await supabase.auth.getUser();
@@ -248,7 +249,7 @@ import Layout from '../../../layouts/Layout.astro';
 	/* ── Update sidebar prices ── */
 	function updateSidebarPrices() {
 		if (!selectedVehicleSlug) return;
-		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount });
+		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount, time }, pricingData);
 		setText('sb-total', `\u20AC ${price.totalPrice.toFixed(2)}`);
 		setText('sb-rate', `\u20AC${price.perHour}/hour \u00D7 ${hours}h`);
 	}
@@ -275,7 +276,7 @@ import Layout from '../../../layouts/Layout.astro';
 			: '';
 
 		container.innerHTML = badgeHtml + vehicles.map(v => {
-			const price = calculateHourlyPrice({ vehicleSlug: v.slug, hours, discount: partnerDiscount });
+			const price = calculateHourlyPrice({ vehicleSlug: v.slug, hours, discount: partnerDiscount, time }, pricingData);
 			const isSelected = selectedVehicleSlug === v.slug;
 			const showOriginal = partnerDiscount > 0 && price.originalTotal !== price.totalPrice;
 
@@ -373,7 +374,7 @@ import Layout from '../../../layouts/Layout.astro';
 		if (!selectedVehicleSlug) return;
 
 		const selectedVehicle = vehicles.find(v => v.slug === selectedVehicleSlug);
-		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount });
+		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount, time }, pricingData);
 
 		const vehicleImages: Record<string, string> = { sedan: '/car.avif', van: '/mini_van.avif', minibus: '/van.avif' };
 
@@ -394,8 +395,9 @@ import Layout from '../../../layouts/Layout.astro';
 	});
 
 	/* ── Init ── */
-	detectPartnerDiscount().then(d => {
+	Promise.all([detectPartnerDiscount(), loadPricing()]).then(([d, p]) => {
 		partnerDiscount = d;
+		pricingData = p;
 		loadVehicles();
 	});
 </script>
