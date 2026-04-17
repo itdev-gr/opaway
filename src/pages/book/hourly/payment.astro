@@ -315,6 +315,13 @@ import Layout from '../../../layouts/Layout.astro';
 		btn.disabled = true; btn.textContent = 'Processing...';
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
 		const { data: { user } } = await supabase.auth.getUser();
+
+		let partnerId: string | null = null;
+		if (user) {
+			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', user.id).maybeSingle();
+			if (partner?.status === 'approved') partnerId = partner.id;
+		}
+
 		try {
 			const { data: inserted, error } = await supabase.from('transfers').insert({
 				booking_type: 'hourly',
@@ -334,6 +341,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
 				uid: user?.id || null,
+				partner_id: partnerId,
 			}).select().single();
 
 			if (error) throw error;

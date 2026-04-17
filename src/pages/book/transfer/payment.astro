@@ -428,6 +428,12 @@ import Layout from '../../../layouts/Layout.astro';
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
 		const { data: { user } } = await supabase.auth.getUser();
 
+		let partnerId: string | null = null;
+		if (user) {
+			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', user.id).maybeSingle();
+			if (partner?.status === 'approved') partnerId = partner.id;
+		}
+
 		try {
 			const { data: inserted, error } = await supabase.from('transfers').insert({
 				from, to, date, time,
@@ -450,6 +456,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_token: paymentToken || null,
 				uid: user?.id || null,
 				booking_type: 'transfer',
+				partner_id: partnerId,
 			}).select().single();
 
 			if (error) throw error;
