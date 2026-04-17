@@ -389,3 +389,36 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	});
 	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>
+
+<script>
+	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
+
+	function initAdminExperienceAutocomplete() {
+		const pickupInput = document.getElementById('ex-pickup') as HTMLInputElement;
+		if (!pickupInput) return;
+		const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'] });
+		ac.setFields(['formatted_address', 'name']);
+		ac.addListener('place_changed', () => {
+			const place = ac.getPlace();
+			if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
+				pickupInput.value = `${place.name}, ${place.formatted_address}`;
+			} else {
+				pickupInput.value = place?.formatted_address || place?.name || pickupInput.value;
+			}
+		});
+	}
+
+	if (MAPS_KEY) {
+		if (typeof google !== 'undefined' && google.maps) {
+			initAdminExperienceAutocomplete();
+		} else {
+			const script = document.createElement('script');
+			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAdminExpAcCb`;
+			script.async = true;
+			script.defer = true;
+			(window as any).initAdminExpAcCb = initAdminExperienceAutocomplete;
+			script.onerror = () => console.error('Google Maps failed to load');
+			document.head.appendChild(script);
+		}
+	}
+</script>
