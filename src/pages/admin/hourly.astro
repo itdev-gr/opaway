@@ -1,0 +1,451 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Hourly Bookings" activeSection="hourly">
+
+	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm">
+		<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4">
+			<div class="flex items-center gap-3">
+				<h2 class="text-base font-semibold text-neutral-800">All Hourly Bookings</h2>
+				<span id="hourly-count" class="text-xs text-neutral-400 font-medium"></span>
+			</div>
+			<button id="add-hourly-btn" type="button"
+				class="flex items-center gap-2 px-4 py-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-[#0C6B95]/20">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+				</svg>
+				Add Booking
+			</button>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="bg-neutral-50 text-left">
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Hours</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Driver</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Payment</th>
+					</tr>
+				</thead>
+				<tbody id="hourly-tbody">
+					<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Loading…</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Add Booking Modal -->
+	<div id="add-hourly-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6">
+		<div class="bg-white rounded-2xl shadow-2xl border border-neutral-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+
+			<div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+				<h3 class="text-lg font-bold text-neutral-900">Add Hourly Booking</h3>
+				<button id="add-hourly-close" type="button" class="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 transition-colors">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+				</button>
+			</div>
+
+			<form id="add-hourly-form" class="px-6 py-5 flex flex-col gap-4">
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">First Name *</label>
+						<input id="h-firstName" type="text" placeholder="John" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Name *</label>
+						<input id="h-lastName" type="text" placeholder="Smith" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email *</label>
+						<input id="h-email" type="email" placeholder="john@example.com" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</label>
+						<input id="h-phone" type="text" placeholder="+30 69..."
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pickup Location *</label>
+					<input id="h-pickup" type="text" placeholder="Pickup location" required
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date *</label>
+						<input id="h-date" type="date" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</label>
+						<input id="h-time" type="time"
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Hours *</label>
+						<input id="h-hours" type="number" min="1" placeholder="1" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Passengers *</label>
+						<input id="h-passengers" type="number" min="1" max="60" placeholder="1" required
+							class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Per Hour Rate &euro;</label>
+					<input id="h-perHour" type="number" step="0.01" placeholder="45"
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50" />
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</label>
+					<select id="h-vehicle"
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
+						<option value="">Select vehicle</option>
+						<option>Sedan</option>
+						<option>SUV</option>
+						<option>Van</option>
+						<option>Minibus</option>
+						<option>Bus</option>
+					</select>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Notes</label>
+					<textarea id="h-notes" rows="2" placeholder="Special requests or notes..."
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50 resize-none"></textarea>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ride Status</label>
+					<select id="h-rideStatus"
+						class="px-3 py-2.5 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] bg-neutral-50">
+						<option value="new">New</option>
+						<option value="assigned">Assigned</option>
+						<option value="pickup">Pickup</option>
+						<option value="onboard">Onboard</option>
+						<option value="completed">Completed</option>
+						<option value="cancelled">Cancelled</option>
+					</select>
+				</div>
+
+				<p id="h-error" class="hidden text-sm text-red-600"></p>
+
+				<div class="flex gap-3 pt-1">
+					<button type="button" id="add-hourly-cancel2"
+						class="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 text-sm font-semibold hover:bg-neutral-50 transition-colors">Cancel</button>
+					<button type="submit" id="h-submit"
+						class="flex-1 py-2.5 rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+						Save Booking
+					</button>
+				</div>
+
+			</form>
+		</div>
+	</div>
+
+</AdminLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	/* ── Ride-status colours ── */
+	const RIDE_STATUS_COLORS: Record<string, string> = {
+		new:       'bg-sky-50 text-sky-700 border-sky-200',
+		assigned:  'bg-amber-50 text-amber-700 border-amber-200',
+		pickup:    'bg-violet-50 text-violet-700 border-violet-200',
+		onboard:   'bg-indigo-50 text-indigo-700 border-indigo-200',
+		completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+		cancelled: 'bg-red-50 text-red-700 border-red-200',
+	};
+
+	const RIDE_STATUS_OPTIONS = ['new', 'assigned', 'pickup', 'onboard', 'completed', 'cancelled'];
+
+	/* ── Payment-status colours ── */
+	const PAYMENT_STATUS_COLORS: Record<string, string> = {
+		pending:        'bg-amber-50 text-amber-700',
+		paid:           'bg-emerald-50 text-emerald-700',
+		paid_to_driver: 'bg-teal-50 text-teal-700',
+		cancelled:      'bg-red-50 text-red-700',
+	};
+
+	const PAYMENT_STATUS_OPTIONS = [
+		{ value: 'pending',        label: 'Pending Payment' },
+		{ value: 'paid',           label: 'Paid' },
+		{ value: 'paid_to_driver', label: 'Paid to Driver' },
+		{ value: 'cancelled',      label: 'Cancelled' },
+	];
+
+	/* ── Helpers ── */
+	const escHtml = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+	const applyRideStatusColor = (sel: HTMLSelectElement) => {
+		const cls = RIDE_STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600 border-neutral-200';
+		sel.className = `ride-status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer capitalize ${cls}`;
+	};
+
+	const buildRideStatusSelect = (docId: string, current: string) => {
+		const val = current?.toLowerCase() ?? 'new';
+		const opts = RIDE_STATUS_OPTIONS.map(s =>
+			`<option value="${s}" ${val === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
+		).join('');
+		return `<select class="ride-status-select" data-id="${docId}">${opts}</select>`;
+	};
+
+	const applyPaymentStatusColor = (sel: HTMLSelectElement) => {
+		const cls = PAYMENT_STATUS_COLORS[sel.value] ?? 'bg-neutral-50 text-neutral-600';
+		sel.className = `payment-status-select appearance-none text-xs font-medium border rounded-full px-2.5 py-0.5 focus:outline-none cursor-pointer ${cls}`;
+	};
+
+	const buildPaymentBadge = (docId: string, method: string, status: string) => {
+		const s = (status || 'pending').toLowerCase();
+		const opts = PAYMENT_STATUS_OPTIONS.map(o =>
+			`<option value="${o.value}" ${s === o.value ? 'selected' : ''}>${o.label}</option>`
+		).join('');
+		return `<select class="payment-status-select" data-id="${docId}">${opts}</select>`;
+	};
+
+	const buildDriverCell = (docId: string, driver: string) => {
+		const display = driver || 'Unassigned';
+		const cls = driver ? 'text-neutral-800' : 'text-neutral-400 italic';
+		return `<span class="driver-text cursor-pointer hover:underline ${cls}" data-id="${docId}" data-driver="${escHtml(driver)}">${escHtml(display)}</span>`;
+	};
+
+	/* ── Load hourly bookings ── */
+	async function loadHourlyBookings() {
+		const tbody = document.getElementById('hourly-tbody')!;
+		const countEl = document.getElementById('hourly-count');
+		try {
+			const { data, error } = await supabase.from('transfers').select('*').eq('booking_type', 'hourly').order('created_at', { ascending: false });
+			if (error) throw error;
+			const rows = data ?? [];
+			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
+			if (rows.length === 0) {
+				tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">No hourly bookings found.</td></tr>`;
+				return;
+			}
+			tbody.innerHTML = rows.map(d => {
+				/* Date */
+				const dateVal = d.date ? String(d.date) : (d.created_at ? (() => { const _d = new Date(d.created_at); return !isNaN(_d.getTime()) ? _d.toLocaleDateString('en-CA') : '—'; })() : '—');
+
+				/* Time */
+				const timeVal = d.time ? String(d.time) : '—';
+
+				/* Name: first_name + last_name, fallback to name */
+				const firstName = d.first_name ? String(d.first_name) : '';
+				const lastName = d.last_name ? String(d.last_name) : '';
+				const fullName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : (d.name ? String(d.name) : '—');
+
+				/* Phone */
+				const phone = d.phone ? String(d.phone) : '—';
+
+				/* Vehicle */
+				const vehicle = d.vehicle_name ? String(d.vehicle_name) : (d.vehicle ? String(d.vehicle) : '—');
+
+				/* Ride status: ride_status field, fallback to status for legacy */
+				const rideStatus = d.ride_status ? String(d.ride_status) : (d.status ? String(d.status) : 'new');
+
+				/* Payment */
+				const paymentMethod = d.payment_method ? String(d.payment_method) : 'cash';
+				const paymentStatus = d.payment_status ? String(d.payment_status) : 'pending';
+
+				/* Driver */
+				const driver = d.driver ? String(d.driver) : '';
+
+				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(dateVal)}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(timeVal)}</td>
+					<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${escHtml(fullName)}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${escHtml(String(d.email ?? '—'))}</td>
+					<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${escHtml(phone)}</td>
+					<td class="px-6 py-3 text-neutral-600">${escHtml(String(d.from ?? '—'))}</td>
+					<td class="px-6 py-3 text-neutral-600">${d.hours ? d.hours + 'h' : '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 text-center">${d.passengers ?? '—'}</td>
+					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(vehicle)}</td>
+					<td class="px-6 py-3 whitespace-nowrap">${buildDriverCell(d.id, driver)}</td>
+					<td class="px-6 py-3">${buildRideStatusSelect(d.id, rideStatus)}</td>
+					<td class="px-6 py-3">${buildPaymentBadge(d.id, paymentMethod, paymentStatus)}</td>
+				</tr>`;
+			}).join('');
+
+			/* Apply colours to all ride-status selects */
+			document.querySelectorAll<HTMLSelectElement>('.ride-status-select').forEach(applyRideStatusColor);
+			/* Apply colours to all payment-status selects */
+			document.querySelectorAll<HTMLSelectElement>('.payment-status-select').forEach(applyPaymentStatusColor);
+		} catch (err) {
+			/* error silenced */
+			tbody.innerHTML = `<tr><td colspan="12" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+		}
+	}
+
+	/* ── Ride-status change delegation ── */
+	document.getElementById('hourly-tbody')?.addEventListener('change', async (e) => {
+		const sel = e.target as HTMLSelectElement;
+		if (sel.classList.contains('ride-status-select')) {
+			const docId = sel.dataset.id!;
+			applyRideStatusColor(sel);
+			try {
+				await supabase.from('transfers').update({ ride_status: sel.value }).eq('id', docId);
+			} catch (err) {
+				/* error silenced */
+			}
+		}
+		if (sel.classList.contains('payment-status-select')) {
+			const docId = sel.dataset.id!;
+			applyPaymentStatusColor(sel);
+			try {
+				await supabase.from('transfers').update({ payment_status: sel.value }).eq('id', docId);
+			} catch (err) {
+				/* error silenced */
+			}
+		}
+	});
+
+	/* ── Driver inline edit delegation ── */
+	document.getElementById('hourly-tbody')?.addEventListener('click', (e) => {
+		const span = (e.target as HTMLElement).closest('.driver-text') as HTMLElement | null;
+		if (!span) return;
+
+		const docId = span.dataset.id!;
+		const currentDriver = span.dataset.driver ?? '';
+		const td = span.parentElement!;
+
+		/* Replace span with input */
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.value = currentDriver;
+		input.placeholder = 'Driver name';
+		input.className = 'px-2 py-1 border border-[#0C6B95] rounded-lg text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 bg-white w-full min-w-[120px]';
+		td.replaceChild(input, span);
+		input.focus();
+		input.select();
+
+		const save = async () => {
+			const newDriver = input.value.trim();
+			try {
+				await supabase.from('transfers').update({ driver: newDriver }).eq('id', docId);
+			} catch (err) {
+				/* error silenced */
+			}
+			/* Replace input back with span */
+			const newSpan = document.createElement('span');
+			const display = newDriver || 'Unassigned';
+			const cls = newDriver ? 'text-neutral-800' : 'text-neutral-400 italic';
+			newSpan.className = `driver-text cursor-pointer hover:underline ${cls}`;
+			newSpan.dataset.id = docId;
+			newSpan.dataset.driver = newDriver;
+			newSpan.textContent = display;
+			td.replaceChild(newSpan, input);
+		};
+
+		let saved = false;
+		input.addEventListener('blur', () => { if (!saved) { saved = true; save(); } });
+		input.addEventListener('keydown', (ev) => {
+			if (ev.key === 'Enter') { ev.preventDefault(); if (!saved) { saved = true; save(); } }
+			if (ev.key === 'Escape') { if (!saved) { saved = true; save(); } }
+		});
+	});
+
+	/* ── Modal ── */
+	const modal      = document.getElementById('add-hourly-modal')!;
+	const openModal  = () => modal.classList.remove('hidden');
+	const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-hourly-form') as HTMLFormElement)?.reset(); document.getElementById('h-error')!.classList.add('hidden'); };
+
+	document.getElementById('add-hourly-btn')?.addEventListener('click', openModal);
+	document.getElementById('add-hourly-close')?.addEventListener('click', closeModal);
+	document.getElementById('add-hourly-cancel2')?.addEventListener('click', closeModal);
+	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+	document.getElementById('add-hourly-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const errorEl = document.getElementById('h-error')!;
+		const submitBtn = document.getElementById('h-submit') as HTMLButtonElement;
+		errorEl.classList.add('hidden');
+
+		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
+
+		const firstName  = val('h-firstName');
+		const lastName   = val('h-lastName');
+		const email      = val('h-email');
+		const phone      = val('h-phone');
+		const pickup     = val('h-pickup');
+		const date       = val('h-date');
+		const time       = val('h-time');
+		const hoursVal   = val('h-hours');
+		const passengers = parseInt(val('h-passengers') || '1', 10);
+		const perHourVal = val('h-perHour');
+		const vehicle    = val('h-vehicle');
+		const notes      = val('h-notes');
+		const rideStatus = val('h-rideStatus') || 'new';
+
+		if (!firstName || !lastName || !email || !pickup || !date || !hoursVal || !passengers) {
+			errorEl.textContent = 'Please fill in all required fields.';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Saving…';
+		try {
+			await supabase.from('transfers').insert({
+				booking_type: 'hourly',
+				first_name: firstName,
+				last_name: lastName,
+				email,
+				phone: phone || '',
+				from: pickup, to: pickup,
+				date,
+				time: time || '',
+				hours: parseInt(hoursVal),
+				per_hour: parseFloat(perHourVal) || 0,
+				passengers,
+				vehicle_name: vehicle || '',
+				notes: notes || '',
+				ride_status: rideStatus,
+				payment_status: 'pending',
+				payment_method: 'cash',
+				driver: '',
+				added_by_admin: true,
+			}).select().single();
+			closeModal();
+			await loadHourlyBookings();
+		} catch (err) {
+			/* error silenced */
+			errorEl.textContent = 'Failed to save. Please try again.';
+			errorEl.classList.remove('hidden');
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Save Booking';
+		}
+	});
+
+	/* ── Auth guard ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadHourlyBookings(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+</script>
