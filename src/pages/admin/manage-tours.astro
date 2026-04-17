@@ -2,7 +2,15 @@
 import AdminLayout from '../../components/AdminLayout.astro';
 ---
 
-<AdminLayout pageTitle="Tours Catalog" pageDescription="Add and manage tours displayed on the website." activeSection="manage-tours">
+<AdminLayout pageTitle="Tours Catalog" pageDescription="Add and manage tours displayed on the website." activeSection="new-entry">
+
+	<!-- Sub-navigation tabs -->
+	<div class="flex items-center gap-3 mb-6">
+		<a href="/admin/manage-transfers" class="px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">Transfers</a>
+		<a href="/admin/manage-tours" class="px-5 py-2.5 rounded-xl bg-[#0C6B95] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25">Tours</a>
+		<a href="/admin/manage-experiences" class="px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">Experiences</a>
+		<a href="/admin/manage-vehicles" class="px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">Vehicles</a>
+	</div>
 
 	<!-- Add New Tour Form -->
 	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 mb-6">

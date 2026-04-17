@@ -1,0 +1,71 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="New Entry" pageDescription="Add and manage catalog items." activeSection="new-entry">
+
+	<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+		<!-- Transfers -->
+		<a href="/admin/manage-transfers" class="group bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-xl hover:border-[#0C6B95]/30 transition-all duration-300 flex flex-col">
+			<div class="w-12 h-12 rounded-xl bg-[#0C6B95] flex items-center justify-center mb-4 shadow-lg shadow-[#0C6B95]/25 group-hover:scale-110 transition-transform duration-300">
+				<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+				</svg>
+			</div>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Transfers</h2>
+			<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-4">Manage transfer packages displayed on the website.</p>
+			<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200">
+				Manage
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+			</span>
+		</a>
+
+		<!-- Tours -->
+		<a href="/admin/manage-tours" class="group bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-xl hover:border-[#0C6B95]/30 transition-all duration-300 flex flex-col">
+			<div class="w-12 h-12 rounded-xl bg-[#0C6B95] flex items-center justify-center mb-4 shadow-lg shadow-[#0C6B95]/25 group-hover:scale-110 transition-transform duration-300">
+				<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+				</svg>
+			</div>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Tours</h2>
+			<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-4">Manage tour catalog and experiences across Greece.</p>
+			<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200">
+				Manage
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+			</span>
+		</a>
+
+		<!-- Experiences -->
+		<a href="/admin/manage-experiences" class="group bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-xl hover:border-[#0C6B95]/30 transition-all duration-300 flex flex-col">
+			<div class="w-12 h-12 rounded-xl bg-[#0C6B95] flex items-center justify-center mb-4 shadow-lg shadow-[#0C6B95]/25 group-hover:scale-110 transition-transform duration-300">
+				<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+				</svg>
+			</div>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Experiences</h2>
+			<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-4">Manage experience catalog displayed on the website.</p>
+			<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200">
+				Manage
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+			</span>
+		</a>
+
+		<!-- Vehicles -->
+		<a href="/admin/manage-vehicles" class="group bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-xl hover:border-[#0C6B95]/30 transition-all duration-300 flex flex-col">
+			<div class="w-12 h-12 rounded-xl bg-[#0C6B95] flex items-center justify-center mb-4 shadow-lg shadow-[#0C6B95]/25 group-hover:scale-110 transition-transform duration-300">
+				<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-4-10v2m-6 8H4a1 1 0 01-1-1V7a1 1 0 011-1h1l1.68-3.36A1 1 0 017.58 2h8.84a1 1 0 01.9.56L19 6h1a1 1 0 011 1v5a1 1 0 01-1 1h-2m-10 0v6a1 1 0 001 1h1a1 1 0 001-1v-1h6v1a1 1 0 001 1h1a1 1 0 001-1v-6" />
+				</svg>
+			</div>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Vehicles</h2>
+			<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-4">Manage fleet vehicles available for transfers and tours.</p>
+			<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200">
+				Manage
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+			</span>
+		</a>
+
+	</div>
+
+</AdminLayout>
