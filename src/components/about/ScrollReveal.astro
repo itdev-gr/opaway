@@ -28,24 +28,35 @@ const { delay = 0, class: className = '' } = Astro.props;
 </style>
 
 <script>
+	// Module-scope reference so we can disconnect the previous observer
+	// before re-creating it on subsequent astro:page-load firings
+	// (Astro ViewTransitions swap the DOM and fire page-load again).
+	let io: IntersectionObserver | null = null;
+
 	function initReveal() {
+		if (io) io.disconnect();
+
 		const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
 		if (!('IntersectionObserver' in window)) {
 			els.forEach((el) => el.classList.add('is-visible'));
 			return;
 		}
-		const io = new IntersectionObserver(
+
+		io = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
 					if (entry.isIntersecting) {
 						entry.target.classList.add('is-visible');
-						io.unobserve(entry.target);
+						io?.unobserve(entry.target);
 					}
 				}
 			},
-			{ threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+			// threshold: fire when 15% of the element is visible
+			// rootMargin: 40px bottom dead-zone avoids firing too early near the fold
+			{ threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
 		);
-		els.forEach((el) => io.observe(el));
+
+		els.forEach((el) => io!.observe(el));
 	}
 
 	document.addEventListener('astro:page-load', initReveal);
