@@ -290,6 +290,25 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-passengers', String(passengers));
 	setText('sb-from-time', `Pickup at ${time}`);
 
+	/* ── State (declared early so setReturnState's render call doesn't hit TDZ) ── */
+	let routeDistanceKm = 0;
+	let routeDurationMin = 0;
+	let selectedVehicleSlug = '';
+
+	interface Vehicle {
+		id: string;
+		slug: string;
+		name: string;
+		models: string;
+		image: string;
+		maxPassengers: number;
+		maxLuggage: number;
+		badge: string;
+		sortOrder: number;
+	}
+
+	let vehicles: Vehicle[] = [];
+
 	function setReturnState(enabled: boolean) {
 		hasReturn = enabled;
 		setText('sb-trip-type', enabled ? 'Round trip' : 'One way');
@@ -321,25 +340,6 @@ import Layout from '../../../layouts/Layout.astro';
 		e.preventDefault();
 		window.history.back();
 	});
-
-	/* ── State ── */
-	let routeDistanceKm = 0;
-	let routeDurationMin = 0;
-	let selectedVehicleSlug = '';
-
-	interface Vehicle {
-		id: string;
-		slug: string;
-		name: string;
-		models: string;
-		image: string;
-		maxPassengers: number;
-		maxLuggage: number;
-		badge: string;
-		sortOrder: number;
-	}
-
-	let vehicles: Vehicle[] = [];
 
 	/* ── Update sidebar prices ── */
 	function updateSidebarPrices() {
@@ -457,9 +457,7 @@ import Layout from '../../../layouts/Layout.astro';
 		try {
 			const { data, error } = await supabase
 				.from('vehicles')
-				.select('*')
-				.eq('active', true)
-				.order('sort_order');
+				.select('*');
 
 			if (error) throw error;
 

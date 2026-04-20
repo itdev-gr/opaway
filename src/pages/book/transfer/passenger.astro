@@ -275,6 +275,7 @@ import Layout from '../../../layouts/Layout.astro';
 	const time = params.get('time') || '';
 	const passengers = params.get('passengers') || '2';
 	const returnDate = params.get('returnDate') || '';
+	const returnTime = params.get('returnTime') || '';
 	const vehicleSlug = params.get('vehicleSlug') || '';
 	const vehicleName = params.get('vehicleName') || '';
 	const vehicleImage = params.get('vehicleImage') || '';
@@ -384,6 +385,7 @@ import Layout from '../../../layouts/Layout.astro';
 			signName, childSeats: String(childSeats), driverNotes,
 		});
 		if (returnDate) p.set('returnDate', returnDate);
+		if (returnTime) p.set('returnTime', returnTime);
 
 		window.location.href = `/book/transfer/payment?${p.toString()}`;
 	});
