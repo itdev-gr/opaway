@@ -35,7 +35,7 @@ const vehicles = [
 ];
 
 function paxCount(features: string[]): string | null {
-	const match = features.find((f) => /Fits up to/.test(f))?.match(/(\d+)/);
+	const match = features.find((f) => /Fits up to/.test(f))?.match(/Fits up to (\d+)/);
 	return match ? match[1] : null;
 }
 ---
@@ -77,9 +77,12 @@ function paxCount(features: string[]): string | null {
 								/>
 
 								{pax && (
-									<div class="absolute top-4 left-4 w-14 h-14 rounded-full bg-[#0C6B95] text-white ring-4 ring-[#FFF8F0] flex flex-col items-center justify-center shadow-lg">
-										<span class="font-serif text-lg leading-none font-bold">{pax}</span>
-										<span class="text-[9px] tracking-wider uppercase opacity-80 mt-0.5">pax</span>
+									<div
+										aria-label={`Fits up to ${pax} passengers`}
+										class="absolute top-4 left-4 w-14 h-14 rounded-full bg-[#0C6B95] text-white ring-4 ring-[#FFF8F0] flex flex-col items-center justify-center shadow-lg"
+									>
+										<span aria-hidden="true" class="font-serif text-lg leading-none font-bold">{pax}</span>
+										<span aria-hidden="true" class="text-[9px] tracking-wider uppercase opacity-80 mt-0.5">pax</span>
 									</div>
 								)}
 							</div>
