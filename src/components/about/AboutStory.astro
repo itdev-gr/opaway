@@ -1,56 +1,82 @@
 ---
+import ScrollReveal from './ScrollReveal.astro';
 ---
 
-<section class="bg-white py-20 lg:py-28 px-6 lg:px-10">
+<section class="bg-[#FFF8F0] py-20 lg:py-28 px-6 lg:px-10">
 	<div class="max-w-6xl mx-auto">
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
 
 			<!-- Left: Text content -->
 			<div class="flex flex-col">
-				<div class="flex items-center gap-2 mb-5">
-					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Story</span>
-				</div>
+				<ScrollReveal>
+					<div class="flex items-center gap-3 mb-5">
+						<span class="text-[#C97B4A] text-lg leading-none">✦</span>
+						<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase">Our Story</span>
+					</div>
+				</ScrollReveal>
 
-				<!-- Pull quote -->
-				<blockquote class="border-l-4 border-[#0C6B95] pl-5 mb-8">
-					<p class="text-xl lg:text-2xl italic font-medium text-neutral-700 leading-relaxed">
-						"If I could give you a gift, I would like to be able to give you what my eyes have seen."
+				<ScrollReveal delay={100}>
+					<blockquote class="relative mb-8 pl-2 pt-2">
+						<span
+							aria-hidden="true"
+							class="font-serif absolute -top-4 -left-2 text-[120px] leading-none text-[#C97B4A]/40 select-none"
+						>&ldquo;</span>
+						<p class="relative font-serif text-xl lg:text-2xl italic font-medium text-[#2B3A3A] leading-relaxed">
+							"If I could give you a gift, I would like to be able to give you what my eyes have seen."
+						</p>
+					</blockquote>
+				</ScrollReveal>
+
+				<ScrollReveal delay={150}>
+					<p class="text-[#6b5a47] text-lg leading-relaxed mb-5">
+						Opawey was born from a deep desire to share what we consider a daily privilege — the opportunity to witness the timeless beauty, extraordinary history, and cultural richness of Greece.
 					</p>
-				</blockquote>
+				</ScrollReveal>
 
-				<p class="text-neutral-500 text-base leading-relaxed mb-5">
-					Opawey was born from a deep desire to share what we consider a daily privilege — the opportunity to witness the timeless beauty, extraordinary history, and cultural richness of Greece.
-				</p>
-				<p class="text-neutral-500 text-base leading-relaxed mb-5">
-					For us, Greece is more than a destination; it is a living story shaped by ancient civilizations, breathtaking landscapes, and a culture of genuine hospitality. Inspired by this vision, we created Opawey to offer travelers the opportunity to discover Greece through luxury transportation services and exclusive private tours from Athens.
-				</p>
-				<p class="text-neutral-500 text-base leading-relaxed">
-					Our journey began with a passion for welcoming visitors and ensuring that their experience in Greece begins with comfort and elegance from the very first moment. Today, Opawey proudly provides private driver services, luxury Athens airport transfers, and private bespoke tours across mainland Greece, allowing travelers to explore the country in a refined, relaxed, and unforgettable way.
-				</p>
-
-				<div class="mt-8 bg-[#F5F6F8] rounded-2xl p-6">
-					<p class="text-neutral-600 text-sm leading-relaxed italic">
-						Our goal is simple: to transform every journey into a <span class="text-[#0C6B95] font-semibold">seamless</span> and <span class="text-[#0C6B95] font-semibold">memorable</span> travel experience, with the perfect balance of <span class="text-neutral-800 font-semibold">elegance, comfort, and authentic hospitality</span>.
+				<ScrollReveal delay={200}>
+					<p class="text-[#6b5a47] text-lg leading-relaxed mb-5">
+						For us, Greece is more than a destination; it is a living story shaped by ancient civilizations, breathtaking landscapes, and a culture of genuine hospitality. Inspired by this vision, we created Opawey to offer travelers the opportunity to discover Greece through luxury transportation services and exclusive private tours from Athens.
 					</p>
-				</div>
+				</ScrollReveal>
+
+				<ScrollReveal delay={250}>
+					<p class="text-[#6b5a47] text-lg leading-relaxed">
+						Our journey began with a passion for welcoming visitors and ensuring that their experience in Greece begins with comfort and elegance from the very first moment. Today, Opawey proudly provides private driver services, luxury Athens airport transfers, and private bespoke tours across mainland Greece, allowing travelers to explore the country in a refined, relaxed, and unforgettable way.
+					</p>
+				</ScrollReveal>
+
+				<ScrollReveal delay={300}>
+					<div class="mt-8 rounded-3xl p-6 border-l-4 border-[#C97B4A]" style="background: linear-gradient(135deg, #FFF8F0 0%, rgba(245,212,168,0.35) 100%);">
+						<p class="text-[#6b5a47] text-sm leading-relaxed italic">
+							Our goal is simple: to transform every journey into a <span class="text-[#C97B4A] font-semibold">seamless</span> and <span class="text-[#C97B4A] font-semibold">memorable</span> travel experience, with the perfect balance of <span class="text-[#2B3A3A] font-semibold">elegance, comfort, and authentic hospitality</span>.
+						</p>
+					</div>
+				</ScrollReveal>
 			</div>
 
-			<!-- Right: Image -->
-			<div class="relative">
-				<div class="rounded-2xl overflow-hidden shadow-xl aspect-[3/4] lg:aspect-auto lg:h-[580px]">
+			<!-- Right: Image with decorative accents -->
+			<ScrollReveal delay={200} class="relative lg:translate-y-10">
+				<div
+					aria-hidden="true"
+					class="absolute -bottom-4 -left-6 w-24 h-24 rounded-full bg-[#0C6B95] opacity-20"
+				></div>
+
+				<div
+					class="relative rounded-3xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:h-[580px]"
+					style="box-shadow: 0 30px 60px -15px rgba(201,123,74,0.35);"
+				>
 					<img
 						src="https://picsum.photos/seed/opaway-story/800/1000"
 						alt="Opawey story"
 						class="w-full h-full object-cover"
 					/>
 				</div>
-				<!-- Floating accent card -->
-				<div class="absolute -bottom-6 -left-6 bg-[#0C6B95] text-white rounded-2xl p-5 shadow-xl max-w-[200px]">
-					<p class="text-3xl font-bold mb-1">100%</p>
-					<p class="text-sm text-white/80">Family-owned &amp; operated with passion</p>
+
+				<div class="absolute -top-6 -right-6 bg-[#C97B4A] text-white rounded-3xl p-5 shadow-xl max-w-[200px]">
+					<p class="font-serif text-3xl font-bold mb-1">100%</p>
+					<p class="text-sm text-white/85">Family-owned &amp; operated with passion</p>
 				</div>
-			</div>
+			</ScrollReveal>
 
 		</div>
 	</div>
