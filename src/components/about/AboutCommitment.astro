@@ -1,111 +1,148 @@
 ---
+import ScrollReveal from './ScrollReveal.astro';
+
 const values = [
 	{
 		title: 'Safety',
 		description: 'The safety of our passengers is our highest priority. Our vehicles meet the highest technical standards and are operated by experienced professional drivers. Every private transfer in Athens or mainland Greece is conducted with the utmost care to ensure peace of mind.',
 		icon: 'shield',
-		color: 'bg-[#0C6B95]',
 	},
 	{
 		title: 'Hospitality',
 		description: 'Inspired by the Greek tradition of philoxenia, we welcome every traveler with warmth and professionalism. Our team combines genuine hospitality with personalized service to create authentic, memorable experiences.',
 		icon: 'heart',
-		color: 'bg-[#0C6B95]',
 	},
 	{
 		title: 'Excellence',
 		description: 'We are committed to exceeding expectations. From luxury airport transfers in Athens to personalized private tours, every detail — punctuality, vehicle quality, and service standards — reflects our commitment to premium travel experiences.',
 		icon: 'star',
-		color: 'bg-[#0C6B95]',
 	},
 	{
 		title: 'Flexibility',
 		description: 'We understand that every traveler is unique. Our services are tailored to meet the specific needs and preferences of our clients, whether adjusting schedules, routes, or activities. Our personalized approach allows us to offer quick, efficient solutions with a proactive, open-minded attitude.',
 		icon: 'adjust',
-		color: 'bg-[#0C6B95]',
 	},
 ];
+
+const chipColors = ['#0C6B95', '#C97B4A', '#0C6B95', '#C97B4A'];
 ---
 
-<section class="bg-white py-20 lg:py-28 px-6 lg:px-10">
-	<div class="max-w-6xl mx-auto">
+<section class="relative bg-[#FFF8F0] py-20 lg:py-28 px-6 lg:px-10 overflow-hidden">
+	<div
+		aria-hidden="true"
+		class="absolute inset-0 pointer-events-none"
+		style="background: radial-gradient(circle at 50% 110%, rgba(201,123,74,0.08), transparent 50%);"
+	></div>
 
-		<!-- Header -->
+	<div class="relative max-w-6xl mx-auto">
+
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end mb-16">
-			<div>
-				<div class="flex items-center gap-2 mb-4">
-					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Commitment</span>
-				</div>
-				<h2 class="text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight">
-					Principles that define<br/>our essence
-				</h2>
-			</div>
-			<p class="text-neutral-500 leading-relaxed lg:text-right">
-				At Opawey, we believe that every journey should be an exceptional experience. That is why our commitment is founded on principles that guide every service we provide.
-			</p>
-		</div>
-
-		<!-- Mission & Vision -->
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-			<div class="bg-[#0C6B95] rounded-2xl p-8 text-white">
-				<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-5">
-					<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-					</svg>
-				</div>
-				<h3 class="text-xl font-bold mb-3">Our Mission</h3>
-				<p class="text-white/80 text-sm leading-relaxed">Our mission is to deliver exceptional luxury transportation and private travel services in Greece, ensuring every client enjoys a seamless experience defined by comfort, reliability, and personalized attention.</p>
-			</div>
-			<div class="bg-[#0C6B95] rounded-2xl p-8 text-white">
-				<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-5">
-					<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-						<path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-					</svg>
-				</div>
-				<h3 class="text-xl font-bold mb-3">Our Vision</h3>
-				<p class="text-white/80 text-sm leading-relaxed">Our vision is to become a trusted reference for luxury transportation and bespoke travel experiences in Greece, recognized for our commitment to excellence, professionalism, and authentic hospitality. We aspire to create journeys that combine comfort, culture, and exclusivity, transforming every trip into a remarkable memory.</p>
-			</div>
-		</div>
-
-		<!-- Values grid -->
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-			{values.map((v, i) => (
-				<article class="relative bg-[#F5F6F8] rounded-2xl p-8 overflow-hidden group">
-					<!-- Number watermark -->
-					<span class="absolute top-4 right-6 text-8xl font-black text-neutral-200 select-none leading-none group-hover:text-neutral-300 transition-colors">
-						{String(i + 1).padStart(2, '0')}
-					</span>
-
-					<!-- Icon -->
-					<div class={`w-12 h-12 rounded-xl ${v.color} flex items-center justify-center mb-5 shrink-0`}>
-						{v.icon === 'shield' && (
-							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-							</svg>
-						)}
-						{v.icon === 'heart' && (
-							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-							</svg>
-						)}
-						{v.icon === 'star' && (
-							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-							</svg>
-						)}
-						{v.icon === 'adjust' && (
-							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-							</svg>
-						)}
+			<ScrollReveal>
+				<div>
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-[#C97B4A] text-lg leading-none">✦</span>
+						<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase">Our Commitment</span>
 					</div>
+					<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight">
+						Principles that define<br/>our <span class="italic text-[#C97B4A]">essence</span>
+					</h2>
+				</div>
+			</ScrollReveal>
+			<ScrollReveal delay={100}>
+				<p class="text-[#6b5a47] leading-relaxed lg:text-right">
+					At Opawey, we believe that every journey should be an exceptional experience. That is why our commitment is founded on principles that guide every service we provide.
+				</p>
+			</ScrollReveal>
+		</div>
 
-					<h3 class="text-xl font-bold text-neutral-900 mb-3 relative z-10">{v.title}</h3>
-					<p class="text-neutral-500 text-sm leading-relaxed relative z-10">{v.description}</p>
-				</article>
-			))}
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+			<ScrollReveal>
+				<div class="relative bg-[#0C6B95] rounded-3xl p-8 text-[#FFF8F0] overflow-hidden h-full">
+					<div
+						aria-hidden="true"
+						class="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-[#F5D4A8] opacity-15"
+					></div>
+					<div class="relative">
+						<div class="w-14 h-14 rounded-2xl bg-[#C97B4A] flex items-center justify-center mb-5">
+							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+							</svg>
+						</div>
+						<h3 class="font-serif text-2xl font-bold mb-3">Our Mission</h3>
+						<p class="text-[#FFF8F0]/85 text-sm leading-relaxed">Our mission is to deliver exceptional luxury transportation and private travel services in Greece, ensuring every client enjoys a seamless experience defined by comfort, reliability, and personalized attention.</p>
+					</div>
+				</div>
+			</ScrollReveal>
+
+			<ScrollReveal delay={100}>
+				<div class="relative bg-[#FFF8F0] border border-[#C97B4A]/30 rounded-3xl p-8 text-[#2B3A3A] overflow-hidden h-full">
+					<div
+						aria-hidden="true"
+						class="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-[#0C6B95] opacity-10"
+					></div>
+					<div class="relative">
+						<div class="w-14 h-14 rounded-2xl bg-[#0C6B95] flex items-center justify-center mb-5">
+							<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+								<path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+							</svg>
+						</div>
+						<h3 class="font-serif text-2xl font-bold mb-3">Our Vision</h3>
+						<p class="text-[#6b5a47] text-sm leading-relaxed">Our vision is to become a trusted reference for luxury transportation and bespoke travel experiences in Greece, recognized for our commitment to excellence, professionalism, and authentic hospitality. We aspire to create journeys that combine comfort, culture, and exclusivity, transforming every trip into a remarkable memory.</p>
+					</div>
+				</div>
+			</ScrollReveal>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+			{values.map((v, i) => {
+				const chip = chipColors[i];
+				return (
+					<ScrollReveal delay={i * 100}>
+						<article class="group relative bg-[#FFF8F0] border border-[#C97B4A]/15 rounded-3xl p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1 h-full">
+							<div
+								aria-hidden="true"
+								class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-[0.05]"
+								style={`background:${chip};`}
+							/>
+
+							<span class="absolute top-4 right-6 font-serif text-8xl font-black text-[#C97B4A]/[0.08] group-hover:text-[#C97B4A]/[0.14] select-none leading-none transition-colors">
+								{String(i + 1).padStart(2, '0')}
+							</span>
+
+							<div class="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shrink-0" style={`background:${chip};`}>
+								{v.icon === 'shield' && (
+									<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+									</svg>
+								)}
+								{v.icon === 'heart' && (
+									<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+									</svg>
+								)}
+								{v.icon === 'star' && (
+									<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+									</svg>
+								)}
+								{v.icon === 'adjust' && (
+									<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+								</svg>
+								)}
+							</div>
+
+							<svg width="40" height="8" viewBox="0 0 40 8" fill="none" aria-hidden="true" class="mb-3 relative">
+								<path d="M0 4 Q 6 0 12 4 T 24 4 T 36 4 L 40 4" stroke="#C97B4A" stroke-width="1.5" stroke-linecap="round" />
+							</svg>
+
+							<h3 class="font-serif text-xl font-bold text-[#2B3A3A] mb-3 relative z-10">{v.title}</h3>
+							<p class="text-[#6b5a47] text-sm leading-relaxed relative z-10">{v.description}</p>
+						</article>
+					</ScrollReveal>
+				);
+			})}
 		</div>
 	</div>
 </section>
