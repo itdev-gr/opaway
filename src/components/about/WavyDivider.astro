@@ -1,0 +1,29 @@
+---
+interface Props {
+	color?: string;
+	opacity?: number;
+	class?: string;
+}
+const {
+	color = '#C97B4A',
+	opacity = 0.18,
+	class: className = '',
+} = Astro.props;
+---
+
+<div class:list={["w-full overflow-hidden leading-[0]", className]} aria-hidden="true">
+	<svg
+		viewBox="0 0 1440 60"
+		preserveAspectRatio="none"
+		class="block w-full h-[40px] md:h-[60px]"
+		fill="none"
+	>
+		<path
+			d="M0 30 Q 120 0 240 30 T 480 30 T 720 30 T 960 30 T 1200 30 T 1440 30"
+			stroke={color}
+			stroke-opacity={opacity}
+			stroke-width="2"
+			stroke-linecap="round"
+		/>
+	</svg>
+</div>
