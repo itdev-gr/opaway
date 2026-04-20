@@ -1,4 +1,6 @@
 ---
+import ScrollReveal from './ScrollReveal.astro';
+
 const vehicles = [
 	{
 		title: 'Sedan',
@@ -31,57 +33,86 @@ const vehicles = [
 		],
 	},
 ];
+
+function paxCount(features: string[]): string | null {
+	const match = features.find((f) => /Fits up to/.test(f))?.match(/(\d+)/);
+	return match ? match[1] : null;
+}
 ---
 
-<section class="bg-[#F5F6F8] py-20 lg:py-28 px-6 lg:px-10">
+<section class="bg-[#FFF8F0] py-20 lg:py-28 px-6 lg:px-10">
 	<div class="max-w-6xl mx-auto">
 
-		<!-- Header -->
-		<div class="mb-12">
-			<div class="flex items-center gap-2 mb-3">
-				<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-				<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Fleet</span>
+		<ScrollReveal>
+			<div class="mb-12">
+				<div class="flex items-center gap-3 mb-3">
+					<span class="text-[#C97B4A] text-lg leading-none">✦</span>
+					<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase">Our Fleet</span>
+				</div>
+				<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight">
+					Discover our service <span class="italic text-[#C97B4A]">classes</span>
+				</h2>
 			</div>
-			<h2 class="text-4xl lg:text-5xl font-bold text-neutral-900">Discover our service classes</h2>
-		</div>
+		</ScrollReveal>
 
-		<!-- Cards grid -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-			{vehicles.map((v) => (
-				<article class="bg-white rounded-2xl overflow-hidden shadow-sm flex flex-col">
+			{vehicles.map((v, i) => {
+				const pax = paxCount(v.features);
+				return (
+					<ScrollReveal delay={i * 100}>
+						<article
+							class="group bg-white rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-500 hover:-translate-y-1"
+							style="box-shadow: 0 20px 50px -20px rgba(201,123,74,0.25);"
+						>
+							<div class="relative bg-neutral-100 aspect-[4/3] overflow-hidden">
+								<img
+									src={v.image}
+									alt={v.title}
+									class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+								/>
+								<div
+									aria-hidden="true"
+									class="absolute inset-0 pointer-events-none"
+									style="background: linear-gradient(to top, rgba(201,123,74,0.25), transparent 50%);"
+								/>
 
-					<!-- Image area -->
-					<div class="bg-neutral-100 aspect-[4/3] overflow-hidden">
-						<img
-							src={v.image}
-							alt={v.title}
-							class="w-full h-full object-cover"
-						/>
-					</div>
+								{pax && (
+									<div class="absolute top-4 left-4 w-14 h-14 rounded-full bg-[#0C6B95] text-white ring-4 ring-[#FFF8F0] flex flex-col items-center justify-center shadow-lg">
+										<span class="font-serif text-lg leading-none font-bold">{pax}</span>
+										<span class="text-[9px] tracking-wider uppercase opacity-80 mt-0.5">pax</span>
+									</div>
+								)}
+							</div>
 
-					<!-- Card content -->
-					<div class="p-6 flex flex-col flex-1">
-						<h3 class="text-2xl font-bold text-neutral-900 mb-1">{v.title}</h3>
-						<p class="text-sm text-neutral-500 mb-4">{v.models}</p>
+							<div class="p-6 flex flex-col flex-1">
+								<h3 class="font-serif text-2xl font-bold text-[#2B3A3A] mb-1">{v.title}</h3>
+								<p class="text-sm italic text-[#6b5a47] mb-4">{v.models}</p>
 
-						<!-- Colored divider -->
-						<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+								<svg
+									width="40"
+									height="8"
+									viewBox="0 0 40 8"
+									fill="none"
+									aria-hidden="true"
+									class="mb-5"
+								>
+									<path d="M0 4 Q 6 0 12 4 T 24 4 T 36 4 L 40 4" stroke="#C97B4A" stroke-width="1.5" stroke-linecap="round" />
+								</svg>
 
-						<!-- Feature checklist -->
-						<ul class="flex flex-col gap-3">
-							{v.features.map((f) => (
-								<li class="flex items-start gap-3">
-									<svg class="w-4 h-4 text-neutral-700 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-									</svg>
-									<span class="text-sm text-neutral-600 leading-snug">{f}</span>
-								</li>
-							))}
-						</ul>
-					</div>
+								<ul class="flex flex-col gap-3">
+									{v.features.map((f) => (
+										<li class="flex items-start gap-3">
+											<span class="text-[#C97B4A] font-bold text-base leading-tight mt-0.5 shrink-0">✓</span>
+											<span class="text-sm text-[#6b5a47] leading-snug">{f}</span>
+										</li>
+									))}
+								</ul>
+							</div>
 
-				</article>
-			))}
+						</article>
+					</ScrollReveal>
+				);
+			})}
 		</div>
 	</div>
 </section>
