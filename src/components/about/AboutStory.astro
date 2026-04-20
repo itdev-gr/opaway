@@ -55,28 +55,30 @@ import ScrollReveal from './ScrollReveal.astro';
 			</div>
 
 			<!-- Right: Image with decorative accents -->
-			<ScrollReveal delay={200} class="relative lg:translate-y-10">
-				<div
-					aria-hidden="true"
-					class="absolute -bottom-4 -left-6 w-24 h-24 rounded-full bg-[#0C6B95] opacity-20"
-				></div>
+			<div class="relative lg:translate-y-10">
+				<ScrollReveal delay={200} class="relative">
+					<div
+						aria-hidden="true"
+						class="absolute -bottom-4 -left-6 w-24 h-24 rounded-full bg-[#0C6B95] opacity-20"
+					></div>
 
-				<div
-					class="relative rounded-3xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:h-[580px]"
-					style="box-shadow: 0 30px 60px -15px rgba(201,123,74,0.35);"
-				>
-					<img
-						src="https://picsum.photos/seed/opaway-story/800/1000"
-						alt="Opawey story"
-						class="w-full h-full object-cover"
-					/>
-				</div>
+					<div
+						class="relative rounded-3xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:h-[580px]"
+						style="box-shadow: 0 30px 60px -15px rgba(201,123,74,0.35);"
+					>
+						<img
+							src="https://picsum.photos/seed/opaway-story/800/1000"
+							alt="Opawey story"
+							class="w-full h-full object-cover"
+						/>
+					</div>
 
-				<div class="absolute -top-6 -right-6 bg-[#C97B4A] text-white rounded-3xl p-5 shadow-xl max-w-[200px]">
-					<p class="font-serif text-3xl font-bold mb-1">100%</p>
-					<p class="text-sm text-white/85">Family-owned &amp; operated with passion</p>
-				</div>
-			</ScrollReveal>
+					<div class="absolute -top-6 -right-6 bg-[#C97B4A] text-white rounded-3xl p-5 shadow-xl max-w-[200px]">
+						<p class="font-serif text-3xl font-bold mb-1">100%</p>
+						<p class="text-sm text-white/85">Family-owned &amp; operated with passion</p>
+					</div>
+				</ScrollReveal>
+			</div>
 
 		</div>
 	</div>
