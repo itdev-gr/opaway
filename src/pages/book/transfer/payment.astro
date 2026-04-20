@@ -128,6 +128,9 @@ import Layout from '../../../layouts/Layout.astro';
 							</label>
 						</div>
 
+						<!-- Form-level error banner -->
+						<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
+
 						<!-- Complete Booking button -->
 						<button id="complete-btn" type="button"
 							class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -301,6 +304,9 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 	import { loadStripe } from '@stripe/stripe-js';
+	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
+
+	const formScope = document.getElementById('payment-form-section');
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -472,8 +478,8 @@ import Layout from '../../../layouts/Layout.astro';
 			setText('success-total', `\u20AC${finalTotal.toFixed(2)}`);
 			setText('success-email', email);
 		} catch (err) {
-			/* error silenced */
-			alert('Failed to save booking. Please try again.');
+			console.error('Save booking failed:', err);
+			showFormError(formScope, 'Failed to save booking. Please try again.');
 			btn.disabled = false;
 			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
 		}
@@ -481,10 +487,11 @@ import Layout from '../../../layouts/Layout.astro';
 
 	/* ── Complete Booking button ── */
 	document.getElementById('complete-btn')?.addEventListener('click', async () => {
-		if (!selectedMethod) { alert('Please select a payment method.'); return; }
+		clearFormErrors(formScope);
+		if (!selectedMethod) { showFormError(formScope, 'Please select a payment method.'); return; }
 
 		if (selectedMethod === 'stripe') {
-			if (!stripeInstance || !cardElement) { alert('Stripe is not loaded yet.'); return; }
+			if (!stripeInstance || !cardElement) { showFormError(formScope, 'Stripe is not loaded yet.'); return; }
 			const btn = document.getElementById('complete-btn') as HTMLButtonElement;
 			btn.disabled = true; btn.textContent = 'Processing...';
 			const { error, token } = await stripeInstance.createToken(cardElement);
