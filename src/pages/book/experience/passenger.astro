@@ -72,11 +72,13 @@ import Layout from '../../../layouts/Layout.astro';
 								<label class="block text-sm font-medium text-neutral-700 mb-1.5">First name <span class="text-red-400">*</span></label>
 								<input id="pax-first" type="text" required placeholder="John"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								<p data-error-for="pax-first" class="text-sm text-red-500 mt-1.5 hidden"></p>
 							</div>
 							<div>
 								<label class="block text-sm font-medium text-neutral-700 mb-1.5">Last name <span class="text-red-400">*</span></label>
 								<input id="pax-last" type="text" required placeholder="Doe"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+								<p data-error-for="pax-last" class="text-sm text-red-500 mt-1.5 hidden"></p>
 							</div>
 						</div>
 
@@ -84,6 +86,7 @@ import Layout from '../../../layouts/Layout.astro';
 							<label class="block text-sm font-medium text-neutral-700 mb-1.5">Email address <span class="text-red-400">*</span></label>
 							<input id="pax-email" type="email" required placeholder="john@example.com"
 								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<p data-error-for="pax-email" class="text-sm text-red-500 mt-1.5 hidden"></p>
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 								We'll send your booking voucher here.
@@ -100,6 +103,7 @@ import Layout from '../../../layouts/Layout.astro';
 								<input id="pax-phone" type="tel" required placeholder="693 123 4567"
 									class="flex-1 px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							</div>
+							<p data-error-for="pax-phone" class="text-sm text-red-500 mt-1.5 hidden"></p>
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 								Please provide a contact number so our driver can reach the passenger if needed.
@@ -117,10 +121,7 @@ import Layout from '../../../layouts/Layout.astro';
 						</div>
 
 						<!-- Validation message -->
-						<p id="form-error" class="hidden text-sm text-red-500 mb-4 flex items-center gap-1.5">
-							<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-							<span id="form-error-text"></span>
-						</p>
+						<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 						<!-- Navigation -->
 						<div class="flex items-center gap-4 pt-2">
@@ -229,6 +230,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
+	import { showFieldError, clearFormErrors, wireAutoClear } from '../../../lib/form-errors';
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -258,6 +260,14 @@ import Layout from '../../../layouts/Layout.astro';
 	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
 
+	/* ── Wire auto-clear on input fields ── */
+	wireAutoClear([
+		document.getElementById('pax-first'),
+		document.getElementById('pax-last'),
+		document.getElementById('pax-email'),
+		document.getElementById('pax-phone'),
+	]);
+
 	/* ── Auto-fill from Supabase Auth ── */
 	supabase.auth.onAuthStateChange((_event, session) => {
 		const user = session?.user;
@@ -286,23 +296,27 @@ import Layout from '../../../layouts/Layout.astro';
 		const lastName = (document.getElementById('pax-last') as HTMLInputElement).value.trim();
 		const email = (document.getElementById('pax-email') as HTMLInputElement).value.trim();
 		const phone = (document.getElementById('pax-phone') as HTMLInputElement).value.trim();
-		const errorEl = document.getElementById('form-error')!;
-		const errorText = document.getElementById('form-error-text')!;
 
-		// Validate
-		if (!firstName || !lastName || !email || !phone) {
-			errorText.textContent = 'Please fill in all required fields.';
-			errorEl.classList.remove('hidden');
+		const scope = document.querySelector('form') ?? document.body;
+		clearFormErrors(scope);
+
+		const firstEl = document.getElementById('pax-first') as HTMLInputElement;
+		const lastEl  = document.getElementById('pax-last')  as HTMLInputElement;
+		const emailEl = document.getElementById('pax-email') as HTMLInputElement;
+		const phoneEl = document.getElementById('pax-phone') as HTMLInputElement;
+
+		let firstErr: HTMLElement | null = null;
+		if (!firstName) { showFieldError(firstEl, 'First name is required.'); firstErr ??= firstEl; }
+		if (!lastName)  { showFieldError(lastEl,  'Last name is required.');  firstErr ??= lastEl; }
+		if (!email)     { showFieldError(emailEl, 'Email is required.');      firstErr ??= emailEl; }
+		else if (!email.includes('@')) { showFieldError(emailEl, 'Please enter a valid email address.'); firstErr ??= emailEl; }
+		if (!phone)     { showFieldError(phoneEl, 'Phone number is required.'); firstErr ??= phoneEl; }
+
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			firstErr.focus?.();
 			return;
 		}
-
-		if (!email.includes('@')) {
-			errorText.textContent = 'Please enter a valid email address.';
-			errorEl.classList.remove('hidden');
-			return;
-		}
-
-		errorEl.classList.add('hidden');
 
 		const driverNotes = (document.getElementById('pax-notes') as HTMLTextAreaElement)?.value.trim() || '';
 
