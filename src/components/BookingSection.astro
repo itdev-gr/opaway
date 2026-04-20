@@ -63,8 +63,9 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
+						<p data-error-for="tf-from" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- To -->
@@ -74,8 +75,9 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
+						<p data-error-for="tf-to" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- Date & Time -->
@@ -88,6 +90,7 @@ const vehicles = [
 								</span>
 								<input id="tf-date" type="date" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="tf-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
@@ -97,6 +100,7 @@ const vehicles = [
 								</span>
 								<input id="tf-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="tf-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
 
@@ -131,6 +135,7 @@ const vehicles = [
 								</span>
 								<input id="tf-return-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="tf-return-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
 
@@ -146,6 +151,9 @@ const vehicles = [
 							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
 						</div>
 					</div>
+
+					<!-- Form-level error banner -->
+					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
 					<button id="see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
@@ -163,8 +171,9 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
+						<p data-error-for="hourly-pickup" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- Date & Time -->
@@ -177,6 +186,7 @@ const vehicles = [
 								</span>
 								<input id="hourly-date" type="date" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="hourly-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
@@ -186,6 +196,7 @@ const vehicles = [
 								</span>
 								<input id="hourly-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="hourly-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
 
@@ -219,8 +230,87 @@ const vehicles = [
 						</div>
 					</div>
 
+					<!-- Form-level error banner -->
+					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
+
 					<!-- See prices -->
 					<button id="hourly-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+						See prices
+					</button>
+				</div>
+
+				<!-- ═══ Tours form ═══ -->
+				<div id="form-tours" class="hidden">
+					<!-- Tour Experience -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Tour Experience</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+							</span>
+							<select id="tours-select" class="w-full pl-10 pr-10 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
+								<option value="" disabled selected>Loading tours…</option>
+							</select>
+							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+							</span>
+						</div>
+						<p data-error-for="tours-select" class="text-sm text-red-500 mt-1.5 hidden"></p>
+					</div>
+
+					<!-- Pickup location -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup location</label>
+						<div class="relative">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+							</span>
+							<input id="tours-pickup" type="text" placeholder="Hotel, address or landmark..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+						</div>
+					</div>
+
+					<!-- Date & Time -->
+					<div class="grid grid-cols-2 gap-4 mb-5">
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Tour date</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+								</span>
+								<input id="tours-date" type="date" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+							</div>
+							<p data-error-for="tours-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								</span>
+								<input id="tours-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Participants -->
+					<div class="mb-6">
+						<label class="block text-sm font-medium text-neutral-700 mb-2">Participants</label>
+						<div class="flex items-center gap-3">
+							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl">
+								<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+								<span class="text-neutral-800 font-medium" id="tours-participant-count">2</span>
+							</div>
+							<button type="button" id="tours-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants">−</button>
+							<button type="button" id="tours-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants">+</button>
+						</div>
+					</div>
+
+					<!-- Form-level error banner -->
+					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
+
+					<!-- See prices -->
+					<button id="tours-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 						See prices
 					</button>
@@ -303,21 +393,24 @@ const vehicles = [
 </section>
 
 <script>
+import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
+import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
+import { supabase } from '../lib/supabase';
+
 document.addEventListener('astro:page-load', () => {
+	// Only run on pages that actually contain the booking section
+	if (!document.getElementById('form-transfer')) return;
+
 	// ── Tab switching ──
 	const tabs = document.querySelectorAll('[data-booking-tab]') as NodeListOf<HTMLButtonElement>;
 	const formTransfer = document.getElementById('form-transfer') as HTMLElement;
 	const formHourly = document.getElementById('form-hourly') as HTMLElement;
+	const formTours = document.getElementById('form-tours') as HTMLElement;
 
 	const activeClasses = ['text-black', 'bg-neutral-200/80', 'border-b-2', 'border-black'];
 	const inactiveClasses = ['text-neutral-500', 'hover:text-neutral-700'];
 
 	function switchTab(tabName: string) {
-		if (tabName === 'tours') {
-			window.location.href = '/book/tour';
-			return;
-		}
-
 		tabs.forEach((tab) => {
 			const isActive = tab.dataset.bookingTab === tabName;
 			activeClasses.forEach((c) => tab.classList.toggle(c, isActive));
@@ -326,6 +419,7 @@ document.addEventListener('astro:page-load', () => {
 
 		formTransfer.classList.toggle('hidden', tabName !== 'transfer');
 		formHourly.classList.toggle('hidden', tabName !== 'hourly');
+		formTours.classList.toggle('hidden', tabName !== 'tours');
 	}
 
 	tabs.forEach((tab) => {
@@ -368,7 +462,6 @@ document.addEventListener('astro:page-load', () => {
 	returnBtn?.addEventListener('click', () => {
 		returnOpen = !returnOpen;
 		returnRow?.classList.toggle('hidden', !returnOpen);
-		const label = returnBtn.querySelector('span') ?? returnBtn;
 		if (returnBtn.lastChild?.nodeType === Node.TEXT_NODE) {
 			returnBtn.lastChild.textContent = returnOpen ? ' Remove Return' : ' Add Return';
 		}
@@ -401,43 +494,162 @@ document.addEventListener('astro:page-load', () => {
 		hourlyCount++; if (hourlyCountEl) hourlyCountEl.textContent = String(hourlyCount);
 	});
 
-	// ── Hourly see prices navigation ──
+	// ── Tours participant counter ──
+	const toursCountEl = document.getElementById('tours-participant-count');
+	let toursCount = 2;
+	document.getElementById('tours-pax-minus')?.addEventListener('click', () => {
+		if (toursCount > 1) { toursCount--; if (toursCountEl) toursCountEl.textContent = String(toursCount); }
+	});
+	document.getElementById('tours-pax-plus')?.addEventListener('click', () => {
+		toursCount++; if (toursCountEl) toursCountEl.textContent = String(toursCount);
+	});
+
+	// ── Populate tours dropdown from Supabase ──
+	(async () => {
+		const select = document.getElementById('tours-select') as HTMLSelectElement | null;
+		if (!select) return;
+		try {
+			const { data, error } = await supabase
+				.from('tours_catalog')
+				.select('id, title')
+				.neq('published', false)
+				.order('created_at', { ascending: false });
+			if (error) throw error;
+
+			// Reset placeholder text
+			const placeholder = select.querySelector('option');
+			if (placeholder) placeholder.textContent = 'Select a tour...';
+
+			(data ?? []).forEach((t: { id: string; title: string }) => {
+				const opt = document.createElement('option');
+				opt.value = t.id;
+				opt.textContent = t.title;
+				select.appendChild(opt);
+			});
+		} catch (err) {
+			console.error('[BookingSection] tours load failed:', err);
+			const placeholder = select.querySelector('option');
+			if (placeholder) placeholder.textContent = 'Tours unavailable';
+		}
+	})();
+
+	// ── Google Places autocomplete ──
+	attachPlacesAutocomplete(document.getElementById('tf-from') as HTMLInputElement);
+	attachPlacesAutocomplete(document.getElementById('tf-to') as HTMLInputElement);
+	attachPlacesAutocomplete(document.getElementById('hourly-pickup') as HTMLInputElement);
+	attachPlacesAutocomplete(document.getElementById('tours-pickup') as HTMLInputElement);
+
+	// ── Auto-clear per-field errors when user edits ──
+	wireAutoClear([
+		document.getElementById('tf-from'),
+		document.getElementById('tf-to'),
+		document.getElementById('tf-date'),
+		document.getElementById('tf-time'),
+		document.getElementById('tf-return-time'),
+		document.getElementById('hourly-pickup'),
+		document.getElementById('hourly-date'),
+		document.getElementById('hourly-time'),
+		document.getElementById('tours-select'),
+		document.getElementById('tours-date'),
+	]);
+
+	// ── Transfer: See prices ──
+	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
+		clearFormErrors(formTransfer);
+
+		const fromEl = document.getElementById('tf-from') as HTMLInputElement;
+		const toEl = document.getElementById('tf-to') as HTMLInputElement;
+		const dateEl = document.getElementById('tf-date') as HTMLInputElement;
+		const timeEl = document.getElementById('tf-time') as HTMLInputElement;
+		const returnDateEl = document.getElementById('tf-return-date') as HTMLInputElement;
+		const returnTimeEl = document.getElementById('tf-return-time') as HTMLInputElement;
+
+		const from = fromEl?.value.trim() ?? '';
+		const to = toEl?.value.trim() ?? '';
+		const date = dateEl?.value.trim() ?? '';
+		const time = timeEl?.value.trim() ?? '';
+		const passengers = document.getElementById('passenger-count')?.textContent?.trim() || '2';
+		const returnDate = returnDateEl?.value.trim() ?? '';
+		const returnTime = returnTimeEl?.value.trim() ?? '';
+
+		let firstErr: HTMLElement | null = null;
+		if (!from) { showFieldError(fromEl, 'Please enter a pickup location.'); firstErr ??= fromEl; }
+		if (!to) { showFieldError(toEl, 'Please enter a destination.'); firstErr ??= toEl; }
+		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
+		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
+		if (returnDate && !returnTime) { showFieldError(returnTimeEl, 'Please select a return time.'); firstErr ??= returnTimeEl; }
+
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			(firstErr as HTMLInputElement).focus?.();
+			return;
+		}
+
+		const params = new URLSearchParams({ from, to, date, time, passengers });
+		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
+		window.location.href = `/book/transfer/results?${params.toString()}`;
+	});
+
+	// ── Hourly: See prices ──
 	document.getElementById('hourly-see-prices-btn')?.addEventListener('click', () => {
-		const pickup = (document.getElementById('hourly-pickup') as HTMLInputElement)?.value.trim();
-		const date = (document.getElementById('hourly-date') as HTMLInputElement)?.value.trim();
-		const time = (document.getElementById('hourly-time') as HTMLInputElement)?.value.trim();
+		clearFormErrors(formHourly);
+
+		const pickupEl = document.getElementById('hourly-pickup') as HTMLInputElement;
+		const dateEl = document.getElementById('hourly-date') as HTMLInputElement;
+		const timeEl = document.getElementById('hourly-time') as HTMLInputElement;
+
+		const pickup = pickupEl?.value.trim() ?? '';
+		const date = dateEl?.value.trim() ?? '';
+		const time = timeEl?.value.trim() ?? '';
 		const passengers = document.getElementById('hourly-passenger-count')?.textContent?.trim() || '2';
 
-		if (!pickup) { alert('Please enter a pickup location.'); return; }
-		if (!date) { alert('Please select a pickup date.'); return; }
-		if (!time) { alert('Please select a pickup time.'); return; }
-		if (hours < 3) { alert('Minimum rental is 3 hours.'); return; }
+		let firstErr: HTMLElement | null = null;
+		if (!pickup) { showFieldError(pickupEl, 'Please enter a pickup location.'); firstErr ??= pickupEl; }
+		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
+		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
+
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			(firstErr as HTMLInputElement).focus?.();
+			return;
+		}
+		if (hours < 3) {
+			showFormError(formHourly, 'Minimum rental is 3 hours.');
+			return;
+		}
 
 		const params = new URLSearchParams({ pickup, date, time, hours: String(hours), passengers });
 		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
 
-	// ── See prices navigation ──
-	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
-		const from = (document.getElementById('tf-from') as HTMLInputElement)?.value.trim();
-		const to = (document.getElementById('tf-to') as HTMLInputElement)?.value.trim();
-		const date = (document.getElementById('tf-date') as HTMLInputElement)?.value.trim();
-		const time = (document.getElementById('tf-time') as HTMLInputElement)?.value.trim();
-		const passengers = document.getElementById('passenger-count')?.textContent?.trim() || '2';
-		const returnDate = (document.getElementById('tf-return-date') as HTMLInputElement)?.value.trim() || '';
-		const returnTime = (document.getElementById('tf-return-time') as HTMLInputElement)?.value.trim() || '';
+	// ── Tours: See prices ──
+	document.getElementById('tours-see-prices-btn')?.addEventListener('click', () => {
+		clearFormErrors(formTours);
 
-		if (!from || !to) {
-			alert('Please fill in both the pickup and destination locations.');
+		const select = document.getElementById('tours-select') as HTMLSelectElement;
+		const pickupEl = document.getElementById('tours-pickup') as HTMLInputElement;
+		const dateEl = document.getElementById('tours-date') as HTMLInputElement;
+		const timeEl = document.getElementById('tours-time') as HTMLInputElement;
+
+		const tourId = select?.value || '';
+		const tourName = tourId ? select.options[select.selectedIndex]?.text ?? '' : '';
+		const pickup = pickupEl?.value.trim() ?? '';
+		const date = dateEl?.value.trim() ?? '';
+		const time = timeEl?.value.trim() ?? '';
+		const participants = document.getElementById('tours-participant-count')?.textContent?.trim() || '2';
+
+		let firstErr: HTMLElement | null = null;
+		if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
+		if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
+
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			(firstErr as HTMLElement).focus?.();
 			return;
 		}
-		if (!date) { alert('Please select a pickup date.'); return; }
-		if (!time) { alert('Please select a pickup time.'); return; }
-		if (returnDate && !returnTime) { alert('Please select a return time.'); return; }
 
-		const params = new URLSearchParams({ from, to, date, time, passengers });
-		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
-		window.location.href = `/book/transfer/results?${params.toString()}`;
+		const params = new URLSearchParams({ tourId, tourName, pickup, date, time, participants });
+		window.location.href = `/book/tour/results?${params.toString()}`;
 	});
 });
 </script>
