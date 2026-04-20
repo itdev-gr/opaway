@@ -51,24 +51,40 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 			</div>
 
-			<!-- Title + Price -->
-			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-				<div class="sm:col-span-2">
-					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
-					<input
-						id="f-title" type="text" required
-						placeholder="e.g. Athens Wine Tasting Tour"
-						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-					/>
+			<!-- Title -->
+			<div>
+				<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
+				<input
+					id="f-title" type="text" required
+					placeholder="e.g. Athens Wine Tasting Tour"
+					class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+				/>
+			</div>
+
+			<!-- Price per vehicle -->
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Sedan (€)</label>
+					<input id="f-price-sedan" type="number" step="0.01" min="0" placeholder="0.00"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 				</div>
 				<div>
-					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Price (€) *</label>
-					<input
-						id="f-price" type="number" min="0" step="0.01" required
-						placeholder="e.g. 200"
-						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-					/>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Van (€)</label>
+					<input id="f-price-van" type="number" step="0.01" min="0" placeholder="0.00"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 				</div>
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Minibus (€)</label>
+					<input id="f-price-minibus" type="number" step="0.01" min="0" placeholder="0.00"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+				</div>
+			</div>
+
+			<!-- Duration -->
+			<div class="mb-4">
+				<label class="block text-sm font-medium text-neutral-700 mb-1">Duration label</label>
+				<input id="f-duration" type="text" placeholder="e.g. Half day · ~4 hours"
+					class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 			</div>
 
 			<!-- Description -->
@@ -79,6 +95,25 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					placeholder="Describe the experience, what's included, highlights…"
 					class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm resize-none"
 				></textarea>
+			</div>
+
+			<!-- Highlights -->
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 1</label>
+					<input id="f-h1" type="text" placeholder="Short bullet"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 2</label>
+					<input id="f-h2" type="text" placeholder="Short bullet"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 3</label>
+					<input id="f-h3" type="text" placeholder="Short bullet"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+				</div>
 			</div>
 
 			<!-- Status + Submit -->
@@ -128,7 +163,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	<!-- Edit modal -->
 	<div id="edit-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+		<div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
 			<div class="flex items-center justify-between mb-5">
 				<h3 class="text-base font-bold text-neutral-900">Edit Experience</h3>
 				<button id="edit-close" class="text-neutral-400 hover:text-neutral-600 transition-colors" type="button">
@@ -163,22 +198,37 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						</span>
 					</div>
 				</div>
-				<!-- Edit Title + Price -->
-				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-					<div class="sm:col-span-2">
-						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
-						<input
-							id="e-title" type="text"
-							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-						/>
+				<!-- Edit Title -->
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Title *</label>
+					<input
+						id="e-title" type="text"
+						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
+					/>
+				</div>
+				<!-- Edit Price per vehicle -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Sedan (€)</label>
+						<input id="e-price-sedan" type="number" step="0.01" min="0" placeholder="0.00"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 					</div>
 					<div>
-						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Price (€) *</label>
-						<input
-							id="e-price" type="number" min="0" step="0.01"
-							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-						/>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Van (€)</label>
+						<input id="e-price-van" type="number" step="0.01" min="0" placeholder="0.00"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 					</div>
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Minibus (€)</label>
+						<input id="e-price-minibus" type="number" step="0.01" min="0" placeholder="0.00"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+				<!-- Edit Duration -->
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 mb-1">Duration label</label>
+					<input id="e-duration" type="text" placeholder="e.g. Half day · ~4 hours"
+						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 				</div>
 				<!-- Edit Description -->
 				<div>
@@ -187,6 +237,24 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						id="e-description" rows="4"
 						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm resize-none"
 					></textarea>
+				</div>
+				<!-- Edit Highlights -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 1</label>
+						<input id="e-h1" type="text" placeholder="Short bullet"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 2</label>
+						<input id="e-h2" type="text" placeholder="Short bullet"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-neutral-700 mb-1">Highlight 3</label>
+						<input id="e-h3" type="text" placeholder="Short bullet"
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					</div>
 				</div>
 				<!-- Edit status + Save -->
 				<div class="flex items-center justify-between pt-1">
@@ -207,7 +275,21 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	import { uploadImage } from '../../lib/upload';
 
 	/* ── Types ── */
-	interface CatalogItem { id: string; title: string; description: string; price: number; imageUrl: string; published: boolean; }
+	interface CatalogItem {
+		id: string;
+		title: string;
+		description: string;
+		price: number | null;
+		price_sedan: number | null;
+		price_van: number | null;
+		price_minibus: number | null;
+		duration: string | null;
+		highlight1: string | null;
+		highlight2: string | null;
+		highlight3: string | null;
+		imageUrl: string;
+		published: boolean;
+	}
 
 	/* ── State ── */
 	let items: CatalogItem[] = [];
@@ -303,6 +385,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		grid.innerHTML = items.map(item => {
 			const isLive = item.published !== false;
+			const priceLine = [
+				item.price_sedan   ? `Sedan €${Number(item.price_sedan).toFixed(0)}`     : null,
+				item.price_van     ? `Van €${Number(item.price_van).toFixed(0)}`         : null,
+				item.price_minibus ? `Minibus €${Number(item.price_minibus).toFixed(0)}` : null,
+			].filter(Boolean).join(' · ') || (item.price ? `€${Number(item.price).toFixed(0)}` : '—');
 			return `
 			<div class="group rounded-xl border border-neutral-200 overflow-hidden bg-neutral-50 shadow-sm hover:shadow-md transition-shadow duration-200">
 				<!-- Image + status badge -->
@@ -321,7 +408,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				<div class="p-4">
 					<h3 class="font-semibold text-neutral-900 mb-1 truncate text-sm">${esc(item.title)}</h3>
 					<p class="text-xs text-neutral-500 leading-relaxed mb-3 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(item.description)}</p>
-					<span class="text-base font-bold text-[#0C6B95]">€${Number(item.price).toFixed(2)}</span>
+					<span class="text-xs font-semibold text-[#0C6B95]">${esc(priceLine)}</span>
 					<!-- Actions -->
 					<div class="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100">
 						<!-- Toggle On/Off -->
@@ -392,7 +479,21 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		try {
 			const { data, error } = await supabase.from('experiences_catalog').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
-			items = (data ?? []).map((d: any) => ({ id: d.id, title: d.title, description: d.description, price: d.price, imageUrl: d.image_url, published: d.published }));
+			items = (data ?? []).map((d: any) => ({
+				id: d.id,
+				title: d.title,
+				description: d.description,
+				price: d.price,
+				price_sedan: d.price_sedan,
+				price_van: d.price_van,
+				price_minibus: d.price_minibus,
+				duration: d.duration,
+				highlight1: d.highlight1,
+				highlight2: d.highlight2,
+				highlight3: d.highlight3,
+				imageUrl: d.image_url,
+				published: d.published,
+			}));
 			renderGrid();
 		} catch (e) {
 			/* error silenced */
@@ -409,25 +510,50 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	form.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		const imageUrl    = (document.getElementById('f-image')       as HTMLInputElement).value.trim();
 		const title       = (document.getElementById('f-title')       as HTMLInputElement).value.trim();
 		const description = (document.getElementById('f-description') as HTMLTextAreaElement).value.trim();
-		const price       = parseFloat((document.getElementById('f-price') as HTMLInputElement).value);
+		const imageUrl    = (document.getElementById('f-image')       as HTMLInputElement).value.trim();
 
-		if (!imageUrl || !title || !description || isNaN(price)) {
-			setStatus('Please fill in all fields.', 'text-red-500'); return;
+		if (!imageUrl || !title || !description) {
+			setStatus('Please fill in all required fields.', 'text-red-500'); return;
 		}
 
 		submitBtn.disabled = true;
 		submitBtn.textContent = 'Adding…';
 		setStatus('', '');
 
+		const payload = {
+			title,
+			description,
+			image_url: imageUrl,
+			price_sedan:   Number((document.getElementById('f-price-sedan')   as HTMLInputElement).value) || null,
+			price_van:     Number((document.getElementById('f-price-van')     as HTMLInputElement).value) || null,
+			price_minibus: Number((document.getElementById('f-price-minibus') as HTMLInputElement).value) || null,
+			duration:      (document.getElementById('f-duration') as HTMLInputElement).value.trim() || null,
+			highlight1:    (document.getElementById('f-h1') as HTMLInputElement).value.trim() || null,
+			highlight2:    (document.getElementById('f-h2') as HTMLInputElement).value.trim() || null,
+			highlight3:    (document.getElementById('f-h3') as HTMLInputElement).value.trim() || null,
+			published: true,
+		};
+
 		try {
-			const { data: inserted, error: insErr } = await supabase.from('experiences_catalog').insert({
-				image_url: imageUrl, title, description, price, published: true,
-			}).select().single();
+			const { data: inserted, error: insErr } = await supabase.from('experiences_catalog').insert(payload).select().single();
 			if (insErr) throw insErr;
-			items.unshift({ id: inserted.id, imageUrl, title, description, price, published: true });
+			items.unshift({
+				id: inserted.id,
+				imageUrl,
+				title,
+				description,
+				price: null,
+				price_sedan: payload.price_sedan,
+				price_van: payload.price_van,
+				price_minibus: payload.price_minibus,
+				duration: payload.duration,
+				highlight1: payload.highlight1,
+				highlight2: payload.highlight2,
+				highlight3: payload.highlight3,
+				published: true,
+			});
 			renderGrid();
 			form.reset();
 			imgPreview.classList.add('hidden');
@@ -467,14 +593,20 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Edit modal ── */
 	function openEditModal(id: string) {
-		const item = items.find(i => i.id === id);
-		if (!item) return;
+		const row = items.find(i => i.id === id);
+		if (!row) return;
 		pendingEditId = id;
 
-		(document.getElementById('e-image')       as HTMLInputElement).value    = item.imageUrl;
-		(document.getElementById('e-title')       as HTMLInputElement).value    = item.title;
-		(document.getElementById('e-price')       as HTMLInputElement).value    = String(item.price);
-		(document.getElementById('e-description') as HTMLTextAreaElement).value = item.description;
+		(document.getElementById('e-image')         as HTMLInputElement).value    = row.imageUrl ?? '';
+		(document.getElementById('e-title')         as HTMLInputElement).value    = row.title ?? '';
+		(document.getElementById('e-description')   as HTMLTextAreaElement).value = row.description ?? '';
+		(document.getElementById('e-price-sedan')   as HTMLInputElement).value    = String(row.price_sedan   ?? row.price ?? '');
+		(document.getElementById('e-price-van')     as HTMLInputElement).value    = String(row.price_van     ?? row.price ?? '');
+		(document.getElementById('e-price-minibus') as HTMLInputElement).value    = String(row.price_minibus ?? row.price ?? '');
+		(document.getElementById('e-duration')      as HTMLInputElement).value    = row.duration   ?? '';
+		(document.getElementById('e-h1')            as HTMLInputElement).value    = row.highlight1 ?? '';
+		(document.getElementById('e-h2')            as HTMLInputElement).value    = row.highlight2 ?? '';
+		(document.getElementById('e-h3')            as HTMLInputElement).value    = row.highlight3 ?? '';
 
 		applyPreview(eImgInput, eImgPreview, eImgPlaceholder);
 
@@ -498,12 +630,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const imageUrl    = (document.getElementById('e-image')       as HTMLInputElement).value.trim();
 		const title       = (document.getElementById('e-title')       as HTMLInputElement).value.trim();
 		const description = (document.getElementById('e-description') as HTMLTextAreaElement).value.trim();
-		const price       = parseFloat((document.getElementById('e-price') as HTMLInputElement).value);
 		const editStatus  = document.getElementById('edit-status')!;
 		const saveBtn     = document.getElementById('edit-save') as HTMLButtonElement;
 
-		if (!imageUrl || !title || !description || isNaN(price)) {
-			editStatus.textContent = 'Please fill in all fields.';
+		if (!imageUrl || !title || !description) {
+			editStatus.textContent = 'Please fill in all required fields.';
 			editStatus.className = 'text-sm text-red-500';
 			return;
 		}
@@ -512,11 +643,36 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		saveBtn.textContent = 'Saving…';
 		editStatus.textContent = '';
 
+		const payload = {
+			title,
+			description,
+			image_url: imageUrl,
+			price_sedan:   Number((document.getElementById('e-price-sedan')   as HTMLInputElement).value) || null,
+			price_van:     Number((document.getElementById('e-price-van')     as HTMLInputElement).value) || null,
+			price_minibus: Number((document.getElementById('e-price-minibus') as HTMLInputElement).value) || null,
+			duration:      (document.getElementById('e-duration') as HTMLInputElement).value.trim() || null,
+			highlight1:    (document.getElementById('e-h1') as HTMLInputElement).value.trim() || null,
+			highlight2:    (document.getElementById('e-h2') as HTMLInputElement).value.trim() || null,
+			highlight3:    (document.getElementById('e-h3') as HTMLInputElement).value.trim() || null,
+			published: true,
+		};
+
 		try {
-			const { error: updErr } = await supabase.from('experiences_catalog').update({ image_url: imageUrl, title, description, price }).eq('id', pendingEditId);
+			const { error: updErr } = await supabase.from('experiences_catalog').update(payload).eq('id', pendingEditId);
 			if (updErr) throw updErr;
 			const item = items.find(i => i.id === pendingEditId);
-			if (item) Object.assign(item, { imageUrl, title, description, price });
+			if (item) Object.assign(item, {
+				imageUrl,
+				title,
+				description,
+				price_sedan: payload.price_sedan,
+				price_van: payload.price_van,
+				price_minibus: payload.price_minibus,
+				duration: payload.duration,
+				highlight1: payload.highlight1,
+				highlight2: payload.highlight2,
+				highlight3: payload.highlight3,
+			});
 			renderGrid();
 			closeEditModal();
 		} catch (err) {
