@@ -64,7 +64,7 @@ const vehicles = [
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
 
 				<!-- ── Booking form panel ── -->
-				<div class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
+				<div id="hourly-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
 
 					<h2 class="text-2xl font-bold text-neutral-900 mb-6">Hourly Details</h2>
 
@@ -75,8 +75,9 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="h-pickup" type="text" placeholder="Address, airport, hotel, ..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="h-pickup" type="text" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
+						<p data-error-for="h-pickup" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- Date & Time -->
@@ -89,6 +90,7 @@ const vehicles = [
 								</span>
 								<input id="h-date" type="date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="h-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
@@ -98,6 +100,7 @@ const vehicles = [
 								</span>
 								<input id="h-time" type="time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="h-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
 
@@ -130,6 +133,9 @@ const vehicles = [
 							</div>
 						</div>
 					</div>
+
+					<!-- Form-level error banner -->
+					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
 					<button id="continue-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
@@ -255,20 +261,56 @@ const vehicles = [
 		paxCount++; paxEl.textContent = String(paxCount);
 	});
 
+	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../../lib/form-errors';
+	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
+
+	const hourlyFormScope = document.getElementById('hourly-form');
+
+	wireAutoClear([
+		document.getElementById('h-pickup'),
+		document.getElementById('h-date'),
+		document.getElementById('h-time'),
+	]);
+
+	attachPlacesAutocomplete(document.getElementById('h-pickup') as HTMLInputElement | null);
+
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
-		const pickup = (document.getElementById('h-pickup') as HTMLInputElement).value.trim();
-		const date = (document.getElementById('h-date') as HTMLInputElement).value.trim();
-		const time = (document.getElementById('h-time') as HTMLInputElement).value.trim();
+		clearFormErrors(hourlyFormScope);
 
-		if (!pickup) { alert('Please enter a pickup location.'); return; }
-		if (!date) { alert('Please select a pickup date.'); return; }
-		if (!time) { alert('Please select a pickup time.'); return; }
-		if (hours < 3) { alert('Minimum rental is 3 hours.'); return; }
+		const pickupEl = document.getElementById('h-pickup') as HTMLInputElement;
+		const dateEl = document.getElementById('h-date') as HTMLInputElement;
+		const timeEl = document.getElementById('h-time') as HTMLInputElement;
 
-		const selectedDate = new Date(date + 'T00:00:00');
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		if (selectedDate < today) { alert('Please select a future date.'); return; }
+		const pickup = pickupEl?.value.trim() ?? '';
+		const date = dateEl?.value.trim() ?? '';
+		const time = timeEl?.value.trim() ?? '';
+
+		let firstErr: HTMLElement | null = null;
+		if (!pickup) { showFieldError(pickupEl, 'Please enter a pickup location.'); firstErr ??= pickupEl; }
+		if (!date) {
+			showFieldError(dateEl, 'Please select a pickup date.');
+			firstErr ??= dateEl;
+		} else {
+			const selectedDate = new Date(date + 'T00:00:00');
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
+			if (selectedDate < today) {
+				showFieldError(dateEl, 'Please select a future date.');
+				firstErr ??= dateEl;
+			}
+		}
+		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
+
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			firstErr.focus?.();
+			return;
+		}
+
+		if (hours < 3) {
+			showFormError(hourlyFormScope, 'Minimum rental is 3 hours.');
+			return;
+		}
 
 		const params = new URLSearchParams({
 			pickup, date, time,
@@ -277,38 +319,4 @@ const vehicles = [
 		});
 		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
-</script>
-
-<script>
-	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
-
-	function initHourlyAutocomplete() {
-		const pickupInput = document.getElementById('h-pickup') as HTMLInputElement;
-		if (pickupInput) {
-			const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
-			ac.setFields(['formatted_address', 'name']);
-			ac.addListener('place_changed', () => {
-				const place = ac.getPlace();
-				if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
-					pickupInput.value = `${place.name}, ${place.formatted_address}`;
-				} else {
-					pickupInput.value = place?.formatted_address || place?.name || pickupInput.value;
-				}
-			});
-		}
-	}
-
-	if (MAPS_KEY) {
-		if (typeof google !== 'undefined' && google.maps) {
-			initHourlyAutocomplete();
-		} else {
-			const script = document.createElement('script');
-			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initHourlyAutocompleteCb`;
-			script.async = true;
-			script.defer = true;
-			(window as any).initHourlyAutocompleteCb = initHourlyAutocomplete;
-			script.onerror = () => console.error('Google Maps failed to load');
-			document.head.appendChild(script);
-		}
-	}
 </script>

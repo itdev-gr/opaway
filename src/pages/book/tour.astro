@@ -31,7 +31,7 @@ import Layout from '../../layouts/Layout.astro';
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
 
 				<!-- ── Booking form panel ── -->
-				<div class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
+				<div id="tour-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
 
 					<h2 class="text-2xl font-bold text-neutral-900 mb-6">Tour Details</h2>
 
@@ -42,13 +42,14 @@ import Layout from '../../layouts/Layout.astro';
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
 							</span>
-							<select id="tour-select" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
+							<select id="tour-select" class="w-full pl-10 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
 								<option value="" disabled selected>Select a tour...</option>
 							</select>
 							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
 							</span>
 						</div>
+						<p data-error-for="tour-select" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 
@@ -60,7 +61,7 @@ import Layout from '../../layouts/Layout.astro';
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tour-pickup" type="text" placeholder="Hotel, address or landmark..." class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tour-pickup" type="text" placeholder="Hotel, address or landmark..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
@@ -74,6 +75,7 @@ import Layout from '../../layouts/Layout.astro';
 								</span>
 								<input id="tour-date" type="date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
 							</div>
+							<p data-error-for="tour-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
@@ -99,6 +101,9 @@ import Layout from '../../layouts/Layout.astro';
 						</div>
 					</div>
 
+
+					<!-- Form-level error banner -->
+					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
 					<button id="tour-submit-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
@@ -179,6 +184,10 @@ import Layout from '../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../lib/supabase';
 	import { applyPartnerDiscount } from '../../lib/pricing';
+	import { showFieldError, clearFormErrors, wireAutoClear } from '../../lib/form-errors';
+	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
+
+	attachPlacesAutocomplete(document.getElementById('tour-pickup') as HTMLInputElement | null);
 
 	let partnerDiscount = 0;
 
@@ -380,22 +389,39 @@ import Layout from '../../layouts/Layout.astro';
 	}
 
 	/* ── Navigate to vehicle selection ─────────────────────────── */
-	document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
-		const select   = document.getElementById('tour-select') as HTMLSelectElement;
-		const tourId   = select?.value || '';
-		const tourName = tourId ? select.options[select.selectedIndex]?.text : '';
+	const tourFormScope = document.getElementById('tour-form');
 
-		const pickup   = (document.getElementById('tour-pickup')  as HTMLInputElement)?.value.trim();
-		const date     = (document.getElementById('tour-date')    as HTMLInputElement)?.value.trim();
-		const time     = (document.getElementById('tour-time')    as HTMLInputElement)?.value.trim();
+	wireAutoClear([
+		document.getElementById('tour-select'),
+		document.getElementById('tour-date'),
+	]);
+
+	document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
+		clearFormErrors(tourFormScope);
+
+		const select = document.getElementById('tour-select') as HTMLSelectElement;
+		const pickupEl = document.getElementById('tour-pickup') as HTMLInputElement;
+		const dateEl = document.getElementById('tour-date') as HTMLInputElement;
+		const timeEl = document.getElementById('tour-time') as HTMLInputElement;
+
+		const tourId = select?.value || '';
+		const tourName = tourId ? select.options[select.selectedIndex]?.text ?? '' : '';
+		const pickup = pickupEl?.value.trim() ?? '';
+		const date = dateEl?.value.trim() ?? '';
+		const time = timeEl?.value.trim() ?? '';
 		const participants = document.getElementById('participant-count')?.textContent?.trim() || '2';
 
-		if (!tourId) { alert('Please select a tour.'); return; }
-		if (!date)   { alert('Please select a tour date.'); return; }
+		let firstErr: HTMLElement | null = null;
+		if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
+		if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
 
-		const params = new URLSearchParams({
-			tourId, tourName, pickup: pickup || '', date, time: time || '', participants,
-		});
+		if (firstErr) {
+			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			firstErr.focus?.();
+			return;
+		}
+
+		const params = new URLSearchParams({ tourId, tourName, pickup, date, time, participants });
 		window.location.href = `/book/tour/results?${params.toString()}`;
 	});
 
@@ -405,36 +431,3 @@ import Layout from '../../layouts/Layout.astro';
 	});
 </script>
 
-<script>
-	const MAPS_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
-
-	function initTourAutocomplete() {
-		const pickupInput = document.getElementById('tour-pickup') as HTMLInputElement;
-		if (pickupInput) {
-			const ac = new google.maps.places.Autocomplete(pickupInput, { types: ['geocode', 'establishment'], componentRestrictions: { country: 'gr' } });
-			ac.setFields(['formatted_address', 'name']);
-			ac.addListener('place_changed', () => {
-				const place = ac.getPlace();
-				if (place?.name && place?.formatted_address && !place.formatted_address.includes(place.name)) {
-					pickupInput.value = `${place.name}, ${place.formatted_address}`;
-				} else {
-					pickupInput.value = place?.formatted_address || place?.name || pickupInput.value;
-				}
-			});
-		}
-	}
-
-	if (MAPS_KEY) {
-		if (typeof google !== 'undefined' && google.maps) {
-			initTourAutocomplete();
-		} else {
-			const script = document.createElement('script');
-			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initTourAutocompleteCb`;
-			script.async = true;
-			script.defer = true;
-			(window as any).initTourAutocompleteCb = initTourAutocomplete;
-			script.onerror = () => console.error('Google Maps failed to load');
-			document.head.appendChild(script);
-		}
-	}
-</script>
