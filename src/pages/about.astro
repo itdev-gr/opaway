@@ -4,13 +4,16 @@ import AboutHero from '../components/about/AboutHero.astro';
 import AboutStory from '../components/about/AboutStory.astro';
 import AboutFleet from '../components/about/AboutFleet.astro';
 import AboutCommitment from '../components/about/AboutCommitment.astro';
+import WavyDivider from '../components/about/WavyDivider.astro';
 ---
 
 <Layout>
-	<main class="min-h-screen bg-white">
+	<main class="min-h-screen bg-[#FFF8F0]">
 		<AboutHero />
 		<AboutStory />
+		<WavyDivider class="bg-[#FFF8F0]" />
 		<AboutFleet />
+		<WavyDivider class="bg-[#FFF8F0]" />
 		<AboutCommitment />
 	</main>
 </Layout>
