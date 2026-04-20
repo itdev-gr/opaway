@@ -80,7 +80,7 @@ import Layout from '../../../layouts/Layout.astro';
 							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 							<span id="summary-participants" class="font-medium">—</span> participants
 						</span>
-						<a href="/experiences" id="sb-edit" class="ml-auto text-[#0C6B95] font-medium hover:underline flex items-center gap-1 text-sm">
+						<a href="#" id="sb-edit" class="ml-auto text-[#0C6B95] font-medium hover:underline flex items-center gap-1 text-sm">
 							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" /></svg>
 							Edit
 						</a>
@@ -250,7 +250,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 	/* ── State ── */
 	let selectedVehicleSlug = '';
-	let experiencePrices: Record<string, number> = { sedan: 0, van: 0, minibus: 0 };
+	let experiencePrices: Record<string, number | null> = {};
 
 	interface Vehicle {
 		id: string;
@@ -425,6 +425,12 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 		renderVehicles();
 	}
+
+	/* ── Edit button — go back ── */
+	document.getElementById('sb-edit')?.addEventListener('click', (e) => {
+		e.preventDefault();
+		window.history.back();
+	});
 
 	/* ── Continue to passenger page ── */
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
