@@ -434,6 +434,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 		try {
 			const { data: inserted, error } = await supabase.from('experiences').insert({
+				experience: experienceName,
 				experience_id: experienceId,
 				experience_name: experienceName,
 				pickup: pickup,
@@ -441,9 +442,8 @@ import Layout from '../../../layouts/Layout.astro';
 				date, time,
 				participants: parseInt(participants, 10),
 				passengers: parseInt(participants, 10),
+				vehicle: vehicleName,
 				vehicle_name: vehicleName,
-				first_name: firstName,
-				last_name: lastName,
 				name: `${firstName} ${lastName}`.trim(),
 				email, phone,
 				notes: driverNotes || null,
@@ -451,7 +451,6 @@ import Layout from '../../../layouts/Layout.astro';
 				ride_status: 'new',
 				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
 				payment_method: paymentMethod,
-				payment_token: paymentToken || null,
 				uid: user?.id || null,
 				partner_id: partnerId,
 				added_by_admin: false,
