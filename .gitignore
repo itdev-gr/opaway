@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # brainstorming visual companion
 .superpowers/
+
+# playwright mcp debug output
+.playwright-mcp/

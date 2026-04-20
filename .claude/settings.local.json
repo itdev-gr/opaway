@@ -50,7 +50,12 @@
       "Bash(git *)",
       "Bash(npx astro *)",
       "Bash(npx vercel *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(/Users/marios/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh *)",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_close",
+      "Bash(kill bn8ek1vt8 *)",
+      "Bash(pkill -f \"astro dev\")"
     ]
   }
 }
