@@ -55,7 +55,13 @@
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_close",
       "Bash(kill bn8ek1vt8 *)",
-      "Bash(pkill -f \"astro dev\")"
+      "Bash(pkill -f \"astro dev\")",
+      "Bash(awk 'NR>=46,NR<=48')",
+      "Bash(sort -t: -k3)",
+      "Bash(npx tailwindcss *)",
+      "mcp__playwright__browser_resize",
+      "Bash(kill bts2zg3u8 *)",
+      "Bash(pkill -f \"astro preview\")"
     ]
   }
 }

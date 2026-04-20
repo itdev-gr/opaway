@@ -33,3 +33,6 @@ pnpm-debug.log*
 
 # playwright mcp debug output
 .playwright-mcp/
+
+# ad-hoc QA screenshots
+about-*.png
