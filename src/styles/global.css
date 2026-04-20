@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+	body {
+		font-family: "Inter", system-ui, -apple-system, sans-serif;
+	}
+	.font-serif {
+		font-family: "Playfair Display", Georgia, serif;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reveal {
+		opacity: 1 !important;
+		transform: none !important;
+		transition: none !important;
+	}
+}
