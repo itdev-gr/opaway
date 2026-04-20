@@ -7,6 +7,9 @@
 	body {
 		font-family: "Inter", system-ui, -apple-system, sans-serif;
 	}
+}
+
+@layer utilities {
 	.font-serif {
 		font-family: "Playfair Display", Georgia, serif;
 	}
