@@ -214,8 +214,18 @@ import Layout from '../layouts/Layout.astro';
 	}
 
 	interface ExperienceItem {
-		id: string; title: string; description: string; price: number; image_url: string;
-		duration: string; highlight1: string; highlight2: string; highlight3: string;
+		id: string;
+		title: string;
+		description: string;
+		price: number | null;
+		price_sedan: number | null;
+		price_van: number | null;
+		price_minibus: number | null;
+		image_url: string;
+		duration: string;
+		highlight1: string;
+		highlight2: string;
+		highlight3: string;
 		published: boolean;
 	}
 
@@ -352,7 +362,8 @@ import Layout from '../layouts/Layout.astro';
 			const catalogGrid    = document.getElementById('experiences-catalog-grid')!;
 
 			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
-				const dp = applyPartnerDiscount(Number(t.price), partnerDiscount);
+				const basePrice = t.price_sedan ?? t.price ?? 0;
+				const dp = applyPartnerDiscount(Number(basePrice), partnerDiscount);
 				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
 				return `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
