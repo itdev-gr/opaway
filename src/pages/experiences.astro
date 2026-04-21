@@ -6,7 +6,7 @@ import Layout from '../layouts/Layout.astro';
 	<main class="min-h-screen bg-sky-50 pt-36 pb-24 px-6 lg:px-10">
 		<div class="max-w-6xl mx-auto">
 
-			<!-- Sub-navigation tabs -->
+			<!-- Sub-navigation tabs — quick links to the other booking flows -->
 			<div class="flex items-center gap-3 mb-10">
 				<a href="/book/transfer" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -26,96 +26,159 @@ import Layout from '../layouts/Layout.astro';
 					</svg>
 					Book a Tour
 				</a>
-				<a href="/experiences" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0C6B95] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-					</svg>
-					Book an Experience
-				</a>
 			</div>
 
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
 
-				<!-- ── Booking form panel ── -->
-				<div id="experience-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
+				<!-- ── Request form panel ── -->
+				<div id="experience-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm scroll-mt-36">
+					<span id="request-form" class="sr-only"></span>
 
-					<h2 class="text-2xl font-bold text-neutral-900 mb-6">Experience Details</h2>
-
-					<!-- Experience Type -->
-					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Experience</label>
-						<div class="relative">
-							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-							</span>
-							<select id="experience-select" class="w-full pl-10 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
-								<option value="" disabled selected>Select an experience...</option>
-							</select>
-							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-							</span>
-						</div>
-						<p data-error-for="experience-select" class="text-sm text-red-500 mt-1.5 hidden"></p>
-					</div>
-
-
-
-					<!-- Pickup Location -->
-					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup Location</label>
-						<div class="relative">
-							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-							</span>
-							<input id="experience-pickup" type="text" placeholder="Hotel, address or landmark..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+					<!-- Success panel (hidden until a successful insert) -->
+					<div id="request-success" class="hidden">
+						<div class="flex flex-col items-center text-center py-10">
+							<div class="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-5">
+								<svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+								</svg>
+							</div>
+							<h2 class="text-2xl font-bold text-neutral-900 mb-3">Request sent!</h2>
+							<p class="text-neutral-600 text-base leading-relaxed mb-2 max-w-md">
+								Thanks for reaching out. Our team will review your experience request and get back to you shortly.
+							</p>
+							<p class="text-sm text-neutral-500 mb-8 max-w-md">
+								You'll receive a confirmation email at the address you provided.
+							</p>
+							<a href="/" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25 transition-colors">
+								Back to home
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+								</svg>
+							</a>
 						</div>
 					</div>
 
-					<!-- Date & Time -->
-					<div class="grid grid-cols-2 gap-4 mb-5">
-						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Experience date</label>
+					<!-- Form body -->
+					<div id="request-form-body">
+						<h2 class="text-2xl font-bold text-neutral-900 mb-6">Experience Request</h2>
+						<p class="text-sm text-neutral-500 mb-6 leading-relaxed">
+							Fill in the details below and we'll reply with a personalised offer.
+						</p>
+
+						<!-- Experience Type -->
+						<div class="mb-4">
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Experience</label>
+							<div class="relative">
+								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+								</span>
+								<select id="experience-select" class="w-full pl-10 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
+									<option value="" disabled selected>Select an experience...</option>
+								</select>
+								<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+								</span>
+							</div>
+							<p data-error-for="experience-select" class="text-sm text-red-500 mt-1.5 hidden"></p>
+						</div>
+
+						<!-- Pickup Location -->
+						<div class="mb-4">
+							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup location</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 								</span>
-								<input id="experience-date" type="date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
-							<p data-error-for="experience-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
-						</div>
-						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="experience-time" type="time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								<input id="experience-pickup" type="text" placeholder="Hotel, address or landmark..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							</div>
 						</div>
+
+						<!-- Date & Time -->
+						<div class="grid grid-cols-2 gap-4 mb-5">
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 mb-1">Experience date</label>
+								<div class="relative">
+									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+										<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+									</span>
+									<input id="experience-date" type="date" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								</div>
+								<p data-error-for="experience-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+								<div class="relative">
+									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+										<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+									</span>
+									<input id="experience-time" type="time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
+								</div>
+							</div>
+						</div>
+
+						<!-- Participants -->
+						<div class="mb-5">
+							<label class="block text-sm font-medium text-neutral-700 mb-2">Participants</label>
+							<div class="flex items-center gap-3">
+								<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl">
+									<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+									<span class="text-neutral-800 font-medium" id="participant-count">2</span>
+								</div>
+								<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants">−</button>
+								<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants">+</button>
+							</div>
+						</div>
+
+						<!-- Contact details -->
+						<div class="border-t border-neutral-100 pt-5 mt-5 mb-5">
+							<h3 class="text-sm font-semibold text-neutral-800 uppercase tracking-wider mb-4">Your contact details</h3>
+
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+								<div>
+									<label class="block text-sm font-medium text-neutral-700 mb-1">First name</label>
+									<input id="r-first-name" type="text" autocomplete="given-name" placeholder="Jane"
+										class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									<p data-error-for="r-first-name" class="text-sm text-red-500 mt-1.5 hidden"></p>
+								</div>
+								<div>
+									<label class="block text-sm font-medium text-neutral-700 mb-1">Last name</label>
+									<input id="r-last-name" type="text" autocomplete="family-name" placeholder="Doe"
+										class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									<p data-error-for="r-last-name" class="text-sm text-red-500 mt-1.5 hidden"></p>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+								<div>
+									<label class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+									<input id="r-email" type="email" autocomplete="email" placeholder="you@email.com"
+										class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									<p data-error-for="r-email" class="text-sm text-red-500 mt-1.5 hidden"></p>
+								</div>
+								<div>
+									<label class="block text-sm font-medium text-neutral-700 mb-1">Phone</label>
+									<input id="r-phone" type="tel" autocomplete="tel" placeholder="+30 6912345678"
+										class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+									<p data-error-for="r-phone" class="text-sm text-red-500 mt-1.5 hidden"></p>
+								</div>
+							</div>
+
+							<div class="mb-1">
+								<label class="block text-sm font-medium text-neutral-700 mb-1">Notes <span class="text-neutral-400 font-normal">(optional)</span></label>
+								<textarea id="r-notes" rows="3" placeholder="Anything we should know? Dietary restrictions, accessibility needs, etc."
+									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] resize-none"></textarea>
+							</div>
+						</div>
+
+						<!-- Form-level error banner -->
+						<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
+
+						<!-- Send request -->
+						<button id="experience-submit-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 disabled:opacity-60 disabled:cursor-not-allowed">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+							Send request
+						</button>
 					</div>
-
-					<!-- Participants -->
-					<div class="mb-5">
-						<label class="block text-sm font-medium text-neutral-700 mb-2">Participants</label>
-						<div class="flex items-center gap-3">
-							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl">
-								<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-								<span class="text-neutral-800 font-medium" id="participant-count">2</span>
-							</div>
-							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants">−</button>
-							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants">+</button>
-						</div>
-					</div>
-
-
-					<!-- Form-level error banner -->
-					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
-
-					<!-- See prices -->
-					<button id="experience-submit-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-						See prices
-					</button>
 				</div>
 
 				<!-- ── Experience carousel ── -->
@@ -190,7 +253,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
 	import { supabase } from '../lib/supabase';
 	import { applyPartnerDiscount } from '../lib/pricing';
-	import { showFieldError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
+	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 
 	attachPlacesAutocomplete(document.getElementById('experience-pickup') as HTMLInputElement | null);
@@ -212,6 +275,22 @@ import Layout from '../layouts/Layout.astro';
 		} catch (e) { console.error('Partner discount check failed:', e); }
 		return 0;
 	}
+
+	/* ── Auto-fill contact details from signed-in user (if any) ── */
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		const user = session?.user;
+		if (!user) return;
+		const display = (user.user_metadata?.display_name || user.user_metadata?.full_name || '').trim();
+		if (display) {
+			const [first, ...rest] = display.split(/\s+/);
+			const firstEl = document.getElementById('r-first-name') as HTMLInputElement | null;
+			const lastEl = document.getElementById('r-last-name') as HTMLInputElement | null;
+			if (firstEl && !firstEl.value) firstEl.value = first;
+			if (lastEl && !lastEl.value && rest.length > 0) lastEl.value = rest.join(' ');
+		}
+		const emailEl = document.getElementById('r-email') as HTMLInputElement | null;
+		if (emailEl && !emailEl.value && user.email) emailEl.value = user.email;
+	});
 
 	interface ExperienceItem {
 		id: string;
@@ -352,7 +431,6 @@ import Layout from '../layouts/Layout.astro';
 					opt.textContent = t.title;
 					select.appendChild(opt);
 				});
-
 			}
 
 			/* ── Catalog grid ──────────────────────────────────────────── */
@@ -385,10 +463,10 @@ import Layout from '../layouts/Layout.astro';
 								<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">&euro;${dp.discountedPrice.toFixed(2)}</p>
 							</div>
 							<a
-								href="/experiences"
+								href="/experiences#request-form"
 								class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
 							>
-								Book Now
+								Request
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 								</svg>
@@ -405,21 +483,30 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
-	/* ── Navigate to vehicle selection ─────────────────────────── */
+	/* ── Submit: send request to Supabase ──────────────────────── */
 	const experienceFormScope = document.getElementById('experience-form');
 
 	wireAutoClear([
 		document.getElementById('experience-select'),
 		document.getElementById('experience-date'),
+		document.getElementById('r-first-name'),
+		document.getElementById('r-last-name'),
+		document.getElementById('r-email'),
+		document.getElementById('r-phone'),
 	]);
 
-	document.getElementById('experience-submit-btn')?.addEventListener('click', () => {
+	document.getElementById('experience-submit-btn')?.addEventListener('click', async () => {
 		clearFormErrors(experienceFormScope);
 
 		const select = document.getElementById('experience-select') as HTMLSelectElement;
 		const pickupEl = document.getElementById('experience-pickup') as HTMLInputElement;
 		const dateEl = document.getElementById('experience-date') as HTMLInputElement;
 		const timeEl = document.getElementById('experience-time') as HTMLInputElement;
+		const firstEl = document.getElementById('r-first-name') as HTMLInputElement;
+		const lastEl = document.getElementById('r-last-name') as HTMLInputElement;
+		const emailEl = document.getElementById('r-email') as HTMLInputElement;
+		const phoneEl = document.getElementById('r-phone') as HTMLInputElement;
+		const notesEl = document.getElementById('r-notes') as HTMLTextAreaElement;
 
 		const experienceId = select?.value || '';
 		const experienceName = experienceId ? select.options[select.selectedIndex]?.text ?? '' : '';
@@ -427,10 +514,20 @@ import Layout from '../layouts/Layout.astro';
 		const date = dateEl?.value.trim() ?? '';
 		const time = timeEl?.value.trim() ?? '';
 		const participants = document.getElementById('participant-count')?.textContent?.trim() || '2';
+		const firstName = firstEl?.value.trim() ?? '';
+		const lastName = lastEl?.value.trim() ?? '';
+		const email = emailEl?.value.trim() ?? '';
+		const phone = phoneEl?.value.trim() ?? '';
+		const notes = notesEl?.value.trim() ?? '';
 
 		let firstErr: HTMLElement | null = null;
 		if (!experienceId) { showFieldError(select, 'Please select an experience.'); firstErr ??= select; }
-		if (!date) { showFieldError(dateEl, 'Please select an experience date.'); firstErr ??= dateEl; }
+		if (!date)        { showFieldError(dateEl, 'Please select an experience date.'); firstErr ??= dateEl; }
+		if (!firstName)   { showFieldError(firstEl, 'First name is required.'); firstErr ??= firstEl; }
+		if (!lastName)    { showFieldError(lastEl, 'Last name is required.'); firstErr ??= lastEl; }
+		if (!email)       { showFieldError(emailEl, 'Email is required.'); firstErr ??= emailEl; }
+		else if (!email.includes('@')) { showFieldError(emailEl, 'Please enter a valid email address.'); firstErr ??= emailEl; }
+		if (!phone)       { showFieldError(phoneEl, 'Phone number is required.'); firstErr ??= phoneEl; }
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -438,8 +535,43 @@ import Layout from '../layouts/Layout.astro';
 			return;
 		}
 
-		const params = new URLSearchParams({ experienceId, experienceName, pickup, date, time, participants });
-		window.location.href = `/book/experience/results?${params.toString()}`;
+		const btn = document.getElementById('experience-submit-btn') as HTMLButtonElement;
+		btn.disabled = true;
+		btn.textContent = 'Sending…';
+
+		const { data: { user } } = await supabase.auth.getUser();
+
+		try {
+			const { error } = await supabase.from('requests').insert({
+				source: 'experience',
+				status: 'new',
+				experience_id: experienceId,
+				experience_name: experienceName,
+				pickup_location: pickup || null,
+				date,
+				time: time || null,
+				participants: parseInt(participants, 10),
+				name: firstName,
+				last_name: lastName,
+				email,
+				phone,
+				special_requests: notes || null,
+				user_id: user?.id ?? null,
+				user_display_name: user?.user_metadata?.display_name ?? null,
+				user_email: user?.email ?? null,
+			});
+
+			if (error) throw error;
+
+			document.getElementById('request-form-body')?.classList.add('hidden');
+			document.getElementById('request-success')?.classList.remove('hidden');
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		} catch (err) {
+			console.error('Experience request failed:', err);
+			showFormError(experienceFormScope, 'Something went wrong. Please try again or contact us directly.');
+			btn.disabled = false;
+			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg> Send request`;
+		}
 	});
 
 	detectPartnerDiscount().then(d => {
