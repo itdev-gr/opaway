@@ -36,3 +36,6 @@ pnpm-debug.log*
 
 # ad-hoc QA screenshots
 about-*.png
+booking-*.png
+e7-*.png
+r5-*.png

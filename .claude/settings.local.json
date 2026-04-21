@@ -61,7 +61,9 @@
       "Bash(npx tailwindcss *)",
       "mcp__playwright__browser_resize",
       "Bash(kill bts2zg3u8 *)",
-      "Bash(pkill -f \"astro preview\")"
+      "Bash(pkill -f \"astro preview\")",
+      "Bash(export SUPABASE_ACCESS_TOKEN='sbp_720ac81704cee0f3baaee7e141f4a99d005343f6')",
+      "Bash(unset SUPABASE_ACCESS_TOKEN)"
     ]
   }
 }
