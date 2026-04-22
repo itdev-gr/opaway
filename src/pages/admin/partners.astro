@@ -58,7 +58,7 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="type">Type <span class="sort-icon text-neutral-300">↕</span></th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="status">Status <span class="sort-icon text-neutral-300">↕</span></th>
-						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Discount</th>
+						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Discount / Commission</th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-[#0C6B95] select-none transition-colors" data-sort="createdAt">Registered <span class="sort-icon text-neutral-300">↕</span></th>
 						<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
 					</tr>
@@ -92,14 +92,15 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 
 	/* ── Types ── */
 	interface PartnerRow {
-		uid:          string;
-		displayName:  string;
-		businessName: string;
-		email:        string;
-		type:         string;
-		status:       string;
-		discount:     number;
-		createdAt:    string;
+		uid:            string;
+		displayName:    string;
+		businessName:   string;
+		email:          string;
+		type:           string;
+		status:         string;
+		discount:       number;
+		commission_eur: number | null;
+		createdAt:      string;
 	}
 	type ActionType = 'approve' | 'reject' | 'delete';
 
@@ -231,9 +232,14 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 				<td class="px-6 py-3">${typeBadge(p.type)}</td>
 				<td class="px-6 py-3" id="status-cell-${p.uid}">${statusBadge(p.status)}</td>
 				<td class="px-6 py-3">
-					<span class="discount-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit discount">
-						${p.discount ? `<span class="text-emerald-700 font-semibold">${p.discount}%</span>` : '<span class="text-neutral-300">—</span>'}
-					</span>
+					${p.type === 'hotel'
+						? `<span class="commission-eur-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit commission">
+							${p.commission_eur != null ? `<span class="text-emerald-700 font-semibold">&euro;${Number(p.commission_eur).toFixed(2)}</span>` : '<span class="text-neutral-300">—</span>'}
+						</span>`
+						: `<span class="discount-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit discount">
+							${p.discount ? `<span class="text-emerald-700 font-semibold">${p.discount}%</span>` : '<span class="text-neutral-300">—</span>'}
+						</span>`
+					}
 				</td>
 				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${p.createdAt}</td>
 				<td class="px-6 py-3" id="action-cell-${p.uid}">${actionDropdown(p.uid, p.status)}</td>
@@ -241,6 +247,7 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 
 		attachDropdownListeners();
 		attachDiscountListeners();
+		attachCommissionEurListeners();
 		attachRowClickListeners();
 	}
 
@@ -249,8 +256,8 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 		document.querySelectorAll<HTMLElement>('[data-partner-id]').forEach(tr => {
 			tr.addEventListener('click', (e) => {
 				const t = e.target as HTMLElement;
-				// Ignore clicks on inline-edit inputs, the actions dropdown, the discount cell, and dropdown menus
-				if (t.closest('input, select, button, .discount-cell, .dd-trigger, .dd-menu, .dd-item, [role="menu"]')) return;
+				// Ignore clicks on inline-edit inputs, the actions dropdown, the discount/commission cells, and dropdown menus
+				if (t.closest('input, select, button, .discount-cell, .commission-eur-cell, .dd-trigger, .dd-menu, .dd-item, [role="menu"]')) return;
 				const p = partnerRowsById.get(tr.dataset.partnerId!);
 				if (p) (window as any).OpawayPartnerDetail.open(p);
 			});
@@ -289,6 +296,40 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 
 				document.getElementById(`discount-save-${uid}`)?.addEventListener('click', saveDiscount);
 				input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveDiscount(); if (e.key === 'Escape') renderTable(); });
+			});
+		});
+	}
+
+	/* ── Commission EUR inline edit ── */
+	function attachCommissionEurListeners() {
+		document.querySelectorAll<HTMLElement>('.commission-eur-cell').forEach(span => {
+			span.addEventListener('click', () => {
+				const uid = span.dataset.uid!;
+				const currentTxt = span.textContent?.replace('€', '').trim() ?? '';
+				const currentVal = currentTxt === '—' ? '' : currentTxt;
+				span.innerHTML = `
+					<span class="inline-flex items-center gap-1">
+						<input type="number" step="0.01" min="0" value="${currentVal}"
+							class="w-24 px-2 py-1 border border-neutral-200 rounded text-sm" />
+						<button class="text-xs px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-200" data-save>Save</button>
+						<button class="text-xs px-2 py-1 bg-neutral-100 text-neutral-700 rounded border border-neutral-200" data-cancel>Cancel</button>
+					</span>`;
+				const input = span.querySelector('input') as HTMLInputElement;
+				const saveBtn = span.querySelector('[data-save]') as HTMLButtonElement;
+				const cancelBtn = span.querySelector('[data-cancel]') as HTMLButtonElement;
+				input.focus();
+				saveBtn.addEventListener('click', async (ev) => {
+					ev.stopPropagation();
+					const val = parseFloat(input.value);
+					const payload = { commission_eur: isNaN(val) ? null : val };
+					const { error } = await supabase.from('partners').update(payload).eq('id', uid);
+					if (error) { alert(`Save failed: ${error.message}`); return; }
+					await loadPartners();
+				});
+				cancelBtn.addEventListener('click', async (ev) => {
+					ev.stopPropagation();
+					await loadPartners();
+				});
 			});
 		});
 	}
@@ -352,14 +393,15 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 				if (d.type === 'hotel')  businessName = String(d.hotel_name  ?? '—');
 				if (d.type === 'agency') businessName = String(d.agency_name ?? '—');
 				return {
-					uid:          d.id,
-					displayName:  String(d.display_name ?? '—'),
+					uid:            d.id,
+					displayName:    String(d.display_name ?? '—'),
 					businessName,
-					email:        String(d.email  ?? '—'),
-					type:         String(d.type   ?? '—'),
-					status:       String(d.status ?? 'pending'),
-					discount:     Number(d.discount ?? 0),
-					createdAt:    fmtDate(d.created_at),
+					email:          String(d.email  ?? '—'),
+					type:           String(d.type   ?? '—'),
+					status:         String(d.status ?? 'pending'),
+					discount:       Number(d.discount ?? 0),
+					commission_eur: d.commission_eur != null ? Number(d.commission_eur) : null,
+					createdAt:      fmtDate(d.created_at),
 				};
 			});
 			renderTable();

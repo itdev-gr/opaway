@@ -149,14 +149,12 @@ import HotelLayout from '../../components/HotelLayout.astro';
 
 			const userId = session.user.id;
 
-			// Get partner discount
+			// Get partner commission
 			const { data: partner } = await supabase
 				.from('partners')
-				.select('discount')
+				.select('discount, commission_eur')
 				.eq('id', userId)
 				.maybeSingle();
-
-			const discount = partner?.discount ?? 0;
 
 			// Load bookings from all three tables (linked via partner_id)
 			const [transfersRes, toursRes, experiencesRes] = await Promise.all([
@@ -340,7 +338,8 @@ import HotelLayout from '../../components/HotelLayout.astro';
 				const pickup = d.from || d.pickup || '\u2014';
 				const dropoff = d.to || d.dropoff || '\u2014';
 				const totalPrice = typeof d.total_price === 'number' ? d.total_price : 0;
-				const commission = discount > 0 ? (totalPrice * discount / 100) : 0;
+				const commissionEur = Number(partner?.commission_eur ?? 0);
+				const commission = commissionEur; // flat per-booking EUR amount
 				const rideStatus = d.ride_status || d.status || 'new';
 
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">

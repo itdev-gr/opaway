@@ -99,6 +99,7 @@
 			field('Provider', r.provider),
 			field('Status', r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : ''),
 			field('Discount (%)', r.discount != null && r.discount !== 0 ? `${r.discount}%` : ''),
+			r.type === 'hotel' ? field('Commission (EUR)', r.commission_eur != null ? `€${Number(r.commission_eur).toFixed(2)}` : '—') : '',
 			field('Created', r.created_at),
 		].join(''));
 	}
