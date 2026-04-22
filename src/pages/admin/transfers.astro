@@ -444,34 +444,34 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 		submitBtn.disabled = true;
 		submitBtn.textContent = 'Saving…';
-		try {
-			await supabase.from('transfers').insert({
-				booking_type: 'transfer',
-				first_name: firstName,
-				last_name: lastName,
-				email,
-				phone: phone || '',
-				from, to, date,
-				time: time || '',
-				passengers,
-				vehicle_name: vehicle || '',
-				notes: notes || '',
-				ride_status: rideStatus,
-				payment_status: 'pending',
-				payment_method: 'cash',
-				driver: '',
-				added_by_admin: true,
-			}).select().single();
+		const { error: insErr } = await supabase.from('transfers').insert({
+			booking_type: 'transfer',
+			first_name: firstName,
+			last_name: lastName,
+			email,
+			phone: phone || '',
+			from, to, date,
+			time: time || '',
+			passengers,
+			vehicle_name: vehicle || '',
+			vehicle_slug: vehicle ? vehicle.toLowerCase() : '',
+			notes: notes || '',
+			ride_status: rideStatus,
+			payment_status: 'pending',
+			payment_method: 'cash',
+			driver: '',
+			added_by_admin: true,
+		}).select().single();
+		if (insErr) {
+			console.error('Add transfer failed:', insErr);
+			errorEl.textContent = `Failed to save: [${insErr.code ?? 'unknown'}] ${insErr.message}`;
+			errorEl.classList.remove('hidden');
+		} else {
 			closeModal();
 			await loadTransfers();
-		} catch (err) {
-			/* error silenced */
-			errorEl.textContent = 'Failed to save. Please try again.';
-			errorEl.classList.remove('hidden');
-		} finally {
-			submitBtn.disabled = false;
-			submitBtn.textContent = 'Save Booking';
 		}
+		submitBtn.disabled = false;
+		submitBtn.textContent = 'Save Booking';
 	});
 
 	/* ── Auth guard ── */
