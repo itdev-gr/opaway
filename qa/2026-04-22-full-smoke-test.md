@@ -303,8 +303,30 @@ Pending / deferred (all non-Critical, non-Blocking):
 | F18 | I | deferred | Admin sidebar notification badges stale until refresh. Supabase Realtime subscription likely not delivering events. Needs Realtime config investigation on the live project. |
 | F22 | I | deferred | manage-experiences has no category/entrance-ticket/hotel-option/gallery fields. Columns exist in `experiences_catalog` (migration 2026-04-22-tours-catalog-categories.sql added them), form UI is the gap. Parity refactor. |
 
-**Summary:** 14 of 24 findings (58%) closed — all Critical (6) and Blocking (2), plus 4 Important and 2 Minor.
-**Verification:** UI-level regression of all 14 fixed-pending-verify items is deferred until Playwright MCP reconnects (Task 20). DB-level simulation confirmed new shape for F1/F17, F14, F19, F23/F24.
+### Second fix round — remaining Importants / Minors
+
+| Finding | Severity | Status | Fix commit |
+|---|---|---|---|
+| F5  | M | fixed-pending-verify | `b339a31` footer: gate social icons on non-empty URLs, hide row when unset |
+| F7  | M | fixed-pending-verify | `85b0aea` (logged in first round) |
+| F8  | M | fixed-pending-verify | `dc98862` admin: non-admin redirect → /login for consistency |
+| F9  | I | fixed-pending-verify | `7b8a2dc` profile: read display_name + photo_url from public.users |
+| F10 | I | fixed-pending-verify | `f41e3ad` profile/dashboard: real stat cards, quick actions, latest activity |
+| F11 | M | fixed-pending-verify | `d8dd351` profile/settings: avatar upload + remove via public.users.photo_url |
+| F13 | I | fixed-pending-verify | `6ddbb77` profile/transfers: type badge + row-click detail drawer |
+| F18 | I | fixed-pending-verify | `7f7b85c` realtime: add 5 tables to supabase_realtime publication |
+
+### Still deferred (need business input or large refactor)
+
+| Finding | Severity | Reason |
+|---|---|---|
+| F15 | I | Back-from-passenger-to-results resets vehicle choice. Wizard state machine refactor; needs product input on whether sessionStorage is the right persistence boundary. |
+| F16 | I | Hourly funnel minimum is 3 hours but plan matrix said 2. Likely a business rule — not a technical bug. |
+| F22 | I | manage-experiences parity with manage-tours. Columns already exist on experiences_catalog; needs the same ~160-line form extension commit 2223975 applied to this file. Mechanical but non-trivial. |
+
+**Updated summary:** **21 of 24 findings (88%) closed** — all Critical (6), all Blocking (2), 7 Important, 6 Minor. 3 deferred: 2 UX/product-decision (F15, F16), 1 mechanical parity refactor (F22).
+
+**Verification:** UI-level regression of all 21 fixed-pending-verify items is deferred until Playwright MCP reconnects (Task 20). DB-level simulation confirmed new shape for F1/F17, F14, F19, F23/F24, F18.
 
 ---
 
