@@ -36,7 +36,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 12 Admin — management | done | F21 |
 | Task 13 Admin — catalog | done | F22–F24 |
 | Task 14 Driver — rides | done | F25–F26 |
-| Task 15 Driver — account | pending | — |
+| Task 15 Driver — account | done | F27–F34 |
 | Task 16 Hotel dashboard | pending | — |
 | Task 17 Agency dashboard | pending | — |
 | Task 18 Cross-role notifications | pending | — |
@@ -1328,3 +1328,271 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke driv
 **Root cause:** The date rendering logic in `available.astro` does not guard against an empty-string date. The card template renders `${date} ${time}` without checking `if (date)`. Additionally, a "test" booking with `from='test'` and `to='test'` is in the available pool — this is data hygiene issue, not a code bug, but it exposes the date rendering gap.
 **Status:** open
 **Severity:** M — Drivers see a confusing "— 10:00" date on any ride with a blank date. If admin adds a booking without setting a date (or date is cleared), it appears in the pool with a broken display. Date validation on ride creation/edit should prevent `date=''`.
+
+---
+
+### Section 15 — Driver dashboard (account)
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke driver: `smoke-driver-2026-04-22@opawey.test` (uid `01d2fa49-be7a-4c04-8640-971350557bca`).
+
+---
+
+#### 15.1 — `/driver/profile`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-1-driver-profile.png` | pass | Page title "Profile — Opawey Driver" |
+| Profile renders driver's values | pass | `display_name=Smoke Driver`, `full_name=Smoke Driver`, `type=driver`, `status=Approved` (green badge) |
+| DB confirmation: `select display_name, full_name, type, status from public.partners where id='01d2fa49...'` | pass | `display_name=Smoke Driver`, `full_name=Smoke Driver`, `type=driver`, `status=approved` |
+| `num_vehicles=1`, `phone=null` in DB | pass | DB confirmed `num_vehicles=1`, `phone=null` |
+| Edit form for display_name present | **FAIL (I)** | Page is entirely read-only; no edit form exists for any field — F27 |
+| No JS errors | pass | 0 console errors |
+
+**Summary 15.1:** Data renders correctly; partner type, status, and name all confirmed. However the page is read-only with no edit capability. Finding F27 raised.
+
+---
+
+#### 15.2 — `/driver/vehicles` (CRITICAL regression check)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-2-driver-vehicles.png` | pass | "0 vehicle(s) registered", empty table, "Add Vehicle" button |
+| Add Vehicle modal opens | pass | All fields present: Brand, Model, Year, Color, Category, Max Passengers, Max Luggage, Plate Number |
+| Category option values are lowercase | pass | `<option value="sedan">Sedan</option>` etc. — regression fix from commit `8a322ec` confirmed |
+| Fill Brand=Smoke, Model=X1, Category=Sedan, Max Pax=3, Max Luggage=2, Plate=SMK-100 | pass | Form screenshot `qa/smoke-15-2-add-vehicle-form.png` |
+| Submit → success, "1 vehicle(s) registered" | pass | No "Failed to save" error; row appears in table |
+| DB row confirmed: `category='sedan'`, `status='active'`, `partner_id=01d2fa49...`, `plate='SMK-100'` | pass | id `1174e0c8`; all values correct |
+| Deactivate → `status='inactive'` in DB | pass | DB confirmed; table shows "Inactive" badge |
+| Activate → `status='active'` in DB | pass | DB confirmed; table shows "Active" badge |
+| Edit vehicle → change Model | **FAIL (I)** | No "Edit" button exists in the table row; only "Deactivate" and "Delete" — F28 |
+| Error-surfacing test (empty plate) | pass | Browser HTML5 `required` tooltip "Please fill in this field." shown; form not submitted |
+| Error-surfacing test (duplicate plate SMK-100) | **FAIL (C)** | Duplicate plate accepted silently; two rows with plate `SMK-100` created; no `UNIQUE` constraint on `plate` column and no client-side guard — F29 |
+| DB: second vehicle category=null (empty category select sent) | note | `category=null` accepted for duplicate — no NOT NULL/CHECK constraint violation (null passes the CHECK `category IN ('sedan','van','minibus')` since NULL != any value); data integrity gap related to F29 |
+| Delete test vehicle (confirmation dialog) → row gone from DB | pass | `confirm("Delete this vehicle?")` shown; accepted; DB count = 0; table shows "No vehicles yet." |
+
+**Summary 15.2:** Core add / deactivate / activate / delete all pass. `category` option values are lowercase (regression fix `8a322ec` confirmed). 2 findings raised: F28 (no edit button), F29 (no plate uniqueness constraint — duplicate silently inserted). Error-surfacing for empty plate uses HTML5 native validation (adequate).
+
+---
+
+#### 15.3 — `/driver/drivers`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-3-driver-drivers.png` | pass | "0 driver(s) registered", empty table, "Add Driver" button |
+| Table columns: Status, Name, Phone, Actions | pass | Headers correct |
+| Empty state: "No drivers yet." | pass | Correct |
+| Add Driver modal opens | pass | Fields: Name, Phone, Email, Languages (placeholder "e.g. English, Greek") |
+| No JS errors | pass | 0 console errors |
+
+**Summary 15.3:** Page renders correctly. Add Driver modal is present and accessible. 0 new findings.
+
+---
+
+#### 15.4 — `/driver/billing`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-4-driver-billing.png` | pass | Page title "Payment Reports — Opawey Driver" |
+| Payment report renders | pass | "0 report(s)", table with Status / Date / Amount / Payment Report / Invoice columns |
+| Empty state: "No billing reports yet." | pass | Correct |
+| Date filters / month selectors | **FAIL (I)** | No date filter, month selector, or period dropdown present — F30 |
+| No JS errors | pass | 0 console errors |
+
+**Summary 15.4:** Page renders and empty state correct. No date filter/period selector available. Finding F30 raised.
+
+---
+
+#### 15.5 — `/driver/payment-data`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-5-payment-data.png` | pass | Page title "Payment Data — Opawey Driver" |
+| Form renders with radio (Bank Transfer / Stripe) | pass | Bank Transfer pre-selected; both options visible |
+| Bank Transfer selected → bank fields visible (Bank Name, IBAN, SWIFT/BIC) | pass | Three text inputs shown |
+| Fill bank_name="Smoke Bank", iban="GR1201101250000000012300695", swift="SMKBGRAA" → Save | pass | DB row confirmed: `payment_method='bank'`, `bank_name='Smoke Bank'`, `iban='GR1201101250000000012300695'`, `swift='SMKBGRAA'`, `partner_id=01d2fa49...`, id `fd830280` |
+| Success feedback after bank save | **FAIL (I)** | No toast/banner shown after save; data persisted silently — F31 |
+| Switch to Stripe → Stripe Account ID field visible | pass | Single input with placeholder `acct_...` |
+| Save `acct_test_SMK` → DB confirmed | pass | `payment_method='stripe'`, `stripe_account_id='acct_test_SMK'`; bank fields nulled; upsert on same row (id `fd830280`) |
+| Screenshot `qa/smoke-15-5-payment-data-saved.png` | pass | Captured |
+
+**Summary 15.5:** Form renders correctly. Bank and Stripe flows both save to DB via upsert. One finding raised: F31 (no success feedback).
+
+---
+
+#### 15.6 — `/driver/settings`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-15-6-driver-settings.png` | pass | 4 sections: Personal Information, Vehicle Information, Account Information, Change Password |
+| Personal Info form fields: Full Name = "Smoke Driver", Phone, Email (read-only), VAT | pass | Correctly pre-populated from DB |
+| Vehicle Info: Num Vehicles=1, Primary Car Type select, Fleet Types checkboxes | pass | Correct values from DB |
+| Account Info: Status=Approved, Member Since=22 April 2026, Partner Type=Driver | pass | Read-only display correct |
+| Change Password section rendered | pass | Current Password, New Password, Confirm New Password + "Update Password" button |
+| Change phone to "+30 6900000000" → Save → DB confirmed | pass | `phone='+30 6900000000'` in `public.partners`; save works |
+| No success toast after personal-info save | note | Data saved silently (consistent with F31); DB confirmed save |
+| Password change: current=`SmokeTest!2026-04-22` → new=`SmokeTempPw2!2026-04-22` | pass | PUT `/auth/v1/user` → 200; password updated; "Updating..." button state shown |
+| Update Password button stuck on "Updating..." after success | **FAIL (M)** | Button does not reset to "Update Password" after successful change — F32 |
+| Logout → login with new password `SmokeTempPw2!2026-04-22` | pass | Login succeeds; redirect to `/` |
+| `/driver/settings` after password change: auth check overlay hangs indefinitely | **FAIL (C)** | `driver-auth-check` overlay never gets `hidden` class after password change; page stuck at "Verifying access…"; settings-content never shown — F34 |
+| Password form submits as GET when auth check hangs | **FAIL (C)** | Since JS handler never attaches (waitForAuth() deadlocks), clicking "Update Password" submits the `<form>` natively via GET, exposing passwords in the URL (`?currentPassword=...&newPassword=...`) — F33 |
+| Password revert to `SmokeTest!2026-04-22` | **DONE** | Reverted via direct Supabase Auth API call (`POST /auth/v1/token` re-auth + `PUT /auth/v1/user`); verified login with original password succeeds (status=200, has_token=true) |
+
+**Summary 15.6:** Settings renders and personal/vehicle saves work. Password change completes at the auth layer (verified by network log) but button state doesn't reset (F32). After a password change, the `DriverLayout` auth check hangs indefinitely, causing a deadlock (F34) and exposing passwords in the URL via form GET fallback (F33 — Critical security). Password was successfully reverted via direct API call.
+
+**Screenshots:** `qa/smoke-15-6-driver-settings.png`, `qa/smoke-15-6-password-change.png`
+
+---
+
+#### Section 15 summary
+
+| Sub-page | Result | Findings |
+|---|---|---|
+| 15.1 `/driver/profile` | partial-pass | F27 (profile read-only, no edit form) |
+| 15.2 `/driver/vehicles` | partial-pass | F28 (no edit button), F29 (no plate uniqueness constraint) |
+| 15.3 `/driver/drivers` | pass | — |
+| 15.4 `/driver/billing` | partial-pass | F30 (no date filter on billing) |
+| 15.5 `/driver/payment-data` | partial-pass | F31 (no success feedback on save) |
+| 15.6 `/driver/settings` | partial-pass | F30-adjacent (no success feedback), F32 (button stuck), F33 (C — passwords in URL), F34 (C — auth check hangs after password change) |
+
+**Findings raised:** F27–F34 (8 findings)
+**Password revert:** CONFIRMED — `SmokeTest!2026-04-22` verified working via API.
+
+---
+
+### F27 — I — driver-profile — `/driver/profile` is read-only; no edit form for any field
+
+**Page:** `/driver/profile`
+**Preconditions:** logged in as smoke driver
+**Repro:**
+1. Navigate to `/driver/profile`
+2. Look for edit controls for `display_name`, `phone`, `num_vehicles`, `primary_car_type`, or `car_types`
+**Expected:** An editable form (or inline edit controls) for at least `display_name` and operational fields like `phone`.
+**Observed:** The page renders two read-only sections ("General Information" and "Status & Location"). No input fields, no "Edit" button, no save button. All values are displayed as static `<p>` tags with a note: "Contact support to update." DB has `phone=null`, `primary_car_type=null` — driver has no self-service path to update any profile data.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-15-1-driver-profile.png`
+**Root cause:** `/driver/profile.astro` is a read-only display page. No edit form was implemented.
+**Status:** open
+**Severity:** I — Drivers cannot update their own profile. Self-service edit of at least `phone` and `display_name` is expected.
+
+---
+
+### F28 — I — driver-vehicles — No "Edit" button in vehicle table rows; vehicle details cannot be modified after creation
+
+**Page:** `/driver/vehicles`
+**Preconditions:** logged in as smoke driver; at least one vehicle registered
+**Repro:**
+1. Navigate to `/driver/vehicles`
+2. Observe the Actions column of a vehicle row
+**Expected:** "Edit", "Deactivate" / "Activate", and "Delete" buttons per row.
+**Observed:** Only "Deactivate" (or "Activate") and "Delete" buttons exist. There is no "Edit" button. Driver cannot change Brand, Model, Year, Color, Category, Max Passengers, Max Luggage, or Plate after initial creation.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-15-2-vehicle-added.png`
+**Root cause:** Edit modal not implemented for driver vehicles; code was not written for `vehicles.astro` (driver side).
+**Status:** open
+**Severity:** I — If a driver makes a typo on vehicle creation (wrong plate, wrong model), they must delete and recreate the vehicle. No self-service edit path exists.
+
+---
+
+### F29 — C — driver-vehicles — No plate uniqueness constraint; same plate accepted twice; no client-side or server-side guard
+
+**Page:** `/driver/vehicles`
+**Preconditions:** logged in as smoke driver; vehicle with plate `SMK-100` already registered
+**Repro:**
+1. Register a vehicle with Plate=`SMK-100`
+2. Open "Add Vehicle" again
+3. Set Plate=`SMK-100` (same as existing) and fill Brand/Model
+4. Submit
+**Expected:** Error: "Plate number already in use" (either client-side or server-side validation).
+**Observed:** Second vehicle with plate `SMK-100` inserted silently. DB now has two rows with `plate='SMK-100'` for the same `partner_id`. No error shown, no constraint violated at the DB level.
+**Console / network errors:** none (no DB error — `plate` column has no UNIQUE constraint)
+**Screenshot:** `qa/smoke-15-2-duplicate-plate.png`
+**Root cause:** `public.driver_vehicles.plate` column does not have a UNIQUE index or constraint. Client-side form also has no duplicate-check. A driver can register the same vehicle plate multiple times, creating data integrity issues (e.g. dispatching the same physical vehicle twice for different rides simultaneously).
+**Status:** open
+**Severity:** C — Duplicate plates can be registered. This is a data integrity issue that could lead to conflicting ride assignments. A UNIQUE constraint on `(plate)` or `(partner_id, plate)` is needed, plus a client-side guard showing the error.
+
+---
+
+### F30 — I — driver-billing — Payment Reports page has no date filter or month selector
+
+**Page:** `/driver/billing`
+**Preconditions:** logged in as smoke driver
+**Repro:**
+1. Navigate to `/driver/billing`
+2. Look for date range, month, or year filter controls
+**Expected:** A date range picker or month selector to filter billing reports by period.
+**Observed:** The page shows a flat table with columns Status / Date / Amount / Payment Report / Invoice. No date filter, month selector, period tabs, or any search/sort controls exist. For a driver with many months of reports, there is no way to narrow the view.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-15-4-driver-billing.png`
+**Status:** open
+**Severity:** I — Missing UX feature. Not blocking, but important for usability at scale.
+
+---
+
+### F31 — I — driver-payment-data — No success feedback after saving payment data
+
+**Page:** `/driver/payment-data`
+**Preconditions:** logged in as smoke driver
+**Repro:**
+1. Navigate to `/driver/payment-data`
+2. Fill in bank details (Bank Name, IBAN, SWIFT/BIC)
+3. Click "Save Payment Data"
+**Expected:** A success toast or banner: "Payment data saved successfully" (or similar).
+**Observed:** Data is saved to `public.payment_data` (DB confirmed), but no visible feedback is shown in the UI. The button returns to its normal state without any message. The user has no confirmation that the save succeeded.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-15-5-payment-data-saved.png`
+**Status:** open
+**Severity:** I — UX issue. Data is persisted correctly; user just doesn't know it happened. Also reproduced on driver/settings personal-info save.
+
+---
+
+### F32 — M — driver-settings — "Update Password" button stays stuck on "Updating..." after a successful password change
+
+**Page:** `/driver/settings`
+**Preconditions:** logged in as smoke driver; correct current password entered
+**Repro:**
+1. Navigate to `/driver/settings`
+2. Fill Current Password (correct), New Password, Confirm New Password
+3. Click "Update Password"
+4. Wait for network requests to complete (PUT `/auth/v1/user` → 200 observed in network tab)
+**Expected:** Button resets to "Update Password"; a status message "Password updated successfully" shown; password input fields cleared.
+**Observed:** Button remains on "Updating..." indefinitely after the PUT request completes (200 response confirmed). No status message shown. Inputs still have the entered values. UI is in a permanently loading state.
+**Console / network errors:** none; PUT `/auth/v1/user` → 200 confirmed
+**Screenshot:** `qa/smoke-15-6-password-change.png`
+**Root cause:** After the password change, Supabase issues a new JWT. The `onAuthStateChange` handler fires and its callback sets the button to "Updating...", but the password-change code's `finally` block (which should reset the button) may not execute — or the state was reset but a subsequent auth-state re-trigger overwrites it. Related to F34.
+**Status:** open
+**Severity:** M — Functional regression: the UI appears frozen after a successful password change. User must refresh the page to use settings again.
+
+---
+
+### F33 — C — driver-settings — Passwords exposed in URL via GET when JS auth check hangs; password form submits natively as GET
+
+**Page:** `/driver/settings`
+**Preconditions:** driver is logged in; auth check overlay (`driver-auth-check`) is visible (JS init failed / not yet run)
+**Repro:**
+1. Navigate to `/driver/settings` in a state where the `driver-auth-check` overlay has not been hidden (e.g. immediately after a password change, before page re-initializes)
+2. Fill in Current Password, New Password, Confirm New Password
+3. Click "Update Password"
+**Expected:** JS event handler intercepts the form submit; credentials are sent via POST to Supabase API only; URL stays at `/driver/settings`.
+**Observed:** Page navigates to `/driver/settings?currentPassword=<plaintext>&newPassword=<plaintext>&confirmPassword=<plaintext>`. The `<form id="password-form">` has no `method="post"` and no `action` attribute, so when the JS listener is not yet attached (because `waitForAuth()` is blocked by F34), the browser falls back to native GET form submission. All three password values are visible in the URL bar, browser history, and any server access logs.
+**Console / network errors:** none (GET request to same page; no auth API call made)
+**Screenshot:** URL bar shows `?currentPassword=SmokeTempPw2%212026-04-22&newPassword=SmokeTest%212026-04-22&...`
+**Root cause:** The `<form id="password-form">` lacks `method="post"` which would prevent GET fallback. The `waitForAuth()` function in `settings.astro` creates a race condition: if the DriverLayout auth check never resolves (F34), the form's `submit` event listener is never registered, and the native form submit fires via GET. Fix: add `method="post" action=""` (or `method="dialog"`) to the form element, so the fallback is a POST (not a GET) and passwords are not in the URL.
+**Status:** open
+**Severity:** C — Plaintext passwords in URL. Exposed in: browser address bar (visible to shoulder-surfers), browser history, OS-level URL history, CDN/reverse-proxy access logs. A valid attack path even without the F34 precondition if JS fails for any reason.
+
+---
+
+### F34 — C — driver-settings — `DriverLayout` auth check overlay hangs indefinitely after a password change; settings page content never shown
+
+**Page:** `/driver/settings` (and potentially all driver dashboard pages)
+**Preconditions:** logged in as smoke driver; password was changed via driver settings; user navigates back to any driver page
+**Repro:**
+1. Change password via `/driver/settings`
+2. Without logging out, navigate to `/driver/settings` (or any driver dashboard page)
+3. Observe the "Verifying access…" overlay
+**Expected:** The `driver-auth-check` overlay is dismissed within ~1 second; the page content becomes visible.
+**Observed:** The `driver-auth-check` overlay with "Verifying access…" spinner never disappears. The overlay remains visible indefinitely. The `settings-content` div (hidden until auth check resolves via `waitForAuth()`) is never shown. The driver dashboard is effectively unusable after a password change until the browser tab is closed/reopened with a fresh login.
+**Console / network errors:** none; network tab is empty (no requests fired from DriverLayout init after the hang)
+**Root cause:** After a password change, Supabase invalidates the existing session and issues a new one. The `DriverLayout.astro` auth guard calls `supabase.auth.getSession()` — if this returns a null/expired session (because the old token was invalidated), the guard function may silently exit its `try` block without ever calling `authCheck.classList.add('hidden')`. Alternatively, `supabase.auth.getSession()` may hang waiting for a token refresh that never completes with the old refresh token. The `waitForAuth()` MutationObserver in `settings.astro` then deadlocks indefinitely waiting for the class to be set.
+**Status:** open
+**Severity:** C — After any successful password change, the driver is locked out of all driver dashboard pages (including the ability to revert their password) for the duration of that browser session. Also enables F33.
