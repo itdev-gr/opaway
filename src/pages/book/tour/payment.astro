@@ -406,18 +406,20 @@ import Layout from '../../../layouts/Layout.astro';
 
 		try {
 			const { data: inserted, error } = await supabase.from('tours').insert({
+				tour: tourName,
 				tour_id: tourId,
 				tour_name: tourName,
 				pickup: pickup,
 				pickup_location: pickup,
+				destination: tourName,
 				date, time,
 				passengers: parseInt(participants, 10),
 				participants: parseInt(participants, 10),
+				vehicle: vehicleName,
 				vehicle_name: vehicleName,
-				first_name: firstName,
-				last_name: lastName,
-				name: `${firstName} ${lastName}`,
+				name: `${firstName} ${lastName}`.trim(),
 				email, phone,
+				special_requests: driverNotes || null,
 				notes: driverNotes || null,
 				total_price: finalTotal,
 				ride_status: 'new',
@@ -425,6 +427,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_method: paymentMethod,
 				uid: user?.id || null,
 				partner_id: partnerId,
+				added_by_admin: false,
 			}).select().single();
 
 			if (error) throw error;
