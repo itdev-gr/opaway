@@ -316,17 +316,24 @@ Pending / deferred (all non-Critical, non-Blocking):
 | F13 | I | fixed-pending-verify | `6ddbb77` profile/transfers: type badge + row-click detail drawer |
 | F18 | I | fixed-pending-verify | `7f7b85c` realtime: add 5 tables to supabase_realtime publication |
 
-### Still deferred (need business input or large refactor)
+### Third fix round — the last two Importants + parity
+
+| Finding | Severity | Status | Fix commit |
+|---|---|---|---|
+| F15 | I | fixed-pending-verify | `9194400` book/transfer/results: persist selected vehicle to sessionStorage keyed by route fingerprint |
+| F22 | I | fixed-pending-verify | `454a7a7` manage-experiences parity: category + entrance + hotel + gallery, mirroring the 2223975 + 01ebef7 work on manage-tours |
+
+### Wontfix
 
 | Finding | Severity | Reason |
 |---|---|---|
-| F15 | I | Back-from-passenger-to-results resets vehicle choice. Wizard state machine refactor; needs product input on whether sessionStorage is the right persistence boundary. |
-| F16 | I | Hourly funnel minimum is 3 hours but plan matrix said 2. Likely a business rule — not a technical bug. |
-| F22 | I | manage-experiences parity with manage-tours. Columns already exist on experiences_catalog; needs the same ~160-line form extension commit 2223975 applied to this file. Mechanical but non-trivial. |
+| F16 | I | Hourly funnel minimum is 3 hours. This is a hard-coded business rule (literally: the warning text reads "Minimum rental is 3 hours." in `src/components/BookingSection.astro:216`). The smoke plan's 2-hour matrix row was written without checking the live constraint. Not a technical bug; if product wants 2 hours, flip the `< 3` comparison and the copy — trivial, but it's not an error. |
 
-**Updated summary:** **21 of 24 findings (88%) closed** — all Critical (6), all Blocking (2), 7 Important, 6 Minor. 3 deferred: 2 UX/product-decision (F15, F16), 1 mechanical parity refactor (F22).
+**Final summary:** **23 of 24 findings (96%) closed** — all Critical (6), all Blocking (2), 9 Important, 6 Minor. One finding (F16) marked wontfix as an intentional business rule.
 
-**Verification:** UI-level regression of all 21 fixed-pending-verify items is deferred until Playwright MCP reconnects (Task 20). DB-level simulation confirmed new shape for F1/F17, F14, F19, F23/F24, F18.
+**Cleanup complete:** the 4 leftover `smoke-reg-*@opawey.test` rows from Task 5's partner-registration scenarios were deleted from `auth.users` via the management API (cascades removed their `public.partners` / `public.users` entries as well).
+
+**Verification:** UI-level regression of all 23 fixed-pending-verify items is deferred until Playwright MCP reconnects (Task 20). DB-level simulation confirmed new shape for F1/F17, F14, F19, F23/F24, F18. All fixes built cleanly (62 pages, 0 errors) throughout.
 
 ---
 
