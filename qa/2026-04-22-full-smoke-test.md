@@ -2,8 +2,8 @@
 
 Branch: `feat/admin-booking-notifications-2026-04-22`
 Started: 2026-04-22
-Dev server port: _captured in Task 3_
-Stripe mode: _captured in Task 3_
+Dev server port: **4321** (http://localhost:4321)
+Stripe mode: **test** (publishable key `pk_test_*`)
 
 Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!2026-04-22`.
 
@@ -24,7 +24,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 |---|---|---|
 | Task 1  Mint test accounts | done | — |
 | Task 2  Init journal | done | — |
-| Task 3  Dev-server warmup | pending | — |
+| Task 3  Dev-server warmup | done | — |
 | Task 4  Public pages | pending | — |
 | Task 5  Auth flows | pending | — |
 | Task 6  User profile | pending | — |
@@ -47,7 +47,14 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 
 ## Section reports
 
-<!-- One heading per sweep task gets appended below as each task completes. -->
+### Section 3 — Dev-server warmup + environment
+
+- Dev server started cleanly on **http://localhost:4321**.
+- Stripe publishable key present and is **test mode** (`pk_test_*`) — Stripe card submissions will use test card `4242 4242 4242 4242` (CVC 123, exp 12/30).
+- Playwright MCP browser reached `/` — page title "Opawey", nav / main / hero / footer all present in snapshot. Browser drives OK.
+- No console / network errors on home-page load (baseline).
+
+No findings.
 
 ---
 
