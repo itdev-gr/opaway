@@ -1,0 +1,9 @@
+---
+interface Props { id: string }
+const { id } = Astro.props;
+---
+<span
+	data-notif-badge={id}
+	class="hidden ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-sm"
+	aria-live="polite"
+>0</span>
