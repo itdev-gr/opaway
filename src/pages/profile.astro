@@ -58,14 +58,30 @@ import ProfileContent from '../components/ProfileContent.astro';
 	if (!user) {
 		window.location.href = '/login';
 	} else {
+		// Pull the DB row so display_name / photo_url set via /profile/settings
+		// or ensureUserProfile() surface here (previously the page only read
+		// user_metadata and showed "—" when a name existed only in public.users).
+		const { data: userRow } = await supabase
+			.from('users')
+			.select('display_name, photo_url')
+			.eq('id', user.id)
+			.maybeSingle();
+
+		const displayName = (
+			userRow?.display_name
+			|| user.user_metadata?.display_name
+			|| user.user_metadata?.full_name
+			|| ''
+		).trim();
+		const photoURL = userRow?.photo_url || user.user_metadata?.avatar_url || '';
+
 		if (loadingEl) loadingEl.classList.add('hidden');
 		if (contentEl) contentEl.classList.remove('hidden');
-		if (displayNameEl) displayNameEl.textContent = (user.user_metadata?.display_name || user.user_metadata?.full_name || '').trim() || '—';
+		if (displayNameEl) displayNameEl.textContent = displayName || '—';
 		if (emailEl) emailEl.textContent = user.email || '—';
-		const photoURL = user.user_metadata?.avatar_url;
 		if (photoURL && avatarWrap && avatarImg) {
 			avatarImg.src = photoURL;
-			avatarImg.alt = user.user_metadata?.display_name || user.user_metadata?.full_name || 'Profile photo';
+			avatarImg.alt = displayName || 'Profile photo';
 			avatarWrap.classList.remove('hidden');
 		}
 	}
