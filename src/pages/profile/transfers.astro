@@ -8,11 +8,79 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		<div id="transfers-container">
 			<p class="text-neutral-500 text-sm">Loading...</p>
 		</div>
+
+		<!-- Detail drawer -->
+		<div id="tr-detail" class="fixed inset-0 z-[60] hidden">
+			<div id="tr-detail-overlay" class="absolute inset-0 bg-black/40"></div>
+			<div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+				<div class="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
+					<button type="button" id="tr-detail-close" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors" aria-label="Close">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+					</button>
+					<h3 id="tr-detail-title" class="text-lg font-bold text-neutral-900 mb-2">Transfer</h3>
+					<p id="tr-detail-ref" class="text-xs font-mono text-neutral-500 mb-5"></p>
+					<div id="tr-detail-body" class="grid grid-cols-2 gap-4 text-sm"></div>
+				</div>
+			</div>
+		</div>
 	</ProfileContent>
 </ProfileLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
+
+	type Row = Record<string, any>;
+
+	const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	const money = (n: any) => (n == null || n === '' || Number.isNaN(Number(n))) ? '' : `€${Number(n).toFixed(2)}`;
+
+	function field(label: string, value: any, opts: { full?: boolean } = {}) {
+		if (value == null || value === '') return '';
+		return `<div class="${opts.full ? 'col-span-2' : ''}">
+			<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-0.5">${esc(label)}</div>
+			<div class="${opts.full ? 'whitespace-pre-wrap' : ''} text-neutral-800">${esc(value)}</div>
+		</div>`;
+	}
+
+	function openDetail(row: Row) {
+		const modal = document.getElementById('tr-detail')!;
+		const title = document.getElementById('tr-detail-title')!;
+		const refEl = document.getElementById('tr-detail-ref')!;
+		const body  = document.getElementById('tr-detail-body')!;
+		const kind = row.booking_type === 'hourly' ? 'Hourly rental' : 'Transfer';
+		title.textContent = kind;
+		refEl.textContent = row.id ? `Ref ${String(row.id).slice(0, 8).toUpperCase()}` : '';
+		body.innerHTML = [
+			field('From', row.from),
+			field('To', row.to),
+			field('Date', row.date),
+			field('Time', row.time),
+			field('Return', row.return_date ? `${row.return_date} ${row.return_time ?? ''}`.trim() : ''),
+			field('Passengers', row.passengers),
+			field('Child seats', row.child_seats),
+			field('Vehicle', row.vehicle_name || row.vehicle_slug),
+			field('Hours', row.hours),
+			field('€ / hour', row.per_hour ? money(row.per_hour) : ''),
+			field('Total price', money(row.total_price)),
+			field('Card surcharge', money(row.card_surcharge)),
+			field('Payment method', row.payment_method),
+			field('Payment status', row.payment_status),
+			field('Ride status', row.ride_status),
+			field('Driver', row.driver),
+			field('Sign name', row.sign_name),
+			field('Customer notes', row.notes, { full: true }),
+			field('Driver notes', row.driver_notes, { full: true }),
+			field('Created', row.created_at),
+		].join('');
+		modal.classList.remove('hidden');
+	}
+
+	function closeDetail() { document.getElementById('tr-detail')?.classList.add('hidden'); }
+	document.getElementById('tr-detail-overlay')?.addEventListener('click', closeDetail);
+	document.getElementById('tr-detail-close')?.addEventListener('click', closeDetail);
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') closeDetail();
+	});
 
 	async function init() {
 		const { data: { user } } = await supabase.auth.getUser();
@@ -37,10 +105,14 @@ import ProfileContent from '../../components/ProfileContent.astro';
 			return;
 		}
 
-		const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+		const byId = new Map<string, Row>();
+		transfers.forEach((r: Row) => byId.set(r.id, r));
 
 		const rows = transfers.map(t => `
-			<tr class="border-b border-neutral-100">
+			<tr data-row-id="${esc(t.id)}" class="border-b border-neutral-100 cursor-pointer hover:bg-neutral-50 transition-colors">
+				<td class="py-3 px-4 text-sm">
+					<span class="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 text-neutral-700 uppercase tracking-wider">${esc(t.booking_type === 'hourly' ? 'Hourly' : 'Transfer')}</span>
+				</td>
 				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.date)}</td>
 				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.from)}</td>
 				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.to)}</td>
@@ -55,6 +127,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 				<table class="w-full text-left">
 					<thead>
 						<tr class="border-b border-neutral-200">
+							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
 							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
 							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">From</th>
 							<th class="py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">To</th>
@@ -67,6 +140,13 @@ import ProfileContent from '../../components/ProfileContent.astro';
 				</table>
 			</div>
 		`;
+
+		container.querySelectorAll<HTMLElement>('[data-row-id]').forEach(tr => {
+			tr.addEventListener('click', () => {
+				const row = byId.get(tr.dataset.rowId!);
+				if (row) openDetail(row);
+			});
+		});
 	}
 
 	document.addEventListener('astro:page-load', init);
