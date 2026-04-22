@@ -28,7 +28,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 4  Public pages | done | F1–F5 |
 | Task 5  Auth flows | done | F6–F8 |
 | Task 6  User profile | done | F9–F14 |
-| Task 7  Transfer funnel | pending | — |
+| Task 7  Transfer funnel | done | F15 |
 | Task 8  Hourly funnel | pending | — |
 | Task 9  Tour funnel | pending | — |
 | Task 10 Contact + experience forms | pending | — |
@@ -142,6 +142,44 @@ Screenshots: `qa/smoke-profile-profile-root.png`, `qa/smoke-profile-profile-dash
 
 ---
 
+### Section 7 — Transfer booking funnel
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 6 matrix rows executed + A1/A2/A3 additional tests.
+
+#### Auth gate spot-check
+
+Navigating to `/book/transfer/passenger` while logged out redirects to `/login?next=%2Fbook%2Ftransfer%2Fpassenger&reason=booking`. Gate is working correctly.
+
+#### Matrix results
+
+| # | Account | Scenario | Payment | Result | DB id | Notes |
+|---|---|---|---|---|---|---|
+| T1 | user | Athens→Piraeus one-way, 2 pax, 1 child seat, "smoke T1" | cash-onsite | **pass** | `24fa6e95` | `payment_method=cash`, `payment_status=pending`, `child_seats=1`, `uid=005fe47d`, `partner_id=null`, `ride_status=new`, `released_to_drivers=false` |
+| T2 | user | Athens→Airport one-way, 2 pax, "smoke T2 card" | card-onsite | **pass** | `5e151c96` | `card_surcharge=4.25` (5% of 85), `payment_status=pending`, all verified |
+| T3 | user | Athens→Delphi one-way, 2 pax, "smoke T3 stripe" | stripe | **pass** | `695ec4cb` | `payment_status=paid`, `payment_token=tok_1TP0iL...`, Stripe test card 4242 accepted |
+| T4 | user | Athens→Piraeus round-trip same day, 3 pax, sign "Welcome Mr Smoke", "smoke T4" | cash-onsite | **pass** | `937d36d6` | `return_date=2026-05-13`, `return_time=18:00`, `return_price=70`, `sign_name=Welcome Mr Smoke`, `passengers=3` |
+| T5 | hotel | Athens→Airport one-way, 2 pax, "smoke T5 hotel" | card-onsite | **pass** | `2082d1b0` | `uid=b1262d59` (hotel), `partner_id=b1262d59` (set correctly for hotel), `card_surcharge=4.25` |
+| T6 | agency | Athens→Airport one-way, 2 pax, "smoke T6 agency" | stripe | **pass** | `17fd6fa5` | `uid=17ade4af` (agency), `partner_id=17ade4af` (set correctly), `payment_status=paid`, 10% partner discount applied (€85→€76.50) |
+
+All 6 bookings: `booking_type=transfer`, `ride_status=new`, `released_to_drivers=false`, `total_price>0`.
+
+#### Additional tests
+
+**A1 — Abandonment**: Started T7 (Athens→Piraeus), reached payment step, navigated away, then re-opened the same payment URL. Result: **acceptable** — page repopulates from URL params correctly (order summary, vehicle, price all shown; no error banner). State is stored in the URL, not session storage.
+
+**A2 — Back button**: From payment page, clicked Back → landed on `/book/transfer/passenger` with **all prior inputs intact** (first name, last name, email, phone). Clicked Back again → landed on `/book/transfer/results`. Note: vehicle selection bar did not re-render as "selected" (JS state reset on page reload), but vehicle cards loaded correctly and sidebar showed correct route. Minor UX finding: going back to results requires re-selecting vehicle (F15).
+
+**A3 — Mobile viewport (390×844)**: Navigated to `/book/transfer`, filled step 1. Screenshot: `qa/smoke-T-mobile.png`. No horizontal overflow (`scrollWidth == clientWidth = 390`). Sub-nav tabs, form fields, date/time inputs, passenger counter, and "See prices" button are all accessible and correctly sized. No text-too-small or unclickable-button issues detected. **Pass**.
+
+#### Stripe notes
+
+- Stripe `card` element v3 requires both `exp-date` and `postal` fields. Postal code (`name="postal"`) must be filled or Stripe returns "Your postal code is incomplete." This is not a bug — it's Stripe's default behavior for test mode.
+- Stripe iframe is mounted lazily and `stripe-expand` div uses `.hidden` class. The Tailwind `hidden` class sets `display: none`, so the iframe is not visible/interactable until the Stripe payment option is activated via a proper click event (dispatchEvent needed when using JS evaluate).
+
+**Summary:** 6/6 pass, 1 finding raised (F15).
+
+---
+
 ## Punch list
 
 <!-- One `### F<N>` block per finding, added in the order discovered.
@@ -161,6 +199,23 @@ Finding template:
 **Fixed in:** <commit sha>
 **Verified:** <re-run note>
 -->
+
+### F15 — I — transfer-results — Vehicle selection state not preserved on back navigation from passenger page
+
+**Page:** `/book/transfer/results`
+**Preconditions:** Navigate results → select vehicle → continue to passenger → click Back
+**Repro:**
+1. Complete step 1 on `/book/transfer` and land on `/book/transfer/results`
+2. Click a vehicle card (e.g. Sedan) — selection bar appears showing "Your choice: Sedan"
+3. Click Continue → `/book/transfer/passenger` loads with correct data
+4. Click Back → returns to `/book/transfer/results`
+**Expected:** The previously selected vehicle is highlighted and the "Continue" selection bar shows "Your choice: Sedan".
+**Observed:** Page reloads from history; vehicle cards re-render via JS. The selection bar is hidden (`selectionBarHidden=true`) and `selected-name` is empty — the user must re-select a vehicle to proceed. The Tailwind border highlight appears on the first card (likely a CSS class-inheritance artifact from the previous render), but the JS state (`selectedVehicleSlug`) is reset to empty.
+**Console / network errors:** none
+**Screenshot:** not captured (minor UX issue)
+**Status:** open
+
+---
 
 ### F1 — C — contact-form — Contact form inserts `passengers` column that does not exist; shows false success
 
