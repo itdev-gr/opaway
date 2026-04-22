@@ -31,7 +31,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 7  Transfer funnel | done | F15 |
 | Task 8  Hourly funnel | done | F16 |
 | Task 9  Tour funnel | done | — (no new findings) |
-| Task 10 Contact + experience forms | pending | — |
+| Task 10 Contact + experience forms | done | F17 |
 | Task 11 Admin — bookings | pending | — |
 | Task 12 Admin — management | pending | — |
 | Task 13 Admin — catalog | pending | — |
@@ -548,3 +548,101 @@ Finding template:
 **Screenshot:** `qa/smoke-profile-profile-experiences.png`
 **Root cause:** The `/experiences` public page was rewritten to a request-only form (commit `c7b4ec9`) which submits to `public.requests`. But the profile page `/profile/experiences` still reads from the legacy `public.experiences` table. The two halves of the feature are now disconnected — users submit to `requests`, but their "My experiences" view reads from `experiences`. No experience request is ever surfaced back to the user.
 **Status:** open
+
+---
+
+### Section 10 — Contact + experience request forms
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`.
+
+Pre-seed: inserted one row into `public.experiences_catalog` (id `f6aeed25`) titled "Smoke E1 Experience" so E1 has a catalog entry to select.
+
+#### C1 — Contact valid submission (authenticated)
+
+| Metric | Result |
+|---|---|
+| Account | smoke-user (uid `005fe47d`) |
+| Network call | `POST /rest/v1/requests` → **400** |
+| Error code | `PGRST204: Could not find the 'passengers' column of 'requests' in the schema cache` |
+| UI behaviour | Error banner shown: "Something went wrong. Please try again." — form stays visible |
+| DB row | **None** — confirmed by SQL (no row for uid `005fe47d` or email `smoke-c1-auth-2026-04-22@opawey.test` post-test) |
+| F1 reference | Root cause identical to F1 (`passengers` field does not exist; correct column is `participants`). **F1 is still open.** |
+| F1 false-success | F1 originally documented a false success banner for logged-out context. Current re-test (both authenticated and logged-out) shows the error banner correctly — the false-success UI behaviour may have been fixed or was a prior misread. The insert failure is confirmed and unchanged. No new finding raised; referencing F1. |
+
+#### C2 — Contact empty submission (logged out)
+
+| Metric | Result |
+|---|---|
+| Account | logged out |
+| Action | Click "Send Message" with all fields empty |
+| Result | **pass** — custom JS validation fires before submission; inline error "Please select your country." shown; no network request sent |
+| Validation pattern | Sequential per-field checks; shows first missing field error, not all at once. Fields validated in order: country → city → name → last name → phone → email → passengers → vehicle type → message |
+
+No new finding. Validation works as expected.
+
+#### E1 — Experience request valid submission (logged out)
+
+| Metric | Result |
+|---|---|
+| Account | logged out |
+| Network call | `POST /rest/v1/requests` → **201** |
+| UI behaviour | "Request sent!" success panel shown; form body hidden |
+| Screenshot | `qa/smoke-E1-success.png` |
+| DB row confirmed | id `37718da7` |
+| `source` | `"experience"` |
+| `experience_id` | `"f6aeed25-bd12-4470-907e-41d0ab4e2fc2"` (UUID from `experiences_catalog`) — **populated** |
+| `experience_name` | `"Smoke E1 Experience"` — **populated** |
+| `pickup_location` | `"Athens city center"` |
+| `date` / `time` | `"2026-06-15"` / `"10:00"` |
+| `participants` | `2` |
+| `name` / `last_name` | `"Smoke"` / `"E1"` |
+| `phone` | `"+30 000"` |
+| `special_requests` | `"smoke E1"` |
+| `user_id` | `null` (logged out — correct) |
+
+**Pass.** All fields written correctly. `source='experience'` confirmed per 2026-04-20 migration.
+
+Note: `experiences_catalog` was empty before this test run (Section 4 noted "No experiences in DB"). One catalog entry was seeded as a pre-condition for E1. The experience form itself is healthy; the DB round-trip succeeded end-to-end.
+
+#### E2 — Experience request empty submission (logged out)
+
+| Metric | Result |
+|---|---|
+| Account | logged out |
+| Action | Click "Send request" with all fields empty |
+| Result | **pass** — all 6 field errors shown simultaneously inline: experience-select ("Please select an experience."), experience-date ("Please select an experience date."), r-first-name ("First name is required."), r-last-name ("Last name is required."), r-email ("Email is required."), r-phone ("Phone number is required.") |
+| Network | No request sent |
+
+Better validation UX than contact form (all errors shown simultaneously vs first-error-stops pattern).
+
+#### E3 — Experience request without experience selected
+
+The form enforces experience selection — `experienceId` is validated before submit, and an error is shown if blank. There is no UI path to submit with `experience_id = NULL`. **E3 not applicable — form prevents null experience_id submission.**
+
+**Summary:** 1 new finding raised (F17). F1 (contact `passengers` column mismatch) confirmed still open in authenticated context — root cause unchanged; F17 documents the auth-context reproduction and clarifies the F1 false-success discrepancy. E1 experience form end-to-end pass. E2 and C2 validation both pass.
+
+**Screenshots:** `qa/smoke-E1-success.png`
+
+---
+
+### F17 — C — contact-form — Contact form `passengers` column mismatch causes all submissions to fail with 400; F1 root cause confirmed still open in authenticated context
+
+**Page:** `/contact`
+**Preconditions:** logged in as smoke-user (uid `005fe47d`)
+**Repro:**
+1. Log in as smoke-user
+2. Navigate to `/contact`
+3. Fill all required fields (country=Greece, city=Athens, name=Smoke User, last\_name=C1, phone=+30 000, email=smoke-c1-auth-2026-04-22@opawey.test, passengers=2, vehicle=Sedan, message=Auth-user contact submission)
+4. Click "Send Message"
+**Expected:** Row inserted into `public.requests`; success state shown.
+**Observed:** `POST /rest/v1/requests` returns 400 `PGRST204: Could not find the 'passengers' column of 'requests' in the schema cache`. Error banner "Something went wrong. Please try again." displayed correctly (no false success). No DB row created.
+**Console / network errors:**
+```
+[ERROR] Failed to load resource: 400 @ https://wjqfcijisslzqxesbbox.supabase.co/rest/v1/requests
+[ERROR] {code: PGRST204, details: null, hint: null, message: Could not find the 'passengers' column of 'requests' in the schema cache}
+```
+**Root cause:** `/contact.astro` sends `passengers: parseInt(passengers)` but the `requests` table column is named `participants` (integer). Confirmed by checking `requests` schema: `participants int` exists; `passengers` does not. Affects both authenticated and unauthenticated users — 100% of contact form submissions fail. F1 was first raised from a logged-out session in Section 4; this confirms the same bug in an authenticated context.
+**Note on F1 false-success:** F1 originally documented that the UI showed a false success despite the 400. Current re-test shows the error banner correctly. The UI behaviour may have been silently fixed (error path now correctly caught), but the root cause (wrong column name) remains unresolved. F1 status: **open**.
+**Screenshot:** none (same error as F1)
+**Status:** open
+**Fix:** In `contact.astro` submit handler, rename `passengers: parseInt(passengers)` → `participants: parseInt(passengers)` (or rename the field to `participants` throughout).
