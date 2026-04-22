@@ -340,6 +340,14 @@ import Layout from '../../layouts/Layout.astro';
 					select.appendChild(opt);
 				});
 
+				// Pre-select a tour passed via ?tour=<id> and scroll to the form.
+				const presetId = new URLSearchParams(window.location.search).get('tour');
+				if (presetId && docs.some(d => d.id === presetId)) {
+					select.value = presetId;
+					select.dispatchEvent(new Event('change'));
+					const formEl = document.getElementById('tour-form');
+					formEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
 			}
 
 			/* ── Catalog grid ──────────────────────────────────────────── */
@@ -373,7 +381,7 @@ import Layout from '../../layouts/Layout.astro';
 								<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">&euro;${dp.discountedPrice.toFixed(2)}</p>
 							</div>
 							<a
-								href="/book/tour"
+								href="/book/tour?tour=${encodeURIComponent(t.id)}#tour-form"
 								class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
 							>
 								Book Now
