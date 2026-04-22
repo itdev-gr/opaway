@@ -261,7 +261,7 @@ const nav = [
 					.select('type, display_name')
 					.eq('id', session.user.id)
 					.maybeSingle();
-				if (data?.type !== 'admin') { window.location.href = '/'; return; }
+				if (data?.type !== 'admin') { window.location.href = '/login'; return; }
 				if (userNameEl) {
 					userNameEl.textContent =
 						data?.display_name?.trim() ||
@@ -298,7 +298,7 @@ const nav = [
 				);
 				window.addEventListener('beforeunload', () => unsubAdminNotif());
 
-			} catch { window.location.href = '/'; }
+			} catch { window.location.href = '/login'; }
 		})();
 	}
 
