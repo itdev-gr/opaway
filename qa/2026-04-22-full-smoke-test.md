@@ -30,7 +30,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 6  User profile | done | F9–F14 |
 | Task 7  Transfer funnel | done | F15 |
 | Task 8  Hourly funnel | done | F16 |
-| Task 9  Tour funnel | pending | — |
+| Task 9  Tour funnel | done | — (no new findings) |
 | Task 10 Contact + experience forms | pending | — |
 | Task 11 Admin — bookings | pending | — |
 | Task 12 Admin — management | pending | — |
@@ -215,6 +215,57 @@ H5 agency: 10% partner discount applied (€180→€162 base), then 5% card sur
 **Screenshots:** `qa/smoke-H1-success.png`, `qa/smoke-H2-success.png`, `qa/smoke-H3-success.png`, `qa/smoke-H4-success.png`, `qa/smoke-H5-success.png`
 
 **Summary:** 5/5 pass, 1 finding raised (F16).
+
+---
+
+### Section 9 — Tour booking funnel
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 6 matrix rows executed.
+
+#### Seed
+
+- `Smoke Day Tour` inserted into `public.tours_catalog` → id `7b8cf9b5-00bf-4b98-863b-49966e457250`
+- `Smoke Multi Day` inserted into `public.tours_catalog` → id `d8d51bd2-aa7b-4ae3-b4dd-b2f652f0aa4e`
+
+#### Pre-flight note (F4 status)
+
+As noted in Section 4, "Book Now" catalog cards still link to `/book/tour` with no tour ID pre-selected (F4 still open). All R1–R6 rows used the dropdown to select tours as the workaround.
+
+#### Matrix results
+
+| # | Account | Tour | Payment | Result | DB id | Notes |
+|---|---|---|---|---|---|---|
+| R1 | user | Smoke Day Tour (day-tour) | cash-onsite | **pass** | `cec024b2` | `name=Smoke QA1`, `payment_method=cash`, `payment_status=pending`, `total_price=120`, `uid=005fe47d`, `partner_id=null`, `tour_id=7b8cf9b5` (UUID), `vehicle=Sedan` |
+| R2 | user | Smoke Day Tour (day-tour) | card-onsite | **pass** | `ba8bc53d` | `payment_method=card-onsite`, `total_price=126` (5% surcharge on 120), `payment_status=pending` |
+| R3 | user | Smoke Day Tour (day-tour) | stripe (4242) | **pass** | `4844c2d3` | `payment_method=stripe`, `payment_status=paid`, `total_price=120` (no surcharge on Stripe) |
+| R4 | user | Smoke Multi Day (multiday-tour) | cash-onsite | **pass** | `4c9564e1` | `tour_id=d8d51bd2` (correct multiday UUID), `total_price=500`, no hotel dialog triggered on passenger step |
+| R5 | hotel | Smoke Day Tour (day-tour) | card-onsite | **pass** | `0d2475f6` | `uid=b1262d59` (hotel), `partner_id=b1262d59` (set correctly), `total_price=126` |
+| R6 | agency | Smoke Day Tour (day-tour) | stripe | **pass** | `2cd56050` | `uid=17ade4af` (agency), `partner_id=17ade4af` (set correctly), `total_price=108` (10% agency discount applied), `payment_status=paid` |
+
+#### DB verification summary
+
+All 6 rows confirmed in `public.tours`:
+
+| Row | `name` (single field) | `tour`+`tour_name` | `vehicle`+`vehicle_name` | `uid` correct | `partner_id` | `payment_method` | `payment_status` | `tour_id` is UUID |
+|---|---|---|---|---|---|---|---|---|
+| R1 | Smoke QA1 | yes | Sedan / Sedan | yes | null | cash | pending | yes |
+| R2 | Smoke QA2 | yes | Sedan / Sedan | yes | null | card-onsite | pending | yes |
+| R3 | Smoke QA3 | yes | Sedan / Sedan | yes | null | stripe | paid | yes |
+| R4 | Smoke QA4 | yes | Sedan / Sedan | yes | null | cash | pending | yes |
+| R5 | Smoke QA5 | yes | Sedan / Sedan | hotel uid | hotel uid | card-onsite | pending | yes |
+| R6 | Smoke QA6 | yes | Sedan / Sedan | agency uid | agency uid | stripe | paid | yes |
+
+#### Regression check (commit 950e471)
+
+No "Failed to save the booking. Please try again." error observed in any of 6 runs. The fix removing non-existent `first_name`/`last_name` columns is confirmed working. The `name` column is correctly stored as a single full-name string (e.g. "Smoke QA1").
+
+#### Multi-day tour note
+
+`hotel_option='include-booking'` on the Smoke Multi Day tour did **not** trigger any hotel dialog on the passenger step. No finding raised — the feature may not be implemented on the front-end booking form.
+
+**Screenshots:** `qa/smoke-R1-success.png`, `qa/smoke-R2-success.png`, `qa/smoke-R3-success.png`, `qa/smoke-R4-success.png`, `qa/smoke-R5-success.png`, `qa/smoke-R6-success.png`
+
+**Summary:** 6/6 pass, 0 new findings.
 
 ---
 
