@@ -340,7 +340,8 @@ Finding template:
 ```
 **Screenshot:** `qa/smoke-public-contact.png`
 **Root cause:** `/contact.astro` sends `passengers` field; the `requests` table uses `participants` (integer). The success state is shown unconditionally before checking `error`.
-**Status:** open
+**Status:** fixed-pending-verify
+**Fixed in:** `b4f0c93` — renamed payload key in `src/pages/contact.astro:331` from `passengers` to `participants`. DB-level insert with the new shape succeeds (returns row). UI-level regression pending Playwright MCP restoration (will check that success banner only shows on actual 201, not false-positive).
 
 ---
 
@@ -642,10 +643,10 @@ The form enforces experience selection — `experienceId` is validated before su
 [ERROR] {code: PGRST204, details: null, hint: null, message: Could not find the 'passengers' column of 'requests' in the schema cache}
 ```
 **Root cause:** `/contact.astro` sends `passengers: parseInt(passengers)` but the `requests` table column is named `participants` (integer). Confirmed by checking `requests` schema: `participants int` exists; `passengers` does not. Affects both authenticated and unauthenticated users — 100% of contact form submissions fail. F1 was first raised from a logged-out session in Section 4; this confirms the same bug in an authenticated context.
-**Note on F1 false-success:** F1 originally documented that the UI showed a false success despite the 400. Current re-test shows the error banner correctly. The UI behaviour may have been silently fixed (error path now correctly caught), but the root cause (wrong column name) remains unresolved. F1 status: **open**.
+**Note on F1 false-success:** F1 originally documented that the UI showed a false success despite the 400. Current re-test shows the error banner correctly. The UI behaviour may have been silently fixed (error path now correctly caught), but the root cause (wrong column name) remains unresolved.
 **Screenshot:** none (same error as F1)
-**Status:** open
-**Fix:** In `contact.astro` submit handler, rename `passengers: parseInt(passengers)` → `participants: parseInt(passengers)` (or rename the field to `participants` throughout).
+**Status:** fixed-pending-verify
+**Fixed in:** `b4f0c93` (same fix as F1 — single-line rename)
 
 ---
 
