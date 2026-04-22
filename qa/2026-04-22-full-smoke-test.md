@@ -27,7 +27,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 3  Dev-server warmup | done | — |
 | Task 4  Public pages | done | F1–F5 |
 | Task 5  Auth flows | done | F6–F8 |
-| Task 6  User profile | pending | — |
+| Task 6  User profile | done | F9–F14 |
 | Task 7  Transfer funnel | pending | — |
 | Task 8  Hourly funnel | pending | — |
 | Task 9  Tour funnel | pending | — |
@@ -107,6 +107,38 @@ Screenshots captured: `qa/smoke-authgated-profile-dashboard.png`, `qa/smoke-auth
 - No console / network errors on home-page load (baseline).
 
 No findings.
+
+---
+
+### Section 6 — User profile dashboard
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Seeds all succeeded (4/4 rows inserted).
+
+#### Pre-seed results
+
+| Seed | Table | Result |
+|---|---|---|
+| Transfer (Athens → Piraeus, Sedan) | `public.transfers` | OK — id `7c613fcf` |
+| Hourly (Athens → Athens, Van) | `public.transfers` | OK — id `a5724736` |
+| Tour (Acropolis Classic) | `public.tours` | OK — id `ad90d25b` |
+| Experience request (Greek Cooking Class) | `public.requests` | OK — id `5d4d4644` |
+
+#### Page sweep results
+
+| # | URL | Slug | Result | Notes |
+|---|---|---|---|---|
+| 1 | `/profile` | profile-root | **fail** | Does not redirect to `/profile/dashboard`; renders incomplete profile info page; Name field shows "—" (F9) |
+| 2 | `/profile/dashboard` | profile-dashboard | **partial-pass** | Renders, auth works, navbar shows "Smoke User"; but no stat cards or booking summary — just a welcome text stub (F10) |
+| 3 | `/profile/settings` | profile-settings | **partial-pass** | Display name edit works (DB confirmed); password change works and was reverted; but no avatar upload UI (F11), and current-password field is cosmetic/not verified (F12) |
+| 4 | `/profile/transfers` | profile-transfers | **partial-pass** | Both seeded transfers shown (transfer + hourly); empty-state renders correctly; but rows are not clickable (no detail view) (F13); booking_type not shown in table |
+| 5 | `/profile/trips` | profile-trips | pass | Tour row shows correctly (Date, Tour, Pickup, Passengers, Status); row click: no detail view (same as transfers, consistent if by design) |
+| 6 | `/profile/experiences` | profile-experiences | **fail** | Reads from `public.experiences` (legacy), not `public.requests` (current); seeded experience request invisible; always shows empty state (F14) |
+
+**Summary:** 1 pass, 1 partial-pass (dashboard), 2 partial-pass (settings, transfers), 1 fail (profile-root), 1 fail (experiences). Findings F9–F14 raised.
+
+**Password revert:** confirmed — changed to `SmokeTempPw!2026-04-22`, verified login, reverted to `SmokeTest!2026-04-22`, verified login.
+
+Screenshots: `qa/smoke-profile-profile-root.png`, `qa/smoke-profile-profile-dashboard.png`, `qa/smoke-profile-profile-settings.png`, `qa/smoke-profile-profile-transfers.png`, `qa/smoke-profile-profile-trips.png`, `qa/smoke-profile-profile-experiences.png`.
 
 ---
 
@@ -258,4 +290,100 @@ Finding template:
 **Console / network errors:** none
 **Screenshot:** `qa/smoke-F7-hotel-accesses-admin.png` (captured on `/` after redirect)
 **Root cause:** Admin page uses a client-side auth guard (React island) rather than server-side middleware. Redirect target is `/` instead of `/login`. Other protected partner dashboards use a different guard that correctly targets `/login`.
+**Status:** open
+
+---
+
+### F9 — I — profile-root — `/profile` does not redirect to `/profile/dashboard`; renders a minimal account-info page instead
+
+**Page:** `/profile`
+**Preconditions:** logged in as smoke-user
+**Repro:**
+1. Navigate to `/profile`
+**Expected:** Redirect (302/client) to `/profile/dashboard`.
+**Observed:** `/profile` renders its own page (heading "Profile", showing Name = "—" and Email fields, and a "Sign out" button). URL stays at `/profile`; no redirect occurs.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-root.png`
+**Notes:** Name field shows "—" even though `public.users.display_name` is "Smoke User". The /profile page appears to not query `public.users` at all. The sidebar nav shows a "Dashboard" link that goes to `/profile/dashboard` — indicating the two pages serve different purposes but `/profile` is an orphaned, incomplete view.
+**Status:** open
+
+---
+
+### F10 — I — profile-dashboard — Dashboard has no stat cards or booking summary; renders only a welcome text paragraph
+
+**Page:** `/profile/dashboard`
+**Preconditions:** logged in as smoke-user; 2 transfers, 1 tour, 1 experience request seeded
+**Repro:**
+1. Navigate to `/profile/dashboard`
+**Expected:** Summary cards showing counts of transfers, trips, experiences; quick links.
+**Observed:** Only text: "Welcome to your dashboard. Use the menu to view transfers, trips, experiences, or settings." No stat cards, no counts, no quick links to bookings.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-dashboard.png`
+**Notes:** Navbar shows "Smoke User" correctly. Dashboard appears to be a placeholder/stub page.
+**Status:** open
+
+---
+
+### F11 — M — profile-settings — Settings page has no avatar upload UI; `photo_url` column is never populated via UI
+
+**Page:** `/profile/settings`
+**Preconditions:** logged in as smoke-user
+**Repro:**
+1. Navigate to `/profile/settings`
+2. Look for avatar/profile picture upload control
+**Expected:** An avatar upload section allowing the user to pick an image file, which uploads to Supabase Storage `images` bucket and updates `public.users.photo_url`.
+**Observed:** No avatar upload section exists anywhere on the settings page. The page only has "Profile Information" (display name + email + provider badge), "Change Password", and "Danger Zone".
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-settings.png`
+**Root cause:** Feature not implemented. `public.users.photo_url` is confirmed NULL for smoke-user.
+**Status:** open
+
+---
+
+### F12 — C — profile-settings — "Current Password" field in Change Password is cosmetic; password is changed without verifying it
+
+**Page:** `/profile/settings`
+**Preconditions:** logged in as smoke-user
+**Repro:**
+1. Navigate to `/profile/settings`
+2. Fill "Current Password" with any arbitrary string (even incorrect password)
+3. Fill "New Password" and "Confirm New Password" with valid matching passwords
+4. Click "Update Password"
+**Expected:** The form should verify the current password against the stored credential before updating; an incorrect current password should return an error.
+**Observed:** Password is updated unconditionally — `supabase.auth.updateUser({ password: newPw })` is called directly without verifying `currentPassword`. The "Current Password" input is visually present but its value is never used in the handler code.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-settings.png`
+**Root cause:** `settings.astro` password handler reads `newPasswordInput` and `confirmPasswordInput` only; `currentPasswordInput.value` is never passed to `supabase.auth.reauthenticate()` or similar. Any logged-in attacker with brief access to an unlocked session can change the password silently.
+**Status:** open
+
+---
+
+### F13 — I — profile-transfers — Transfer rows are not clickable; no detail view on row click
+
+**Page:** `/profile/transfers`
+**Preconditions:** logged in as smoke-user; 2 transfer rows seeded
+**Repro:**
+1. Navigate to `/profile/transfers`
+2. Click either transfer row
+**Expected:** Navigation to a detail view (e.g. `/profile/transfers/<id>`) or an inline expanded detail panel.
+**Observed:** Row click fires no action. URL stays at `/profile/transfers`. No detail view exists.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-transfers.png`
+**Notes:** Rows display: Date, From, To, Vehicle, Status, Price — price column present. `booking_type` is not shown (cannot distinguish transfer vs hourly from list). Empty-state: "No transfers yet. Book a transfer." renders correctly with working link.
+**Status:** open
+
+---
+
+### F14 — C — profile-experiences — `/profile/experiences` queries `public.experiences` table, not `public.requests`; experience requests seeded into `requests` are invisible to users
+
+**Page:** `/profile/experiences`
+**Preconditions:** logged in as smoke-user; experience request seeded in `public.requests` with `source='experience'`, `user_id='005fe47d...'`
+**Repro:**
+1. Seed a row in `public.requests` with `source='experience'` for the smoke user
+2. Navigate to `/profile/experiences`
+**Expected:** The seeded experience request appears in the list.
+**Observed:** Page queries `public.experiences` table (column `uid`), not `public.requests`. The seeded `requests` row is invisible. Page shows "No experiences yet."
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-profile-profile-experiences.png`
+**Root cause:** The `/experiences` public page was rewritten to a request-only form (commit `c7b4ec9`) which submits to `public.requests`. But the profile page `/profile/experiences` still reads from the legacy `public.experiences` table. The two halves of the feature are now disconnected — users submit to `requests`, but their "My experiences" view reads from `experiences`. No experience request is ever surfaced back to the user.
 **Status:** open
