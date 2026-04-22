@@ -287,7 +287,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			/* Row-click → reservation detail modal */
 			tbody2?.querySelectorAll<HTMLElement>('[data-row-id]').forEach(tr => {
 				tr.addEventListener('click', (e) => {
-					if ((e.target as HTMLElement).closest('input, select, button, [data-release]')) return;
+					if ((e.target as HTMLElement).closest('input, select, button, [data-release], .driver-text, .driver-display')) return;
 					const row = rowsById.get(tr.dataset.rowId!);
 					if (row) (window as any).OpawayReservationDetail.open(row, 'tour');
 				});
