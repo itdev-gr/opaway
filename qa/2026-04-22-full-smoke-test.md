@@ -29,7 +29,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 5  Auth flows | done | F6–F8 |
 | Task 6  User profile | done | F9–F14 |
 | Task 7  Transfer funnel | done | F15 |
-| Task 8  Hourly funnel | pending | — |
+| Task 8  Hourly funnel | done | F16 |
 | Task 9  Tour funnel | pending | — |
 | Task 10 Contact + experience forms | pending | — |
 | Task 11 Admin — bookings | pending | — |
@@ -180,6 +180,44 @@ All 6 bookings: `booking_type=transfer`, `ride_status=new`, `released_to_drivers
 
 ---
 
+### Section 8 — Hourly booking funnel
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 5 matrix rows executed.
+
+#### Pre-run note
+
+The hourly booking form enforces a minimum of 3 hours. Matrix rows H1 and H5 specify 2 hours, which the form blocks with an alert "Minimum rental is 3 hours." Both rows were executed at 3 hours (the enforced minimum). This is logged as F16.
+
+#### Matrix results
+
+| # | Account | Hours (spec→actual) | Pickup | Pax | Payment | Result | DB id |
+|---|---|---|---|---|---|---|---|
+| H1 | user | 2→3 (min enforced) | Athens, Greece | 2 | cash-onsite | **pass** | `8adee9b6` |
+| H2 | user | 4 | Athens, Greece | 3 | card-onsite | **pass** | `09a29ae1` |
+| H3 | user | 6 | Athens, Greece | 2 | stripe (4242) | **pass** | `e752b6ef` |
+| H4 | user | 12 | Athens | 4 | cash-onsite | **pass** | `f44755d7` |
+| H5 | agency | 2→3 (min enforced) | Athens, Greece | 2 | card-onsite | **pass** | `3d20d1cb` |
+
+#### DB verification summary
+
+All 5 rows: `booking_type='hourly'`, `per_hour=60`, `from`=`to` (same location, hourly rental), `ride_status='new'`, `released_to_drivers=false`.
+
+| Row | hours | per_hour | total_price | base_price | card_surcharge | payment_method | payment_status | uid | partner_id |
+|---|---|---|---|---|---|---|---|---|---|
+| H1 | 3 | 60 | 180 | 180 | 0 | cash | pending | 005fe47d | null |
+| H2 | 4 | 60 | 252 | 240 | 12 | card-onsite | pending | 005fe47d | null |
+| H3 | 6 | 60 | 360 | 360 | 0 | stripe | paid | 005fe47d | null |
+| H4 | 12 | 60 | 720 | 720 | 0 | cash | pending | 005fe47d | null |
+| H5 | 3 | 60 | 170.10 | 162 | 8.10 | card-onsite | pending | 17ade4af | 17ade4af |
+
+H5 agency: 10% partner discount applied (€180→€162 base), then 5% card surcharge (€162×1.05=€170.10). `partner_id` set correctly to agency uid.
+
+**Screenshots:** `qa/smoke-H1-success.png`, `qa/smoke-H2-success.png`, `qa/smoke-H3-success.png`, `qa/smoke-H4-success.png`, `qa/smoke-H5-success.png`
+
+**Summary:** 5/5 pass, 1 finding raised (F16).
+
+---
+
 ## Punch list
 
 <!-- One `### F<N>` block per finding, added in the order discovered.
@@ -213,6 +251,23 @@ Finding template:
 **Observed:** Page reloads from history; vehicle cards re-render via JS. The selection bar is hidden (`selectionBarHidden=true`) and `selected-name` is empty — the user must re-select a vehicle to proceed. The Tailwind border highlight appears on the first card (likely a CSS class-inheritance artifact from the previous render), but the JS state (`selectedVehicleSlug`) is reset to empty.
 **Console / network errors:** none
 **Screenshot:** not captured (minor UX issue)
+**Status:** open
+
+---
+
+### F16 — I — hourly-funnel — Hourly booking form enforces 3-hour minimum; matrix rows H1 and H5 (2 hours) cannot be booked as specified
+
+**Page:** `/book/hourly`
+**Preconditions:** any authenticated user
+**Repro:**
+1. Navigate to `/book/hourly`
+2. Set Hours to 2 using the "Fewer hours" button (default is 3; click "−" once)
+3. Click "See prices"
+**Expected:** Either (a) 2-hour bookings are accepted, or (b) the "−" button is disabled at 3 (minimum), preventing the user from reaching an invalid state.
+**Observed:** The form allows decrement to 2 but then blocks submission with alert "Minimum rental is 3 hours." and a validation error. The booking cannot proceed at 2 hours — the funnel enforces a 3-hour floor. Matrix rows H1 and H5 were therefore executed at 3 hours instead of 2.
+**Console / network errors:** none
+**Screenshot:** none (form-level validation, no crash)
+**Notes:** This may be intentional business logic. If the minimum is 3 hours the counter should not allow decrement below 3, or the matrix should be updated to reflect the minimum. The "−" button remains enabled at 2 but does not allow proceeding.
 **Status:** open
 
 ---
