@@ -119,49 +119,58 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			Change Password
 		</h2>
 
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-			<div>
-				<label for="pw-current" class="block text-sm font-medium text-neutral-700 mb-1">Current Password</label>
-				<input
-					type="password"
-					id="pw-current"
-					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
-					placeholder="Enter current password"
-				/>
+		<form id="password-form" autocomplete="on" onsubmit="return false">
+			<input type="email" name="username" autocomplete="username" value="" class="hidden" aria-hidden="true" tabindex="-1" />
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+				<div>
+					<label for="pw-current" class="block text-sm font-medium text-neutral-700 mb-1">Current Password</label>
+					<input
+						type="password"
+						id="pw-current"
+						name="current-password"
+						autocomplete="current-password"
+						class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+						placeholder="Enter current password"
+					/>
+				</div>
+				<div>
+					<label for="pw-new" class="block text-sm font-medium text-neutral-700 mb-1">New Password</label>
+					<input
+						type="password"
+						id="pw-new"
+						name="new-password"
+						autocomplete="new-password"
+						class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+						placeholder="Enter new password"
+					/>
+				</div>
+				<div>
+					<label for="pw-confirm" class="block text-sm font-medium text-neutral-700 mb-1">Confirm New Password</label>
+					<input
+						type="password"
+						id="pw-confirm"
+						name="new-password-confirm"
+						autocomplete="new-password"
+						class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
+						placeholder="Confirm new password"
+					/>
+				</div>
 			</div>
-			<div>
-				<label for="pw-new" class="block text-sm font-medium text-neutral-700 mb-1">New Password</label>
-				<input
-					type="password"
-					id="pw-new"
-					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
-					placeholder="Enter new password"
-				/>
-			</div>
-			<div>
-				<label for="pw-confirm" class="block text-sm font-medium text-neutral-700 mb-1">Confirm New Password</label>
-				<input
-					type="password"
-					id="pw-confirm"
-					class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-[#0C6B95] focus:ring-1 focus:ring-[#0C6B95] outline-none transition-colors"
-					placeholder="Confirm new password"
-				/>
-			</div>
-		</div>
 
-		<div class="mt-6 flex items-center gap-3">
-			<button
-				type="button"
-				id="btn-update-password"
-				class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0C6B95] text-white text-sm font-medium hover:bg-[#0a5c82] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-			>
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-				</svg>
-				Update Password
-			</button>
-			<span id="password-status" class="text-sm hidden"></span>
-		</div>
+			<div class="mt-6 flex items-center gap-3">
+				<button
+					type="button"
+					id="btn-update-password"
+					class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0C6B95] text-white text-sm font-medium hover:bg-[#0a5c82] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+					</svg>
+					Update Password
+				</button>
+				<span id="password-status" class="text-sm hidden"></span>
+			</div>
+		</form>
 	</section>
 
 	<!-- System Information -->
