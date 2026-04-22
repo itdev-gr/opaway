@@ -412,6 +412,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		urlAdd?.addEventListener('click', () => {
 			if (!urlInput) return;
+			if (!urlInput.checkValidity()) { urlInput.reportValidity(); return; }
 			const url = urlInput.value.trim();
 			if (!url) return;
 			if (gallery.length >= MAX_IMAGES) { alert(`Maximum ${MAX_IMAGES} images.`); return; }
@@ -433,7 +434,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const v = sel.value;
 			wrap.classList.toggle('hidden', v !== 'multiday-tour' && v !== 'experience-multi');
 		};
-		sel.addEventListener('change', apply);
+		if (!sel.dataset.hotelBound) {
+			sel.addEventListener('change', apply);
+			sel.dataset.hotelBound = '1';
+		}
 		apply();
 	};
 	toggleHotel('f-category', 'f-hotel-wrap');
