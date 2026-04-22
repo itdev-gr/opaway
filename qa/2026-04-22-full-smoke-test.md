@@ -32,7 +32,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 8  Hourly funnel | done | F16 |
 | Task 9  Tour funnel | done | — (no new findings) |
 | Task 10 Contact + experience forms | done | F17 |
-| Task 11 Admin — bookings | pending | — |
+| Task 11 Admin — bookings | done | F18–F20 |
 | Task 12 Admin — management | pending | — |
 | Task 13 Admin — catalog | pending | — |
 | Task 14 Driver — rides | pending | — |
@@ -646,3 +646,155 @@ The form enforces experience selection — `experienceId` is validated before su
 **Screenshot:** none (same error as F1)
 **Status:** open
 **Fix:** In `contact.astro` submit handler, rename `passengers: parseInt(passengers)` → `participants: parseInt(passengers)` (or rename the field to `participants` throughout).
+
+---
+
+### Section 11 — Admin dashboard (bookings)
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 5 sub-pages swept.
+
+#### 11.1 — `/admin` (home calendar)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate + screenshot | pass | `qa/smoke-admin-home.png` captured |
+| Prev/Next month buttons | pass | April → May → April; heading updates correctly |
+| Day cell with bookings (Day 17, count=6) — click | pass | Day-detail panel shows "Bookings for Friday, April 17, 2026" with 6 rows |
+| Day cell with 0 bookings (Day 27) | pass | "No bookings on this day." empty state shown |
+| Legend dots | pass | Transfer=`bg-[#0C6B95]` (blue), Tour=`bg-emerald-500`, Experience=`bg-violet-500`, Request=`bg-amber-500` — all correct |
+| Sidebar notification badges | pass | Requests=2, Transfers=25 (new-only), Tours=7, Experiences=0, Partners=1 — all present and accurate on page load |
+| Sidebar badges update on cross-page navigation | pass | After deleting requests on 11.2 page, navigating back to Transfers shows Requests=0 (updated on fresh load) |
+| Realtime badge update (same-page) | observation | Badge does not update in real-time without page refresh — Supabase Realtime likely not active or not subscribed in sidebar. Count stays stale until page reload |
+| Mobile burger menu toggle | pass | 390×844 viewport: "Open menu" button appears; click → sidebar slides in (transform: none); click again → `-translate-x-full` class applied (hidden). Toggle works correctly |
+
+**Summary 11.1:** all pass.
+
+---
+
+#### 11.2 — `/admin/requests`
+
+| Check | Result | Notes |
+|---|---|---|
+| Tabs: All / New / Answered / Follow-up / Discarded / Tour Requests / Contact Messages | pass | All 7 tabs present and filter correctly |
+| Tab counts vs DB | partial-pass | DB: new=2, discarded=1 (total 3). UI: All=2, New=2, Discarded=1 — "All" tab excludes discarded rows (counts active only). Consistent with intended behavior |
+| Actions dropdown per row | pass | Opens correctly; shows Mark as Answered / Mark as Follow up / Discard / Delete |
+| Mark as Answered | pass | Row status → "answered" in UI; DB confirmed `status='answered'` |
+| Mark as Follow up | pass | Row status → "follow-up" in UI; DB confirmed `status='follow-up'` |
+| Discard | pass | Row moves to Discarded tab; tab counts update; DB confirmed `status='discarded'` |
+| Delete + confirmation modal | pass | "Delete Request" modal with "Are you sure? Cannot be undone." — Cancel + red Delete buttons; confirmed delete removes row from DB |
+| Restore / back to New option | note | No "Restore to New" action exists in any dropdown — once answered/discarded, can only discard further or delete. Not a finding unless spec requires it |
+| Tour Requests tab | pass | Shows empty (no tour requests with status=new) |
+| Contact Messages tab | pass | Shows empty (no contact source rows) |
+
+**Summary 11.2:** all pass. 1 finding: **F18** (sidebar badge stale until page reload — Realtime not active).
+
+---
+
+#### 11.3 — `/admin/transfers`
+
+| Check | Result | Notes |
+|---|---|---|
+| Table shows rows | pass | 37–38 rows (seeded + admin-added); all smoke booking rows present |
+| Add Booking modal opens | pass | "Add Transfer Booking" modal with all fields: First/Last Name, Email, Phone, From, To, Date, Time, Passengers, Vehicle, Notes, Ride Status |
+| Google Places autocomplete on From | pass | `.pac-container` present; typing "Athens Airport" surfaces suggestions including full airport name |
+| Google Places autocomplete on To | pass | typing "Monastiraki" surfaces 5 suggestions |
+| Passengers field default empty | note | Input `type=number` has placeholder "1" but `value=""` — HTML5 validation blocks submit until filled. Minor UX: should default to 1 |
+| Submit → new row with `added_by_admin=true` | pass | Row `6ef30e06` inserted; DB confirms `added_by_admin=true`, `date=2026-06-15`, `notes=Smoke admin Add Booking test 11` |
+| `vehicle_slug` on admin-added row | note | DB shows `vehicle_slug=""` despite "Sedan" selected — modal form may write to `vehicle` (display) column not `vehicle_slug`. Observation only |
+| Driver inline-edit: click span → input | pass | Clicking driver "Unassigned" span shows `input[placeholder="Driver name"]`; typing "Smoke Driver" updates UI display |
+| Driver inline-edit does NOT open modal | pass | Confirmed: `z-[60]` modal wrapper remains `display:none` when driver span is clicked — regression fix is working |
+| Driver inline-edit: DB persisted | **fail** | `driver_uid` remains `""` in DB after blur and Enter key. **F19** |
+| Ride Status select → 'assigned' | pass | DB confirmed `ride_status='assigned'`; reverted to 'new' |
+| Payment Status select → 'paid' | pass | DB confirmed `payment_status='paid'`; reverted to 'pending' |
+| Release toggle: amber → emerald | pass | DB confirmed `released_to_drivers=true` |
+| Release toggle: emerald → amber (revert) | pass | DB confirmed `released_to_drivers=false` |
+| Click non-form-control cell → ReservationDetailModal | pass | Name cell click opens "Transfer booking Ref 6EF30E06" modal |
+| Modal shows notes, driver, payment method, sign name | pass | Visible: Customer, Email, Booking type, From, To, Date, Time, Passengers, Child seats, Vehicle, Total price, Base price, Outward price, Return price, Card surcharge, Payment method, Payment status, Ride status, Driver, Released to drivers, Customer notes, Created |
+| Close via X | pass | X button closes modal (display:none) |
+| Close via overlay/backdrop click | pass | `.bg-black/40` backdrop click closes modal |
+| Close via Escape key | pass | Escape key closes modal |
+
+**Summary 11.3:** 1 finding raised (**F19** — driver inline edit not persisted to DB).
+
+---
+
+#### 11.4 — `/admin/tours`
+
+| Check | Result | Notes |
+|---|---|---|
+| Table shows rows | pass | 7 rows — matches sidebar badge |
+| Add Booking modal — tour-select dropdown populated | pass | 8 tours from `tours_catalog` (published=true): Smoke Multi Day, Smoke Day Tour + 6 live catalog tours |
+| Detail modal shows `special_requests` + `notes` + `vehicle` | pass | "Tour booking Ref 2CD56050": Vehicle=Sedan, Special requests="smoke R6", Notes="smoke R6" — all present |
+| Same ride-status / payment / release controls | pass | Comboboxes and Release buttons present in table rows |
+
+**Summary 11.4:** all pass.
+
+---
+
+#### 11.5 — `/admin/experiences`
+
+| Check | Result | Notes |
+|---|---|---|
+| Table shows rows | pass (empty) | 0 rows — matches sidebar badge (0); empty state "No experiences found." shown correctly |
+| Add Booking modal — experience-select populated | pass | 1 experience from `experiences_catalog` ("Smoke E1 Experience" — seeded in Section 10) |
+| Add Booking modal fields | pass | Full Name, Email, Phone, Experience (select), Pickup Location, Date, Time, Passengers, Notes, Ride Status |
+
+**Summary 11.5:** all pass.
+
+**Screenshots:** `qa/smoke-admin-home.png`, `qa/smoke-admin-mobile-menu.png`, `qa/smoke-transfers-add-booking-modal.png`, `qa/smoke-transfers-add-booking-form.png`, `qa/smoke-F18-driver-cell-opens-modal.png` (disproved — modal not actually open), `qa/smoke-transfers-detail-modal.png`, `qa/smoke-tours-add-booking-modal.png`, `qa/smoke-experiences-add-booking-modal.png`, `qa/smoke-requests-delete-modal.png`
+
+---
+
+### F18 — I — admin-sidebar — Sidebar notification badges do not update in real-time; stale until page refresh
+
+**Page:** `/admin/requests` (and other admin pages)
+**Preconditions:** logged in as admin; perform an action that changes badge count (e.g. mark all requests as answered/discarded/deleted)
+**Repro:**
+1. Navigate to `/admin/requests` — sidebar shows "Requests 2"
+2. Mark both requests as answered (badge source: new requests)
+3. Observe sidebar badge on the same page
+**Expected:** Badge updates in real-time via Supabase Realtime subscription.
+**Observed:** Badge stays at "2" until navigating to another page and back. On fresh page load, badge shows correct count (0 after deleting all active requests).
+**Console / network errors:** none; no Supabase Realtime connection visible in network tab
+**Screenshot:** `qa/smoke-admin-home.png` (baseline)
+**Root cause:** Sidebar badge counts appear to be computed at page load via a single `count()` query. No Supabase Realtime subscription updates the badge in real time. As noted in gotchas — if Realtime is disabled on the project, live badge updates will not occur.
+**Status:** open
+**Severity:** Info — the badge is accurate on fresh page loads; stale only during same-page interactions.
+
+---
+
+### F19 — C — admin-transfers — Driver inline-edit saves to UI but does not persist to DB; `driver_uid` remains empty
+
+**Page:** `/admin/transfers`
+**Preconditions:** logged in as admin; any transfer row with "Unassigned" driver
+**Repro:**
+1. Navigate to `/admin/transfers`
+2. Click "Unassigned" driver cell in any row → input with placeholder "Driver name" appears
+3. Type "Smoke Driver"
+4. Blur the input (click elsewhere or press Enter)
+5. UI cell now shows "Smoke Driver"
+6. Query DB: `SELECT driver_uid FROM transfers WHERE id = '<row-id>'`
+**Expected:** `driver_uid` updated in DB with the typed name (or matched driver UID).
+**Observed:** `driver_uid` remains `""` (empty string) in DB. The change is cosmetic/local state only. On page refresh the cell reverts to "Unassigned".
+**Console / network errors:** none visible; no PATCH/UPDATE network request was made when blurring
+**Screenshot:** none
+**Root cause:** The inline-edit component updates local React state on blur but does not fire a `supabase.from('transfers').update({ driver_uid: ... })` call. The `driver_uid` column is text (not a UUID foreign key) so name matching is not required — the update is simply absent. This also explains why the detail modal shows "Smoke Driver" (reads from same local state) but DB has empty string.
+**Status:** open
+
+---
+
+### F20 — I — admin-transfers — `vehicle_slug` not saved when adding booking via admin modal; modal saves `vehicle` display name but not `vehicle_slug`
+
+**Page:** `/admin/transfers` → "Add Booking" modal
+**Preconditions:** logged in as admin
+**Repro:**
+1. Open "Add Booking" modal
+2. Select "Sedan" from Vehicle dropdown
+3. Fill all required fields and click "Save Booking"
+4. Query DB: `SELECT vehicle_slug, vehicle FROM transfers WHERE id = '<new-id>'`
+**Expected:** Both `vehicle` (display name) and `vehicle_slug` (e.g. "sedan") populated.
+**Observed:** `vehicle_slug=""` (empty) in DB. The `vehicle` column likely gets the display name but `vehicle_slug` is not sent in the INSERT payload.
+**Console / network errors:** none
+**Screenshot:** none
+**Root cause:** The admin Add Transfer Booking modal form only writes the selected option's `text` value (display name), not the slug. The `vehicle_slug` field is either not mapped or not included in the INSERT.
+**Status:** open
