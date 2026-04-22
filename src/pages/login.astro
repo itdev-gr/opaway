@@ -196,7 +196,9 @@ import Layout from '../layouts/Layout.astro';
 				const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 				if (error) throw error;
 				ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
-				window.location.href = '/';
+				const params = new URLSearchParams(window.location.search);
+				const next = params.get('next');
+				window.location.href = next && next.startsWith('/') ? next : '/';
 			} catch (err: unknown) {
 				const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
 				showError(msg);
