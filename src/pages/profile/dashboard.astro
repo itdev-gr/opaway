@@ -5,7 +5,38 @@ import ProfileContent from '../../components/ProfileContent.astro';
 
 <ProfileLayout>
 	<ProfileContent label="Overview" title="Dashboard" description="Your account overview and quick links.">
-		<p class="text-neutral-500 text-sm">Welcome to your dashboard. Use the menu to view transfers, trips, experiences, or settings.</p>
+		<div id="dash-loading" class="text-sm text-neutral-400">Loading your bookings…</div>
+
+		<div id="dash-content" class="hidden">
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+				<a href="/profile/transfers" class="block rounded-xl border border-neutral-200 p-4 hover:border-[#0C6B95]/40 hover:shadow-sm transition-all">
+					<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Transfers</div>
+					<div class="text-2xl font-bold text-[#0C6B95]" data-dash-count="transfers">0</div>
+				</a>
+				<a href="/profile/trips" class="block rounded-xl border border-neutral-200 p-4 hover:border-[#0C6B95]/40 hover:shadow-sm transition-all">
+					<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Tours</div>
+					<div class="text-2xl font-bold text-[#0C6B95]" data-dash-count="tours">0</div>
+				</a>
+				<a href="/profile/experiences" class="block rounded-xl border border-neutral-200 p-4 hover:border-[#0C6B95]/40 hover:shadow-sm transition-all">
+					<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Experience requests</div>
+					<div class="text-2xl font-bold text-[#0C6B95]" data-dash-count="experiences">0</div>
+				</a>
+				<div class="rounded-xl border border-neutral-200 p-4">
+					<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Upcoming (next 30d)</div>
+					<div class="text-2xl font-bold text-emerald-600" data-dash-count="upcoming">0</div>
+				</div>
+			</div>
+
+			<h3 class="text-sm font-semibold text-neutral-700 mb-3">Quick actions</h3>
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+				<a href="/book/transfer" class="rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-4 py-3 text-center transition-colors">Book a transfer</a>
+				<a href="/book/hourly" class="rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-4 py-3 text-center transition-colors">Rent per hour</a>
+				<a href="/book/tour" class="rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-4 py-3 text-center transition-colors">Book a tour</a>
+			</div>
+
+			<h3 class="text-sm font-semibold text-neutral-700 mt-8 mb-3">Latest activity</h3>
+			<ul id="dash-latest" class="space-y-2 text-sm"></ul>
+		</div>
 	</ProfileContent>
 </ProfileLayout>
 
@@ -13,5 +44,61 @@ import ProfileContent from '../../components/ProfileContent.astro';
 	import { supabase } from '../../lib/supabase';
 
 	const { data: { user } } = await supabase.auth.getUser();
-	if (!user) window.location.href = '/login';
+	if (!user) { window.location.href = '/login'; }
+
+	if (user) {
+		const userEmail = user.email ?? '';
+		const [{ data: transfers }, { data: tours }, { data: experiences }] = await Promise.all([
+			supabase.from('transfers').select('id, created_at, date, "from", "to", ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
+			supabase.from('tours').select('id, created_at, date, tour_name, ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
+			supabase.from('requests').select('id, created_at, date, experience_name, status').eq('source', 'experience').or(`user_id.eq.${user.id}${userEmail ? `,email.eq.${userEmail}` : ''}`).order('created_at', { ascending: false }),
+		]);
+
+		const today = new Date().toISOString().slice(0, 10);
+		const in30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+		const inRange = (d: string | null) => typeof d === 'string' && d >= today && d <= in30;
+
+		const trCount = transfers?.length ?? 0;
+		const toCount = tours?.length ?? 0;
+		const exCount = experiences?.length ?? 0;
+		const upcoming = (transfers ?? []).filter(r => inRange(r.date)).length
+			+ (tours ?? []).filter(r => inRange(r.date)).length
+			+ (experiences ?? []).filter(r => inRange(r.date)).length;
+
+		const setCount = (k: string, n: number) => {
+			const el = document.querySelector(`[data-dash-count="${k}"]`);
+			if (el) el.textContent = String(n);
+		};
+		setCount('transfers', trCount);
+		setCount('tours', toCount);
+		setCount('experiences', exCount);
+		setCount('upcoming', upcoming);
+
+		const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+		const combined = [
+			...(transfers ?? []).map(r => ({ kind: 'Transfer', label: `${r.from} → ${r.to}`, date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/transfers' })),
+			...(tours ?? []).map(r => ({ kind: 'Tour', label: r.tour_name ?? 'Tour', date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/trips' })),
+			...(experiences ?? []).map(r => ({ kind: 'Experience', label: r.experience_name ?? 'Experience', date: r.date, status: r.status, ts: r.created_at, href: '/profile/experiences' })),
+		].sort((a, b) => (b.ts ?? '').localeCompare(a.ts ?? '')).slice(0, 5);
+
+		const list = document.getElementById('dash-latest');
+		if (list) {
+			if (combined.length === 0) {
+				list.innerHTML = '<li class="text-neutral-400">No bookings yet. Book your first transfer or tour above.</li>';
+			} else {
+				list.innerHTML = combined.map(r => `
+					<li class="flex items-center gap-3 py-2 border-b border-neutral-100">
+						<span class="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">${esc(r.kind)}</span>
+						<span class="flex-1 text-neutral-800">${esc(r.label)}</span>
+						<span class="text-neutral-500">${esc(r.date)}</span>
+						<span class="text-xs text-neutral-400">${esc(r.status)}</span>
+						<a href="${r.href}" class="text-[#0C6B95] hover:underline text-sm">View</a>
+					</li>
+				`).join('');
+			}
+		}
+
+		document.getElementById('dash-loading')?.classList.add('hidden');
+		document.getElementById('dash-content')?.classList.remove('hidden');
+	}
 </script>
