@@ -269,6 +269,25 @@ No "Failed to save the booking. Please try again." error observed in any of 6 ru
 
 ---
 
+## Fix status (Phase 4 — as-of-commit log)
+
+| Finding | Severity | Status | Fix commit |
+|---|---|---|---|
+| F1  | C | fixed-pending-verify | `b4f0c93` contact: rename `passengers` → `participants` |
+| F6  | C | fixed-pending-verify | `f6d0aeb` register: `await ensureUserProfile`, redirect `/profile/dashboard` |
+| F12 | C | fixed-pending-verify | `1850609` auth: re-authenticate with current password on profile + driver settings |
+| F14 | C | fixed-pending-verify | `34d7a28` profile/experiences: query `requests` source=experience + RLS policy |
+| F17 | C | fixed-pending-verify | `b4f0c93` (same fix as F1) |
+| F19 | C | fixed-pending-verify | `1cb176e` admin: surface driver inline-edit errors across 3 pages |
+| F23 | H | fixed-pending-verify | `5414086` manage-vehicles: add missing columns + align form payload |
+| F24 | H | fixed-pending-verify | `5414086` (same migration + rewrite as F23) |
+
+Importants / Minors pending: F2, F3, F4, F5, F7, F8, F9, F10, F11, F13, F15, F16, F18, F20, F21, F22.
+
+**UI-level verification of all fixed-pending-verify items is deferred until Playwright MCP is restored (Task 20 regression sweep).** DB-level simulation confirmed the new shape works for F1/F17, F14, F19, F23/F24.
+
+---
+
 ## Punch list
 
 <!-- One `### F<N>` block per finding, added in the order discovered.
