@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SidebarBadge from './SidebarBadge.astro';
 
 interface Props {
 	pageTitle: string;
@@ -25,10 +26,10 @@ const nav = [
 	{
 		group: 'Bookings',
 		items: [
-			{ key: 'requests',    label: 'Requests',    href: '/admin/requests',    icon: 'inbox'    },
-			{ key: 'transfers',   label: 'Transfers',   href: '/admin/transfers',   icon: 'transfer' },
-			{ key: 'tours',       label: 'Tours',       href: '/admin/tours',       icon: 'map' },
-			{ key: 'experiences', label: 'Experiences', href: '/admin/experiences', icon: 'star' },
+			{ key: 'requests',    label: 'Requests',    href: '/admin/requests',    icon: 'inbox',    notifId: 'admin-requests'    },
+			{ key: 'transfers',   label: 'Transfers',   href: '/admin/transfers',   icon: 'transfer', notifId: 'admin-transfers'   },
+			{ key: 'tours',       label: 'Tours',       href: '/admin/tours',       icon: 'map',      notifId: 'admin-tours'       },
+			{ key: 'experiences', label: 'Experiences', href: '/admin/experiences', icon: 'star',     notifId: 'admin-experiences' },
 		],
 	},
 	{
@@ -42,7 +43,7 @@ const nav = [
 		group: 'Management',
 		items: [
 			{ key: 'users',               label: 'Users',        href: '/admin/users',               icon: 'users'    },
-			{ key: 'partners',            label: 'Partners',     href: '/admin/partners',            icon: 'partners' },
+			{ key: 'partners',            label: 'Partners',     href: '/admin/partners',            icon: 'partners', notifId: 'admin-partners' },
 			{ key: 'sales',               label: 'Sales Report', href: '/admin/sales',               icon: 'chart'    },
 			{ key: 'settings',            label: 'Settings',     href: '/admin/settings',            icon: 'settings' },
 		],
@@ -93,7 +94,7 @@ const nav = [
 				{nav.map(({ group, items }) => (
 					<>
 						<p class="text-white/50 text-xs font-semibold tracking-widest uppercase px-3 mb-1 mt-4 first:mt-2">{group}</p>
-						{items.map(({ key, label, href, icon }) => {
+						{items.map(({ key, label, href, icon, notifId }: { key: string; label: string; href: string; icon: string; notifId?: string }) => {
 							const active = activeSection === key;
 							return (
 								<a
@@ -163,7 +164,8 @@ const nav = [
 											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 										</svg>
 									)}
-									{label}
+									<span>{label}</span>
+									{notifId && <SidebarBadge id={notifId} />}
 								</a>
 							);
 						})}
@@ -229,6 +231,7 @@ const nav = [
 
 <script>
 	import { supabase } from '../lib/supabase';
+	import { adminCounts, subscribeTables } from '../lib/notifications';
 
 	function initAdminLayout() {
 		const overlay    = document.getElementById('admin-sidebar-overlay');
@@ -266,6 +269,35 @@ const nav = [
 						session.user.email || 'Admin';
 				}
 				authCheck?.classList.add('hidden');
+
+				// ── Notification badges ──
+				function setBadge(id: string, n: number) {
+					const el = document.querySelector(`[data-notif-badge="${id}"]`);
+					if (!el) return;
+					el.textContent = n > 99 ? '99+' : String(n);
+					el.classList.toggle('hidden', n === 0);
+				}
+
+				async function refreshAdminBadges() {
+					try {
+						const c = await adminCounts();
+						setBadge('admin-requests',    c.requests);
+						setBadge('admin-transfers',   c.transfers);
+						setBadge('admin-tours',       c.tours);
+						setBadge('admin-experiences', c.experiences);
+						setBadge('admin-partners',    c.partners);
+					} catch (err) {
+						console.error('Admin badge refresh failed:', err);
+					}
+				}
+
+				refreshAdminBadges();
+				const unsubAdminNotif = subscribeTables(
+					['requests', 'transfers', 'tours', 'experiences', 'partners'],
+					refreshAdminBadges
+				);
+				window.addEventListener('beforeunload', () => unsubAdminNotif());
+
 			} catch { window.location.href = '/'; }
 		})();
 	}
