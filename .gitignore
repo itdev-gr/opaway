@@ -21,8 +21,10 @@ pnpm-debug.log*
 # supabase management api access (personal access token)
 .supabase-pat
 
-# qa artifacts produced by smoke-test script
-qa/
+# qa screenshots (keep markdown journals in the repo)
+qa/*.png
+qa/*.jpg
+qa/*.jpeg
 
 # Firebase service account (for migration scripts)
 **/serviceAccountKey.json
