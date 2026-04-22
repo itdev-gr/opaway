@@ -322,9 +322,14 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			const statusEl = document.getElementById('password-status');
 			const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
 
+			const currentPw = (document.getElementById('currentPassword') as HTMLInputElement).value;
 			const newPw     = (document.getElementById('newPassword') as HTMLInputElement).value;
 			const confirmPw = (document.getElementById('confirmPassword') as HTMLInputElement).value;
 
+			if (!currentPw) {
+				showStatus(statusEl, 'Please enter your current password.', false);
+				return;
+			}
 			if (newPw !== confirmPw) {
 				showStatus(statusEl, 'New passwords do not match.', false);
 				return;
@@ -338,6 +343,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			btn.textContent = 'Updating...';
 
 			try {
+				const { data: { user } } = await supabase.auth.getUser();
+				if (!user?.email) throw new Error('Not signed in.');
+
+				const { error: signInErr } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPw });
+				if (signInErr) throw new Error('Current password is incorrect.');
+
 				const { error } = await supabase.auth.updateUser({ password: newPw });
 				if (error) throw error;
 

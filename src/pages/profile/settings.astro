@@ -281,11 +281,16 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user || !user.email) return;
 
+		const currentPw = currentPasswordInput.value;
 		const newPw = newPasswordInput.value;
 		const confirm = confirmPasswordInput.value;
 
 		hideMsg(passwordMsg);
 
+		if (!currentPw) {
+			showMsg(passwordMsg, 'Please enter your current password.', 'error');
+			return;
+		}
 		if (newPw.length < 6) {
 			showMsg(passwordMsg, 'New password must be at least 6 characters.', 'error');
 			return;
@@ -298,6 +303,14 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		updatePasswordBtn.disabled = true;
 
 		try {
+			// Re-authenticate with current password before changing it.
+			const { error: authErr } = await supabase.auth.signInWithPassword({
+				email: user.email, password: currentPw,
+			});
+			if (authErr) {
+				showMsg(passwordMsg, 'Current password is incorrect.', 'error');
+				return;
+			}
 			const { error } = await supabase.auth.updateUser({ password: newPw });
 			if (error) throw error;
 			showMsg(passwordMsg, 'Password updated successfully.', 'success');
