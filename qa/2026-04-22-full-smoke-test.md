@@ -274,17 +274,37 @@ No "Failed to save the booking. Please try again." error observed in any of 6 ru
 | Finding | Severity | Status | Fix commit |
 |---|---|---|---|
 | F1  | C | fixed-pending-verify | `b4f0c93` contact: rename `passengers` → `participants` |
+| F2  | I | fixed-pending-verify | `d212286` home ToursSection CTA → `/book/tour` |
+| F3  | I | fixed-pending-verify | `d212286` book hub: add "Rent per Hour" card, 4-col grid |
+| F4  | I | fixed-pending-verify | `d212286` /book/tour cards pass `?tour=<id>` + pre-select + scroll |
 | F6  | C | fixed-pending-verify | `f6d0aeb` register: `await ensureUserProfile`, redirect `/profile/dashboard` |
+| F7  | M | fixed-pending-verify | `85b0aea` forgot-password: mutually-exclusive panes + stricter email regex |
 | F12 | C | fixed-pending-verify | `1850609` auth: re-authenticate with current password on profile + driver settings |
 | F14 | C | fixed-pending-verify | `34d7a28` profile/experiences: query `requests` source=experience + RLS policy |
 | F17 | C | fixed-pending-verify | `b4f0c93` (same fix as F1) |
 | F19 | C | fixed-pending-verify | `1cb176e` admin: surface driver inline-edit errors across 3 pages |
+| F20 | I | fixed-pending-verify | `6599df5` admin add-transfer: save `vehicle_slug` + surface error |
+| F21 | M | fixed-pending-verify | `35c30a2` admin settings: wrap password inputs in `<form>` with autocomplete |
 | F23 | H | fixed-pending-verify | `5414086` manage-vehicles: add missing columns + align form payload |
 | F24 | H | fixed-pending-verify | `5414086` (same migration + rewrite as F23) |
 
-Importants / Minors pending: F2, F3, F4, F5, F7, F8, F9, F10, F11, F13, F15, F16, F18, F20, F21, F22.
+Pending / deferred (all non-Critical, non-Blocking):
 
-**UI-level verification of all fixed-pending-verify items is deferred until Playwright MCP is restored (Task 20 regression sweep).** DB-level simulation confirmed the new shape works for F1/F17, F14, F19, F23/F24.
+| Finding | Severity | Status | Note |
+|---|---|---|---|
+| F5  | M | deferred | Footer social icons use `href="#"`. Needs real Opawey social URLs from client. |
+| F8  | M | deferred | /admin layout flashes for non-admin before redirect — client-side-only gate. Security polish; not a data leak. |
+| F9  | I | deferred | /profile renders orphaned info page. Redesign needed. |
+| F10 | I | deferred | /profile/dashboard is a text-only stub. Needs real stat cards / quick actions. |
+| F11 | M | deferred | No avatar upload UI on profile/settings. Build-new feature. |
+| F13 | I | deferred | /profile/transfers rows not clickable. Detail view would be a new component. |
+| F15 | I | deferred | Back from transfer passenger → results resets vehicle selection. Wizard state hardening. |
+| F16 | I | deferred | Hourly funnel enforces 3-hour minimum but plan matrix specified 2. Verify with business whether 3 is intentional. |
+| F18 | I | deferred | Admin sidebar notification badges stale until refresh. Supabase Realtime subscription likely not delivering events. Needs Realtime config investigation on the live project. |
+| F22 | I | deferred | manage-experiences has no category/entrance-ticket/hotel-option/gallery fields. Columns exist in `experiences_catalog` (migration 2026-04-22-tours-catalog-categories.sql added them), form UI is the gap. Parity refactor. |
+
+**Summary:** 14 of 24 findings (58%) closed — all Critical (6) and Blocking (2), plus 4 Important and 2 Minor.
+**Verification:** UI-level regression of all 14 fixed-pending-verify items is deferred until Playwright MCP reconnects (Task 20). DB-level simulation confirmed new shape for F1/F17, F14, F19, F23/F24.
 
 ---
 
