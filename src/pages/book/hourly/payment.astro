@@ -321,6 +321,12 @@ import Layout from '../../../layouts/Layout.astro';
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
 		const { data: { user } } = await supabase.auth.getUser();
 
+		if (!user) {
+			const next = encodeURIComponent(window.location.pathname + window.location.search);
+			window.location.href = `/login?next=${next}&reason=booking`;
+			return;
+		}
+
 		let partnerId: string | null = null;
 		if (user) {
 			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', user.id).maybeSingle();
