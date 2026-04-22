@@ -439,13 +439,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const id       = btn.dataset.id!;
 				const isActive = btn.dataset.active === 'true';
 				btn.disabled = true;
-				try {
-					const { error: togErr } = await supabase.from('vehicles').update({ active: !isActive }).eq('id', id);
-					if (togErr) throw togErr;
-					const item = items.find(i => i.id === id);
-					if (item) item.active = !isActive;
-					renderGrid();
-				} catch (err) { /* error silenced */ btn.disabled = false; }
+				const { error: togErr } = await supabase.from('vehicles').update({ published: !isActive }).eq('id', id);
+				if (togErr) {
+					console.error('Toggle vehicle failed:', togErr);
+					alert(`Toggle failed: [${togErr.code ?? 'unknown'}] ${togErr.message}`);
+					btn.disabled = false;
+					return;
+				}
+				const item = items.find(i => i.id === id);
+				if (item) item.active = !isActive;
+				renderGrid();
 			});
 		});
 
@@ -470,15 +473,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* ── Load from Supabase ── */
 	async function loadItems() {
 		const grid = document.getElementById('vehicles-grid')!;
-		try {
-			const { data, error } = await supabase.from('vehicles').select('*').order('sort_order', { ascending: true });
-			if (error) throw error;
-			items = (data ?? []).map((d: any) => ({ id: d.id, slug: d.slug, name: d.name, models: d.models, image: d.image, maxPassengers: d.max_passengers, maxLuggage: d.max_luggage, badge: d.badge, sortOrder: d.sort_order, active: d.active }));
-			renderGrid();
-		} catch (e) {
-			/* error silenced */
+		const { data, error } = await supabase.from('vehicles').select('*').order('sort_order', { ascending: true });
+		if (error) {
+			console.error('Load vehicles failed:', error);
 			grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-10">Could not load vehicles.</p>`;
+			return;
 		}
+		items = (data ?? []).map((d: any) => ({ id: d.id, slug: d.slug, name: d.name, models: d.models, image: d.image_url, maxPassengers: d.max_passengers, maxLuggage: d.max_luggage, badge: d.badge, sortOrder: d.sort_order, active: d.published }));
+		renderGrid();
 	}
 
 	/* ── Form submit ── */
@@ -507,12 +509,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.textContent = 'Adding…';
 		setStatus('', '');
 
-		try {
-			const { data: inserted, error: insErr } = await supabase.from('vehicles').insert({
-				slug, name, models, image, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder,
-				active: true, owner_id: null, owner_type: 'platform',
-			}).select().single();
-			if (insErr) throw insErr;
+		const { data: inserted, error: insErr } = await supabase.from('vehicles').insert({
+			slug, name, models, image_url: image, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder,
+			published: true, owner_id: null, is_platform: true,
+		}).select().single();
+		if (insErr) {
+			console.error('Add vehicle failed:', insErr);
+			setStatus(`Error: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
+		} else {
 			items.push({ id: inserted.id, slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder, active: true });
 			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 			renderGrid();
@@ -521,13 +525,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			imgPlaceholder.classList.remove('hidden');
 			setStatus('Vehicle added successfully!', 'text-emerald-600 font-medium');
 			setTimeout(() => setStatus('', ''), 4000);
-		} catch (err) {
-			/* error silenced */
-			setStatus('Error adding vehicle. Please try again.', 'text-red-500');
-		} finally {
-			submitBtn.disabled = false;
-			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Vehicle`;
 		}
+		submitBtn.disabled = false;
+		submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Vehicle`;
 	});
 
 	/* ── Delete modal ── */
@@ -607,22 +607,20 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		saveBtn.textContent = 'Saving…';
 		editStatus.textContent = '';
 
-		try {
-			const { error: updErr } = await supabase.from('vehicles').update({ image, name, slug, models, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder }).eq('id', pendingEditId);
-			if (updErr) throw updErr;
+		const { error: updErr } = await supabase.from('vehicles').update({ image_url: image, name, slug, models, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder }).eq('id', pendingEditId);
+		if (updErr) {
+			console.error('Update vehicle failed:', updErr);
+			editStatus.textContent = `Error: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+			editStatus.className = 'text-sm text-red-500';
+		} else {
 			const item = items.find(i => i.id === pendingEditId);
 			if (item) Object.assign(item, { image, name, slug, models, maxPassengers, maxLuggage, badge, sortOrder });
 			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 			renderGrid();
 			closeEditModal();
-		} catch (err) {
-			/* error silenced */
-			editStatus.textContent = 'Error saving changes. Please try again.';
-			editStatus.className = 'text-sm text-red-500';
-		} finally {
-			saveBtn.disabled = false;
-			saveBtn.textContent = 'Save Changes';
 		}
+		saveBtn.disabled = false;
+		saveBtn.textContent = 'Save Changes';
 	});
 
 	/* ── Auth guard observer ── */
