@@ -208,7 +208,9 @@ import Layout from '../../layouts/Layout.astro';
 	}
 
 	interface TourItem {
-		id: string; title: string; description: string; price: number; image_url: string;
+		id: string; title: string; description: string;
+		price: number; price_sedan?: number;
+		image_url: string; images?: string[];
 		duration: string; highlight1: string; highlight2: string; highlight3: string;
 		published: boolean;
 	}
@@ -238,12 +240,13 @@ import Layout from '../../layouts/Layout.astro';
 					</div>`;
 			} else {
 				inner.innerHTML = docs.map((t, i) => {
+					const cover = (Array.isArray(t.images) && t.images[0]) || t.image_url || '';
 					const highlights = [t.highlight1, t.highlight2, t.highlight3].filter(Boolean);
 					return `
 					<article data-tour-card class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
 						<div class="aspect-[16/9] overflow-hidden">
 							<img
-								src="${esc(t.image_url)}"
+								src="${esc(cover)}"
 								alt="${esc(t.title)}"
 								class="w-full h-full object-cover"
 								onerror="this.parentElement.style.background='#e5e7eb';this.style.display='none'"
@@ -346,13 +349,15 @@ import Layout from '../../layouts/Layout.astro';
 			const catalogGrid    = document.getElementById('tours-catalog-grid')!;
 
 			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
-				const dp = applyPartnerDiscount(Number(t.price), partnerDiscount);
+				const cover = (Array.isArray(t.images) && t.images[0]) || t.image_url || '';
+				const fromPrice = Number(t.price_sedan ?? t.price ?? 0);
+				const dp = applyPartnerDiscount(fromPrice, partnerDiscount);
 				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
 				return `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
 					<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
 						<img
-							src="${esc(t.image_url)}"
+							src="${esc(cover)}"
 							alt="${esc(t.title)}"
 							class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 							onerror="this.parentElement.style.background='#f3f4f6';this.style.display='none'"
