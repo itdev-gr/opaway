@@ -1,0 +1,126 @@
+---
+// Reservation detail modal — opened via window.OpawayReservationDetail.open(row, kind)
+// kind: 'transfer' | 'tour' | 'experience'
+---
+
+<div id="res-detail-modal" class="fixed inset-0 z-[60] hidden">
+	<div class="absolute inset-0 bg-black/40" id="res-detail-overlay"></div>
+	<div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+		<div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
+			<button type="button" id="res-detail-close"
+				class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+			<h3 id="res-detail-title" class="text-lg font-bold text-neutral-900 mb-2">Reservation</h3>
+			<p id="res-detail-ref" class="text-xs font-mono text-neutral-500 mb-5"></p>
+			<div id="res-detail-body" class="space-y-5 text-sm"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+	type Row = Record<string, any>;
+
+	const esc = (s: string) => String(s)
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	function field(label: string, value: any, opts: { full?: boolean } = {}) {
+		if (value == null || value === '') return '';
+		const str = typeof value === 'string' ? value : String(value);
+		return `<div class="${opts.full ? 'col-span-2' : ''}">
+			<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-0.5">${esc(label)}</div>
+			<div class="${opts.full ? 'whitespace-pre-wrap' : ''} text-neutral-800">${esc(str)}</div>
+		</div>`;
+	}
+
+	const money = (n: any) => (n == null || n === '' || Number.isNaN(Number(n)))
+		? ''
+		: `€${Number(n).toFixed(2)}`;
+
+	function renderTransfer(r: Row) {
+		return `<div class="grid grid-cols-2 gap-4">
+			${field('Customer', [r.first_name, r.last_name].filter(Boolean).join(' ') || r.name)}
+			${field('Email', r.email)}
+			${field('Phone', r.phone)}
+			${field('Booking type', r.booking_type)}
+			${field('From', r.from)}
+			${field('To', r.to)}
+			${field('Date', r.date)}
+			${field('Time', r.time)}
+			${field('Return', r.return_date ? `${r.return_date} ${r.return_time ?? ''}`.trim() : '')}
+			${field('Passengers', r.passengers)}
+			${field('Child seats', r.child_seats)}
+			${field('Vehicle', r.vehicle_name || r.vehicle_slug)}
+			${field('Hours', r.hours)}
+			${field('€ / hour', r.per_hour ? money(r.per_hour) : '')}
+			${field('Total price', money(r.total_price))}
+			${field('Base price', money(r.base_price))}
+			${field('Outward price', money(r.outward_price))}
+			${field('Return price', money(r.return_price))}
+			${field('Card surcharge', money(r.card_surcharge))}
+			${field('Payment method', r.payment_method)}
+			${field('Payment status', r.payment_status)}
+			${field('Ride status', r.ride_status)}
+			${field('Driver', r.driver || '—')}
+			${field('Released to drivers', r.released_to_drivers ? 'Yes' : 'No')}
+			${field('Customer notes', r.notes, { full: true })}
+			${field('Driver notes', r.driver_notes, { full: true })}
+			${field('Sign name', r.sign_name)}
+			${field('Created', r.created_at)}
+		</div>`;
+	}
+
+	function renderTourOrExperience(r: Row, kind: 'tour' | 'experience') {
+		const labelWord = kind === 'tour' ? 'Tour' : 'Experience';
+		return `<div class="grid grid-cols-2 gap-4">
+			${field('Customer', r.name || [r.first_name, r.last_name].filter(Boolean).join(' '))}
+			${field('Email', r.email)}
+			${field('Phone', r.phone)}
+			${field(labelWord, r[`${kind}_name`] || r[kind])}
+			${field('Pickup', r.pickup || r.pickup_location)}
+			${field('Destination', r.destination)}
+			${field('Date', r.date)}
+			${field('Time', r.time)}
+			${field('Participants', r.participants ?? r.passengers)}
+			${field('Vehicle', r.vehicle || r.vehicle_name)}
+			${field('Total price', money(r.total_price))}
+			${field('Payment method', r.payment_method)}
+			${field('Payment status', r.payment_status)}
+			${field('Ride status', r.ride_status)}
+			${field('Driver', r.driver || '—')}
+			${field('Released to drivers', r.released_to_drivers ? 'Yes' : 'No')}
+			${field('Special requests', r.special_requests, { full: true })}
+			${field('Notes', r.notes, { full: true })}
+			${field('Added by admin', r.added_by_admin ? 'Yes' : 'No')}
+			${field('Created', r.created_at)}
+		</div>`;
+	}
+
+	const modal = document.getElementById('res-detail-modal')!;
+	const body  = document.getElementById('res-detail-body')!;
+	const title = document.getElementById('res-detail-title')!;
+	const refEl = document.getElementById('res-detail-ref')!;
+
+	function close() { modal.classList.add('hidden'); }
+	document.getElementById('res-detail-overlay')?.addEventListener('click', close);
+	document.getElementById('res-detail-close')?.addEventListener('click', close);
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
+	});
+
+	(window as any).OpawayReservationDetail = {
+		open(row: Row, kind: 'transfer' | 'tour' | 'experience') {
+			const labels = { transfer: 'Transfer booking', tour: 'Tour booking', experience: 'Experience booking' };
+			title.textContent = labels[kind] ?? 'Booking';
+			refEl.textContent = row?.id ? `Ref ${String(row.id).slice(0, 8).toUpperCase()}` : '';
+			body.innerHTML = kind === 'transfer'
+				? renderTransfer(row)
+				: renderTourOrExperience(row, kind);
+			modal.classList.remove('hidden');
+		},
+		close,
+	};
+</script>

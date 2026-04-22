@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
+import ReservationDetailModal from '../../components/ReservationDetailModal.astro';
 ---
 
 <AdminLayout pageTitle="Tours" pageDescription="All tour bookings." activeSection="tours">
@@ -143,10 +144,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
+	<ReservationDetailModal />
+
 </AdminLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
+
+	const rowsById = new Map<string, any>();
 
 	/* ── Ride Status colours ── */
 	const RIDE_STATUS_COLORS: Record<string, string> = {
@@ -229,6 +234,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const { data, error } = await supabase.from('tours').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
 			const rows = data ?? [];
+			rowsById.clear();
+			rows.forEach((r: any) => rowsById.set(r.id, r));
 			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
 			if (rows.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-neutral-400">No tours found.</td></tr>`;
@@ -240,7 +247,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const rideStatus = String(d.ride_status ?? d.status ?? 'new');
 				const paymentMethod = String(d.payment_method ?? 'cash');
 				const paymentStatus = String(d.payment_status ?? 'pending');
-				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
+				return `<tr data-row-id="${d.id}" class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer">
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${date}</td>
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${time}</td>
 					<td class="px-4 py-3 font-medium text-neutral-900 whitespace-nowrap">${d.name ?? '—'}</td>
@@ -275,6 +282,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					const { error } = await supabase.from('tours').update({ released_to_drivers: next }).eq('id', id);
 					if (error) { console.error('Release toggle failed:', error); alert(`Release toggle failed: ${error.message}`); return; }
 					await loadTours();
+				});
+			});
+			/* Row-click → reservation detail modal */
+			tbody2?.querySelectorAll<HTMLElement>('[data-row-id]').forEach(tr => {
+				tr.addEventListener('click', (e) => {
+					if ((e.target as HTMLElement).closest('input, select, button, [data-release]')) return;
+					const row = rowsById.get(tr.dataset.rowId!);
+					if (row) (window as any).OpawayReservationDetail.open(row, 'tour');
 				});
 			});
 		} catch {

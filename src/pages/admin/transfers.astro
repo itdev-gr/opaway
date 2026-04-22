@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
+import ReservationDetailModal from '../../components/ReservationDetailModal.astro';
 ---
 
 <AdminLayout pageTitle="Transfers" activeSection="transfers">
@@ -165,10 +166,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
+	<ReservationDetailModal />
+
 </AdminLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
+
+	const rowsById = new Map<string, any>();
 
 	/* ── Ride-status colours ── */
 	const RIDE_STATUS_COLORS: Record<string, string> = {
@@ -240,6 +245,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			const { data, error } = await supabase.from('transfers').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
 			const rows = data ?? [];
+			rowsById.clear();
+			rows.forEach((r: any) => rowsById.set(r.id, r));
 			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
 			if (rows.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="15" class="px-6 py-10 text-center text-neutral-400">No transfers found.</td></tr>`;
@@ -276,7 +283,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const bookingType = d.booking_type === 'hourly' ? 'TH' : 'T';
 				const hoursVal = d.hours ? `${d.hours}h` : '—';
 
-				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
+				return `<tr data-row-id="${d.id}" class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer">
 					<td class="px-6 py-3 whitespace-nowrap"><span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold ${bookingType === 'TH' ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-[#0C6B95]'}">${bookingType}</span></td>
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(dateVal)}</td>
 					<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${escHtml(timeVal)}</td>
@@ -312,6 +319,14 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					const { error } = await supabase.from('transfers').update({ released_to_drivers: next }).eq('id', id);
 					if (error) { console.error('Release toggle failed:', error); alert(`Release toggle failed: ${error.message}`); return; }
 					await loadTransfers();
+				});
+			});
+			/* Row-click → reservation detail modal */
+			tbody?.querySelectorAll<HTMLElement>('[data-row-id]').forEach(tr => {
+				tr.addEventListener('click', (e) => {
+					if ((e.target as HTMLElement).closest('input, select, button, [data-release]')) return;
+					const row = rowsById.get(tr.dataset.rowId!);
+					if (row) (window as any).OpawayReservationDetail.open(row, 'transfer');
 				});
 			});
 		} catch (err) {
