@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
+import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 ---
 
 <AdminLayout pageTitle="Partners" pageDescription="All registered partner accounts." activeSection="partners">
@@ -81,6 +82,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			</div>
 		</div>
 	</div>
+
+	<PartnerDetailModal />
 
 </AdminLayout>
 
@@ -165,6 +168,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	};
 
 	/* ── State ── */
+	const partnerRowsById = new Map<string, any>();
 	let allPartners: PartnerRow[] = [];
 	let currentSearch      = '';
 	let currentTypeFilter  = 'all';
@@ -220,7 +224,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 
 		tbody.innerHTML = filtered.map(p => `
-			<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors" data-uid="${p.uid}">
+			<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer" data-uid="${p.uid}" data-partner-id="${p.uid}">
 				<td class="px-6 py-3 font-medium text-neutral-900 whitespace-nowrap">${p.displayName}</td>
 				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${p.businessName}</td>
 				<td class="px-6 py-3 text-neutral-500 whitespace-nowrap">${p.email}</td>
@@ -237,6 +241,20 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		attachDropdownListeners();
 		attachDiscountListeners();
+		attachRowClickListeners();
+	}
+
+	/* ── Row click → partner detail modal ── */
+	function attachRowClickListeners() {
+		document.querySelectorAll<HTMLElement>('[data-partner-id]').forEach(tr => {
+			tr.addEventListener('click', (e) => {
+				const t = e.target as HTMLElement;
+				// Ignore clicks on inline-edit inputs, the actions dropdown, the discount cell, and dropdown menus
+				if (t.closest('input, select, button, .discount-cell, .dd-trigger, .dd-menu, .dd-item, [role="menu"]')) return;
+				const p = partnerRowsById.get(tr.dataset.partnerId!);
+				if (p) (window as any).OpawayPartnerDetail.open(p);
+			});
+		});
 	}
 
 	/* ── Discount inline edit ── */
@@ -326,6 +344,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partner accounts found.</td></tr>`;
 				return;
 			}
+			partnerRowsById.clear();
+			(data ?? []).forEach((p: any) => partnerRowsById.set(p.id, p));
 			allPartners = data.map((d: any) => {
 				// Determine business name based on partner type
 				let businessName = '—';

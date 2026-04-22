@@ -1,0 +1,210 @@
+---
+// Partner detail modal — window.OpawayPartnerDetail.open(row)
+---
+
+<div id="partner-detail-modal" class="fixed inset-0 z-[60] hidden">
+	<div class="absolute inset-0 bg-black/40" id="partner-detail-overlay"></div>
+	<div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+		<div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
+			<button type="button" id="partner-detail-close"
+				class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+			<div class="flex items-start justify-between mb-5 pr-10">
+				<div>
+					<h3 id="partner-detail-title" class="text-lg font-bold text-neutral-900 mb-0.5">Partner</h3>
+					<p id="partner-detail-ref" class="text-xs font-mono text-neutral-500"></p>
+				</div>
+				<span id="partner-detail-type-badge"
+					class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border"></span>
+			</div>
+
+			<div id="partner-detail-counts" class="grid grid-cols-3 gap-3 mb-6"></div>
+
+			<div id="partner-detail-body" class="space-y-5 text-sm"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+	import { supabase } from '../lib/supabase';
+
+	type Row = Record<string, any>;
+
+	const esc = (s: string) => String(s)
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	function field(label: string, value: any, opts: { full?: boolean } = {}) {
+		if (value == null || value === '' || (Array.isArray(value) && value.length === 0)) return '';
+		const str = Array.isArray(value) ? value.join(', ') : String(value);
+		return `<div class="${opts.full ? 'col-span-2' : ''}">
+			<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-0.5">${esc(label)}</div>
+			<div class="${opts.full ? 'whitespace-pre-wrap' : ''} text-neutral-800 break-words">${esc(str)}</div>
+		</div>`;
+	}
+
+	const section = (heading: string, inner: string) => `
+		<div>
+			<div class="text-xs font-semibold text-neutral-700 mb-2 uppercase tracking-wider">${esc(heading)}</div>
+			<div class="grid grid-cols-2 gap-4">${inner}</div>
+		</div>`;
+
+	function typeBadge(type: string) {
+		const palette: Record<string, string> = {
+			hotel: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+			agency: 'bg-violet-50 text-violet-700 border-violet-200',
+			driver: 'bg-sky-50 text-sky-700 border-sky-200',
+		};
+		const label = type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Partner';
+		const cls = palette[type] || 'bg-neutral-100 text-neutral-700 border-neutral-200';
+		return { label, cls };
+	}
+
+	function statusBadge(status: string) {
+		const palette: Record<string, string> = {
+			approved: 'bg-emerald-50 text-emerald-700',
+			pending: 'bg-amber-50 text-amber-700',
+			rejected: 'bg-red-50 text-red-700',
+		};
+		const cls = palette[status] || 'bg-neutral-100 text-neutral-700';
+		const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : '—';
+		return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}">${esc(label)}</span>`;
+	}
+
+	const countCard = (label: string, n: number, accent: string) => `
+		<div class="rounded-xl border border-neutral-200 p-3">
+			<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">${esc(label)}</div>
+			<div class="text-xl font-bold ${accent}">${n}</div>
+		</div>`;
+
+	async function fetchCounts(partnerId: string) {
+		const pid = String(partnerId);
+		const head = (t: string) => supabase.from(t).select('*', { count: 'exact', head: true }).eq('partner_id', pid);
+		const [tr, to, ex] = await Promise.all([head('transfers'), head('tours'), head('experiences')]);
+		return { transfers: tr.count ?? 0, tours: to.count ?? 0, experiences: ex.count ?? 0 };
+	}
+
+	async function fetchPaymentData(partnerId: string) {
+		const { data } = await supabase.from('payment_data').select('*').eq('partner_id', partnerId).maybeSingle();
+		return data;
+	}
+
+	function renderHeaderSection(r: Row) {
+		return section('Account', [
+			field('Display name', r.display_name),
+			field('Email', r.email),
+			field('Provider', r.provider),
+			field('Status', r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : ''),
+			field('Discount (%)', r.discount != null && r.discount !== 0 ? `${r.discount}%` : ''),
+			field('Created', r.created_at),
+		].join(''));
+	}
+
+	function renderContactSection(r: Row) {
+		return section('Contact', [
+			field('Contact name', r.contact_name),
+			field('Contact email', r.contact_email),
+			field('Contact phone', r.contact_phone),
+			field('Location', r.location),
+			field('Country', r.country),
+			field('City/ZIP', r.zip_code),
+			field('Website', r.website),
+			field('VAT', r.vat),
+		].join(''));
+	}
+
+	function renderHotelSection(r: Row) {
+		return section('Hotel', [
+			field('Hotel name', r.hotel_name),
+			field('Hotel type', r.hotel_type),
+			field('Business phone', r.business_phone),
+			field('Business email', r.business_email),
+		].join(''));
+	}
+
+	function renderAgencySection(r: Row) {
+		return section('Agency', [
+			field('Agency name', r.agency_name),
+			field('Agency type', r.agency_type),
+			field('Agency phone', r.agency_phone),
+			field('Agency email', r.agency_email),
+			field('MITE number', r.mite_number),
+		].join(''));
+	}
+
+	function renderDriverSection(r: Row) {
+		return section('Driver', [
+			field('Full name', r.full_name),
+			field('Phone', r.phone),
+			field('Vehicles registered', r.num_vehicles),
+			field('Primary car type', r.primary_car_type),
+			field('Car types', r.car_types),
+		].join(''));
+	}
+
+	function renderPaymentSection(pay: Row | null) {
+		if (!pay) return section('Payment data', `<div class="col-span-2 text-neutral-500 italic">No payment data on file.</div>`);
+		const inner = [
+			field('Payment method', pay.payment_method ? pay.payment_method.charAt(0).toUpperCase() + pay.payment_method.slice(1) : ''),
+			field('Bank name', pay.bank_name),
+			field('IBAN', pay.iban),
+			field('SWIFT', pay.swift),
+			field('Stripe account ID', pay.stripe_account_id),
+		].join('');
+		return section('Payment data', inner);
+	}
+
+	const modal     = document.getElementById('partner-detail-modal')!;
+	const body      = document.getElementById('partner-detail-body')!;
+	const title     = document.getElementById('partner-detail-title')!;
+	const refEl     = document.getElementById('partner-detail-ref')!;
+	const typeBadgeEl = document.getElementById('partner-detail-type-badge')!;
+	const countsEl  = document.getElementById('partner-detail-counts')!;
+
+	function close() { modal.classList.add('hidden'); }
+	document.getElementById('partner-detail-overlay')?.addEventListener('click', close);
+	document.getElementById('partner-detail-close')?.addEventListener('click', close);
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
+	});
+
+	(window as any).OpawayPartnerDetail = {
+		async open(row: Row) {
+			const name = row.display_name || row.hotel_name || row.agency_name || row.full_name || row.email || 'Partner';
+			title.textContent = name;
+			refEl.innerHTML = `<span>Ref ${String(row.id ?? '').slice(0, 8).toUpperCase()}</span> &nbsp;·&nbsp; ${statusBadge(row.status)}`;
+			const { label, cls } = typeBadge(row.type);
+			typeBadgeEl.textContent = label;
+			typeBadgeEl.className = `inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${cls}`;
+
+			// Placeholder while async fetches run
+			countsEl.innerHTML = countCard('Transfers', 0, 'text-sky-700')
+				+ countCard('Tours', 0, 'text-emerald-700')
+				+ countCard('Experiences', 0, 'text-violet-700');
+
+			const sections: string[] = [];
+			sections.push(renderHeaderSection(row));
+			sections.push(renderContactSection(row));
+			if (row.type === 'hotel')   sections.push(renderHotelSection(row));
+			if (row.type === 'agency')  sections.push(renderAgencySection(row));
+			if (row.type === 'driver')  sections.push(renderDriverSection(row));
+			body.innerHTML = sections.join('');
+
+			modal.classList.remove('hidden');
+
+			// Parallel fetches, render when each resolves
+			const [counts, pay] = await Promise.all([
+				fetchCounts(row.id),
+				fetchPaymentData(row.id),
+			]);
+			countsEl.innerHTML = countCard('Transfers', counts.transfers, 'text-sky-700')
+				+ countCard('Tours', counts.tours, 'text-emerald-700')
+				+ countCard('Experiences', counts.experiences, 'text-violet-700');
+			body.insertAdjacentHTML('beforeend', renderPaymentSection(pay));
+		},
+		close,
+	};
+</script>
