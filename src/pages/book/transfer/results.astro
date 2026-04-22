@@ -293,7 +293,26 @@ import Layout from '../../../layouts/Layout.astro';
 	/* ── State (declared early so setReturnState's render call doesn't hit TDZ) ── */
 	let routeDistanceKm = 0;
 	let routeDurationMin = 0;
-	let selectedVehicleSlug = '';
+
+	// Persist the selected vehicle so browser-Back from the passenger page
+	// restores the highlight + Continue-ready state (F15). Keyed by from/to/
+	// date so a fresh funnel with different route doesn't reuse the old pick.
+	const SEL_STORAGE_KEY = 'book:transfer:selected-vehicle';
+	const currentRouteKey = [from, to, date, time].join('|');
+	function readStoredVehicle(): string {
+		try {
+			const raw = sessionStorage.getItem(SEL_STORAGE_KEY);
+			if (!raw) return '';
+			const { key, slug } = JSON.parse(raw) as { key: string; slug: string };
+			return key === currentRouteKey ? (slug || '') : '';
+		} catch { return ''; }
+	}
+	function persistSelectedVehicle(slug: string) {
+		try { sessionStorage.setItem(SEL_STORAGE_KEY, JSON.stringify({ key: currentRouteKey, slug })); }
+		catch { /* non-fatal */ }
+	}
+
+	let selectedVehicleSlug = readStoredVehicle();
 
 	interface Vehicle {
 		id: string;
@@ -436,6 +455,7 @@ import Layout from '../../../layouts/Layout.astro';
 		document.querySelectorAll<HTMLDivElement>('.vehicle-card').forEach(card => {
 			card.addEventListener('click', () => {
 				selectedVehicleSlug = card.dataset.slug || '';
+				persistSelectedVehicle(selectedVehicleSlug);
 				const name = card.dataset.name || '';
 
 				// Update selection bar
@@ -450,6 +470,15 @@ import Layout from '../../../layouts/Layout.astro';
 				renderVehicles();
 			});
 		});
+
+		// Restore selection from sessionStorage (browser-Back from passenger page).
+		if (selectedVehicleSlug && vehicles.some(v => v.slug === selectedVehicleSlug)) {
+			const v = vehicles.find(vv => vv.slug === selectedVehicleSlug)!;
+			const bar = document.getElementById('selection-bar');
+			bar?.classList.remove('hidden');
+			setText('selected-name', v.name);
+			updateSidebarPrices();
+		}
 	}
 
 	/* ── Load vehicles from Supabase ── */
