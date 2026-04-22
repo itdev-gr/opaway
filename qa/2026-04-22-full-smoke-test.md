@@ -34,7 +34,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 10 Contact + experience forms | done | F17 |
 | Task 11 Admin — bookings | done | F18–F20 |
 | Task 12 Admin — management | done | F21 |
-| Task 13 Admin — catalog | pending | — |
+| Task 13 Admin — catalog | done | F22–F24 |
 | Task 14 Driver — rides | pending | — |
 | Task 15 Driver — account | pending | — |
 | Task 16 Hotel dashboard | pending | — |
@@ -940,3 +940,178 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 5 sub-
 **Root cause:** The Change Password UI in `/admin/settings` renders inputs in a `<div>` with a button that calls a JS handler directly, rather than wrapping in a `<form onsubmit="...">`. Minor accessibility/UX issue.
 **Status:** open
 **Severity:** Info — functionality is unaffected; password change works via JS handler. Browser password managers may not offer to save the new password.
+
+---
+
+### Section 13 — Admin catalog
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Playwright headless + DB REST API.
+
+#### 13.1 — `/admin/new-entry`
+
+| Check | Result | Notes |
+|---|---|---|
+| Four cards render | pass | Transfers, Tours, Experiences, Vehicles cards all present |
+| Each card links to correct page | pass | /admin/manage-transfers, /admin/manage-tours, /admin/manage-experiences, /admin/manage-vehicles |
+| No console errors | pass | 0 errors |
+
+**Summary 13.1:** all checks pass. 0 new findings.
+
+---
+
+#### 13.2 — `/admin/manage-transfers`
+
+| Check | Result | Notes |
+|---|---|---|
+| Form fields render | pass | Image URL, Title, Price, Description, Upload — all present |
+| Add Transfer → new row | pass | Row inserted in `transfers_catalog`, success banner shown |
+| Edit modal opens | pass | Click edit → modal opens, fields hydrated |
+| Edit save persists | pass | Modal closes, title change reflected in grid |
+| Published toggle | pass | On → Off toggle works correctly |
+| Delete with confirmation | pass | Delete modal shows, Yes → row removed from grid and DB |
+| Console errors | pass | 0 errors |
+
+**Summary 13.2:** all checks pass. 0 new findings. Test rows cleaned up.
+
+---
+
+#### 13.3 — `/admin/manage-tours` (CRITICAL regression of 2223975 + 01ebef7)
+
+| Check | Result | Notes |
+|---|---|---|
+| All 18 form fields present | pass | f-file, f-image-url-input, f-image-url-add, f-image-list, f-title, f-price-sedan/van/minibus, f-duration, f-category, f-entrance-price/count, f-hotel-wrap/option, f-description, f-h1/h2/h3 |
+| Category dropdown: 4 options | pass | day-tour, multiday-tour, experience-single, experience-multi |
+| category=day-tour → hotel hidden | pass | Correct initial state |
+| category=multiday-tour → hotel visible | pass | Toggle fires, hotel row appears |
+| category=experience-multi → hotel visible | pass | |
+| category=experience-single → hotel hidden | pass | |
+| 6 category toggles — no listener leak (`01ebef7`) | pass | After 6 changes, visibility always matches current selection |
+| Invalid URL paste → gallery blocked | pass | `checkValidity()` fires, 0 items in list |
+| Valid URL paste → thumbnail appears | pass | Item appears in gallery with Cover badge |
+| Remove thumbnail → list updates | pass | Gallery empties correctly |
+| Submit with 0 images → "Please add at least one image." | pass | Error shown, form not submitted |
+| Add tour with 1 image + full fields → success | pass | "✓ Tour published successfully!" shown |
+| Screenshot captured | pass | `qa/smoke-managetours-add.png` |
+| Edit modal: category hydrates | pass | e-category.value = 'day-tour' |
+| Edit modal: entrance_ticket hydrates | pass | e-entrance-price = 10 |
+| Edit modal: gallery re-populates | pass | 1 image in edit gallery |
+| Edit modal: add 2nd image | pass | 2 images shown, saved correctly |
+| Edit modal hotel toggle — no listener leak (`01ebef7`) | pass | multiday=visible, day=hidden, multiday=visible, day=hidden — correct each time |
+| Edit save → DB has 2 images | pass | `images` array = 2, `entrance_ticket_per_person` = 10 |
+| DB verify (SQL): category, images, entrance_ticket, hotel_option | pass | `{"images":["url1","url2"],"entrance_ticket_per_person":10,"hotel_option":"none","category":"day-tour"}` |
+| Published toggle | pass | On → Off |
+| Delete with confirmation | pass | Row removed |
+| Console errors | pass | 0 errors |
+
+**Summary 13.3:** all 23 checks pass including all regression checks for commits `2223975` and `01ebef7`. No new findings.
+
+---
+
+#### 13.4 — `/admin/manage-experiences` (PARITY GAPS)
+
+| Check | Result | Notes |
+|---|---|---|
+| Form renders | pass | Image URL (single), Title, Sedan/Van/Minibus prices, Duration, Description, 3 highlights |
+| Add / Edit / Delete / Toggle | pass | Full CRUD works |
+| **Parity gap — Category** | **FAIL (I)** | `f-category` dropdown absent — DB has `category` column but UI doesn't expose it → F22 |
+| **Parity gap — Entrance ticket** | **FAIL (I)** | `f-entrance-price` + `f-entrance-count` absent — DB columns exist but unused in UI → F22 |
+| **Parity gap — Hotel option** | **FAIL (I)** | `f-hotel-wrap` / `f-hotel-option` absent — DB column exists but unused in UI → F22 |
+| **Parity gap — Multi-image gallery** | **FAIL (I)** | No `f-image-url-add`, no `f-image-list`, no multi-file upload — only single `image_url` — DB has `images[]` column unused → F22 |
+| Console errors | pass | 0 errors |
+
+**Summary 13.4:** Basic CRUD works. 4 parity gaps vs manage-tours logged as F22 (single finding, severity I). DB schema already has all the extended columns — only the UI needs updating.
+
+---
+
+#### 13.5 — `/admin/manage-vehicles`
+
+| Check | Result | Notes |
+|---|---|---|
+| Form fields render | pass | Image URL, Name, Slug, Models, Max Passengers, Max Luggage, Badge, Sort Order all present in HTML |
+| Grid loads | **FAIL (H)** | Console error 400; grid shows "Could not load vehicles." — `loadItems()` does `.order('sort_order', ...)` but `sort_order` column does not exist in `public.vehicles` → F23 |
+| Add Vehicle → submit | **FAIL (H)** | "Error adding vehicle. Please try again." — code inserts `image`, `models`, `max_luggage`, `badge`, `sort_order`, `active`, `owner_type` but none of these columns exist in the actual table → F24 |
+| Edit modal | blocked | Cannot test (no rows load) |
+| Delete with confirmation | blocked | Cannot test (no rows load) |
+| Active toggle | blocked | Cannot test + column `active` does not exist in DB |
+| Sort order reorder | blocked | `sort_order` column missing |
+| Console errors | **FAIL** | `[error] Failed to load resource: 400` on page load |
+
+**Summary 13.5:** Form HTML renders correctly but the page is completely non-functional at runtime due to a DB schema mismatch — 7 columns referenced in code do not exist in `public.vehicles`. Findings F23 and F24 raised.
+
+**DB schema comparison:**
+
+| Column in code | Exists in DB | DB column name |
+|---|---|---|
+| `image` | NO | `image_url` |
+| `models` | NO | — |
+| `max_luggage` | NO | — |
+| `badge` | NO | — |
+| `sort_order` | NO | — |
+| `active` | NO | `published` (different name) |
+| `owner_type` | NO | `is_platform` (bool) |
+
+**Actual DB columns:** `id, owner_id, name, type, slug, max_passengers, image_url, description, is_platform, published, created_at`
+
+---
+
+**Section 13 screenshots:** `qa/smoke-managetours-add.png`
+
+---
+
+### F22 — I — manage-experiences — Parity gaps vs manage-tours: missing Category, Entrance Ticket, Hotel Option, Multi-image gallery
+
+**Page:** `/admin/manage-experiences`
+**Preconditions:** logged in as admin
+**Repro:**
+1. Navigate to `/admin/manage-experiences`
+2. Inspect the Add New Experience form
+**Expected:** manage-experiences has feature parity with manage-tours (category dropdown, entrance_ticket fields, hotel_option, multi-image gallery).
+**Observed:** The form has only: Image URL (single), Title, Sedan/Van/Minibus prices, Duration, Description, 3 highlights. The following fields present in manage-tours are absent:
+- `f-category` dropdown (4 options)
+- `f-entrance-price` / `f-entrance-count` inputs
+- `f-hotel-wrap` / `f-hotel-option` select (conditional)
+- Multi-image gallery (`f-image-url-add`, `f-image-list`, `f-file[multiple]`)
+**Important note:** The `experiences_catalog` DB table already has all these columns (`category`, `entrance_ticket_per_person`, `entrance_ticket_count`, `hotel_option`, `images`). The gaps are UI-only — existing data (if any) is silently ignored by the edit modal and never written back.
+**Root cause:** commit `2223975` extended only `manage-tours.astro`; `manage-experiences.astro` was not updated.
+**Status:** open
+**Severity:** I — Parity gap; admin cannot set category/entrance_ticket/hotel_option for experiences; gallery limited to one image.
+
+---
+
+### F23 — H — manage-vehicles — Grid fails to load: `sort_order` column missing from `public.vehicles`
+
+**Page:** `/admin/manage-vehicles`
+**Preconditions:** logged in as admin; `public.vehicles` table empty or populated
+**Repro:**
+1. Navigate to `/admin/manage-vehicles`
+2. Wait for page to finish loading
+**Expected:** Vehicle grid loads; existing vehicles shown.
+**Observed:** Console error `400 Bad Request`; grid shows "Could not load vehicles.". The `loadItems()` function executes `.from('vehicles').select('*').order('sort_order', { ascending: true })` but `sort_order` does not exist in the actual table schema.
+**Actual DB columns:** `id, owner_id, name, type, slug, max_passengers, image_url, description, is_platform, published, created_at`
+**Code expects column:** `sort_order` (missing)
+**Status:** open
+**Severity:** H — Page is completely non-functional; no vehicles can be viewed. This is a blocking issue for fleet management.
+
+---
+
+### F24 — H — manage-vehicles — Add Vehicle fails: code inserts 7 columns that don't exist in `public.vehicles`
+
+**Page:** `/admin/manage-vehicles`
+**Preconditions:** logged in as admin
+**Repro:**
+1. Navigate to `/admin/manage-vehicles`
+2. Fill in all form fields (Image URL, Name, Slug, Models, Max Passengers, Max Luggage)
+3. Click "Add Vehicle"
+**Expected:** New row inserted in `public.vehicles`; success banner shown.
+**Observed:** "Error adding vehicle. Please try again." — Supabase returns `PGRST204 Could not find column`.
+**Root cause:** The code submits `{ image, models, max_luggage, badge, sort_order, active, owner_type }` but the actual table has:
+- `image_url` (not `image`)
+- No `models` column
+- No `max_luggage` column  
+- No `badge` column
+- No `sort_order` column
+- `published` (not `active`)
+- `is_platform` boolean (not `owner_type` string)
+**Affected operations:** INSERT (add) + UPDATE (edit) + toggle active — all fail. The form UI renders correctly but all writes fail.
+**Status:** open
+**Severity:** H — No vehicles can ever be added or edited via this page. Complete functional failure.
