@@ -4,7 +4,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 ---
 
 <ProfileLayout>
-	<ProfileContent label="Experiences" title="My experiences" description="View and manage your experience bookings.">
+	<ProfileContent label="Experiences" title="My experience requests" description="View the experience requests you have sent us.">
 		<div id="experiences-container">
 			<p class="text-neutral-500 text-sm">Loading...</p>
 		</div>
@@ -21,10 +21,16 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		const container = document.getElementById('experiences-container');
 		if (!container) return;
 
+		// Experience bookings are stored in public.requests with source='experience'
+		// (the /experiences flow was switched to request-only in commit c7b4ec9).
+		// Match either user_id (the form captures it when submitted by a logged-in user)
+		// or the user's email (when submitted anonymously but using their known email).
+		const userEmail = user.email ?? '';
 		const { data: experiences, error } = await supabase
-			.from('experiences')
-			.select('*')
-			.eq('uid', user.id)
+			.from('requests')
+			.select('id, created_at, date, time, experience_name, experience_id, pickup_location, participants, status, special_requests, name, email')
+			.eq('source', 'experience')
+			.or(`user_id.eq.${user.id}${userEmail ? `,email.eq.${userEmail}` : ''}`)
 			.order('created_at', { ascending: false });
 
 		if (error) {
@@ -33,7 +39,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		}
 
 		if (!experiences || experiences.length === 0) {
-			container.innerHTML = '<p class="text-neutral-500 text-sm">No experiences yet. <a href="/experiences" class="text-[#0C6B95] font-medium hover:underline">Browse experiences</a>.</p>';
+			container.innerHTML = '<p class="text-neutral-500 text-sm">No experience requests yet. <a href="/experiences" class="text-[#0C6B95] font-medium hover:underline">Browse experiences</a>.</p>';
 			return;
 		}
 
@@ -42,10 +48,10 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		const rows = experiences.map(t => `
 			<tr class="border-b border-neutral-100">
 				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.date)}</td>
-				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.experience_name || t.experience)}</td>
-				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.pickup)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.experience_name)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.pickup_location)}</td>
 				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.participants)}</td>
-				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.status || t.ride_status)}</td>
+				<td class="py-3 px-4 text-sm text-neutral-700">${esc(t.status)}</td>
 			</tr>
 		`).join('');
 
