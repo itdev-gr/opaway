@@ -197,8 +197,9 @@ import Layout from '../layouts/Layout.astro';
 				if (error) throw error;
 				ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
 				const params = new URLSearchParams(window.location.search);
-				const next = params.get('next');
-				window.location.href = next && next.startsWith('/') ? next : '/';
+				const rawNext = params.get('next');
+				const isSafeNext = rawNext != null && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/\\');
+				window.location.href = isSafeNext ? rawNext! : '/';
 			} catch (err: unknown) {
 				const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
 				showError(msg);
