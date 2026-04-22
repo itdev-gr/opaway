@@ -87,9 +87,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 								<select id="vf-category"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors">
 									<option value="">Select...</option>
-									<option value="Sedan">Sedan</option>
-									<option value="Van">Van</option>
-									<option value="Minibus">Minibus</option>
+									<option value="sedan">Sedan</option>
+									<option value="van">Van</option>
+									<option value="minibus">Minibus</option>
 								</select>
 							</div>
 							<div>
@@ -276,7 +276,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				closeModal();
 				loadVehicles();
 			} catch (err: any) {
-				showStatus(err.message || 'Failed to save.', false);
+				const msg = err?.code ? `[${err.code}] ${err.message}` : (err?.message || 'Failed to save.');
+				console.error('Vehicle save failed:', err);
+				showStatus(msg, false);
 			} finally {
 				btn.disabled = false;
 				btn.textContent = 'Save Vehicle';
