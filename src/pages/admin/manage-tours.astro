@@ -23,32 +23,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		<form id="tour-form" class="space-y-4" novalidate>
 
-			<!-- Image URL + Live Preview -->
-			<div class="flex flex-col sm:flex-row gap-4 items-start">
-				<div class="flex-1">
-					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Image URL *</label>
-					<input
-						id="f-image" type="url" required
-						placeholder="https://example.com/photo.jpg"
-						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-					/>
-					<p class="text-xs text-neutral-400 mt-1.5">Paste a URL or upload an image (JPG, PNG, WebP, AVIF)</p>
-					<label class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
+			<!-- Images gallery -->
+			<div class="space-y-2">
+				<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Images *</label>
+				<div class="flex flex-wrap items-center gap-2">
+					<label class="inline-flex items-center gap-2 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-						Upload Image
-						<input id="f-file" type="file" accept="image/*" class="hidden" />
+						Upload from computer
+						<input id="f-file" type="file" accept="image/*" multiple class="hidden" />
 					</label>
-					<span id="f-upload-status" class="hidden text-xs text-[#0C6B95] ml-2"></span>
+					<span class="text-xs text-neutral-400">or</span>
+					<div class="flex items-center gap-2 flex-1 min-w-[250px]">
+						<input id="f-image-url-input" type="url" placeholder="Paste image URL"
+							class="flex-1 px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+						<button id="f-image-url-add" type="button"
+							class="px-4 py-2.5 bg-neutral-100 text-neutral-700 text-sm font-semibold rounded-xl hover:bg-neutral-200 transition-colors">Add URL</button>
+					</div>
+					<span id="f-upload-status" class="hidden text-xs text-[#0C6B95]"></span>
 				</div>
-				<div class="sm:w-48 h-32 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
-					<img id="img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
-					<span id="img-placeholder" class="text-neutral-400 text-xs font-medium flex flex-col items-center gap-1.5">
-						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-						</svg>
-						Preview
-					</span>
-				</div>
+				<p class="text-xs text-neutral-400">Up to 10 images. First image is the cover.</p>
+				<ul id="f-image-list" class="grid grid-cols-5 gap-2 mt-2"></ul>
 			</div>
 
 			<!-- Title -->
@@ -97,6 +91,41 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					placeholder="e.g. Half day · ~4 hours"
 					class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 				/>
+			</div>
+
+			<!-- Category -->
+			<div>
+				<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Category *</label>
+				<select id="f-category" required class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm">
+					<option value="day-tour">Day Tour</option>
+					<option value="multiday-tour">Multi-day Tour</option>
+					<option value="experience-single">Experience (single day)</option>
+					<option value="experience-multi">Experience (multi day)</option>
+				</select>
+			</div>
+
+			<!-- Entrance ticket -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Entrance ticket per person (€)</label>
+					<input id="f-entrance-price" type="number" min="0" step="0.01" placeholder="e.g. 10.00" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+					<p class="text-xs text-neutral-400 mt-1.5">Per-passenger archaeological-site entry cost.</p>
+				</div>
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Number of tickets</label>
+					<input id="f-entrance-count" type="number" min="0" step="1" value="0" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+					<p class="text-xs text-neutral-400 mt-1.5">0 or 1 for day tours; multi-day tours may require more.</p>
+				</div>
+			</div>
+
+			<!-- Hotel option (multi-day only) -->
+			<div id="f-hotel-wrap" class="hidden">
+				<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Hotel option</label>
+				<select id="f-hotel-option" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm">
+					<option value="none">No hotel option</option>
+					<option value="self-book">No hotel needed (guest books their own)</option>
+					<option value="include-booking">Include hotel booking (agent contacts after booking)</option>
+				</select>
 			</div>
 
 			<!-- Description -->
@@ -189,30 +218,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</button>
 			</div>
 			<div class="space-y-4">
-				<!-- Edit Image URL + Preview -->
-				<div class="flex flex-col sm:flex-row gap-4 items-start">
-					<div class="flex-1">
-						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Image URL *</label>
-						<input
-							id="e-image" type="url"
-							class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
-						/>
-						<label class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
-							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-							Upload
-							<input id="e-file" type="file" accept="image/*" class="hidden" />
+				<!-- Edit Images gallery -->
+				<div class="space-y-2">
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Images *</label>
+					<div class="flex flex-wrap items-center gap-2">
+						<label class="inline-flex items-center gap-2 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+							Upload from computer
+							<input id="e-file" type="file" accept="image/*" multiple class="hidden" />
 						</label>
-						<span id="e-upload-status" class="hidden text-xs text-[#0C6B95] ml-2"></span>
+						<span class="text-xs text-neutral-400">or</span>
+						<div class="flex items-center gap-2 flex-1 min-w-[250px]">
+							<input id="e-image-url-input" type="url" placeholder="Paste image URL"
+								class="flex-1 px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+							<button id="e-image-url-add" type="button"
+								class="px-4 py-2.5 bg-neutral-100 text-neutral-700 text-sm font-semibold rounded-xl hover:bg-neutral-200 transition-colors">Add URL</button>
+						</div>
+						<span id="e-upload-status" class="hidden text-xs text-[#0C6B95]"></span>
 					</div>
-					<div class="sm:w-36 h-24 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 flex items-center justify-center shrink-0">
-						<img id="e-img-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
-						<span id="e-img-placeholder" class="text-neutral-400 text-xs flex flex-col items-center gap-1">
-							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-							</svg>
-							Preview
-						</span>
-					</div>
+					<p class="text-xs text-neutral-400">Up to 10 images. First image is the cover.</p>
+					<ul id="e-image-list" class="grid grid-cols-5 gap-2 mt-2"></ul>
 				</div>
 				<!-- Edit Title -->
 				<div>
@@ -245,6 +270,38 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						placeholder="e.g. Half day · ~4 hours"
 						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 					/>
+				</div>
+				<!-- Edit Category -->
+				<div>
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Category *</label>
+					<select id="e-category" required class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm">
+						<option value="day-tour">Day Tour</option>
+						<option value="multiday-tour">Multi-day Tour</option>
+						<option value="experience-single">Experience (single day)</option>
+						<option value="experience-multi">Experience (multi day)</option>
+					</select>
+				</div>
+				<!-- Edit Entrance ticket -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Entrance ticket per person (€)</label>
+						<input id="e-entrance-price" type="number" min="0" step="0.01" placeholder="e.g. 10.00" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+						<p class="text-xs text-neutral-400 mt-1.5">Per-passenger archaeological-site entry cost.</p>
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Number of tickets</label>
+						<input id="e-entrance-count" type="number" min="0" step="1" value="0" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm" />
+						<p class="text-xs text-neutral-400 mt-1.5">0 or 1 for day tours; multi-day tours may require more.</p>
+					</div>
+				</div>
+				<!-- Edit Hotel option (multi-day only) -->
+				<div id="e-hotel-wrap" class="hidden">
+					<label class="block text-xs font-semibold text-neutral-600 mb-1.5 uppercase tracking-wider">Hotel option</label>
+					<select id="e-hotel-option" class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm">
+						<option value="none">No hotel option</option>
+						<option value="self-book">No hotel needed (guest books their own)</option>
+						<option value="include-booking">Include hotel booking (agent contacts after booking)</option>
+					</select>
 				</div>
 				<!-- Edit Description -->
 				<div>
@@ -279,12 +336,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { uploadImage } from '../../lib/upload';
+	import { uploadImages } from '../../lib/upload';
 
 	/* ── Types ── */
 	interface CatalogItem {
-		id: string; title: string; description: string; priceSedan: number; priceVan: number; priceMinibus: number; imageUrl: string;
-		published: boolean; duration: string; highlight1: string; highlight2: string; highlight3: string;
+		id: string; title: string; description: string;
+		priceSedan: number; priceVan: number; priceMinibus: number;
+		imageUrl: string; images: string[];
+		published: boolean; duration: string;
+		highlight1: string; highlight2: string; highlight3: string;
+		category: string;
+		entrancePrice: number; entranceCount: number;
+		hotelOption: string;
 	}
 
 	/* ── State ── */
@@ -292,81 +355,88 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	let pendingDeleteId = '';
 	let pendingEditId   = '';
 
+	const MAX_IMAGES = 10;
+	let addGallery: string[] = [];
+	let editGallery: string[] = [];
+
 	/* ── Escape HTML ── */
 	const esc = (s: string) => String(s)
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-	/* ── Add-form image preview ── */
-	const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
-	const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
-	const imgPlaceholder = document.getElementById('img-placeholder')!;
-	let previewTimer: ReturnType<typeof setTimeout>;
-
-	function applyPreview(input: HTMLInputElement, preview: HTMLImageElement, placeholder: Element) {
-		const url = input.value.trim();
-		if (url) {
-			preview.src = url;
-			preview.classList.remove('hidden');
-			placeholder.classList.add('hidden');
-			preview.onerror = () => { preview.classList.add('hidden'); placeholder.classList.remove('hidden'); };
-		} else {
-			preview.classList.add('hidden');
-			placeholder.classList.remove('hidden');
-		}
+	/* ── Gallery rendering + controls ── */
+	function renderGallery(listId: string, gallery: string[]) {
+		const list = document.getElementById(listId);
+		if (!list) return;
+		list.innerHTML = gallery.map((url, i) => `
+			<li class="relative group">
+				<img src="${esc(url)}" class="w-full h-20 object-cover rounded-lg border border-neutral-200" />
+				${i === 0 ? '<span class="absolute top-1 left-1 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded">Cover</span>' : ''}
+				<button type="button" data-remove="${i}" class="absolute top-1 right-1 w-5 h-5 bg-white/95 text-red-600 rounded-full text-xs leading-5 text-center shadow">×</button>
+			</li>
+		`).join('');
+		list.querySelectorAll<HTMLButtonElement>('[data-remove]').forEach(b => {
+			b.addEventListener('click', () => {
+				gallery.splice(parseInt(b.dataset.remove!, 10), 1);
+				renderGallery(listId, gallery);
+			});
+		});
 	}
 
-	imgInput.addEventListener('input', () => {
-		clearTimeout(previewTimer);
-		previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
-	});
+	function bindGalleryControls(prefix: 'f' | 'e', gallery: string[], listId: string) {
+		const fileEl   = document.getElementById(`${prefix}-file`)          as HTMLInputElement | null;
+		const urlInput = document.getElementById(`${prefix}-image-url-input`) as HTMLInputElement | null;
+		const urlAdd   = document.getElementById(`${prefix}-image-url-add`);
+		const statusEl = document.getElementById(`${prefix}-upload-status`);
 
-	/* ── Edit-modal image preview ── */
-	const eImgInput       = document.getElementById('e-image')       as HTMLInputElement;
-	const eImgPreview     = document.getElementById('e-img-preview') as HTMLImageElement;
-	const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
-	let ePreviewTimer: ReturnType<typeof setTimeout>;
+		fileEl?.addEventListener('change', async () => {
+			if (!fileEl.files?.length) return;
+			if (gallery.length + fileEl.files.length > MAX_IMAGES) {
+				alert(`Maximum ${MAX_IMAGES} images.`); fileEl.value = ''; return;
+			}
+			statusEl?.classList.remove('hidden');
+			if (statusEl) statusEl.textContent = 'Uploading…';
+			try {
+				const urls = await uploadImages(fileEl.files, 'tours');
+				gallery.push(...urls);
+				renderGallery(listId, gallery);
+				if (statusEl) statusEl.textContent = 'Uploaded';
+				setTimeout(() => statusEl?.classList.add('hidden'), 2000);
+			} catch (err) {
+				console.error('Image upload failed:', err);
+				if (statusEl) statusEl.textContent = 'Upload failed';
+				setTimeout(() => statusEl?.classList.add('hidden'), 3000);
+			}
+			fileEl.value = '';
+		});
 
-	eImgInput.addEventListener('input', () => {
-		clearTimeout(ePreviewTimer);
-		ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
-	});
-
-	/* ── File upload handlers ── */
-	async function handleFileUpload(fileInput: HTMLInputElement, urlInput: HTMLInputElement, preview: HTMLImageElement, placeholder: Element, statusEl: HTMLElement, folder: string) {
-		const file = fileInput.files?.[0];
-		if (!file) return;
-		statusEl.textContent = 'Uploading…';
-		statusEl.classList.remove('hidden');
-		try {
-			const url = await uploadImage(file, folder);
-			urlInput.value = url;
-			applyPreview(urlInput, preview, placeholder);
-			statusEl.textContent = 'Uploaded';
-			setTimeout(() => statusEl.classList.add('hidden'), 2000);
-		} catch (err) {
-			console.error('Upload failed:', err);
-			statusEl.textContent = 'Upload failed';
-			setTimeout(() => statusEl.classList.add('hidden'), 3000);
-		}
-		fileInput.value = '';
+		urlAdd?.addEventListener('click', () => {
+			if (!urlInput) return;
+			const url = urlInput.value.trim();
+			if (!url) return;
+			if (gallery.length >= MAX_IMAGES) { alert(`Maximum ${MAX_IMAGES} images.`); return; }
+			gallery.push(url);
+			urlInput.value = '';
+			renderGallery(listId, gallery);
+		});
 	}
 
-	document.getElementById('f-file')?.addEventListener('change', () => {
-		handleFileUpload(
-			document.getElementById('f-file') as HTMLInputElement,
-			imgInput, imgPreview, imgPlaceholder,
-			document.getElementById('f-upload-status')!, 'tours'
-		);
-	});
+	bindGalleryControls('f', addGallery, 'f-image-list');
+	bindGalleryControls('e', editGallery, 'e-image-list');
 
-	document.getElementById('e-file')?.addEventListener('change', () => {
-		handleFileUpload(
-			document.getElementById('e-file') as HTMLInputElement,
-			eImgInput, eImgPreview, eImgPlaceholder,
-			document.getElementById('e-upload-status')!, 'tours'
-		);
-	});
+	/* ── Hotel visibility toggle based on category ── */
+	const toggleHotel = (categorySelId: string, wrapId: string) => {
+		const sel = document.getElementById(categorySelId) as HTMLSelectElement | null;
+		const wrap = document.getElementById(wrapId);
+		if (!sel || !wrap) return;
+		const apply = () => {
+			const v = sel.value;
+			wrap.classList.toggle('hidden', v !== 'multiday-tour' && v !== 'experience-multi');
+		};
+		sel.addEventListener('change', apply);
+		apply();
+	};
+	toggleHotel('f-category', 'f-hotel-wrap');
 
 	/* ── Render grid ── */
 	function renderGrid() {
@@ -475,7 +545,28 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		try {
 			const { data, error } = await supabase.from('tours_catalog').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
-			items = (data ?? []).map((d: any) => ({ id: d.id, title: d.title, description: d.description, priceSedan: d.price_sedan ?? d.price ?? 0, priceVan: d.price_van ?? 0, priceMinibus: d.price_minibus ?? 0, imageUrl: d.image_url, published: d.published, duration: d.duration, highlight1: d.highlight1, highlight2: d.highlight2, highlight3: d.highlight3 }));
+			items = (data ?? []).map((d: any) => {
+				const images: string[] = Array.isArray(d.images) && d.images.length > 0
+					? d.images
+					: (d.image_url ? [d.image_url] : []);
+				return {
+					id: d.id,
+					title: d.title,
+					description: d.description,
+					priceSedan: d.price_sedan ?? d.price ?? 0,
+					priceVan: d.price_van ?? 0,
+					priceMinibus: d.price_minibus ?? 0,
+					imageUrl: images[0] || d.image_url || '',
+					images,
+					published: d.published,
+					duration: d.duration,
+					highlight1: d.highlight1, highlight2: d.highlight2, highlight3: d.highlight3,
+					category: d.category || 'day-tour',
+					entrancePrice: Number(d.entrance_ticket_per_person ?? 0),
+					entranceCount: Number(d.entrance_ticket_count ?? 0),
+					hotelOption: d.hotel_option || 'none',
+				};
+			});
 			renderGrid();
 		} catch (e) {
 			/* error silenced */
@@ -492,7 +583,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	form.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		const imageUrl     = (document.getElementById('f-image')         as HTMLInputElement).value.trim();
 		const title        = (document.getElementById('f-title')         as HTMLInputElement).value.trim();
 		const priceSedan   = parseFloat((document.getElementById('f-price-sedan')   as HTMLInputElement).value);
 		const priceVan     = parseFloat((document.getElementById('f-price-van')     as HTMLInputElement).value);
@@ -502,8 +592,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const h1           = (document.getElementById('f-h1')            as HTMLInputElement).value.trim();
 		const h2           = (document.getElementById('f-h2')            as HTMLInputElement).value.trim();
 		const h3           = (document.getElementById('f-h3')            as HTMLInputElement).value.trim();
+		const category     = (document.getElementById('f-category')      as HTMLSelectElement).value || 'day-tour';
+		const entrancePrice = parseFloat((document.getElementById('f-entrance-price') as HTMLInputElement).value) || 0;
+		const entranceCount = parseInt((document.getElementById('f-entrance-count') as HTMLInputElement).value) || 0;
+		const hotelOption  = (document.getElementById('f-hotel-option')  as HTMLSelectElement).value || 'none';
 
-		if (!imageUrl || !title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
+		const cover = addGallery[0] || '';
+		if (!cover) { setStatus('Please add at least one image.', 'text-red-500'); return; }
+
+		if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
 			setStatus('Please fill in all required fields.', 'text-red-500'); return;
 		}
 
@@ -513,16 +610,37 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		try {
 			const { data: inserted, error: insErr } = await supabase.from('tours_catalog').insert({
-				image_url: imageUrl, title, description, price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus, duration,
+				image_url: cover,
+				images: addGallery,
+				title, description,
+				price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
+				duration,
 				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrance_ticket_per_person: entrancePrice,
+				entrance_ticket_count: entranceCount,
+				hotel_option: hotelOption,
 				published: true,
 			}).select().single();
 			if (insErr) throw insErr;
-			items.unshift({ id: inserted.id, imageUrl, title, description, priceSedan, priceVan, priceMinibus, duration, highlight1: h1, highlight2: h2, highlight3: h3, published: true });
+			items.unshift({
+				id: inserted.id,
+				imageUrl: cover,
+				images: [...addGallery],
+				title, description,
+				priceSedan, priceVan, priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrancePrice, entranceCount,
+				hotelOption,
+				published: true,
+			});
 			renderGrid();
 			form.reset();
-			imgPreview.classList.add('hidden');
-			imgPlaceholder.classList.remove('hidden');
+			addGallery.length = 0;
+			renderGallery('f-image-list', addGallery);
+			toggleHotel('f-category', 'f-hotel-wrap');
 			setStatus('✓ Tour published successfully!', 'text-emerald-600 font-medium');
 			setTimeout(() => setStatus('', ''), 4000);
 		} catch (err) {
@@ -562,7 +680,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		if (!item) return;
 		pendingEditId = id;
 
-		(document.getElementById('e-image')          as HTMLInputElement).value = item.imageUrl;
+		editGallery.length = 0;
+		const sourceImages = (item.images && item.images.length > 0)
+			? item.images
+			: (item.imageUrl ? [item.imageUrl] : []);
+		editGallery.push(...sourceImages);
+		renderGallery('e-image-list', editGallery);
+
 		(document.getElementById('e-title')          as HTMLInputElement).value = item.title;
 		(document.getElementById('e-price-sedan')    as HTMLInputElement).value = String(item.priceSedan ?? 0);
 		(document.getElementById('e-price-van')      as HTMLInputElement).value = String(item.priceVan ?? 0);
@@ -572,8 +696,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		(document.getElementById('e-h1')          as HTMLInputElement).value    = item.highlight1  || '';
 		(document.getElementById('e-h2')          as HTMLInputElement).value    = item.highlight2  || '';
 		(document.getElementById('e-h3')          as HTMLInputElement).value    = item.highlight3  || '';
+		(document.getElementById('e-category')       as HTMLSelectElement).value = item.category || 'day-tour';
+		(document.getElementById('e-entrance-price') as HTMLInputElement).value  = String(item.entrancePrice ?? 0);
+		(document.getElementById('e-entrance-count') as HTMLInputElement).value  = String(item.entranceCount ?? 0);
+		(document.getElementById('e-hotel-option')   as HTMLSelectElement).value = item.hotelOption || 'none';
 
-		applyPreview(eImgInput, eImgPreview, eImgPlaceholder);
+		toggleHotel('e-category', 'e-hotel-wrap');
+
 		document.getElementById('edit-status')!.textContent = '';
 
 		const modal = document.getElementById('edit-modal')!;
@@ -591,7 +720,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
 
 	document.getElementById('edit-save')?.addEventListener('click', async () => {
-		const imageUrl     = (document.getElementById('e-image')           as HTMLInputElement).value.trim();
 		const title        = (document.getElementById('e-title')           as HTMLInputElement).value.trim();
 		const priceSedan   = parseFloat((document.getElementById('e-price-sedan')   as HTMLInputElement).value);
 		const priceVan     = parseFloat((document.getElementById('e-price-van')     as HTMLInputElement).value);
@@ -601,10 +729,21 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const h1           = (document.getElementById('e-h1')              as HTMLInputElement).value.trim();
 		const h2           = (document.getElementById('e-h2')              as HTMLInputElement).value.trim();
 		const h3           = (document.getElementById('e-h3')              as HTMLInputElement).value.trim();
+		const category     = (document.getElementById('e-category')        as HTMLSelectElement).value || 'day-tour';
+		const entrancePrice = parseFloat((document.getElementById('e-entrance-price') as HTMLInputElement).value) || 0;
+		const entranceCount = parseInt((document.getElementById('e-entrance-count') as HTMLInputElement).value) || 0;
+		const hotelOption  = (document.getElementById('e-hotel-option')    as HTMLSelectElement).value || 'none';
 		const editStatus   = document.getElementById('edit-status')!;
 		const saveBtn      = document.getElementById('edit-save') as HTMLButtonElement;
 
-		if (!imageUrl || !title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
+		const cover = editGallery[0] || '';
+		if (!cover) {
+			editStatus.textContent = 'Please keep at least one image.';
+			editStatus.className = 'text-sm text-red-500';
+			return;
+		}
+
+		if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
 			editStatus.textContent = 'Please fill in all required fields.';
 			editStatus.className = 'text-sm text-red-500';
 			return;
@@ -616,12 +755,30 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		try {
 			const { error: updErr } = await supabase.from('tours_catalog').update({
-				image_url: imageUrl, title, description, price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus, duration,
+				image_url: cover,
+				images: editGallery,
+				title, description,
+				price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
+				duration,
 				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrance_ticket_per_person: entrancePrice,
+				entrance_ticket_count: entranceCount,
+				hotel_option: hotelOption,
 			}).eq('id', pendingEditId);
 			if (updErr) throw updErr;
 			const item = items.find(i => i.id === pendingEditId);
-			if (item) Object.assign(item, { imageUrl, title, description, priceSedan, priceVan, priceMinibus, duration, highlight1: h1, highlight2: h2, highlight3: h3 });
+			if (item) Object.assign(item, {
+				imageUrl: cover,
+				images: [...editGallery],
+				title, description,
+				priceSedan, priceVan, priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrancePrice, entranceCount,
+				hotelOption,
+			});
 			renderGrid();
 			closeEditModal();
 		} catch (err) {

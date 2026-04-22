@@ -16,3 +16,12 @@ export async function uploadImage(file: File, folder: string): Promise<string> {
 	const { data } = supabase.storage.from(BUCKET).getPublicUrl(name);
 	return data.publicUrl;
 }
+
+export async function uploadImages(files: FileList | File[], folder: string): Promise<string[]> {
+	const arr: File[] = Array.from(files as any as File[]);
+	const urls: string[] = [];
+	for (const f of arr) {
+		urls.push(await uploadImage(f, folder));
+	}
+	return urls;
+}
