@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SidebarBadge from './SidebarBadge.astro';
 
 interface Props {
 	pageTitle: string;
@@ -27,7 +28,7 @@ const nav = [
 		items: [
 			{ key: 'upcoming',  label: 'Upcoming Rides',  href: '/driver/upcoming',  icon: 'transfer' },
 			{ key: 'past',      label: 'Past Rides',      href: '/driver/past',      icon: 'map'      },
-			{ key: 'available', label: 'Available Rides', href: '/driver/available', icon: 'inbox'    },
+			{ key: 'available', label: 'Available Rides', href: '/driver/available', icon: 'inbox', notifId: 'driver-available' },
 		],
 	},
 	{
@@ -97,7 +98,7 @@ const nav = [
 				{nav.map(({ group, items }) => (
 					<>
 						<p class="text-white/50 text-xs font-semibold tracking-widest uppercase px-3 mb-1 mt-4 first:mt-2">{group}</p>
-						{items.map(({ key, label, href, icon }) => {
+						{items.map(({ key, label, href, icon, notifId }: { key: string; label: string; href: string; icon: string; notifId?: string }) => {
 							const active = activeSection === key;
 							return (
 								<a
@@ -156,7 +157,8 @@ const nav = [
 											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 										</svg>
 									)}
-									{label}
+									<span>{label}</span>
+									{notifId && <SidebarBadge id={notifId} />}
 								</a>
 							);
 						})}
@@ -222,6 +224,7 @@ const nav = [
 
 <script>
 	import { supabase } from '../lib/supabase';
+	import { driverAvailableCount, subscribeTables } from '../lib/notifications';
 
 	function initDriverLayout() {
 		const overlay    = document.getElementById('driver-sidebar-overlay');
@@ -259,6 +262,22 @@ const nav = [
 						session.user.email || 'Driver';
 				}
 				authCheck?.classList.add('hidden');
+
+				async function refreshDriverBadge() {
+					try {
+						const n = await driverAvailableCount();
+						const el = document.querySelector('[data-notif-badge="driver-available"]');
+						if (!el) return;
+						el.textContent = n > 99 ? '99+' : String(n);
+						el.classList.toggle('hidden', n === 0);
+					} catch (err) {
+						console.error('Driver badge refresh failed:', err);
+					}
+				}
+
+				refreshDriverBadge();
+				const unsubDriverNotif = subscribeTables(['transfers', 'tours', 'experiences'], refreshDriverBadge);
+				window.addEventListener('beforeunload', () => unsubDriverNotif());
 			} catch { window.location.href = '/login'; }
 		})();
 	}

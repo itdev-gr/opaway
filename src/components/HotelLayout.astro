@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SidebarBadge from './SidebarBadge.astro';
 
 interface Props {
 	pageTitle: string;
@@ -19,7 +20,7 @@ const nav = [
 	{
 		group: 'Main',
 		items: [
-			{ key: 'reservations', label: 'Reservations', href: '/hotel', icon: 'inbox' },
+			{ key: 'reservations', label: 'Reservations', href: '/hotel', icon: 'inbox', notifId: 'hotel-reservations' },
 		],
 	},
 	{
@@ -74,7 +75,7 @@ const nav = [
 				{nav.map(({ group, items }) => (
 					<>
 						<p class="text-white/50 text-xs font-semibold tracking-widest uppercase px-3 mb-1 mt-4 first:mt-2">{group}</p>
-						{items.map(({ key, label, href, icon }) => {
+						{items.map(({ key, label, href, icon, notifId }: { key: string; label: string; href: string; icon: string; notifId?: string }) => {
 							const active = activeSection === key;
 							return (
 								<a
@@ -91,7 +92,8 @@ const nav = [
 											<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 										</svg>
 									)}
-									{label}
+									<span>{label}</span>
+									{notifId && <SidebarBadge id={notifId} />}
 								</a>
 							);
 						})}
@@ -157,6 +159,7 @@ const nav = [
 
 <script>
 	import { supabase } from '../lib/supabase';
+	import { partnerReservationsCount, markPartnerReservationsSeen, subscribeTables } from '../lib/notifications';
 
 	function initHotelLayout() {
 		const overlay    = document.getElementById('hotel-sidebar-overlay');
@@ -195,6 +198,28 @@ const nav = [
 						session.user.email || 'Hotel';
 				}
 				authCheck?.classList.add('hidden');
+
+				const hotelUserId = session.user.id;
+
+				async function refreshHotelBadge() {
+					try {
+						const n = await partnerReservationsCount(hotelUserId);
+						const el = document.querySelector('[data-notif-badge="hotel-reservations"]');
+						if (!el) return;
+						el.textContent = n > 99 ? '99+' : String(n);
+						el.classList.toggle('hidden', n === 0);
+					} catch (err) {
+						console.error('Hotel badge refresh failed:', err);
+					}
+				}
+
+				if (window.location.pathname === '/hotel' || window.location.pathname === '/hotel/') {
+					markPartnerReservationsSeen(hotelUserId);
+				}
+
+				await refreshHotelBadge();
+				const unsubHotelNotif = subscribeTables(['transfers', 'tours', 'experiences'], refreshHotelBadge);
+				window.addEventListener('beforeunload', () => unsubHotelNotif());
 			} catch { window.location.href = '/login'; }
 		})();
 	}
