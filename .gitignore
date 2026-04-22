@@ -15,7 +15,14 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.local
 .env.production
+
+# supabase management api access (personal access token)
+.supabase-pat
+
+# qa artifacts produced by smoke-test script
+qa/
 
 # Firebase service account (for migration scripts)
 **/serviceAccountKey.json
