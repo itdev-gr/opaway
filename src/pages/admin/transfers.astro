@@ -379,10 +379,12 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 		const save = async () => {
 			const newDriver = input.value.trim();
-			try {
-				await supabase.from('transfers').update({ driver: newDriver }).eq('id', docId);
-			} catch (err) {
-				/* error silenced */
+			const { error } = await supabase.from('transfers').update({ driver: newDriver }).eq('id', docId);
+			if (error) {
+				console.error('Driver update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				input.focus();
+				return;
 			}
 			/* Replace input back with span */
 			const newSpan = document.createElement('span');

@@ -339,10 +339,10 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			span.title = 'Click to edit';
 			span.textContent = val || '—';
 			input.replaceWith(span);
-			try {
-				await supabase.from('experiences').update({ driver: val }).eq('id', docId);
-			} catch (err) {
-				/* error silenced */
+			const { error } = await supabase.from('experiences').update({ driver: val }).eq('id', docId);
+			if (error) {
+				console.error('Driver update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
 			}
 		};
 		input.addEventListener('blur', save);
