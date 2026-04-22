@@ -26,7 +26,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 2  Init journal | done | — |
 | Task 3  Dev-server warmup | done | — |
 | Task 4  Public pages | done | F1–F5 |
-| Task 5  Auth flows | pending | — |
+| Task 5  Auth flows | done | F6–F8 |
 | Task 6  User profile | pending | — |
 | Task 7  Transfer funnel | pending | — |
 | Task 8  Hourly funnel | pending | — |
@@ -61,6 +61,41 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | 8 | `/privacy` | privacy | pass | Content renders, footer present, no errors |
 | 9 | `/terms` | terms | pass | Content renders, footer present, no errors |
 | 10 | `/asdf-nope` | notfound | pass | 404 page renders; "Back to Home" CTA resolves to `/` |
+
+---
+
+### Section 5 — Auth flows sweep
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 20 scenarios executed.
+
+| # | Scenario | Result | Notes |
+|---|---|---|---|
+| 1 | Register new user (email/password) | **partial-pass** | auth.users row created; redirect goes to `/` not `/profile`; `public.users` row NOT created (F6) |
+| 2 | Register validation errors | pass | Empty → "Please enter email and password." Invalid email → "Please enter a valid email address." Short password → "Password must be at least 8 characters." All inline, no redirect |
+| 3 | Register with existing email | pass | "This email is already registered. Try signing in instead." — no duplicate row created |
+| 4 | Google OAuth button | note | No Google OAuth button present on `/login` — not a finding |
+| 5 | Login valid | pass | Session token in localStorage; redirect to `/` (consistent with Sc1) |
+| 6 | Login invalid password | pass | "Invalid login credentials" shown inline; no redirect |
+| 7 | Login unknown email | pass | "Invalid login credentials" shown inline; no redirect |
+| 8 | Login ?next= honoured | pass | `?next=/profile/dashboard` → landed on `/profile/dashboard` after login |
+| 9 | Login ?next= open-redirect (protocol-relative) | pass | `?next=//evil.com/x` → landed on `/` (blocked) |
+| 10 | Login ?next= absolute URL blocked | pass | `?next=https://evil.com` → landed on `/` (blocked) |
+| 11 | Forgot password | **fail** | Both error and success states rendered simultaneously; email blank in success text (F7) |
+| 12 | Partner registration — Hotel | pass | `smoke-reg-hotel-2026-04-22@opawey.test` → `public.partners` type=hotel status=pending confirmed |
+| 13 | Partner registration — Agency | pass | `smoke-reg-agency-2026-04-22@opawey.test` → `public.partners` type=agency status=pending confirmed |
+| 14 | Partner registration — Driver | pass | `smoke-reg-driver-2026-04-22@opawey.test` → `public.partners` type=driver status=pending confirmed |
+| 15 | Partner registration validation | partial-pass | Validation fires but shows one error at a time (password first); no field-by-field highlighting |
+| 16 | Logout | pass | Session cleared; redirect to `/`; localStorage has no auth-token |
+| 17 | Auth-gated pages unauthenticated | pass | All 5 routes (`/profile/dashboard`, `/admin`, `/driver`, `/hotel`, `/agency`) redirect to `/login`; no `?next=` param preserved |
+| 18 | Partner dashboard access control | partial-pass | Hotel→`/admin`: loads briefly then redirects to `/` (not `/login`); Hotel→`/driver`: `/login`; Hotel→`/agency`: `/login`. Inconsistent redirect targets (F8) |
+| 19 | Pending partner sign-in | pass | Login succeeds; navigating `/hotel` redirects to `/login` |
+| 20 | Booking funnel pre-auth redirect | pass | All three paths encode correctly: `?next=%2Fbook%2F{type}%2Fpassenger&reason=booking` |
+
+**Summary:** 14 pass, 1 fail (Sc11), 2 partial-pass (Sc1, Sc18), 1 partial-pass (Sc15), 1 note (Sc4). Findings F6, F7, F8 raised.
+
+**Cleanup:** `public.partners` and `public.users` smoke-reg-* rows deleted. `auth.users` rows for 4 smoke-reg accounts remain — pending cleanup: auth.users rows with email like `smoke-reg-%` — controller will sweep via `scripts/smoke/create-test-accounts.mjs` rerun or manual admin cleanup.
+
+Screenshots captured: `qa/smoke-authgated-profile-dashboard.png`, `qa/smoke-authgated-admin.png`, `qa/smoke-authgated-driver.png`, `qa/smoke-authgated-hotel.png`, `qa/smoke-authgated-agency.png`, `qa/smoke-F7-hotel-accesses-admin.png`.
 
 ---
 
@@ -172,4 +207,55 @@ Finding template:
 **Observed:** All three icon links use `href="#"` (dead placeholder links).
 **Console / network errors:** none
 **Screenshot:** `qa/smoke-public-home.png`
+**Status:** open
+
+---
+
+### F6 — C — register — New user registration does not create `public.users` row; post-register redirect goes to `/` not `/profile`
+
+**Page:** `/register`
+**Preconditions:** logged out; email not previously registered
+**Repro:**
+1. Navigate to `/register`
+2. Fill full name, email=`smoke-reg-user-2026-04-22@opawey.test`, password, confirm password, check terms
+3. Click "Create Account"
+**Expected:** (a) Row created in `public.users` with `type='user'`; (b) redirect to `/profile` or `/profile/dashboard`.
+**Observed:** (a) `auth.users` row created (confirmed via SQL) but `public.users` has NO corresponding row — DB trigger/function to create public profile on signup is absent or failing. (b) Redirect lands on `/` (home), not `/profile`. Login flow has the same `/` redirect issue.
+**Console / network errors:** none visible at registration time
+**Screenshot:** none (redirect resolved before capture)
+**Root cause:** Missing `handle_new_user` trigger on `auth.users` insert, or function is not inserting into `public.users`. Post-auth redirect target is hardcoded to `/` instead of `/profile`.
+**Status:** open
+
+---
+
+### F7 — M — forgot-password — Reset-password form shows simultaneous error + success states; email blank in success message
+
+**Page:** `/forgot-password`
+**Preconditions:** logged out
+**Repro:**
+1. Navigate to `/forgot-password`
+2. Enter `smoke-user-2026-04-22@opawey.test`
+3. Click "Send reset link"
+**Expected:** Single success banner "We've sent a password reset link to smoke-user-2026-04-22@opawey.test"; no error visible.
+**Observed:** Both "Something went wrong. Please try again." AND "We've sent a password reset link to  " (email blank) appear simultaneously. Console shows 2 errors.
+**Console / network errors:** 2 errors in browser console (content not captured — likely a Supabase email provider or redirect URL config issue)
+**Screenshot:** none captured
+**Root cause:** The forgot-password component renders both `errorState` and `successState` concurrently instead of exclusively; the email is not interpolated correctly into the success message. Likely the Supabase project has no email provider configured for `resetPasswordForEmail`.
+**Status:** open
+
+---
+
+### F8 — M — access-control — `/admin` redirect for non-admin authenticated user goes to `/` not `/login`; admin page HTML briefly loads before redirect
+
+**Page:** `/admin`
+**Preconditions:** logged in as `smoke-hotel-2026-04-22@opawey.test` (type=hotel, not admin)
+**Repro:**
+1. Log in as smoke-hotel
+2. Navigate to `/admin`
+3. Observe page title flash and final URL
+**Expected:** Immediate redirect to `/login` (or an access-denied page), consistent with the behavior of `/driver` and `/agency` which redirect hotel users to `/login`.
+**Observed:** Page title briefly shows "Dashboard — Opaway" (admin layout HTML is rendered), then client-side guard fires and redirects to `/` (home), not `/login`. `/driver` and `/agency` redirect to `/login` — inconsistent. The admin layout SSR output is momentarily in the DOM before the redirect.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-F7-hotel-accesses-admin.png` (captured on `/` after redirect)
+**Root cause:** Admin page uses a client-side auth guard (React island) rather than server-side middleware. Redirect target is `/` instead of `/login`. Other protected partner dashboards use a different guard that correctly targets `/login`.
 **Status:** open
