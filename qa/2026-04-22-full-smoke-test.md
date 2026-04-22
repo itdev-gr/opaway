@@ -35,7 +35,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 11 Admin — bookings | done | F18–F20 |
 | Task 12 Admin — management | done | F21 |
 | Task 13 Admin — catalog | done | F22–F24 |
-| Task 14 Driver — rides | pending | — |
+| Task 14 Driver — rides | done | F25–F26 |
 | Task 15 Driver — account | pending | — |
 | Task 16 Hotel dashboard | pending | — |
 | Task 17 Agency dashboard | pending | — |
@@ -1184,3 +1184,147 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Playwright
 **Affected operations:** INSERT (add) + UPDATE (edit) + toggle active — all fail. The form UI renders correctly but all writes fail.
 **Status:** open
 **Severity:** H — No vehicles can ever be added or edited via this page. Complete functional failure.
+
+---
+
+### Section 14 — Driver dashboard (rides)
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke driver: `smoke-driver-2026-04-22@opawey.test` (uid `01d2fa49-be7a-4c04-8640-971350557bca`).
+
+#### Pre-seed
+
+10 rides confirmed with `ride_status='new'`, `released_to_drivers=true`, `driver_uid=null`. Old rows with `driver_uid=''` (empty string) normalized to `null` via API. Pre-seed condition satisfied (≥3 available).
+
+---
+
+#### 14.1 — `/driver` (home dashboard)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-driver-home.png` | pass | Page title "Dashboard — Opawey Driver" |
+| No JS errors | pass | 0 console errors |
+| Stats cards render | pass | To-Do: 0, Done: 0, Reviews: 4.93, Revenues: €0.00 |
+| Performance row renders | pass | No-Show Rate 0.0%, Return Rate 2%, T-Score 8/10, Account Status "Approved" |
+| Sidebar Available Rides badge | pass | Badge shows "17" — matches actual DB count |
+| Quick-action sidebar links resolve | pass | Dashboard, Upcoming Rides, Past Rides, Available Rides, Profile, Vehicles, Drivers, Payment Reports, Payment Data, Settings — all present with correct hrefs |
+
+**Summary 14.1:** pass. 0 findings.
+
+---
+
+#### 14.2 — `/driver/upcoming`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-driver-upcoming.png` | pass | Page title "Upcoming Rides — Opawey Driver" |
+| Search bar renders | pass | `Search by reference or location...` placeholder present |
+| Empty state (smoke driver has not accepted anything) | pass | "No upcoming rides / When you have assigned rides, they will appear here." |
+| No JS errors | pass | 0 console errors |
+
+**Summary 14.2:** pass. 0 findings.
+
+---
+
+#### 14.3 — `/driver/past`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-driver-past.png` | pass | Page title "Past Rides — Opawey Driver" |
+| Empty state | pass | "No past rides / Completed and cancelled rides will appear here." |
+| No JS errors | pass | 0 console errors |
+
+**Summary 14.3:** pass. 0 findings.
+
+---
+
+#### 14.4 — `/driver/available` (critical)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; 17 cards shown | pass | All seeded released rides appear; sidebar badge "17" |
+| Cards show booking ref | pass | e.g. 695EC4CB, 5E151C96, 24FA6E95, etc. |
+| Cards show from/to | pass | "Athens, Greece" → "Delphi 330 54, Greece" etc. |
+| Cards show date/time | pass | e.g. "2026-05-12 08:00" |
+| Cards show vehicle class | pass | Sedan / Van / Minibus |
+| Cards show passengers | pass | "2 passengers", "3 passengers", etc. |
+| Cards show status badge | pass | All show "New" |
+| Accept + Reject buttons per card | pass | Both present on each card |
+| One card (F3F25466) shows "— 10:00" for date | **FAIL (M)** | `date=''` in DB; renders as "— 10:00" → **F26** |
+| Reject card (24FA6E95 — Athens → Piraeus) | pass | Card removed from DOM immediately (local-only) |
+| DB check after reject | pass | `ride_status=new`, `released_to_drivers=true`, `driver_uid=null` — unchanged |
+| Accept card (695EC4CB — Athens → Delphi) | pass | Confirmation modal appeared: "Accept this ride? This ride will be assigned to you." with Cancel + Accept buttons |
+| Confirm Accept → toast | pass | Toast shown (3-second auto-dismiss); card removed from list |
+| Available Rides badge after accept | pass | Badge updated to "16" reactively |
+| DB check after accept | pass | `driver_uid='01d2fa49-be7a-4c04-8640-971350557bca'`, `ride_status='assigned'` |
+| Refresh page — accepted ride gone | pass | 695EC4CB absent from refreshed list (15 cards visible: 17 − 1 rejected local − 1 accepted) |
+| Screenshot `qa/smoke-driver-available-after-accept.png` | pass | Captured |
+| Driver notes field on detail not writable from this page | note | No notes input on available list — expected |
+
+**Summary 14.4:** pass with 1 finding (F26 — broken date display for empty-date ride). Core accept/reject flow works correctly end-to-end.
+
+---
+
+#### 14.5 — `/driver/ride?id=695ec4cb-...&type=transfers`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate to detail page | pass | Page title "Ride Details — Opawey Driver" |
+| Lead Passenger shown | pass | "Smoke QA3" |
+| Date / Time shown | pass | "2026-05-12" / "08:00" |
+| Customer Comments shown | pass | "smoke T3 stripe" (sourced from `driver_notes` column in DB) |
+| Route shown | pass | From: Athens, Greece; To: Delphi 330 54, Greece; 2 pax |
+| Vehicle Class shown | pass | Sedan |
+| Payout section | pass | PREPAID; Total €240.57 PAID; Driver net €192.46; Commission €48.11 |
+| Status progression button present | pass | "At Pickup Point" button visible |
+| No driver-writable notes field | **FAIL (M)** | UI has no input for `driver_notes`; column named `driver_notes` stores customer comments not driver remarks → **F25** |
+| Click "At Pickup Point" → button changes to "Passenger on Board" | pass | Immediate UI update |
+| DB check: `ride_status='pickup'` | pass | Confirmed via API |
+| Click "Passenger on Board" → button changes to "Ride Completed" | pass | Immediate UI update |
+| DB check: `ride_status='onboard'` | pass | Confirmed via API |
+| Click "Ride Completed" → button disappears | pass | No further action button shown |
+| DB check: `ride_status='completed'` | pass | Confirmed via API |
+| Ride appears in `/driver/past` | pass | 695EC4CB shown with status "Completed", Payout €192.46 |
+| `/driver/past` screenshot `qa/smoke-driver-past-after-complete.png` | pass | Captured |
+| Console errors on ride detail page | pass | 0 errors |
+
+**Summary 14.5:** pass with 1 finding (F25 — `driver_notes` column misnamed/misused; no driver-writable notes field in UI). All 4 status progression steps (assigned → pickup → onboard → completed) work correctly and are persisted to DB.
+
+**Screenshots:** `qa/smoke-driver-home.png`, `qa/smoke-driver-upcoming.png`, `qa/smoke-driver-past.png`, `qa/smoke-driver-available-before-accept.png`, `qa/smoke-driver-available-after-accept.png`, `qa/smoke-driver-ride-detail.png`, `qa/smoke-driver-past-after-complete.png`
+
+**Section 14 summary:** 5/5 sub-pages pass. 2 findings raised (F25 — M, F26 — M). Core ride lifecycle (available → accept → pickup → onboard → completed) fully verified end-to-end with DB confirmation at each step.
+
+---
+
+### F25 — M — driver-ride-detail — `driver_notes` DB column stores customer booking comments, not driver notes; no driver-writable notes field exists on the ride detail page
+
+**Page:** `/driver/ride?id=...`
+**Preconditions:** logged in as smoke driver; ride accepted (status=assigned)
+**Repro:**
+1. Accept a ride on `/driver/available`
+2. Navigate to the ride detail page `/driver/ride?id=<id>&type=transfers`
+3. Look for a driver-editable notes / remarks input
+**Expected:** A "Driver Notes" or "Remarks" input field where the driver can add notes (e.g. "passenger confirmed", "extra luggage"); value saved to `public.transfers.driver_notes`.
+**Observed:** No driver-editable notes field is present. The "Customer Comments" section on the detail page reads from `driver_notes` DB column, displaying the customer's booking comment (e.g. "smoke T3 stripe"). The `driver_notes` column is semantically misnamed — it holds customer comments, not driver remarks. No separate mechanism exists for drivers to write notes on a ride.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-driver-ride-detail.png`
+**Root cause:** `driver_notes` column is populated from the booking funnel's "Notes / Comments" field (customer-facing), not from any driver-facing input. The column name implies driver authorship but the data source is the customer. There is no driver-authored notes field anywhere in the driver portal.
+**Status:** open
+**Severity:** M — Drivers have no way to log ride-specific notes (e.g. special circumstances, no-show reasons). Missing feature; low complexity to add (textarea + update call). Column name should also be clarified or a separate `customer_comments` alias used.
+
+---
+
+### F26 — M — driver-available — Available ride card with empty `date` field renders broken date string "— 10:00"
+
+**Page:** `/driver/available`
+**Preconditions:** At least one transfer in the pool has `date=''` (empty string) in `public.transfers`
+**Repro:**
+1. Ensure a transfer row has `ride_status='new'`, `released_to_drivers=true`, `driver_uid=null`, and `date=''`
+2. Navigate to `/driver/available`
+3. Locate the card for the ride with empty date
+**Expected:** Either (a) a placeholder "Date TBD" / "—" is shown gracefully, or (b) rides with no date are excluded from the available pool.
+**Observed:** The date section renders as "— 10:00" — the date portion shows a dash and the time renders correctly, producing a confusing display. The ride F3F25466 (from=test, to=test) is visible in the available pool with `date=''`.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-driver-available-before-accept.png` (card visible at bottom of list)
+**Root cause:** The date rendering logic in `available.astro` does not guard against an empty-string date. The card template renders `${date} ${time}` without checking `if (date)`. Additionally, a "test" booking with `from='test'` and `to='test'` is in the available pool — this is data hygiene issue, not a code bug, but it exposes the date rendering gap.
+**Status:** open
+**Severity:** M — Drivers see a confusing "— 10:00" date on any ride with a blank date. If admin adds a booking without setting a date (or date is cleared), it appears in the pool with a broken display. Date validation on ride creation/edit should prevent `date=''`.
