@@ -204,6 +204,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				.from('transfers')
 				.select('*')
 				.eq('ride_status', 'new')
+				.eq('released_to_drivers', true)
 				.order('created_at', { ascending: false });
 
 			if (error) throw error;
