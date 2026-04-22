@@ -33,7 +33,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 9  Tour funnel | done | — (no new findings) |
 | Task 10 Contact + experience forms | done | F17 |
 | Task 11 Admin — bookings | done | F18–F20 |
-| Task 12 Admin — management | pending | — |
+| Task 12 Admin — management | done | F21 |
 | Task 13 Admin — catalog | pending | — |
 | Task 14 Driver — rides | pending | — |
 | Task 15 Driver — account | pending | — |
@@ -798,3 +798,145 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 5 sub-
 **Screenshot:** none
 **Root cause:** The admin Add Transfer Booking modal form only writes the selected option's `text` value (display name), not the slug. The `vehicle_slug` field is either not mapped or not included in the INSERT.
 **Status:** open
+
+---
+
+### Section 12 — Admin management
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. All 5 sub-pages swept.
+
+#### 12.1 — `/admin/partners`
+
+| Check | Result | Notes |
+|---|---|---|
+| Page renders, 8 partners shown | pass | "8 of 8 partners" counter correct |
+| Sidebar badges on load | pass | Requests=0, Transfers=26, Tours=7, Experiences=0, Partners=1 |
+| Search by name/email ("smoke") | pass | Filters from 8 → 4 smoke partners in real time |
+| Type filter: Hotels | pass | 3 Hotel rows |
+| Type filter: Agencies | pass | 3 Agency rows |
+| Type filter: Drivers | pass | 2 Driver rows |
+| Status filter: Pending | pass | 1 row (smoke-pending) |
+| Status filter: Approved | pass | 7 rows |
+| Column header "Discount / Commission" | pass | Header text confirmed |
+| Sort by Type asc | pass | Agency, Agency, Agency, Driver, Driver, Hotel, Hotel, Hotel |
+| Sort by Type desc | pass | Hotel, Hotel, Hotel, Driver, Driver, Agency, Agency, Agency |
+| Sort by Status asc | pass | 7 approved rows first, 1 pending last |
+| Sort by Registered desc | pass | 22/4/2026 × 4, 8/4/2026, 7/4/2026 × 3 |
+| Agency row: commission cell shows "10%" | pass | `discount-cell` with "Click to edit discount" tooltip |
+| Agency inline-edit → save 15 → reload → 15% | pass | DB persisted; UI shows 15% after reload |
+| Agency inline-edit → revert to 10 | pass | DB confirmed |
+| Hotel row: commission cell shows "€10.00" | pass | `discount-cell` with "Click to edit commission" tooltip |
+| Hotel inline-edit → save 12.50 → reload → €12.50 | pass | DB persisted |
+| Hotel inline-edit → revert to 10.00 | pass | DB confirmed |
+| Driver row: discount cell shows "—" ("Click to edit discount") | pass | Driver shows % discount tooltip, not commission |
+| Pending partner Approve → confirmation modal | pass | "Approve 'Pending Hotel' as a partner?" modal shown |
+| Approve Confirm → status=approved in UI | pass | Row shows "approved" |
+| Revert smoke-pending to pending via API | pass | `PATCH /rest/v1/partners` with admin JWT → 200, status='pending' confirmed |
+| Reject action → confirmation modal | pass | "Reject 'Pending Hotel'? status will be set to rejected." |
+| Reject Confirm → status=rejected in UI | pass | Row shows "rejected" |
+| Revert smoke-pending to pending via API | pass | 204 response; reload confirms "pending" |
+| Hotel row click → PartnerDetailModal opens | pass | Modal shows within 1.5s |
+| Modal: type badge "Hotel", status "Approved" | pass | Badges correct |
+| Modal: Transfers=1, Tours=1, Experiences=0 | pass | Matches Tasks 7/9 hotel bookings |
+| Modal: Commission (EUR) €10.00 shown | pass | After revert from 12.50 |
+| Modal: no Discount (%) row for hotel | pass | `hasDiscount: false` confirmed |
+| Modal: Contact, Hotel, Payment Data sections | pass | "No payment data on file." for hotel |
+| Close modal via X button | pass | Modal hidden (has `hidden` class) |
+| Agency row click → modal | pass | Type badge "Agency", Discount (%): 10%, no Commission row |
+| Close modal via overlay click | pass | `#partner-detail-overlay` click → hidden |
+| Driver row click → modal | pass | Type badge "Driver", Payment Data "No payment data on file." |
+| Driver modal: no Discount or Commission row | pass | Driver shows only ACCOUNT, CONTACT, DRIVER, PAYMENT DATA sections |
+| Close modal via Escape key | pass | `classList.contains('hidden')` = true |
+| Delete action modal ("nikos ferras") | pass | "Delete Partner — Permanently delete 'nikos ferras'? Cannot be undone." with red Confirm button |
+| Delete modal Cancel works | pass | Cancelled without deleting |
+
+**Summary 12.1:** all checks pass. 0 new findings.
+
+---
+
+#### 12.2 — `/admin/users`
+
+| Check | Result | Notes |
+|---|---|---|
+| Page renders, 5 users shown | pass | "5 of 5 users" counter |
+| Users listed | pass | Smoke User (user), Smoke Admin (admin), agencycontactperson (user), Center Console (admin), Marios Kifokeris (admin) |
+| Search by name ("smoke") | pass | Filters to 2 smoke users |
+| Role filter: Admin | pass | 3 admin rows |
+| Role filter: User | pass | 2 user rows (Smoke User + agencycontactperson) |
+| smoke-user row has "Make Admin" button | pass | Also shows "Actions" and "Delete User" |
+| Make Admin → confirmation modal | pass | "Give admin access to 'Smoke User'? They will be able to access the Admin Dashboard." |
+| Confirm Yes → role=admin in UI | pass | Row shows "admin", button changes to "Remove Admin" |
+| Remove Admin → confirmation modal | pass | Similar modal shown |
+| Confirm Yes → role=user in UI | pass | Reverted correctly |
+
+**Summary 12.2:** all checks pass. 0 new findings.
+
+---
+
+#### 12.3 — `/admin/sales`
+
+| Check | Result | Notes |
+|---|---|---|
+| Page renders, no JS errors | pass | 0 errors in console |
+| Date range tabs present | pass | This Week, This Month (active), This Quarter, This Year, All Time |
+| Stat cards populated | pass | Total Revenue €6928.39, Transfers €5678.39 (36 bookings), Tours €1250.00 (7 bookings), Experiences €0.00 (0 bookings) |
+| By Payment Method breakdown | pass | Cash €3599.22, Stripe €1241.83, Card Onsite €1672.34, Cash Onsite €415.00 |
+| By Vehicle Type breakdown | pass | Sedan, Van, Minibus breakdown shown |
+| All Bookings table | pass | 46 rows, Date/Type/Customer/Vehicle/Payment/Amount columns |
+| Tab filter (This Year) | pass | Stat cards updated |
+| Screenshot | pass | `qa/smoke-admin-sales.png` captured |
+
+**Summary 12.3:** all checks pass. 0 new findings.
+
+---
+
+#### 12.4 — `/admin/settings`
+
+| Check | Result | Notes |
+|---|---|---|
+| Page renders | pass | Profile Info, Platform Settings, Change Password, System Information sections visible |
+| Platform Settings (read-only) | pass | Commission Rate 20%, Card On-site Fee 5%; "Contact development team to change" — no editable inputs |
+| System Information | pass | Supabase URL, Total Users=5, Total Partners=8, Total Bookings=45 |
+| Display Name edit → save → persist | pass | Changed "Smoke Admin" → "Smoke Admin Test"; reload confirmed; reverted to "Smoke Admin" |
+| No destructive "Reset all" button | pass | Not present |
+| Console errors | info | 3× "Password field is not contained in a form" browser DOM warning — F21 |
+
+**Summary 12.4:** 1 finding raised (F21 — password fields outside form).
+
+---
+
+#### 12.5 — `/admin/prices`
+
+| Check | Result | Notes |
+|---|---|---|
+| Page renders | pass | TRANSFERS (Regular + Night schedules) and RENT PER HOUR sections visible |
+| Transfer pricing grid | pass | 7 KM bands × 3 vehicle types (Sedan/Van/Minibus) × 2 schedules = 42 editable inputs |
+| Hourly pricing grid | pass | 2 schedules × 3 vehicle types = 6 inputs |
+| Edit price (70 → 71) → Save All Prices → reload → 71 | pass | DB persisted |
+| Revert to 70 | pass | Confirmed |
+| No default-reset button | pass | Only "Save All Prices" button present |
+| Console errors | pass | 0 errors |
+
+**Summary 12.5:** all checks pass. 0 new findings.
+
+**Screenshots:** `qa/smoke-admin-partners.png`, `qa/smoke-admin-users.png`, `qa/smoke-admin-sales.png`, `qa/smoke-admin-settings.png`, `qa/smoke-admin-prices.png`, `qa/smoke-partners-approve-modal.png`, `qa/smoke-partners-reject-modal.png`, `qa/smoke-partners-hotel-modal.png`, `qa/smoke-partners-agency-modal.png`, `qa/smoke-partners-driver-modal.png`, `qa/smoke-partners-delete-modal.png`, `qa/smoke-users-make-admin.png`
+
+---
+
+### F21 — I — admin-settings — Change Password fields not inside a `<form>` element; browser warns about password field outside form
+
+**Page:** `/admin/settings`
+**Preconditions:** logged in as admin
+**Repro:**
+1. Navigate to `/admin/settings`
+2. Open browser console
+**Expected:** Password input fields (Current Password, New Password, Confirm New Password) are inside a `<form>` element with `type="submit"` handler.
+**Observed:** Browser logs 3× `[DOM] Password field is not contained in a form: <https://goo.gl/9p2vKq>`. The Change Password section renders password inputs without a wrapping `<form>`. This prevents browser password managers from functioning correctly and may inhibit autofill.
+**Console / network errors:**
+```
+[DOM] Password field is not contained in a form (×3)
+```
+**Screenshot:** `qa/smoke-admin-settings.png`
+**Root cause:** The Change Password UI in `/admin/settings` renders inputs in a `<div>` with a button that calls a JS handler directly, rather than wrapping in a `<form onsubmit="...">`. Minor accessibility/UX issue.
+**Status:** open
+**Severity:** Info — functionality is unaffected; password change works via JS handler. Browser password managers may not offer to save the new password.
