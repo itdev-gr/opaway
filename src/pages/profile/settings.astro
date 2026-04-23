@@ -166,7 +166,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 </ProfileLayout>
 
 <script>
-	import { supabase } from '../../lib/supabase';
+	import { supabase, verifyCurrentPassword } from '../../lib/supabase';
 	import { uploadImage } from '../../lib/upload';
 
 	// Avatar upload wiring. Elements may be null if the page is stripped down
@@ -396,11 +396,10 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		updatePasswordBtn.disabled = true;
 
 		try {
-			// Re-authenticate with current password before changing it.
-			const { error: authErr } = await supabase.auth.signInWithPassword({
-				email: user.email, password: currentPw,
-			});
-			if (authErr) {
+			// Verify current password using a throwaway client so the live session
+			// doesn't rotate and the layout auth-check doesn't re-trigger (F34).
+			const verifyErr = await verifyCurrentPassword(user.email, currentPw);
+			if (verifyErr) {
 				showMsg(passwordMsg, 'Current password is incorrect.', 'error');
 				return;
 			}

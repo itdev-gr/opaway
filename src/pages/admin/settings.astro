@@ -218,7 +218,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-	import { supabase } from '../../lib/supabase';
+	import { supabase, verifyCurrentPassword } from '../../lib/supabase';
 
 	/* ── DOM refs ── */
 	const nameInput      = document.getElementById('profile-name') as HTMLInputElement;
@@ -388,9 +388,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		btnPw.disabled = true;
 		try {
-			// Verify current password by signing in
-			const { error: signInErr } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
-			if (signInErr) throw new Error('Current password is incorrect.');
+			// Verify current password via throwaway client (doesn't rotate the live
+			// session, doesn't trigger the layout auth overlay — F34).
+			const verifyErr = await verifyCurrentPassword(user.email, current);
+			if (verifyErr) throw new Error('Current password is incorrect.');
 
 			const { error: updateErr } = await supabase.auth.updateUser({ password: next });
 			if (updateErr) throw updateErr;
