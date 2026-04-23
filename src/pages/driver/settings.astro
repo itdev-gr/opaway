@@ -201,6 +201,11 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	}
 
 	/* ── Main ── */
+	// Guard so onAuthStateChange (which re-fires on USER_UPDATED after
+	// password change) doesn't re-bind the submit handlers — which would
+	// stack listeners and could leave the UI in a stuck "Updating..." state
+	// because a prior invocation's finally-block reference gets shadowed.
+	let handlersBound = false;
 	supabase.auth.onAuthStateChange(async (_event, session) => {
 		if (!session?.user) return;
 		const user = session.user;
@@ -255,6 +260,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		// Show content
 		loadingEl?.classList.add('hidden');
 		contentEl?.classList.remove('hidden');
+
+		// Only bind form handlers once — onAuthStateChange fires again on
+		// USER_UPDATED (after password change) and re-entering this block would
+		// stack duplicate submit listeners (F32 root cause).
+		if (handlersBound) return;
+		handlersBound = true;
 
 		/* ── Personal form submit ── */
 		document.getElementById('personal-form')?.addEventListener('submit', async (e) => {
