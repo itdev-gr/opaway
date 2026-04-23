@@ -1799,3 +1799,165 @@ Agency partner: `discount=10`, `status=approved`, `agency_name="Smoke Agency"`. 
 **Root cause:** `/agency/profile.astro` is a read-only display page, mirroring the pattern of `/hotel/profile` (F35) and `/driver/profile` (F27). The `discount` field from `public.partners` is fetched (`select('*')`) but never rendered in the profile template — it is only used in the reservations page for the price calculation.
 **Status:** open
 **Severity:** M — Agency partners cannot update their own profile. All contact/business fields are permanently "-" unless admin edits them. Additionally, the discount rate (the key commercial term of the agency relationship) is not shown on the profile, leaving the partner without a canonical place to see their pricing tier.
+
+---
+
+### Section 18 — Cross-role notification regression
+
+Ran 2026-04-23. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke task 18 validates the F18 fix (commit `7f7b85c`) — `supabase_realtime` publication migration `2026-04-22-realtime-publication.sql` added 5 tables (`requests`, `transfers`, `tours`, `experiences`, `partners`) so `postgres_changes` events fire and sidebar badges update without manual refresh. Tests exercised end-to-end badge pipeline across admin, driver, hotel, agency roles in two simultaneous browser contexts via Playwright.
+
+Browser automation: MCP Playwright context was closed between sweeps; Node.js Playwright (v1.59.1, from `/Users/marios/Desktop/Cursor/crawler/node_modules`) used directly with headless Chromium. Screenshots not taken (headless; accessibility/DOM assertions used instead).
+
+#### Pre-check — realtime publication
+
+| Table | In `supabase_realtime` publication? |
+|---|---|
+| `requests` | YES |
+| `transfers` | YES |
+| `tours` | YES |
+| `experiences` | YES |
+| `partners` | YES |
+
+Migration confirmed applied. All 5 tables verified via `pg_publication_tables` query before test start.
+
+#### DB baseline (before test)
+
+| Metric | Count |
+|---|---|
+| `transfers` with `ride_status='new'` | 16 |
+| `tours` with `ride_status='new'` | 7 |
+| `experiences` with `ride_status='new'` | 0 |
+| `requests` with `status='new'` | 0 |
+| `partners` with `status='pending'` | 1 (pre-existing `smoke-pending-2026-04-22`) |
+
+---
+
+#### S1 — Admin sees new booking live
+
+| Step | Result | Detail |
+|---|---|---|
+| Admin login → `/admin` (explicit navigate) | pass | Badge elements found: `[data-notif-badge="admin-transfers"]` = "19" (16 DB + 3 from prior test insertions during this sweep), hidden=false |
+| User opens `/book` | partial | `/book` is a service-selector page ("Book a Transfer / Rent per Hour / Book a Tour"). No inline booking form — clicking "Book Now" cards leads to multi-step flows that cannot be automated without full Google Maps autocomplete interaction |
+| Realtime badge live test via JS Supabase insert on admin page | **PASS** | Inserted `smoke-s18-realtime@opawey.test` transfer via `supabase.from('transfers').insert(...)` in admin browser context. Badge updated `19 → 20` within **≤6 seconds** without page refresh. F18 fix confirmed. |
+| Admin badge selector | pass | `[data-notif-badge="admin-transfers"]` resolves correctly when admin is on `/admin` |
+
+**Timing:** ≤6s from DB insert to badge increment.
+**F18 regression verdict:** NOT REGRESSED — Realtime badge fires correctly.
+
+---
+
+#### S2 — Driver sees released ride live
+
+| Step | Result | Detail |
+|---|---|---|
+| Driver login → `/driver` (explicit navigate) | pass | `[data-notif-badge="driver-available"]` = "17" (releases from prior runs visible) |
+| Admin: `/admin/transfers` → click Release | pass | `smoke-s18-realtime@opawey.test` row found (first S18 row visible). "Release" button clicked. `released_to_drivers` set to `true` confirmed in DB. |
+| Driver badge updates within 6s | **PASS** | Badge incremented `17 → 18` within 6s of admin releasing the ride via UI |
+| Driver: `/driver/available` → Accept → modal confirm | **PASS** | 17 `[data-accept]` buttons found. Clicked first Accept. `confirm-modal` appeared ("Accept this ride? This ride will be assigned to you."). Clicked `#confirm-accept`. Toast text: "Ride accepted successfully!". Badge decremented `18 → 17`. |
+| DB verification | pass | `ride_status=assigned`, `driver_uid=01d2fa49-be7a-4c04-8640-971350557bca` (smoke-driver uid) confirmed in DB after accept |
+
+**Timing:** Badge increment ≤6s from release. Badge decrement ≤5s from accept confirmation.
+
+---
+
+#### S3 — Hotel sees new reservation live
+
+| Step | Result | Detail |
+|---|---|---|
+| Hotel login → `/hotel/profile` (not `/hotel` to avoid watermark reset) | pass | Page loaded at `/hotel/profile` |
+| Clear localStorage watermark to 2020-01-01 | pass | `opaway:partner-reservations-seen:b1262d59-...` set to `1970-01-01T00:00:00Z` so all hotel bookings appear as "new since last visit" |
+| Hotel badge shows new reservations | **PASS** | `[data-notif-badge="hotel-reservations"]` = "3" hidden=false immediately after watermark reset (3 hotel bookings pre-date visit: S18-hotel insert + 2 pre-existing) |
+| Navigate `/hotel` → badge clears | **PASS** | Badge = "0" hidden=true after navigating to `/hotel` (watermark updated by `markPartnerReservationsSeen()`) |
+| Refresh `/hotel` → badge stays cleared | **PASS** | Badge remains "0" hidden=true after page reload — watermark persists correctly in localStorage |
+
+**Timing:** Badge visible immediately on watermark reset (query-based count, not realtime-delta). Clears on `/hotel` visit.
+
+---
+
+#### S4 — Agency sees new reservation live
+
+| Step | Result | Detail |
+|---|---|---|
+| Agency login → `/agency/profile` | pass | Page loaded |
+| Clear localStorage watermark to 2020-01-01 | pass | `opaway:partner-reservations-seen:17ade4af-...` set to `1970-01-01T00:00:00Z` |
+| Agency badge shows new reservations | **PASS** | `[data-notif-badge="agency-reservations"]` = "4" hidden=false (3 pre-existing bookings + 1 S18-agency insert) |
+| Navigate `/agency` → badge clears | **PASS** | Badge = "0" hidden=true after navigating to `/agency` |
+
+**Timing:** Badge visible immediately on watermark reset. Clears on `/agency` visit.
+
+---
+
+#### S5 — Partner registration badge (admin)
+
+| Step | Result | Detail |
+|---|---|---|
+| Admin `/admin` → read Partners badge | pass | `[data-notif-badge="admin-partners"]` = "1" (pre-existing pending partner) |
+| Navigate `/register-partner` → select `hotel` type | pass | Form (`#partner-form`) hidden by default, visible after `#partner-type` select → `hotel` |
+| Fill hotel fields (name, VAT, email, phone, contact, location, zip, country, type, password, terms) | pass | VAT required (`#h-vat`). Terms checkbox (`#p-terms`) is `sr-only` with overlay — checked via JS `cb.checked = true; cb.dispatchEvent(new Event('change'))` |
+| Submit → "Application Submitted!" success page | pass | Redirect not triggered; success state shown inline; auth user + partner row created for `contact-s18@opawey.test` (hotel contact email is used as auth email — by design per code: `authEmail = getInputVal('h-contact-email')`) |
+| Admin badge increments within 8s | **PASS** | Badge `1 → 2` within 8s of partner registration. F18 realtime confirmed for `partners` table. |
+| Admin approve via Actions dropdown → confirm modal | **PASS** | "Actions" button → dropdown → "Approve" → `confirm-modal` appeared → `#modal-yes` clicked → partner `status=approved`. Badge `2 → 1` after approve. |
+
+**Timing:** Badge increment ≤8s from registration. Decrement ≤3s from approve.
+
+**Note:** The register-partner form uses `h-contact-email` (not `h-email`) as the Supabase auth login email for hotels and agencies. `h-email` is stored as `business_email` in the partners table. This is intentional design documented in the registration script.
+
+---
+
+#### S6 — Contact form → Requests badge
+
+| Step | Result | Detail |
+|---|---|---|
+| Admin `/admin` → read Requests badge | pass | `[data-notif-badge="admin-requests"]` = "0" hidden=true |
+| Navigate `/contact` → fill all required fields | pass | Required: country (select), city, name, last_name, phone, email, passengers (number), vehicle_type (select), message. All filled via `#contact-*` IDs |
+| Submit → success div visible | pass | `#contact-success` unhidden; `#contact-form` hidden. DB insert confirmed: `id=bb1327cc`, `name=Smoke`, `email=smoke-s18-contact@opawey.test`, `status=new` |
+| Admin requests badge increments within 6s | **PASS** | Badge `0 → 1` (unhidden) within 6s of form submission. F18 realtime confirmed for `requests` table. |
+| Admin `/admin/requests` → mark as Answered | **PASS** | `.req-action[data-action="answered"]` button found and clicked. Badge `1 → 0` (hidden) after mark-as-answered. DB: `status=answered` confirmed. |
+
+**Timing:** Badge increment ≤6s from contact form submit. Decrement immediate after mark-answered.
+
+---
+
+#### Scenario pass/fail summary
+
+| Scenario | Pass/Fail | Key timing | Realtime badge (no refresh)? |
+|---|---|---|---|
+| S1 — Admin sees new transfer live | **PASS** | ≤6s | YES |
+| S2 — Driver sees released ride live | **PASS** | ≤6s increment; ≤5s decrement on accept | YES |
+| S3 — Hotel sees new reservation | **PASS** | Immediate (watermark-based count) | N/A (count query; badge persists via Realtime sub for future inserts) |
+| S4 — Agency sees new reservation | **PASS** | Immediate (watermark-based count) | N/A (count query) |
+| S5 — Partner registration badge (admin) | **PASS** | ≤8s increment; ≤3s decrement on approve | YES |
+| S6 — Contact form → Requests badge | **PASS** | ≤6s | YES |
+
+**All 6 scenarios: PASS**. F18 fix (`supabase_realtime` publication migration) confirmed working end-to-end. Realtime badges (S1, S2, S5, S6) update without page refresh in ≤8s across all roles. Watermark-based partner badges (S3, S4) display correctly and clear on visit.
+
+---
+
+#### Cleanup
+
+All S18 test data removed from DB:
+
+| Table | Rows deleted |
+|---|---|
+| `public.transfers` | 4 (`smoke-s18-realtime@opawey.test`, `smoke-s18-s2@opawey.test`, `smoke-s18-hotel@opawey.test`, `smoke-s18-agency@opawey.test`) |
+| `public.requests` | 1 (`smoke-s18-contact@opawey.test`) |
+| `public.partners` | 1 (`contact-s18@opawey.test`) |
+| `auth.users` | 1 (`contact-s18@opawey.test`) |
+
+Post-cleanup DB state verified: `transfers` new=16, `tours` new=7, `requests` new=0, `partners` pending=1 — matches pre-test baseline.
+
+---
+
+### F38 — I — login — Login page does not role-route users to their role-specific dashboard
+
+**Page:** `/login`
+**Preconditions:** Any authenticated user (admin, driver, hotel, agency partner)
+**Repro:**
+1. Log in as `smoke-driver-2026-04-22@opawey.test`
+2. Observe redirect destination
+**Expected:** Driver is redirected to `/driver` (their role dashboard) after login.
+**Observed:** All users are redirected to `/` (public homepage) regardless of role. The user must then manually navigate to their dashboard (`/admin`, `/driver`, `/hotel`, `/agency`). The login script redirects to `?next=` if provided, otherwise always falls back to `/`.
+**Console / network errors:** none
+**Root cause:** `login.astro` line 202: `window.location.href = isSafeNext ? rawNext! : '/'` — no role-lookup or role-based redirect. The app has no post-login middleware to inspect the user's role from `user_metadata` or `public.partners` and redirect accordingly.
+**Status:** open
+**Severity:** I — UX gap. Users who log in via the login page must find and navigate to their own dashboard manually. Not a blocker (the correct dashboards work once reached), but creates unnecessary friction especially for non-admin roles (drivers, partners) who may not know their dashboard URL. Lower priority than M/H findings.
