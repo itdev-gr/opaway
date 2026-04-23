@@ -18,30 +18,55 @@ import AgencyLayout from '../../components/AgencyLayout.astro';
 		<!-- Agency Information -->
 		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
 			<h2 class="text-lg font-bold text-neutral-900 mb-1">Agency Information</h2>
-			<p class="text-sm text-neutral-500 mb-6">Your agency registration details. Contact support to update.</p>
+			<p class="text-sm text-neutral-500 mb-6">Update your agency registration details.</p>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Agency Name</p>
-					<p id="p-agency-name" class="text-sm font-medium text-neutral-800">-</p>
+			<form id="agency-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="agencyName" class="block text-sm font-medium text-neutral-700 mb-1.5">Agency Name</label>
+						<input type="text" id="agencyName" name="agencyName"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="agencyType" class="block text-sm font-medium text-neutral-700 mb-1.5">Agency Type</label>
+						<input type="text" id="agencyType" name="agencyType"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="vat" class="block text-sm font-medium text-neutral-700 mb-1.5">VAT Number</label>
+						<input type="text" id="vat" name="vat"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="miteNumber" class="block text-sm font-medium text-neutral-700 mb-1.5">MITE Number</label>
+						<input type="text" id="miteNumber" name="miteNumber"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="email" class="block text-sm font-medium text-neutral-700 mb-1.5">Account Email</label>
+						<input type="email" id="email" name="email" readonly
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 cursor-not-allowed" />
+					</div>
+					<div>
+						<label for="agencyPhone" class="block text-sm font-medium text-neutral-700 mb-1.5">Agency Phone</label>
+						<input type="tel" id="agencyPhone" name="agencyPhone"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="agencyEmail" class="block text-sm font-medium text-neutral-700 mb-1.5">Agency Email</label>
+						<input type="email" id="agencyEmail" name="agencyEmail"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Agency Type</p>
-					<p id="p-agency-type" class="text-sm font-medium text-neutral-800">-</p>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="agency-status" class="text-sm hidden"></span>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">VAT Number</p>
-					<p id="p-vat" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Agency Phone</p>
-					<p id="p-agency-phone" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Agency Email</p>
-					<p id="p-agency-email" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-			</div>
+			</form>
 		</section>
 
 		<!-- Contact Person -->
@@ -49,54 +74,90 @@ import AgencyLayout from '../../components/AgencyLayout.astro';
 			<h2 class="text-lg font-bold text-neutral-900 mb-1">Contact Person</h2>
 			<p class="text-sm text-neutral-500 mb-6">Primary contact for this agency account.</p>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Contact Name</p>
-					<p id="p-contact-name" class="text-sm font-medium text-neutral-800">-</p>
+			<form id="contact-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="contactName" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Name</label>
+						<input type="text" id="contactName" name="contactName"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="contactPhone" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Phone</label>
+						<input type="tel" id="contactPhone" name="contactPhone"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div class="md:col-span-2">
+						<label for="contactEmail" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Email</label>
+						<input type="email" id="contactEmail" name="contactEmail"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Contact Phone</p>
-					<p id="p-contact-phone" class="text-sm font-medium text-neutral-800">-</p>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="contact-status" class="text-sm hidden"></span>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Contact Email</p>
-					<p id="p-contact-email" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-			</div>
+			</form>
 		</section>
 
-		<!-- Location & Status -->
+		<!-- Address -->
 		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
-			<h2 class="text-lg font-bold text-neutral-900 mb-1">Location &amp; Status</h2>
-			<p class="text-sm text-neutral-500 mb-6">Your account status and registered location.</p>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Address &amp; Website</h2>
+			<p class="text-sm text-neutral-500 mb-6">Registered location details.</p>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Location</p>
-					<p id="p-location" class="text-sm font-medium text-neutral-800">-</p>
+			<form id="address-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="location" class="block text-sm font-medium text-neutral-700 mb-1.5">Location</label>
+						<input type="text" id="location" name="location"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="country" class="block text-sm font-medium text-neutral-700 mb-1.5">Country</label>
+						<input type="text" id="country" name="country"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="zipCode" class="block text-sm font-medium text-neutral-700 mb-1.5">ZIP Code</label>
+						<input type="text" id="zipCode" name="zipCode"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="website" class="block text-sm font-medium text-neutral-700 mb-1.5">Website</label>
+						<input type="url" id="website" name="website" placeholder="https://..."
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Country</p>
-					<p id="p-country" class="text-sm font-medium text-neutral-800">-</p>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="address-status" class="text-sm hidden"></span>
 				</div>
+			</form>
+		</section>
+
+		<!-- Account Information (read-only) -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Account</h2>
+			<p class="text-sm text-neutral-500 mb-6">Admin-controlled account details.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">ZIP Code</p>
-					<p id="p-zip" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Website</p>
-					<p id="p-website" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Partner Type</p>
-					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Account Status</p>
+					<p class="text-sm text-neutral-500 mb-1.5">Account Status</p>
 					<span id="p-status-badge"></span>
 				</div>
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">Member Since</p>
+					<p class="text-sm text-neutral-500 mb-1.5">Partner Type</p>
+					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
+				</div>
+				<div>
+					<p class="text-sm text-neutral-500 mb-1.5">Member Since</p>
 					<p id="p-created" class="text-sm font-medium text-neutral-800">-</p>
 				</div>
 			</div>
@@ -133,51 +194,171 @@ import AgencyLayout from '../../components/AgencyLayout.astro';
 			return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
 		}
 
+		function showStatus(el: HTMLElement | null, msg: string, success: boolean) {
+			if (!el) return;
+			el.textContent = msg;
+			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			el.classList.remove('hidden');
+			setTimeout(() => el.classList.add('hidden'), 4000);
+		}
+
 		(async () => {
 			const { data: { session } } = await supabase.auth.getSession();
 			if (!session?.user) return;
+			const user = session.user;
 			await waitForAuth();
 
 			const { data: partner } = await supabase
 				.from('partners')
 				.select('*')
-				.eq('id', session.user.id)
-				.single();
+				.eq('id', user.id)
+				.maybeSingle();
 
 			if (!partner) {
 				if (loadingEl) loadingEl.innerHTML = '<p class="text-neutral-500 text-sm">Profile data not found.</p>';
 				return;
 			}
 
-			const set = (id: string, val: string) => {
-				const el = document.getElementById(id);
-				if (el) el.textContent = val || '-';
+			const setVal = (id: string, val: any) => {
+				const el = document.getElementById(id) as HTMLInputElement | null;
+				if (el) el.value = val == null ? '' : String(val);
 			};
 
-			set('p-agency-name', partner.agency_name);
-			set('p-agency-type', partner.agency_type);
-			set('p-vat', partner.vat);
-			set('p-agency-phone', partner.phone);
-			set('p-agency-email', partner.email);
-			set('p-contact-name', partner.contact_name);
-			set('p-contact-phone', partner.contact_phone);
-			set('p-contact-email', partner.contact_email);
-			set('p-location', partner.location);
-			set('p-country', partner.country);
-			set('p-zip', partner.zip);
-			set('p-website', partner.website);
-			set('p-type', partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-');
+			// Agency
+			setVal('agencyName', partner.agency_name);
+			setVal('agencyType', partner.agency_type);
+			setVal('vat', partner.vat);
+			setVal('miteNumber', partner.mite_number);
+			setVal('email', partner.email || user.email || '');
+			setVal('agencyPhone', partner.agency_phone);
+			setVal('agencyEmail', partner.agency_email);
+
+			// Contact
+			setVal('contactName', partner.contact_name);
+			setVal('contactPhone', partner.contact_phone);
+			setVal('contactEmail', partner.contact_email);
+
+			// Address
+			setVal('location', partner.location);
+			setVal('country', partner.country);
+			setVal('zipCode', partner.zip_code);
+			setVal('website', partner.website);
+
+			// Read-only account info
+			const typeEl = document.getElementById('p-type');
+			if (typeEl) typeEl.textContent = partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-';
 
 			const badgeEl = document.getElementById('p-status-badge');
 			if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partner.status || 'pending');
 
-			if (partner.created_at) {
+			const createdEl = document.getElementById('p-created');
+			if (createdEl && partner.created_at) {
 				const d = new Date(partner.created_at);
-				set('p-created', d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
+				createdEl.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 			}
 
 			loadingEl?.classList.add('hidden');
 			contentEl?.classList.remove('hidden');
+
+			/* ── Agency form submit ── */
+			document.getElementById('agency-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('agency-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							agency_name:  (document.getElementById('agencyName') as HTMLInputElement).value.trim(),
+							agency_type:  (document.getElementById('agencyType') as HTMLInputElement).value.trim(),
+							vat:          (document.getElementById('vat') as HTMLInputElement).value.trim(),
+							mite_number:  (document.getElementById('miteNumber') as HTMLInputElement).value.trim(),
+							agency_phone: (document.getElementById('agencyPhone') as HTMLInputElement).value.trim(),
+							agency_email: (document.getElementById('agencyEmail') as HTMLInputElement).value.trim(),
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
+
+			/* ── Contact form submit ── */
+			document.getElementById('contact-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('contact-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							contact_name:  (document.getElementById('contactName') as HTMLInputElement).value.trim(),
+							contact_phone: (document.getElementById('contactPhone') as HTMLInputElement).value.trim(),
+							contact_email: (document.getElementById('contactEmail') as HTMLInputElement).value.trim(),
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
+
+			/* ── Address form submit ── */
+			document.getElementById('address-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('address-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							location: (document.getElementById('location') as HTMLInputElement).value.trim(),
+							country:  (document.getElementById('country') as HTMLInputElement).value.trim(),
+							zip_code: (document.getElementById('zipCode') as HTMLInputElement).value.trim(),
+							website:  (document.getElementById('website') as HTMLInputElement).value.trim(),
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
 		})();
 	}
 

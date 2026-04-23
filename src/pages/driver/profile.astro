@@ -15,74 +15,169 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	<!-- Profile content -->
 	<div id="profile-content" class="hidden space-y-8">
 
-		<!-- General Information -->
+		<!-- Company Information -->
 		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
-			<h2 class="text-lg font-bold text-neutral-900 mb-1">General Information</h2>
-			<p class="text-sm text-neutral-500 mb-6">Your registration details. Contact support to update.</p>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Company Information</h2>
+			<p class="text-sm text-neutral-500 mb-6">Update your company and registration details.</p>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Full Name</p>
-					<p id="p-full-name" class="text-sm font-medium text-neutral-800">-</p>
+			<form id="company-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="fullName" class="block text-sm font-medium text-neutral-700 mb-1.5">Full Name</label>
+						<input type="text" id="fullName" name="fullName"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="email" class="block text-sm font-medium text-neutral-700 mb-1.5">Email</label>
+						<input type="email" id="email" name="email" readonly
+							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 cursor-not-allowed" />
+					</div>
+					<div>
+						<label for="phone" class="block text-sm font-medium text-neutral-700 mb-1.5">Phone</label>
+						<input type="tel" id="phone" name="phone"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="vat" class="block text-sm font-medium text-neutral-700 mb-1.5">VAT Number</label>
+						<input type="text" id="vat" name="vat"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="numVehicles" class="block text-sm font-medium text-neutral-700 mb-1.5">Number of Vehicles</label>
+						<input type="number" id="numVehicles" name="numVehicles" min="1"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="primaryCarType" class="block text-sm font-medium text-neutral-700 mb-1.5">Primary Car Type</label>
+						<select id="primaryCarType" name="primaryCarType"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors">
+							<option value="">Select type...</option>
+							<option value="Sedan">Sedan</option>
+							<option value="SUV">SUV</option>
+							<option value="Van">Van</option>
+							<option value="Minibus">Minibus</option>
+							<option value="Bus">Bus</option>
+							<option value="Luxury">Luxury</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
 				</div>
+
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">Email</p>
-					<p id="p-email" class="text-sm font-medium text-neutral-800">-</p>
+					<label class="block text-sm font-medium text-neutral-700 mb-3">Fleet Types</label>
+					<div class="flex flex-wrap gap-3" id="fleet-types-group">
+						{['Sedan', 'SUV', 'Van', 'Minibus', 'Bus', 'Luxury', 'Other'].map((type) => (
+							<label class="flex items-center gap-2 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 cursor-pointer hover:border-[#0C6B95]/40 transition-colors has-[:checked]:bg-[#0C6B95]/5 has-[:checked]:border-[#0C6B95]/40 has-[:checked]:text-[#0C6B95]">
+								<input type="checkbox" name="carTypes" value={type}
+									class="w-4 h-4 rounded border-neutral-300 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+								{type}
+							</label>
+						))}
+					</div>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Phone</p>
-					<p id="p-phone" class="text-sm font-medium text-neutral-800">-</p>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="company-status" class="text-sm hidden"></span>
 				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">VAT Number</p>
-					<p id="p-vat" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">MITE</p>
-					<p id="p-mite" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Partner Type</p>
-					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-			</div>
+			</form>
 		</section>
 
-		<!-- Status & Location -->
+		<!-- Contact Person -->
 		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
-			<h2 class="text-lg font-bold text-neutral-900 mb-1">Status & Location</h2>
-			<p class="text-sm text-neutral-500 mb-6">Your account status and registered location.</p>
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Contact Person</h2>
+			<p class="text-sm text-neutral-500 mb-6">Primary contact for this driver account.</p>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<form id="contact-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="contactName" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Name</label>
+						<input type="text" id="contactName" name="contactName"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="contactPhone" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Phone</label>
+						<input type="tel" id="contactPhone" name="contactPhone"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div class="md:col-span-2">
+						<label for="contactEmail" class="block text-sm font-medium text-neutral-700 mb-1.5">Contact Email</label>
+						<input type="email" id="contactEmail" name="contactEmail"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="contact-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+		<!-- Address -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Address &amp; Website</h2>
+			<p class="text-sm text-neutral-500 mb-6">Registered location details.</p>
+
+			<form id="address-form" class="space-y-5">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+					<div>
+						<label for="location" class="block text-sm font-medium text-neutral-700 mb-1.5">Location</label>
+						<input type="text" id="location" name="location"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="country" class="block text-sm font-medium text-neutral-700 mb-1.5">Country</label>
+						<input type="text" id="country" name="country"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="zipCode" class="block text-sm font-medium text-neutral-700 mb-1.5">ZIP Code</label>
+						<input type="text" id="zipCode" name="zipCode"
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+					<div>
+						<label for="website" class="block text-sm font-medium text-neutral-700 mb-1.5">Website</label>
+						<input type="url" id="website" name="website" placeholder="https://..."
+							class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none transition-colors" />
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit"
+						class="px-6 py-2.5 bg-[#0C6B95] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5c82] transition-colors">
+						Save Changes
+					</button>
+					<span id="address-status" class="text-sm hidden"></span>
+				</div>
+			</form>
+		</section>
+
+		<!-- Account Information (read-only) -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Account</h2>
+			<p class="text-sm text-neutral-500 mb-6">Admin-controlled account details.</p>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">Account Status</p>
+					<p class="text-sm text-neutral-500 mb-1.5">Account Status</p>
 					<span id="p-status-badge"></span>
 				</div>
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">Location</p>
-					<p id="p-location" class="text-sm font-medium text-neutral-800">-</p>
+					<p class="text-sm text-neutral-500 mb-1.5">Partner Type</p>
+					<p id="p-type" class="text-sm font-medium text-neutral-800">-</p>
 				</div>
 				<div>
-					<p class="text-sm text-neutral-500 mb-1">Country</p>
-					<p id="p-country" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">ZIP Code</p>
-					<p id="p-zip" class="text-sm font-medium text-neutral-800">-</p>
-				</div>
-				<div>
-					<p class="text-sm text-neutral-500 mb-1">Member Since</p>
+					<p class="text-sm text-neutral-500 mb-1.5">Member Since</p>
 					<p id="p-created" class="text-sm font-medium text-neutral-800">-</p>
 				</div>
 			</div>
-		</section>
-
-		<!-- Type-specific fields -->
-		<section id="type-specific-section" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8 hidden">
-			<h2 class="text-lg font-bold text-neutral-900 mb-1">Additional Details</h2>
-			<p class="text-sm text-neutral-500 mb-6">Type-specific registration information.</p>
-
-			<div id="type-specific-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 		</section>
 
 	</div>
@@ -116,15 +211,24 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
 		}
 
+		function showStatus(el: HTMLElement | null, msg: string, success: boolean) {
+			if (!el) return;
+			el.textContent = msg;
+			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			el.classList.remove('hidden');
+			setTimeout(() => el.classList.add('hidden'), 4000);
+		}
+
 		(async () => {
 			const { data: { session } } = await supabase.auth.getSession();
 			if (!session?.user) return;
+			const user = session.user;
 			await waitForAuth();
 
 			const { data: partner } = await supabase
 				.from('partners')
 				.select('*')
-				.eq('id', session.user.id)
+				.eq('id', user.id)
 				.maybeSingle();
 
 			if (!partner) {
@@ -132,55 +236,157 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				return;
 			}
 
-			const set = (id: string, val: string) => {
-				const el = document.getElementById(id);
-				if (el) el.textContent = val || '-';
+			const setVal = (id: string, val: any) => {
+				const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+				if (el) el.value = val == null ? '' : String(val);
 			};
 
-			set('p-full-name', partner.full_name);
-			set('p-email', partner.email || session.user.email);
-			set('p-phone', partner.phone);
-			set('p-vat', partner.vat);
-			set('p-mite', partner.mite);
-			set('p-type', partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-');
-			set('p-location', partner.location);
-			set('p-country', partner.country);
-			set('p-zip', partner.zip);
+			// Company
+			setVal('fullName', partner.full_name);
+			setVal('email', partner.email || user.email || '');
+			setVal('phone', partner.phone);
+			setVal('vat', partner.vat);
+			setVal('numVehicles', partner.num_vehicles);
+			setVal('primaryCarType', partner.primary_car_type);
+
+			const carTypes: string[] = Array.isArray(partner.car_types) ? partner.car_types : [];
+			document.querySelectorAll<HTMLInputElement>('input[name="carTypes"]').forEach((cb) => {
+				cb.checked = carTypes.includes(cb.value);
+			});
+
+			// Contact
+			setVal('contactName', partner.contact_name);
+			setVal('contactPhone', partner.contact_phone);
+			setVal('contactEmail', partner.contact_email);
+
+			// Address
+			setVal('location', partner.location);
+			setVal('country', partner.country);
+			setVal('zipCode', partner.zip_code);
+			setVal('website', partner.website);
+
+			// Read-only account info
+			const typeEl = document.getElementById('p-type');
+			if (typeEl) typeEl.textContent = partner.type ? partner.type.charAt(0).toUpperCase() + partner.type.slice(1) : '-';
 
 			const badgeEl = document.getElementById('p-status-badge');
 			if (badgeEl) badgeEl.innerHTML = renderStatusBadge(partner.status || 'pending');
 
-			if (partner.created_at) {
+			const createdEl = document.getElementById('p-created');
+			if (createdEl && partner.created_at) {
 				const d = new Date(partner.created_at);
-				set('p-created', d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
-			}
-
-			// Type-specific fields
-			const typeFields: Record<string, { label: string; key: string }[]> = {
-				hotel:    [{ label: 'Hotel Name',  key: 'hotel_name'  }],
-				agency:   [{ label: 'Agency Name', key: 'agency_name' }],
-			};
-
-			const fields = typeFields[partner.type] || [];
-			if (fields.length > 0) {
-				const container = document.getElementById('type-specific-fields');
-				const section = document.getElementById('type-specific-section');
-				if (container && section) {
-					fields.forEach(({ label, key }) => {
-						const val = (partner as any)[key] || '-';
-						container.innerHTML += `
-							<div>
-								<p class="text-sm text-neutral-500 mb-1">${label}</p>
-								<p class="text-sm font-medium text-neutral-800">${val}</p>
-							</div>
-						`;
-					});
-					section.classList.remove('hidden');
-				}
+				createdEl.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 			}
 
 			loadingEl?.classList.add('hidden');
 			contentEl?.classList.remove('hidden');
+
+			/* ── Company form submit ── */
+			document.getElementById('company-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('company-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				const checked: string[] = [];
+				document.querySelectorAll<HTMLInputElement>('input[name="carTypes"]:checked').forEach((cb) => {
+					checked.push(cb.value);
+				});
+
+				const numVehiclesRaw = (document.getElementById('numVehicles') as HTMLInputElement).value.trim();
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							full_name:        (document.getElementById('fullName') as HTMLInputElement).value.trim(),
+							phone:            (document.getElementById('phone') as HTMLInputElement).value.trim(),
+							vat:              (document.getElementById('vat') as HTMLInputElement).value.trim(),
+							num_vehicles:     numVehiclesRaw,
+							primary_car_type: (document.getElementById('primaryCarType') as HTMLSelectElement).value,
+							car_types:        checked,
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
+
+			/* ── Contact form submit ── */
+			document.getElementById('contact-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('contact-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							contact_name:  (document.getElementById('contactName') as HTMLInputElement).value.trim(),
+							contact_phone: (document.getElementById('contactPhone') as HTMLInputElement).value.trim(),
+							contact_email: (document.getElementById('contactEmail') as HTMLInputElement).value.trim(),
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
+
+			/* ── Address form submit ── */
+			document.getElementById('address-form')?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = e.target as HTMLFormElement;
+				const statusEl = document.getElementById('address-status');
+				const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				btn.disabled = true;
+				btn.textContent = 'Saving…';
+
+				try {
+					const { error } = await supabase
+						.from('partners')
+						.update({
+							location: (document.getElementById('location') as HTMLInputElement).value.trim(),
+							country:  (document.getElementById('country') as HTMLInputElement).value.trim(),
+							zip_code: (document.getElementById('zipCode') as HTMLInputElement).value.trim(),
+							website:  (document.getElementById('website') as HTMLInputElement).value.trim(),
+						})
+						.eq('id', user.id);
+
+					if (error) {
+						showStatus(statusEl, `[${error.code ?? 'unknown'}] ${error.message}`, false);
+					} else {
+						showStatus(statusEl, 'Changes saved successfully.', true);
+					}
+				} catch (err: any) {
+					showStatus(statusEl, err.message || 'Failed to save changes.', false);
+				} finally {
+					btn.disabled = false;
+					btn.textContent = 'Save Changes';
+				}
+			});
 		})();
 	}
 
