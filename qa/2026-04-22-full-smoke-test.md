@@ -37,7 +37,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 13 Admin — catalog | done | F22–F24 |
 | Task 14 Driver — rides | done | F25–F26 |
 | Task 15 Driver — account | done | F27–F34 |
-| Task 16 Hotel dashboard | pending | — |
+| Task 16 Hotel dashboard | done | F35–F36 |
 | Task 17 Agency dashboard | pending | — |
 | Task 18 Cross-role notifications | pending | — |
 | Task 19 Fix pass | pending | — |
@@ -1596,3 +1596,110 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke driv
 **Root cause:** After a password change, Supabase invalidates the existing session and issues a new one. The `DriverLayout.astro` auth guard calls `supabase.auth.getSession()` — if this returns a null/expired session (because the old token was invalidated), the guard function may silently exit its `try` block without ever calling `authCheck.classList.add('hidden')`. Alternatively, `supabase.auth.getSession()` may hang waiting for a token refresh that never completes with the old refresh token. The `waitForAuth()` MutationObserver in `settings.astro` then deadlocks indefinitely waiting for the class to be set.
 **Status:** open
 **Severity:** C — After any successful password change, the driver is locked out of all driver dashboard pages (including the ability to revert their password) for the duration of that browser session. Also enables F33.
+
+---
+
+### Section 16 — Hotel dashboard
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke hotel: `smoke-hotel-2026-04-22@opawey.test` (uid `b1262d59-e410-4666-b010-ea378a3c6229`).
+
+#### Pre-check — bookings for hotel partner
+
+| Table | Count |
+|---|---|
+| `public.transfers` | 1 (id `2082d1b0`, total_price=89.25, date=2026-05-14) |
+| `public.tours` | 1 (id `0d2475f6`, total_price=126.00, date=2026-06-21) |
+| `public.experiences` | 0 |
+
+Hotel partner: `commission_eur=10.00`, `discount=0`, `status=approved`. Pre-check: bookings from Task 7 (T5) and Task 9 (R5) confirmed present.
+
+---
+
+#### 16.1 — `/hotel` (reservations)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-hotel-home.png` | pass | Page title "Reservations — Opawey Hotel"; auth check clears within ~2s |
+| No JS/console errors on load | pass | 0 errors; all Supabase REST calls return 200 |
+| Calendar renders | pass | `calendar-section` visible; `month-label`="April 2026"; 7-column grid with day cells |
+| Prev month button | pass | Click: April 2026 → March 2026 |
+| Next month button | pass | Click: March 2026 → April 2026 → May 2026 |
+| Day cell with booking (May 14, count badge=1) — click | pass | Day panel shows "Bookings for Thursday, May 14, 2026"; transfer card with `Smoke QA5`, `Athens, Greece → Athens International Airport`, badge `transfer` (blue) present |
+| Day panel close (✕ button) | pass | Panel hides correctly |
+| Reservations table shows 2 rows with `partner_id=hotel uid` | pass | Row 1: Tour 2026-06-21, Smoke QA5, €126.00; Row 2: Transfer 2026-05-14, Smoke QA5, €89.25 |
+| **Hotel Commission column — regression check (commit `d033e37`)** | **pass** | Both rows show `€10.00` — flat EUR amount from `commission_eur`. Old code computed `totalPrice * discount / 100` (which would yield €0.00 since discount=0 and/or €12.60/€8.93 if discount=10). New code reads `partner.commission_eur` directly. **Regression is NOT present; fix is working.** |
+| Payment status badge | pass | Both rows show "Upcoming" badge (ride_status=new/assigned → Upcoming mapping correct) |
+| Ride status column renders | pass | `statusBadge()` function tested with ride_status=assigned (→ Upcoming), confirmed via DOM |
+| Hotel username in top bar | pass | "Smoke Hotel" shown in top bar `hotel-user-name` span |
+| Sidebar Reservations badge — cleared on first /hotel visit | pass | `[data-notif-badge="hotel-reservations"]` has `hidden` class; badge text="0"; localStorage key `opaway:partner-reservations-seen:b1262d59...` set to current timestamp by `markPartnerReservationsSeen()` |
+| Sidebar badge — stays cleared after page refresh | pass | After second navigate to /hotel, badge still hidden (watermark timestamp is in past, counts 0 new-since-seen) |
+| Network — all Supabase calls succeed | pass | `/rest/v1/partners` (×2), `/rest/v1/transfers` (×2), `/rest/v1/tours` (×2), `/rest/v1/experiences` (×2) all return 200 |
+
+**Summary 16.1:** All checks pass. Commission regression confirmed NOT present (flat €10.00 per row). 0 new findings for this sub-page.
+
+**Sidebar badge detail:** The badge mechanism works via a localStorage watermark (`opaway:partner-reservations-seen:<uid>`). On `/hotel` load, `markPartnerReservationsSeen()` sets the watermark to now. `partnerReservationsCount()` then counts bookings created after the watermark — since both bookings were created before today's visit, count=0 and badge is hidden. This is the F15-style localStorage watermark pattern confirmed working per commit `4371ec7`.
+
+---
+
+#### 16.2 — `/hotel/profile`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-hotel-profile.png` | pass | Page title "Profile — Opawey Hotel"; auth check clears |
+| No JS/console errors | pass | 0 errors; `/rest/v1/partners` returns 200 |
+| Profile form loads with Task 1 values | pass | `hotel_name`="Smoke Hotel" displayed correctly in `p-hotel-name` |
+| Status badge renders | pass | "Approved" (emerald badge) shown |
+| Partner type rendered | pass | "Hotel" shown in `p-type` |
+| Member Since rendered | pass | "22 April 2026" shown in `p-created` |
+| Edit `hotel_name` → `Smoke Hotel Edited` → save | **FAIL (M)** | Page is **entirely read-only** — no `<form>`, no `<input>` fields, no Save button. Note says "Contact support to update." Cannot edit any field. → **F35** |
+| Edit contact / VAT / website | **FAIL (M)** | Same — all fields are static `<p>` tags; no edit controls for contact_name, contact_phone, vat, website, business_phone, business_email. All display as "-" since these were never populated at registration. → F35 |
+| Avatar upload (if present) | **FAIL (I)** | No `input[type="file"]` or avatar upload section exists on the profile page. → **F36** |
+| Fields with null values display as "-" | pass | hotel_type, vat, business_phone, business_email, contact_name, contact_phone, contact_email, location, country, zip, website all show "-" (null values rendered gracefully) |
+
+**Summary 16.2:** Profile data renders correctly for the populated fields (`hotel_name`, `status`, `created_at`, `type`). However the page is fully read-only — no self-service edit for any field. 2 new findings raised: F35 (no edit form) and F36 (no avatar upload).
+
+**Screenshots:** `qa/smoke-hotel-home.png`, `qa/smoke-hotel-profile.png`
+
+**Section 16 summary:**
+
+| Sub-page | Result | Findings |
+|---|---|---|
+| 16.1 `/hotel` | pass | 0 new findings |
+| 16.2 `/hotel/profile` | partial-pass | F35 (profile read-only), F36 (no avatar upload) |
+
+**Findings raised:** F35–F36 (2 findings)
+
+---
+
+### F35 — M — hotel-profile — `/hotel/profile` is entirely read-only; no self-service edit for any field
+
+**Page:** `/hotel/profile`
+**Preconditions:** logged in as approved hotel partner
+**Repro:**
+1. Log in as `smoke-hotel-2026-04-22@opawey.test`
+2. Navigate to `/hotel/profile`
+3. Look for any editable form, input field, or Save button
+**Expected:** Hotel can edit at minimum `hotel_name`, `contact_name`, `contact_phone`, `contact_email`, `vat`, `website`, `business_phone`, `business_email` via a form with save button.
+**Observed:** All fields rendered as static `<p>` tags. No `<form>`, no `<input>`, no Save button. A note reads "Contact support to update." The hotel partner has no self-service path to update any profile data. Fields for `hotel_type`, `vat`, `business_phone`, `business_email`, `contact_name`, `contact_phone`, `contact_email`, `location`, `country`, `zip`, `website` are all null (never populated at registration) and display as "-" with no way for the user to fill them in.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-hotel-profile.png`
+**Root cause:** `/hotel/profile.astro` is a read-only display page. No edit form was implemented. This mirrors F27 for driver/profile.
+**Status:** open
+**Severity:** M — Hotel partners cannot update their own profile. All contact/business fields are permanently "-" unless the admin edits them via the admin panel. Self-service edit is expected for at least hotel_name, contact details, and website.
+
+---
+
+### F36 — I — hotel-profile — No avatar / logo upload on hotel profile page
+
+**Page:** `/hotel/profile`
+**Preconditions:** logged in as approved hotel partner
+**Repro:**
+1. Navigate to `/hotel/profile`
+2. Look for an avatar or hotel logo upload control
+**Expected:** An avatar or hotel logo upload section (file input + preview) allowing the hotel to set a photo/logo URL.
+**Observed:** No `input[type="file"]`, no avatar preview, no upload section of any kind exists on the profile page.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-hotel-profile.png`
+**Root cause:** Feature not implemented. No file upload or avatar functionality was added to the hotel profile page. This parallels F11 (user profile) and F36 (hotel profile). Given the profile is also read-only (F35), avatar upload would require implementing the full edit form first.
+**Status:** open
+**Severity:** I — Missing UX feature. Hotels cannot set a logo or photo. Dependent on F35 being resolved first.
