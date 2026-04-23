@@ -201,6 +201,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 					<td class="px-6 py-4 text-neutral-600">${v.plate || '-'}</td>
 					<td class="px-6 py-4">
 						<div class="flex items-center gap-2">
+							<button data-edit="${v.id}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-sky-50 hover:border-[#0C6B95]/30 hover:text-[#0C6B95] transition-colors text-neutral-600">Edit</button>
 							<button data-toggle="${v.id}" data-current="${v.status}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors text-neutral-600">${active ? 'Deactivate' : 'Activate'}</button>
 							<button data-delete="${v.id}" class="text-xs px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors text-red-600">Delete</button>
 						</div>
@@ -208,12 +209,21 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				</tr>`;
 			}).join('');
 
+			// Edit handlers (openModal pre-populates when passed a vehicle).
+			tbody.querySelectorAll<HTMLButtonElement>('[data-edit]').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const v = vehicles.find(x => x.id === btn.dataset.edit);
+					if (v) openModal(v);
+				});
+			});
+
 			// Toggle handlers
 			tbody.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach(btn => {
 				btn.addEventListener('click', async () => {
 					const id = btn.dataset.toggle;
 					const newStatus = btn.dataset.current === 'active' ? 'inactive' : 'active';
-					await supabase.from('driver_vehicles').update({ status: newStatus }).eq('id', id);
+					const { error } = await supabase.from('driver_vehicles').update({ status: newStatus }).eq('id', id);
+					if (error) { console.error('Toggle failed:', error); alert(`Toggle failed: [${error.code ?? 'unknown'}] ${error.message}`); return; }
 					loadVehicles();
 				});
 			});
@@ -222,7 +232,8 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach(btn => {
 				btn.addEventListener('click', async () => {
 					if (!confirm('Delete this vehicle?')) return;
-					await supabase.from('driver_vehicles').delete().eq('id', btn.dataset.delete);
+					const { error } = await supabase.from('driver_vehicles').delete().eq('id', btn.dataset.delete);
+					if (error) { console.error('Delete failed:', error); alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`); return; }
 					loadVehicles();
 				});
 			});
