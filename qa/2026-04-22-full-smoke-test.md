@@ -343,15 +343,30 @@ Pending / deferred (all non-Critical, non-Blocking):
 |---|---:|---|
 | Critical / Blocking — closed | 8 | F1, F6, F12, F14, F17, F19 (C) · F23, F24 (H) |
 | Critical from second round — closed | 3 | F29, F33, F34 |
-| Important / Minor — closed | 15 | F2, F3, F4, F5, F7, F8, F9, F10, F11, F13, F15, F18, F20, F21, F22 |
-| **Closed total** | **26** | |
+| Important / Minor — closed | 26 | F2, F3, F4, F5, F7, F8, F9, F10, F11, F13, F15, F18, F20, F21, F22, F25, F26, F27, F28, F30, F31, F32, F35, F36, F37, F38 |
+| **Closed total** | **37** | |
 | Wontfix (intentional business rule) | 1 | F16 (3-hour hourly minimum) |
-| Open — partner-portal self-service UX | 6 | F27, F28, F30, F31, F35, F37 (read-only profiles, missing filters, no edit buttons) |
-| Open — cosmetic / polish | 4 | F25 (column semantic), F26 (empty-date render), F32 (button-stuck — likely resolved by F34 fix), F36 (hotel avatar) |
-| Open — feature request | 1 | F38 (login role-route) |
-| **Open total** | **11** | all non-critical |
+| **Open total** | **0** | |
 
-**Critical / Blocking queue: empty.** All booking funnels (transfer, hourly, tour) succeed end-to-end across all account types and all payment methods. All core role dashboards verified live. Notification Realtime pipeline verified across 6 cross-role scenarios. The app is in ship-ready shape for the issues the client originally reported.
+**All 37 actionable findings closed.** F16 is a deliberate product decision ("Minimum rental is 3 hours." is copy in `BookingSection.astro:216`).
+
+### Fifth fix round — closing out the non-critical punch list
+
+| Finding | Severity | Fix commit |
+|---|---|---|
+| F25 | M | `0fa9038` feat(driver): driver_remarks column + "My Remarks" textarea on /driver/ride (distinct from customer-written driver_notes) |
+| F26 | M | `aa2db3f` /driver/available: render empty date as "—" instead of "— 10:00" |
+| F27 | I | `985a3d0` /driver/profile: editable forms replacing "Contact support to update" |
+| F28 | I | `571d1f2` /driver/vehicles: row-level Edit button + error surfacing on Toggle/Delete |
+| F30 | I | `3254f57` /driver/billing: Status · Year · Month filters + Reset |
+| F31 | I | `aa2db3f` /driver/payment-data: pill-styled success toast with icon, 6s persistence |
+| F32 | M | `c8946fa` /driver/settings: `handlersBound` guard so onAuthStateChange doesn't stack submit listeners |
+| F35 | I | `985a3d0` /hotel/profile: editable forms replacing read-only display |
+| F36 | I | `31e1524` /hotel/profile: logo upload + remove, `partners.photo_url` migration |
+| F37 | I | `985a3d0` /agency/profile: editable forms replacing read-only display |
+| F38 | I | `aa2db3f` /login: role-route to /admin / /driver / /hotel / /agency by `users.type` + `partners.status` (honours ?next= first) |
+
+**Full-scale smoke test complete.** Critical / Blocking queue is empty. All booking funnels, role dashboards, partner self-service edit forms, avatar uploads, admin catalog, notification Realtime, and role-based login routing verified end-to-end.
 
 **Cleanup complete:** the 4 leftover `smoke-reg-*@opawey.test` rows from Task 5's partner-registration scenarios were deleted from `auth.users` via the management API (cascades removed their `public.partners` / `public.users` entries as well).
 
