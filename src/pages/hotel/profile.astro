@@ -15,6 +15,35 @@ import HotelLayout from '../../components/HotelLayout.astro';
 	<!-- Profile content -->
 	<div id="profile-content" class="hidden space-y-8">
 
+		<!-- Hotel Logo / Avatar -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
+			<h2 class="text-lg font-bold text-neutral-900 mb-1">Logo</h2>
+			<p class="text-sm text-neutral-500 mb-6">Shown next to your business name in admin views and customer-facing booking cards.</p>
+
+			<div class="flex items-center gap-4">
+				<div class="shrink-0">
+					<div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-neutral-200 bg-neutral-100 flex items-center justify-center">
+						<img id="hotelAvatarPreview" src="" alt="Hotel logo" class="w-full h-full object-cover hidden" />
+						<svg id="hotelAvatarPlaceholder" class="w-10 h-10 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2 20l4.586-4.586a2 2 0 012.828 0L14 20m0 0l2-2a2 2 0 012.828 0L22 20M3 7h18v13H3V7zm3-3h12v3H6V4z" />
+						</svg>
+					</div>
+				</div>
+				<div class="flex-1">
+					<div class="flex items-center gap-2">
+						<label class="inline-flex items-center gap-2 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+							Upload logo
+							<input id="hotelAvatarFile" type="file" accept="image/*" class="hidden" />
+						</label>
+						<button id="hotelAvatarRemove" type="button" class="px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors hidden">Remove</button>
+						<span id="hotelAvatarStatus" class="hidden text-xs"></span>
+					</div>
+					<p class="text-xs text-neutral-400 mt-1.5">JPG, PNG or WebP. Max 5 MB.</p>
+				</div>
+			</div>
+		</section>
+
 		<!-- Hotel Information -->
 		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 md:p-8">
 			<h2 class="text-lg font-bold text-neutral-900 mb-1">Hotel Information</h2>
@@ -163,6 +192,7 @@ import HotelLayout from '../../components/HotelLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { uploadImage } from '../../lib/upload';
 
 	function initHotelProfile() {
 		const loadingEl = document.getElementById('profile-loading');
@@ -226,6 +256,61 @@ import HotelLayout from '../../components/HotelLayout.astro';
 			setVal('email', partner.email || user.email || '');
 			setVal('businessPhone', partner.business_phone);
 			setVal('businessEmail', partner.business_email);
+
+			// Logo / avatar
+			const avatarFile   = document.getElementById('hotelAvatarFile') as HTMLInputElement | null;
+			const avatarPrev   = document.getElementById('hotelAvatarPreview') as HTMLImageElement | null;
+			const avatarPh     = document.getElementById('hotelAvatarPlaceholder');
+			const avatarRemove = document.getElementById('hotelAvatarRemove');
+			const avatarStatus = document.getElementById('hotelAvatarStatus');
+
+			function setAvatarStatus(msg: string, tone: 'info' | 'success' | 'error') {
+				if (!avatarStatus) return;
+				avatarStatus.textContent = msg;
+				avatarStatus.className = `text-xs ${tone === 'error' ? 'text-red-600' : tone === 'success' ? 'text-emerald-600' : 'text-[#0C6B95]'}`;
+				avatarStatus.classList.remove('hidden');
+			}
+			function showAvatar(url: string) {
+				if (avatarPrev) { avatarPrev.src = url; avatarPrev.classList.remove('hidden'); }
+				avatarPh?.classList.add('hidden');
+				avatarRemove?.classList.remove('hidden');
+			}
+			function clearAvatar() {
+				if (avatarPrev) { avatarPrev.src = ''; avatarPrev.classList.add('hidden'); }
+				avatarPh?.classList.remove('hidden');
+				avatarRemove?.classList.add('hidden');
+			}
+
+			if (partner.photo_url) showAvatar(partner.photo_url);
+
+			avatarFile?.addEventListener('change', async () => {
+				const file = avatarFile.files?.[0];
+				if (!file) return;
+				if (file.size > 5 * 1024 * 1024) { setAvatarStatus('File too large (max 5 MB).', 'error'); avatarFile.value = ''; return; }
+				setAvatarStatus('Uploading…', 'info');
+				try {
+					const url = await uploadImage(file, `avatars/${user.id}`);
+					const { error } = await supabase.from('partners').update({ photo_url: url }).eq('id', user.id);
+					if (error) throw error;
+					showAvatar(url);
+					setAvatarStatus('Uploaded.', 'success');
+					setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
+				} catch (err: any) {
+					console.error('Hotel avatar upload failed:', err);
+					setAvatarStatus(err?.message || 'Upload failed.', 'error');
+				} finally {
+					avatarFile.value = '';
+				}
+			});
+
+			avatarRemove?.addEventListener('click', async () => {
+				setAvatarStatus('Removing…', 'info');
+				const { error } = await supabase.from('partners').update({ photo_url: null }).eq('id', user.id);
+				if (error) { setAvatarStatus(error.message, 'error'); return; }
+				clearAvatar();
+				setAvatarStatus('Removed.', 'success');
+				setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
+			});
 
 			// Contact
 			setVal('contactName', partner.contact_name);
