@@ -78,6 +78,28 @@ import Layout from '../../../layouts/Layout.astro';
 							</p>
 						</div>
 
+						<!-- Hotel option (shown only when the catalog row opts in) -->
+						<div id="hotel-option-block" class="border-t border-neutral-100 pt-6 mb-6 hidden">
+							<p class="block text-sm font-medium text-neutral-700 mb-1.5">Hotel for this multi-day tour</p>
+							<p class="text-xs text-neutral-500 mb-3">This tour includes overnight stay(s). Let us know how you want to handle the hotel.</p>
+							<div class="flex flex-col gap-2" role="radiogroup" aria-label="Hotel option">
+								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
+									<input type="radio" name="hotel-choice" value="self-book" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+									<span class="flex-1">
+										<span class="block text-sm font-medium text-neutral-800">No hotel needed — I'll book my own</span>
+										<span class="block text-xs text-neutral-500 mt-0.5">You arrange your own accommodation.</span>
+									</span>
+								</label>
+								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
+									<input type="radio" name="hotel-choice" value="include-booking" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+									<span class="flex-1">
+										<span class="block text-sm font-medium text-neutral-800">Include hotel booking</span>
+										<span class="block text-xs text-neutral-500 mt-0.5">One of our agents will contact you to confirm hotel options after checkout.</span>
+									</span>
+								</label>
+							</div>
+						</div>
+
 						<!-- Special Requests -->
 						<div class="border-t border-neutral-100 pt-6 mb-6">
 							<label class="block text-sm font-medium text-neutral-700 mb-1.5 flex items-center gap-1.5">
@@ -224,6 +246,25 @@ import Layout from '../../../layouts/Layout.astro';
 	const totalPrice = params.get('totalPrice') || '0';
 	const discount = params.get('discount') || '';
 
+	/* ── Reveal hotel-option block when the catalog row opts in ── */
+	(async () => {
+		if (!tourId) return;
+		const { data: tourRow } = await supabase
+			.from('tours_catalog')
+			.select('category, hotel_option')
+			.eq('id', tourId)
+			.maybeSingle();
+		if (!tourRow) return;
+		const wantsHotel = tourRow.hotel_option === 'self-book' || tourRow.hotel_option === 'include-booking';
+		if (wantsHotel) {
+			document.getElementById('hotel-option-block')?.classList.remove('hidden');
+			// Default-select the catalog's preferred option so the form is never
+			// left empty on Continue.
+			const radio = document.querySelector<HTMLInputElement>(`input[name="hotel-choice"][value="${tourRow.hotel_option}"]`);
+			if (radio) radio.checked = true;
+		}
+	})();
+
 	/* ── Populate sidebar ── */
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
@@ -285,6 +326,9 @@ import Layout from '../../../layouts/Layout.astro';
 		errorEl.classList.add('hidden');
 
 		const driverNotes = (document.getElementById('pax-notes') as HTMLTextAreaElement)?.value.trim() || '';
+		const hotelChoiceRaw = (document.querySelector('input[name="hotel-choice"]:checked') as HTMLInputElement | null)?.value ?? '';
+		// Only forward a non-default value — 'none' / '' stay implicit.
+		const hotelChoice = (hotelChoiceRaw === 'self-book' || hotelChoiceRaw === 'include-booking') ? hotelChoiceRaw : '';
 
 		const p = new URLSearchParams({
 			tourId, tourName, pickup, date, time, participants,
@@ -293,6 +337,7 @@ import Layout from '../../../layouts/Layout.astro';
 			bookingType: 'tour',
 		});
 		if (discount) p.set('discount', discount);
+		if (hotelChoice) p.set('hotelChoice', hotelChoice);
 
 		window.location.href = `/book/tour/payment?${p.toString()}`;
 	});

@@ -92,6 +92,7 @@
 			${field('Ride status', r.ride_status)}
 			${field('Driver', r.driver || '—')}
 			${field('Released to drivers', r.released_to_drivers ? 'Yes' : 'No')}
+			${field('Hotel preference', r.hotel_choice === 'self-book' ? 'Guest books their own hotel' : r.hotel_choice === 'include-booking' ? 'Wants hotel booked by agent' : '')}
 			${field('Special requests', r.special_requests, { full: true })}
 			${field('Notes', r.notes, { full: true })}
 			${field('Added by admin', r.added_by_admin ? 'Yes' : 'No')}

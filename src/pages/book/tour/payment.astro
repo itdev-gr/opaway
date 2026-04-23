@@ -300,6 +300,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const phone = params.get('phone') || '';
 	const driverNotes = params.get('driverNotes') || '';
 	const discount = params.get('discount') || '';
+	const hotelChoiceRaw = params.get('hotelChoice') || '';
+	const hotelChoice = (hotelChoiceRaw === 'self-book' || hotelChoiceRaw === 'include-booking') ? hotelChoiceRaw : null;
 	const bookingType = params.get('bookingType') || 'tour';
 
 	/* ── Helpers ── */
@@ -427,6 +429,7 @@ import Layout from '../../../layouts/Layout.astro';
 				email, phone,
 				special_requests: driverNotes || null,
 				notes: driverNotes || null,
+				hotel_choice: hotelChoice,
 				total_price: finalTotal,
 				ride_status: 'new',
 				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
