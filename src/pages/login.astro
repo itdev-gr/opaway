@@ -196,10 +196,28 @@ import Layout from '../layouts/Layout.astro';
 				const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 				if (error) throw error;
 				ensureUserProfile({ id: data.user.id, email: data.user.email }).catch(() => {});
+
+				// Honour ?next= if it's a safe local path; otherwise route by role.
 				const params = new URLSearchParams(window.location.search);
 				const rawNext = params.get('next');
 				const isSafeNext = rawNext != null && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/\\');
-				window.location.href = isSafeNext ? rawNext! : '/';
+				if (isSafeNext) {
+					window.location.href = rawNext!;
+				} else {
+					const uid = data.user.id;
+					// Admin first — public.users.type is authoritative for the portal.
+					const { data: userRow } = await supabase.from('users').select('type').eq('id', uid).maybeSingle();
+					if (userRow?.type === 'admin') { window.location.href = '/admin'; return; }
+					// Then approved partner by type.
+					const { data: partnerRow } = await supabase.from('partners').select('type, status').eq('id', uid).maybeSingle();
+					if (partnerRow?.status === 'approved') {
+						if (partnerRow.type === 'driver') { window.location.href = '/driver'; return; }
+						if (partnerRow.type === 'hotel')  { window.location.href = '/hotel'; return; }
+						if (partnerRow.type === 'agency') { window.location.href = '/agency'; return; }
+					}
+					// Fallback: regular user / unapproved partner / no profile — go home.
+					window.location.href = '/profile/dashboard';
+				}
 			} catch (err: unknown) {
 				const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Sign in failed. Try again.';
 				showError(msg);

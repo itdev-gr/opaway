@@ -102,10 +102,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		function showStatus(msg: string, success: boolean) {
 			const el = document.getElementById('pd-status');
 			if (!el) return;
-			el.textContent = msg;
-			el.className = `text-sm ${success ? 'text-emerald-600' : 'text-red-600'}`;
+			const icon = success ? '✓' : '⚠';
+			el.innerHTML = `<span class="inline-flex items-center gap-1.5">${icon} <span>${msg}</span></span>`;
+			el.className = `text-sm font-semibold px-3 py-1.5 rounded-lg ${success ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`;
 			el.classList.remove('hidden');
-			setTimeout(() => el.classList.add('hidden'), 4000);
+			// Success stays visible for 6s (was 4s) so users can actually see it.
+			setTimeout(() => el.classList.add('hidden'), 6000);
 		}
 
 		function toggleFields() {
