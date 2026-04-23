@@ -252,29 +252,14 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
 	import { supabase } from '../lib/supabase';
-	import { applyPartnerDiscount } from '../lib/pricing';
 	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 
 	attachPlacesAutocomplete(document.getElementById('experience-pickup') as HTMLInputElement | null);
 
-	let partnerDiscount = 0;
-
-	async function detectPartnerDiscount(): Promise<number> {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return 0;
-		try {
-			const { data: partner } = await supabase
-				.from('partners')
-				.select('status, discount')
-				.eq('id', user.id)
-				.maybeSingle();
-			if (partner && partner.status === 'approved' && partner.discount > 0) {
-				return partner.discount;
-			}
-		} catch (e) { console.error('Partner discount check failed:', e); }
-		return 0;
-	}
+	// Experiences are quote-only: no pricing or partner discounts surfaced on
+	// the public page. Partner discounts still apply internally once an agent
+	// converts the request into a booking.
 
 	/* ── Auto-fill contact details from signed-in user (if any) ── */
 	supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -296,10 +281,6 @@ import Layout from '../layouts/Layout.astro';
 		id: string;
 		title: string;
 		description: string;
-		price: number | null;
-		price_sedan: number | null;
-		price_van: number | null;
-		price_minibus: number | null;
 		image_url: string;
 		duration: string;
 		highlight1: string;
@@ -439,11 +420,8 @@ import Layout from '../layouts/Layout.astro';
 			const catalogSection = document.getElementById('catalog-section')!;
 			const catalogGrid    = document.getElementById('experiences-catalog-grid')!;
 
-			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
-				const basePrice = t.price_sedan ?? t.price ?? 0;
-				const dp = applyPartnerDiscount(Number(basePrice), partnerDiscount);
-				const showOriginal = partnerDiscount > 0 && dp.originalPrice !== dp.discountedPrice;
-				return `
+			// Experiences are quote-only — no pricing shown on the public website.
+			catalogGrid.innerHTML = docs.map(t => `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
 					<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
 						<img
@@ -456,25 +434,17 @@ import Layout from '../layouts/Layout.astro';
 					<div class="p-6">
 						<h3 class="text-xl font-bold text-neutral-900 mb-2 leading-snug">${esc(t.title)}</h3>
 						<p class="text-neutral-500 text-sm leading-relaxed mb-5 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${esc(t.description)}</p>
-						<div class="flex items-center justify-between">
-							<div>
-								<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider">From</span>
-								${showOriginal ? `<del class="text-neutral-400 text-sm block">&euro;${dp.originalPrice.toFixed(2)}</del>` : ""}
-								<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">&euro;${dp.discountedPrice.toFixed(2)}</p>
-							</div>
-							<a
-								href="/experiences#request-form"
-								class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
-							>
-								Request
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-								</svg>
-							</a>
-						</div>
+						<a
+							href="/experiences#request-form"
+							class="inline-flex items-center justify-center gap-2 w-full bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
+						>
+							Request a quote
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+							</svg>
+						</a>
 					</div>
-				</div>`;
-			}).join('');
+				</div>`).join('');
 
 			catalogSection.classList.remove('hidden');
 
@@ -574,8 +544,5 @@ import Layout from '../layouts/Layout.astro';
 		}
 	});
 
-	detectPartnerDiscount().then(d => {
-		partnerDiscount = d;
-		loadExperiences();
-	});
+	loadExperiences();
 </script>

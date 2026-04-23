@@ -55,25 +55,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				/>
 			</div>
 
-			<!-- Price per vehicle -->
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-				<div>
-					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Sedan (€)</label>
-					<input id="f-price-sedan" type="number" step="0.01" min="0" placeholder="0.00"
-						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-				</div>
-				<div>
-					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Van (€)</label>
-					<input id="f-price-van" type="number" step="0.01" min="0" placeholder="0.00"
-						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-				</div>
-				<div>
-					<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Minibus (€)</label>
-					<input id="f-price-minibus" type="number" step="0.01" min="0" placeholder="0.00"
-						class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-				</div>
-			</div>
-
 			<!-- Duration -->
 			<div class="mb-4">
 				<label class="block text-sm font-medium text-neutral-700 mb-1">Duration label</label>
@@ -231,24 +212,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						class="w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] shadow-sm"
 					/>
 				</div>
-				<!-- Edit Price per vehicle -->
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div>
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Sedan (€)</label>
-						<input id="e-price-sedan" type="number" step="0.01" min="0" placeholder="0.00"
-							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Van (€)</label>
-						<input id="e-price-van" type="number" step="0.01" min="0" placeholder="0.00"
-							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Price — Minibus (€)</label>
-						<input id="e-price-minibus" type="number" step="0.01" min="0" placeholder="0.00"
-							class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
-					</div>
-				</div>
 				<!-- Edit Duration -->
 				<div>
 					<label class="block text-sm font-medium text-neutral-700 mb-1">Duration label</label>
@@ -336,10 +299,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		id: string;
 		title: string;
 		description: string;
-		price: number | null;
-		price_sedan: number | null;
-		price_van: number | null;
-		price_minibus: number | null;
 		duration: string | null;
 		highlight1: string | null;
 		highlight2: string | null;
@@ -458,11 +417,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		grid.innerHTML = items.map(item => {
 			const isLive = item.published !== false;
-			const priceLine = [
-				item.price_sedan   ? `Sedan €${Number(item.price_sedan).toFixed(0)}`     : null,
-				item.price_van     ? `Van €${Number(item.price_van).toFixed(0)}`         : null,
-				item.price_minibus ? `Minibus €${Number(item.price_minibus).toFixed(0)}` : null,
-			].filter(Boolean).join(' · ') || (item.price ? `€${Number(item.price).toFixed(0)}` : '—');
 			return `
 			<div class="group rounded-xl border border-neutral-200 overflow-hidden bg-neutral-50 shadow-sm hover:shadow-md transition-shadow duration-200">
 				<!-- Image + status badge -->
@@ -482,7 +436,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<h3 class="font-semibold text-neutral-900 truncate text-sm ${item.duration ? 'mb-0.5' : 'mb-1'}">${esc(item.title)}</h3>
 					${item.duration ? `<span class="inline-flex items-center gap-1 text-xs text-[#0C6B95] font-medium mb-2"><svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${esc(item.duration)}</span>` : ''}
 					<p class="text-xs text-neutral-500 leading-relaxed mb-3 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(item.description)}</p>
-					<span class="text-xs font-semibold text-[#0C6B95]">${esc(priceLine)}</span>
 					<!-- Actions -->
 					<div class="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100">
 						<!-- Toggle On/Off -->
@@ -570,10 +523,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					id: d.id,
 					title: d.title,
 					description: d.description,
-					price: d.price,
-					price_sedan: d.price_sedan,
-					price_van: d.price_van,
-					price_minibus: d.price_minibus,
 					duration: d.duration,
 					highlight1: d.highlight1,
 					highlight2: d.highlight2,
@@ -618,15 +567,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		submitBtn.textContent = 'Adding…';
 		setStatus('', '');
 
+		// Experiences are quote-only — no vehicle pricing stored.
 		const payload = {
 			title,
 			description,
 			image_url: cover,
 			images: addGallery,
-			price:         Number((document.getElementById('f-price-sedan') as HTMLInputElement).value) || null,
-			price_sedan:   Number((document.getElementById('f-price-sedan')   as HTMLInputElement).value) || null,
-			price_van:     Number((document.getElementById('f-price-van')     as HTMLInputElement).value) || null,
-			price_minibus: Number((document.getElementById('f-price-minibus') as HTMLInputElement).value) || null,
 			duration:      (document.getElementById('f-duration') as HTMLInputElement).value.trim() || null,
 			highlight1:    (document.getElementById('f-h1') as HTMLInputElement).value.trim() || null,
 			highlight2:    (document.getElementById('f-h2') as HTMLInputElement).value.trim() || null,
@@ -651,10 +597,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				images: [...addGallery],
 				title,
 				description,
-				price: null,
-				price_sedan: payload.price_sedan,
-				price_van: payload.price_van,
-				price_minibus: payload.price_minibus,
 				duration: payload.duration,
 				highlight1: payload.highlight1,
 				highlight2: payload.highlight2,
@@ -719,9 +661,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		(document.getElementById('e-title')         as HTMLInputElement).value    = row.title ?? '';
 		(document.getElementById('e-description')   as HTMLTextAreaElement).value = row.description ?? '';
-		(document.getElementById('e-price-sedan')   as HTMLInputElement).value    = String(row.price_sedan   ?? row.price ?? '');
-		(document.getElementById('e-price-van')     as HTMLInputElement).value    = String(row.price_van     ?? row.price ?? '');
-		(document.getElementById('e-price-minibus') as HTMLInputElement).value    = String(row.price_minibus ?? row.price ?? '');
 		(document.getElementById('e-duration')      as HTMLInputElement).value    = row.duration   ?? '';
 		(document.getElementById('e-h1')            as HTMLInputElement).value    = row.highlight1 ?? '';
 		(document.getElementById('e-h2')            as HTMLInputElement).value    = row.highlight2 ?? '';
@@ -777,14 +716,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		editStatus.textContent = '';
 
 		const existing = items.find((x) => x.id === pendingEditId);
+		// Experiences are quote-only — no vehicle pricing stored.
 		const payload = {
 			title,
 			description,
 			image_url: cover,
 			images: editGallery,
-			price_sedan:   Number((document.getElementById('e-price-sedan')   as HTMLInputElement).value) || null,
-			price_van:     Number((document.getElementById('e-price-van')     as HTMLInputElement).value) || null,
-			price_minibus: Number((document.getElementById('e-price-minibus') as HTMLInputElement).value) || null,
 			duration:      (document.getElementById('e-duration') as HTMLInputElement).value.trim() || null,
 			highlight1:    (document.getElementById('e-h1') as HTMLInputElement).value.trim() || null,
 			highlight2:    (document.getElementById('e-h2') as HTMLInputElement).value.trim() || null,
@@ -810,9 +747,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				images: [...editGallery],
 				title,
 				description,
-				price_sedan: payload.price_sedan,
-				price_van: payload.price_van,
-				price_minibus: payload.price_minibus,
 				duration: payload.duration,
 				highlight1: payload.highlight1,
 				highlight2: payload.highlight2,
