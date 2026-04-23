@@ -330,7 +330,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 				});
 			});
 		} catch (err) {
-			/* error silenced */
+			console.error('Transfers load failed:', err);
 			tbody.innerHTML = `<tr><td colspan="15" class="px-6 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
 		}
 	}
@@ -341,19 +341,19 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		if (sel.classList.contains('ride-status-select')) {
 			const docId = sel.dataset.id!;
 			applyRideStatusColor(sel);
-			try {
-				await supabase.from('transfers').update({ ride_status: sel.value }).eq('id', docId);
-			} catch (err) {
-				/* error silenced */
+			const { error } = await supabase.from('transfers').update({ ride_status: sel.value }).eq('id', docId);
+			if (error) {
+				console.error('Transfer ride_status update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
 			}
 		}
 		if (sel.classList.contains('payment-status-select')) {
 			const docId = sel.dataset.id!;
 			applyPaymentStatusColor(sel);
-			try {
-				await supabase.from('transfers').update({ payment_status: sel.value }).eq('id', docId);
-			} catch (err) {
-				/* error silenced */
+			const { error } = await supabase.from('transfers').update({ payment_status: sel.value }).eq('id', docId);
+			if (error) {
+				console.error('Transfer payment_status update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
 			}
 		}
 	});

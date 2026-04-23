@@ -264,13 +264,21 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	}
 
 	async function loadAllBookings() {
-		try {
+		{
 			const [transfersRes, toursRes, experiencesRes, requestsRes] = await Promise.all([
 				supabase.from('transfers').select('*').order('created_at', { ascending: false }),
 				supabase.from('tours').select('*').order('created_at', { ascending: false }),
 				supabase.from('experiences').select('*').order('created_at', { ascending: false }),
 				supabase.from('requests').select('*').order('created_at', { ascending: false }),
 			]);
+
+			const firstErr = transfersRes.error || toursRes.error || experiencesRes.error || requestsRes.error;
+			if (firstErr) {
+				console.error('Admin calendar bookings load failed:', firstErr);
+				const grid = document.getElementById('calendar-grid');
+				if (grid) grid.innerHTML = `<div class="p-2 min-h-[80px] flex items-center justify-center text-neutral-400 text-sm col-span-7">Could not load bookings.</div>`;
+				return;
+			}
 
 			allBookings = [];
 			(transfersRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'transfer')));
@@ -279,10 +287,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			(requestsRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'request')));
 
 			renderCalendar();
-		} catch (e) {
-			/* error silenced */
-			const grid = document.getElementById('calendar-grid');
-			if (grid) grid.innerHTML = `<div class="p-2 min-h-[80px] flex items-center justify-center text-neutral-400 text-sm col-span-7">Could not load bookings.</div>`;
 		}
 	}
 

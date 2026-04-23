@@ -216,7 +216,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			}
 
 		} catch (err) {
-			/* error silenced */
+			console.error('Driver dashboard load failed:', err);
 		}
 	}
 

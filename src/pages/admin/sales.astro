@@ -111,27 +111,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		allBookings = [];
 
 		for (const col of collections) {
-			try {
-				const { data, error } = await supabase.from(col.name).select('*').order('created_at', { ascending: false });
-				if (error) throw error;
-				(data ?? []).forEach((d: any) => {
-					const createdAt = d.created_at ? new Date(d.created_at) : null;
-					allBookings.push({
-						id: d.id,
-						type: col.type,
-						date: d.date || (createdAt ? createdAt.toLocaleDateString() : '—'),
-						name: d.first_name ? `${d.first_name} ${d.last_name || ''}`.trim() : (d.name || '—'),
-						email: d.email || '—',
-						vehicleName: d.vehicle_name || d.vehicle || '—',
-						totalPrice: Number(d.total_price) || 0,
-						paymentMethod: d.payment_method || '—',
-						paymentStatus: d.payment_status || (d.status === 'payed' ? 'paid' : 'pending'),
-						createdAt,
-					});
-				});
-			} catch (e) {
-				/* error silenced */
+			const { data, error } = await supabase.from(col.name).select('*').order('created_at', { ascending: false });
+			if (error) {
+				console.error(`Sales report load failed for ${col.name}:`, error);
+				continue;
 			}
+			(data ?? []).forEach((d: any) => {
+				const createdAt = d.created_at ? new Date(d.created_at) : null;
+				allBookings.push({
+					id: d.id,
+					type: col.type,
+					date: d.date || (createdAt ? createdAt.toLocaleDateString() : '—'),
+					name: d.first_name ? `${d.first_name} ${d.last_name || ''}`.trim() : (d.name || '—'),
+					email: d.email || '—',
+					vehicleName: d.vehicle_name || d.vehicle || '—',
+					totalPrice: Number(d.total_price) || 0,
+					paymentMethod: d.payment_method || '—',
+					paymentStatus: d.payment_status || (d.status === 'payed' ? 'paid' : 'pending'),
+					createdAt,
+				});
+			});
 		}
 
 		allBookings.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));

@@ -131,7 +131,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
-		try {
+		{
 			const { data: rows, error } = await supabase
 				.from('transfers')
 				.select('*')
@@ -139,7 +139,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				.in('ride_status', ['assigned', 'pickup', 'onboard'])
 				.order('created_at', { ascending: false });
 
-			if (error) throw error;
+			if (error) {
+				console.error('Driver upcoming rides load failed:', error);
+				document.getElementById('rides-list')!.innerHTML =
+					`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
+				return;
+			}
 
 			allRides = (rows || []).map((data: any) => ({
 				id: data.id,
@@ -153,10 +158,6 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			}));
 
 			renderRides(allRides);
-		} catch (err) {
-			/* error silenced */
-			document.getElementById('rides-list')!.innerHTML =
-				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
 		}
 	}
 

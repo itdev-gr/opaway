@@ -216,9 +216,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* ── Load from Supabase ── */
 	async function loadUsers() {
 		const tbody = document.getElementById('users-tbody')!;
-		try {
+		{
 			const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-			if (error) throw error;
+			if (error) {
+				console.error('Users load failed:', error);
+				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load users.</td></tr>`;
+				return;
+			}
 			if (!data || data.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No users found.</td></tr>`;
 				return;
@@ -233,9 +237,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				lastLoginAt: fmtDate(d.last_login_at),
 			}));
 			renderTable();
-		} catch (e) {
-			/* error silenced */
-			tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">Could not load users.</td></tr>`;
 		}
 	}
 
@@ -293,25 +294,31 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		yesBtn.textContent = 'Processing…';
 		yesBtn.disabled = true;
 
-		try {
-			if (pendingAction === 'delete') {
-				const { error } = await supabase.from('users').delete().eq('id', pendingUid);
-				if (error) throw error;
-				allUsers = allUsers.filter(u => u.uid !== pendingUid);
-			} else {
-				const newType = pendingAction === 'promote' ? 'admin' : 'user';
-				const { error } = await supabase.from('users').update({ type: newType }).eq('id', pendingUid);
-				if (error) throw error;
-				const user = allUsers.find(u => u.uid === pendingUid);
-				if (user) user.type = newType;
+		if (pendingAction === 'delete') {
+			const { error } = await supabase.from('users').delete().eq('id', pendingUid);
+			if (error) {
+				console.error('User delete failed:', error);
+				alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
 			}
-			closeModal();
-			renderTable();
-		} catch (e) {
-			/* error silenced */
-			yesBtn.textContent = 'Error — retry';
-			yesBtn.disabled = false;
+			allUsers = allUsers.filter(u => u.uid !== pendingUid);
+		} else {
+			const newType = pendingAction === 'promote' ? 'admin' : 'user';
+			const { error } = await supabase.from('users').update({ type: newType }).eq('id', pendingUid);
+			if (error) {
+				console.error('User role update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
+			}
+			const user = allUsers.find(u => u.uid === pendingUid);
+			if (user) user.type = newType;
 		}
+		closeModal();
+		renderTable();
 	}
 
 	document.getElementById('modal-no')?.addEventListener('click', closeModal);

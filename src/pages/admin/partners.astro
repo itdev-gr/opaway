@@ -286,12 +286,14 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 
 				const saveDiscount = async () => {
 					const val = Math.max(0, Math.min(100, parseInt(input.value) || 0));
-					try {
-						const { error: discErr } = await supabase.from('partners').update({ discount: val }).eq('id', uid);
-						if (discErr) throw discErr;
-						partner.discount = val;
-						renderTable();
-					} catch (err) { /* error silenced */ }
+					const { error: discErr } = await supabase.from('partners').update({ discount: val }).eq('id', uid);
+					if (discErr) {
+						console.error('Partner discount update failed:', discErr);
+						alert(`Save failed: [${discErr.code ?? 'unknown'}] ${discErr.message}`);
+						return;
+					}
+					partner.discount = val;
+					renderTable();
 				};
 
 				document.getElementById(`discount-save-${uid}`)?.addEventListener('click', saveDiscount);
@@ -378,9 +380,13 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 	/* ── Load from Supabase ── */
 	async function loadPartners() {
 		const tbody = document.getElementById('partners-tbody')!;
-		try {
+		{
 			const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: false });
-			if (error) throw error;
+			if (error) {
+				console.error('Partners load failed:', error);
+				tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
+				return;
+			}
 			if (!data || data.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-neutral-400">No partner accounts found.</td></tr>`;
 				return;
@@ -405,9 +411,6 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 				};
 			});
 			renderTable();
-		} catch (e) {
-			/* error silenced */
-			tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-neutral-400">Could not load partners.</td></tr>`;
 		}
 	}
 
@@ -465,25 +468,31 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 		yesBtn.textContent = 'Processing…';
 		yesBtn.disabled = true;
 
-		try {
-			if (pendingAction === 'delete') {
-				const { error } = await supabase.from('partners').delete().eq('id', pendingUid);
-				if (error) throw error;
-				allPartners = allPartners.filter(p => p.uid !== pendingUid);
-			} else {
-				const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected';
-				const { error } = await supabase.from('partners').update({ status: newStatus }).eq('id', pendingUid);
-				if (error) throw error;
-				const partner = allPartners.find(p => p.uid === pendingUid);
-				if (partner) partner.status = newStatus;
+		if (pendingAction === 'delete') {
+			const { error } = await supabase.from('partners').delete().eq('id', pendingUid);
+			if (error) {
+				console.error('Partner delete failed:', error);
+				alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
 			}
-			closeModal();
-			renderTable();
-		} catch (e) {
-			/* error silenced */
-			yesBtn.textContent = 'Error — retry';
-			yesBtn.disabled = false;
+			allPartners = allPartners.filter(p => p.uid !== pendingUid);
+		} else {
+			const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected';
+			const { error } = await supabase.from('partners').update({ status: newStatus }).eq('id', pendingUid);
+			if (error) {
+				console.error('Partner status update failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
+			}
+			const partner = allPartners.find(p => p.uid === pendingUid);
+			if (partner) partner.status = newStatus;
 		}
+		closeModal();
+		renderTable();
 	}
 
 	document.getElementById('modal-no')?.addEventListener('click', closeModal);

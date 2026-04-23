@@ -231,12 +231,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				closeAllDropdowns();
 				const id = btn.dataset.id!;
 				const action = btn.dataset.action!;
-				try {
-					await supabase.from('requests').update({ status: action }).eq('id', id);
+				{
+					const { error } = await supabase.from('requests').update({ status: action }).eq('id', id);
+					if (error) {
+						console.error('Request status update failed:', error);
+						alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+						return;
+					}
 					const req = allRequests.find(r => r.id === id);
 					if (req) req.status = action as any;
 					renderTable();
-				} catch (err) { /* error silenced */ }
+				}
 			});
 		});
 
@@ -295,15 +300,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const confirmBtn = document.getElementById('req-delete-confirm') as HTMLButtonElement;
 		confirmBtn.disabled = true;
 		confirmBtn.textContent = 'Deleting…';
-		try {
-			await supabase.from('requests').delete().eq('id', deleteTargetId);
-			allRequests = allRequests.filter(r => r.id !== deleteTargetId);
-			deleteTargetId = null;
-			document.getElementById('req-delete-modal')?.classList.add('hidden');
-			renderTable();
-		} catch (err) {
-			/* error silenced */
-		} finally {
+		{
+			const { error } = await supabase.from('requests').delete().eq('id', deleteTargetId);
+			if (error) {
+				console.error('Request delete failed:', error);
+				alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+			} else {
+				allRequests = allRequests.filter(r => r.id !== deleteTargetId);
+				deleteTargetId = null;
+				document.getElementById('req-delete-modal')?.classList.add('hidden');
+				renderTable();
+			}
 			confirmBtn.disabled = false;
 			confirmBtn.textContent = 'Delete';
 		}
@@ -311,18 +318,19 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	/* ── Load ── */
 	async function loadRequests() {
-		try {
+		{
 			const { data, error } = await supabase.from('requests').select('*').order('created_at', { ascending: false });
-			if (error) throw error;
+			if (error) {
+				console.error('Requests load failed:', error);
+				document.getElementById('req-tbody')!.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-neutral-400">Could not load requests.</td></tr>`;
+				return;
+			}
 			allRequests = (data ?? []).map(d => {
 				// Map legacy statuses to new ones
 				if (d.status === 'resolved' || d.status === 'read') d.status = 'answered';
 				return d as Request;
 			});
 			renderTable();
-		} catch (err) {
-			/* error silenced */
-			document.getElementById('req-tbody')!.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-neutral-400">Could not load requests.</td></tr>`;
 		}
 	}
 

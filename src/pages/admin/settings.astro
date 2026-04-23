@@ -313,7 +313,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	}
 
 	async function loadSystemCounts() {
-		try {
+		{
 			const [usersRes, partnersRes, transfersRes, toursRes, experiencesRes] = await Promise.all([
 				supabase.from('users').select('id', { count: 'exact', head: true }),
 				supabase.from('partners').select('id', { count: 'exact', head: true }),
@@ -322,14 +322,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				supabase.from('experiences').select('id', { count: 'exact', head: true }),
 			]);
 
+			const firstErr = usersRes.error || partnersRes.error || transfersRes.error || toursRes.error || experiencesRes.error;
+			if (firstErr) {
+				console.error('Admin system counts load failed:', firstErr);
+				sysTotalUsers.textContent = '—';
+				sysTotalPartners.textContent = '—';
+				sysTotalBookings.textContent = '—';
+				return;
+			}
+
 			sysTotalUsers.textContent = (usersRes.count ?? 0).toString();
 			sysTotalPartners.textContent = (partnersRes.count ?? 0).toString();
 			sysTotalBookings.textContent = ((transfersRes.count ?? 0) + (toursRes.count ?? 0) + (experiencesRes.count ?? 0)).toString();
-		} catch (err) {
-			/* error silenced */
-			sysTotalUsers.textContent = '—';
-			sysTotalPartners.textContent = '—';
-			sysTotalBookings.textContent = '—';
 		}
 	}
 

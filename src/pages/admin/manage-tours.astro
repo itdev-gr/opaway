@@ -515,13 +515,18 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const id     = btn.dataset.id!;
 				const isLive = btn.dataset.published === 'true';
 				btn.disabled = true;
-				try {
+				{
 					const { error: togErr } = await supabase.from('tours_catalog').update({ published: !isLive }).eq('id', id);
-					if (togErr) throw togErr;
+					if (togErr) {
+						console.error('Tour publish toggle failed:', togErr);
+						alert(`Save failed: [${togErr.code ?? 'unknown'}] ${togErr.message}`);
+						btn.disabled = false;
+						return;
+					}
 					const item = items.find(i => i.id === id);
 					if (item) item.published = !isLive;
 					renderGrid();
-				} catch (err) { /* error silenced */ btn.disabled = false; }
+				}
 			});
 		});
 
@@ -546,9 +551,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	/* ── Load from Supabase ── */
 	async function loadItems() {
 		const grid = document.getElementById('tours-grid')!;
-		try {
+		{
 			const { data, error } = await supabase.from('tours_catalog').select('*').order('created_at', { ascending: false });
-			if (error) throw error;
+			if (error) {
+				console.error('Tour catalog load failed:', error);
+				grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-10">Could not load tours.</p>`;
+				return;
+			}
 			items = (data ?? []).map((d: any) => {
 				const images: string[] = Array.isArray(d.images) && d.images.length > 0
 					? d.images
@@ -572,9 +581,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				};
 			});
 			renderGrid();
-		} catch (e) {
-			/* error silenced */
-			grid.innerHTML = `<p class="text-neutral-400 text-sm col-span-full text-center py-10">Could not load tours.</p>`;
 		}
 	}
 
@@ -626,7 +632,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				hotel_option: hotelOption,
 				published: true,
 			}).select().single();
-			if (insErr) throw insErr;
+			if (insErr) {
+				console.error('Tour catalog insert failed:', insErr);
+				setStatus(`Error adding tour: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
+				return;
+			}
 			items.unshift({
 				id: inserted.id,
 				imageUrl: cover,
@@ -647,9 +657,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			toggleHotel('f-category', 'f-hotel-wrap');
 			setStatus('✓ Tour published successfully!', 'text-emerald-600 font-medium');
 			setTimeout(() => setStatus('', ''), 4000);
-		} catch (err) {
-			/* error silenced */
-			setStatus('Error adding tour. Please try again.', 'text-red-500');
 		} finally {
 			submitBtn.disabled = false;
 			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Tour`;
@@ -668,12 +675,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	document.getElementById('delete-yes')?.addEventListener('click', async () => {
 		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
 		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
-		try {
+		{
 			const { error: delErr } = await supabase.from('tours_catalog').delete().eq('id', pendingDeleteId);
-			if (delErr) throw delErr;
-			items = items.filter(i => i.id !== pendingDeleteId);
-			renderGrid();
-		} catch (err) { /* error silenced */ }
+			if (delErr) {
+				console.error('Tour catalog delete failed:', delErr);
+				alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
+			} else {
+				items = items.filter(i => i.id !== pendingDeleteId);
+				renderGrid();
+			}
+		}
 		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
 		closeDeleteModal();
 	});
@@ -770,7 +781,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				entrance_ticket_count: entranceCount,
 				hotel_option: hotelOption,
 			}).eq('id', pendingEditId);
-			if (updErr) throw updErr;
+			if (updErr) {
+				console.error('Tour catalog update failed:', updErr);
+				editStatus.textContent = `Error saving changes: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+				editStatus.className = 'text-sm text-red-500';
+				return;
+			}
 			const item = items.find(i => i.id === pendingEditId);
 			if (item) Object.assign(item, {
 				imageUrl: cover,
@@ -785,10 +801,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			});
 			renderGrid();
 			closeEditModal();
-		} catch (err) {
-			/* error silenced */
-			editStatus.textContent = 'Error saving changes. Please try again.';
-			editStatus.className = 'text-sm text-red-500';
 		} finally {
 			saveBtn.disabled = false;
 			saveBtn.textContent = 'Save Changes';

@@ -187,7 +187,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
-		try {
+		{
 			// Load partner name
 			const { data: partnerData } = await supabase
 				.from('partners')
@@ -207,7 +207,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				.eq('released_to_drivers', true)
 				.order('created_at', { ascending: false });
 
-			if (error) throw error;
+			if (error) {
+				console.error('Driver available rides load failed:', error);
+				document.getElementById('rides-list')!.innerHTML =
+					`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
+				return;
+			}
 
 			// Client-side filter: only rides without a driver assigned
 			allRides = (rows || [])
@@ -224,10 +229,6 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				.filter(r => !r.driver_uid || r.driver_uid === '');
 
 			renderRides(getVisibleRides());
-		} catch (err) {
-			/* error silenced */
-			document.getElementById('rides-list')!.innerHTML =
-				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
 		}
 	}
 
@@ -264,7 +265,11 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				})
 				.eq('id', rideId);
 
-			if (error) throw error;
+			if (error) {
+				console.error('Driver accept ride failed:', error);
+				showToast(`Failed to accept ride: [${error.code ?? 'unknown'}] ${error.message}`);
+				return;
+			}
 
 			// Remove from local list
 			allRides = allRides.filter(r => r.id !== rideId);
@@ -273,9 +278,6 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			document.getElementById('confirm-modal')?.classList.add('hidden');
 			renderRides(getVisibleRides());
 			showToast('Ride accepted successfully!');
-		} catch (err) {
-			/* error silenced */
-			showToast('Failed to accept ride. Please try again.');
 		} finally {
 			btn.disabled = false;
 			btn.textContent = 'Accept';

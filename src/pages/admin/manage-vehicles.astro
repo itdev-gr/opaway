@@ -542,12 +542,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	document.getElementById('delete-yes')?.addEventListener('click', async () => {
 		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
 		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
-		try {
+		{
 			const { error: delErr } = await supabase.from('vehicles').delete().eq('id', pendingDeleteId);
-			if (delErr) throw delErr;
-			items = items.filter(i => i.id !== pendingDeleteId);
-			renderGrid();
-		} catch (err) { /* error silenced */ }
+			if (delErr) {
+				console.error('Vehicle delete failed:', delErr);
+				alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
+			} else {
+				items = items.filter(i => i.id !== pendingDeleteId);
+				renderGrid();
+			}
+		}
 		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
 		closeDeleteModal();
 	});
