@@ -322,7 +322,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 			render(d, isAvailable, user.id, driverName);
 		} catch (e) {
-			/* error silenced */
+			console.error('Ride detail load failed:', e);
 			showError();
 		}
 	});

@@ -339,7 +339,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 					}
 				}
 			} catch (err) {
-				/* error silenced */
+				console.error('User profile load failed:', err);
 			}
 		}
 	}

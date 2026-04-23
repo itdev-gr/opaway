@@ -222,7 +222,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 			if (data) partnerData = data;
 		} catch (e) {
-			/* error silenced */
+			console.error('Partner data load failed:', e);
 		}
 
 		// Populate personal info

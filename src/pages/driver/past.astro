@@ -164,9 +164,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 			renderRides(allRides);
 		} catch (err) {
-			/* error silenced */
+			console.error('Past rides load failed:', err);
 			document.getElementById('rides-list')!.innerHTML =
-				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
+				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides. Please refresh.</div>`;
 		}
 	}
 
