@@ -38,7 +38,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 14 Driver — rides | done | F25–F26 |
 | Task 15 Driver — account | done | F27–F34 |
 | Task 16 Hotel dashboard | done | F35–F36 |
-| Task 17 Agency dashboard | pending | — |
+| Task 17 Agency dashboard | done | F37 |
 | Task 18 Cross-role notifications | pending | — |
 | Task 19 Fix pass | pending | — |
 | Task 20 Regression | pending | — |
@@ -1703,3 +1703,99 @@ Hotel partner: `commission_eur=10.00`, `discount=0`, `status=approved`. Pre-chec
 **Root cause:** Feature not implemented. No file upload or avatar functionality was added to the hotel profile page. This parallels F11 (user profile) and F36 (hotel profile). Given the profile is also read-only (F35), avatar upload would require implementing the full edit form first.
 **Status:** open
 **Severity:** I — Missing UX feature. Hotels cannot set a logo or photo. Dependent on F35 being resolved first.
+
+---
+
+### Section 17 — Agency dashboard
+
+Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Smoke agency: `smoke-agency-2026-04-22@opawey.test` (uid `17ade4af-8c36-477c-b0cb-7f0e8acaafbe`). Browser automation via CDP (Playwright MCP browser context was closed between sweeps; CDP WebSocket used directly with Node.js for all interaction; macOS `screencapture` used for screenshots as Chrome's `Page.captureScreenshot` timed out due to `--enable-unsafe-swiftshader` software rendering mode).
+
+#### Pre-check — bookings for agency partner
+
+| Table | Count | Detail |
+|---|---|---|
+| `public.transfers` | 2 | id `17fd6fa5` (total_price=76.50, date=2026-05-15, payment_status=paid) + id `3d20d1cb` (total_price=170.10, date=2026-05-19, payment_status=pending) |
+| `public.tours` | 1 | id `2cd56050` (total_price=108.00, date=2026-06-22, payment_status=paid) |
+| `public.experiences` | 0 | — |
+
+Agency partner: `discount=10`, `status=approved`, `agency_name="Smoke Agency"`. Pre-check satisfied: ≥1 transfer + ≥1 tour.
+
+---
+
+#### 17.1 — `/agency` (reservations)
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-agency-home.png` | pass | Page title "Reservations — Opawey Agency"; auth check clears |
+| No JS/console errors on load | pass | 0 errors |
+| Calendar renders | pass | `calendar-section` visible; `month-label`="April 2026"; 7-column grid with Monday-first day headers |
+| Prev month button | pass | April 2026 → March 2026 → confirmed heading updates |
+| Next month button | pass | March 2026 → April 2026 → May 2026 → confirmed |
+| Calendar cell click on day with booking (May 19) | pass | Day panel "Bookings for Tuesday, May 19, 2026" shows transfer card with `Smoke QA5`, `Athens, Greece → Athens, Greece`, `Ride: assigned`, `Pay: pending` |
+| Day panel close (✕ button) | pass | Panel hides correctly |
+| Reservations table — 3 rows | pass | Tour (2026-06-22) + Transfer (2026-05-19) + Transfer (2026-05-15); `reservations-count` = "3 reservations" |
+| **Agency Price = total_price × 0.90 (10% discount)** | **PASS** | All 3 rows verified: Tour €108.00 → €97.20 ✓; Transfer €170.10 → €153.09 ✓; Transfer €76.50 → €68.85 ✓ |
+| Payment status badge renders | pass | Row 1 (Tour): "Fully Paid" (emerald); Row 2 (Transfer): "Pending Payment" (orange); Row 3 (Transfer): "Fully Paid" (emerald) |
+| Ride status badge renders | pass | All 3 rows show "Upcoming" (ride_status=new/assigned → Upcoming mapping correct) |
+| Agency username in top bar | pass | "Smoke Agency" shown in `agency-user-name` span |
+| Sidebar Reservations badge — cleared on visit | pass | `[data-notif-badge="agency-reservations"]` has `hidden` class; text="0"; localStorage key `opaway:partner-reservations-seen:17ade4af...` set to current timestamp by `markPartnerReservationsSeen()` |
+| Sidebar badge — stays cleared after page refresh | pass | After second navigate to /agency, badge still hidden (watermark is current; all existing bookings are older) |
+
+**Summary 17.1:** All checks pass. Agency price calculation (10% discount) verified correct on all 3 rows. Calendar, day-details panel, reservations table, status badges, and sidebar badge logic all function correctly. 0 new findings.
+
+**Agency price detail:** `discount` is read from `public.partners.discount` (value=10); formula `total_price * (1 - discount / 100)` computed client-side at line 355 of `agency/index.astro`. All three rows confirmed:
+- Tour row: 108.00 × 0.90 = **97.20** ✓
+- Transfer row: 170.10 × 0.90 = **153.09** ✓
+- Transfer row: 76.50 × 0.90 = **68.85** ✓
+
+**Sidebar badge note:** The badge mechanism uses the same localStorage watermark pattern as the hotel dashboard (confirmed in Section 16). `markPartnerReservationsSeen()` sets the key `opaway:partner-reservations-seen:17ade4af...` on every `/agency` visit. `partnerReservationsCount()` queries transfers + tours + experiences with `created_at > lastSeen` — since all 3 bookings predate the visit timestamp, count = 0, badge hidden. This is the expected, correct behavior.
+
+---
+
+#### 17.2 — `/agency/profile`
+
+| Check | Result | Notes |
+|---|---|---|
+| Navigate; screenshot `qa/smoke-agency-profile.png` | pass | Page title "Profile — Opawey Agency"; auth check clears |
+| No JS/console errors | pass | 0 errors |
+| Profile form loads with Task 1 values | pass | `agency_name`="Smoke Agency" shown in `p-agency-name` |
+| Status badge renders | pass | "Approved" (emerald badge) |
+| Partner type rendered | pass | "Agency" shown in `p-type` |
+| Member Since rendered | pass | "22 April 2026" shown in `p-created` |
+| Agency email rendered | pass | "smoke-agency-2026-04-22@opawey.test" shown in `p-agency-email` |
+| Fields with null values display as "-" | pass | `agency_type`, `vat`, `phone`, `contact_name`, `contact_phone`, `contact_email`, `location`, `country`, `zip`, `website` all show "-" (null values rendered gracefully) |
+| Edit `agency_name` → `Smoke Agency Edited` → save | **FAIL (M)** | Page is **entirely read-only** — no `<form>`, no `<input>` fields, no Save button. Note says "Contact support to update." Cannot edit any field. → **F37** |
+| Discount percentage field shown | **FAIL (I)** | No discount field visible on profile page despite `discount=10` in DB. Agency partners cannot see their own discount rate. → **F37** (additional note) |
+| Avatar upload (if present) | **FAIL (I)** | No `input[type="file"]` or avatar upload section exists. Same pattern as F36 (hotel) and F11 (user). (Not raised as new finding — same pattern already documented at F35/F36/F27.) |
+
+**Summary 17.2:** Profile data renders correctly for populated fields (`agency_name`, `status`, `created_at`, `type`, `email`). However the page is fully read-only — same pattern as F35 (hotel profile) and F27 (driver profile). One new finding raised: F37 (agency profile read-only; discount rate not displayed).
+
+**Screenshots:** `qa/smoke-agency-home.png`, `qa/smoke-agency-profile.png`
+
+**Section 17 summary:**
+
+| Sub-page | Result | Findings |
+|---|---|---|
+| 17.1 `/agency` | pass | 0 new findings |
+| 17.2 `/agency/profile` | partial-pass | F37 (profile read-only + discount not shown) |
+
+**Findings raised:** F37 (1 finding)
+
+---
+
+### F37 — M — agency-profile — `/agency/profile` is entirely read-only; agency discount rate not visible to the partner
+
+**Page:** `/agency/profile`
+**Preconditions:** logged in as approved agency partner (`discount=10`)
+**Repro:**
+1. Log in as `smoke-agency-2026-04-22@opawey.test`
+2. Navigate to `/agency/profile`
+3. Look for any editable form, input field, or Save button
+4. Look for a field showing the agency's discount rate (10%)
+**Expected:** (a) Agency can edit at minimum `agency_name`, `contact_name`, `contact_phone`, `contact_email`, `vat`, `website`, `phone` via a form with save button. (b) A read-only "Discount" field shows the partner's current discount percentage (10%) so the agency knows what rate they operate at.
+**Observed:** (a) All fields rendered as static `<p>` tags. No `<form>`, no `<input>`, no Save button. A note reads "Contact support to update." The agency partner has no self-service path to update any profile data — `agency_type`, `vat`, `phone`, `contact_name`, `contact_phone`, `contact_email`, `location`, `country`, `zip`, `website` all show "-" with no way to fill them in. (b) No discount field exists anywhere on the profile page — the agency cannot see their own commission/discount rate even as a read-only display. They must infer it from the Agency Price column in the reservations table.
+**Console / network errors:** none
+**Screenshot:** `qa/smoke-agency-profile.png`
+**Root cause:** `/agency/profile.astro` is a read-only display page, mirroring the pattern of `/hotel/profile` (F35) and `/driver/profile` (F27). The `discount` field from `public.partners` is fetched (`select('*')`) but never rendered in the profile template — it is only used in the reservations page for the price calculation.
+**Status:** open
+**Severity:** M — Agency partners cannot update their own profile. All contact/business fields are permanently "-" unless admin edits them. Additionally, the discount rate (the key commercial term of the agency relationship) is not shown on the profile, leaving the partner without a canonical place to see their pricing tier.
