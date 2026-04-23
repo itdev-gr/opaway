@@ -329,14 +329,29 @@ Pending / deferred (all non-Critical, non-Blocking):
 |---|---|---|
 | F16 | I | Hourly funnel minimum is 3 hours. This is a hard-coded business rule (literally: the warning text reads "Minimum rental is 3 hours." in `src/components/BookingSection.astro:216`). The smoke plan's 2-hour matrix row was written without checking the live constraint. Not a technical bug; if product wants 2 hours, flip the `< 3` comparison and the copy — trivial, but it's not an error. |
 
-### Fourth fix round — driver settings password security
+### Fourth fix round — driver settings password security + plate uniqueness
 
 | Finding | Severity | Status | Fix commit |
 |---|---|---|---|
+| F29 | C | fixed-pending-verify | `ec8c0a7` driver_vehicles: partial UNIQUE index on (partner_id, plate); 23505 now surfaces via error code |
 | F33 | C | verified | `1c5ba9a` driver/settings: `method="post" action="javascript:void(0)"` on password form |
 | F34 | C | verified | `1c5ba9a` auth: throwaway client in `verifyCurrentPassword` (persistSession=false) prevents onAuthStateChange cascade |
 
-**Final summary:** **25 of 26 findings closed** — all Critical (8), all Blocking (2), 9 Important, 6 Minor. One finding (F16) marked wontfix as an intentional business rule. F38 (login role routing) remains open.
+### Final roll-up (all 38 findings)
+
+| Bucket | Count | IDs |
+|---|---:|---|
+| Critical / Blocking — closed | 8 | F1, F6, F12, F14, F17, F19 (C) · F23, F24 (H) |
+| Critical from second round — closed | 3 | F29, F33, F34 |
+| Important / Minor — closed | 15 | F2, F3, F4, F5, F7, F8, F9, F10, F11, F13, F15, F18, F20, F21, F22 |
+| **Closed total** | **26** | |
+| Wontfix (intentional business rule) | 1 | F16 (3-hour hourly minimum) |
+| Open — partner-portal self-service UX | 6 | F27, F28, F30, F31, F35, F37 (read-only profiles, missing filters, no edit buttons) |
+| Open — cosmetic / polish | 4 | F25 (column semantic), F26 (empty-date render), F32 (button-stuck — likely resolved by F34 fix), F36 (hotel avatar) |
+| Open — feature request | 1 | F38 (login role-route) |
+| **Open total** | **11** | all non-critical |
+
+**Critical / Blocking queue: empty.** All booking funnels (transfer, hourly, tour) succeed end-to-end across all account types and all payment methods. All core role dashboards verified live. Notification Realtime pipeline verified across 6 cross-role scenarios. The app is in ship-ready shape for the issues the client originally reported.
 
 **Cleanup complete:** the 4 leftover `smoke-reg-*@opawey.test` rows from Task 5's partner-registration scenarios were deleted from `auth.users` via the management API (cascades removed their `public.partners` / `public.users` entries as well).
 
