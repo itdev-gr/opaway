@@ -108,7 +108,8 @@
       "Bash(rm -rf \"/Users/marios/Library/Caches/ms-playwright/mcp-chrome-8a6e2d4/Singleton\"*)",
       "Bash(disown)",
       "Bash(echo \"started, pid: $!\")",
-      "Bash(echo \"pid: $!\")"
+      "Bash(echo \"pid: $!\")",
+      "Bash(npx tsc *)"
     ]
   }
 }
