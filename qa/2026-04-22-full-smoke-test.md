@@ -2171,3 +2171,35 @@ End-to-end test bookings:
 | Build (`npm run build`) — 63 pages, 0 errors, 0 warnings | pass |
 
 No findings. Feature ready to merge.
+
+---
+
+### Section 23 — Hotel discount field in commission modal
+
+Branch: `feat/hotel-discount-field`
+Date: 2026-04-24
+Spec: `docs/superpowers/specs/2026-04-24-hotel-discount-field-design.md`
+Plan: `docs/superpowers/plans/2026-04-24-hotel-discount-field.md`
+Dev server: http://localhost:4322 (4321 was occupied by another local project)
+
+End-to-end test booking: transfer ref `FE322C4A` (`fe322c4a-dbef-4399-a042-6a1613207c17`), Athens → Piraeus Port, 2026-05-30 14:00, Sedan, cash on-site, `partner_id = b1262d59-e410-4666-b010-ea378a3c6229`.
+
+| Check | Result |
+|---|---|
+| Discount input renders below Legacy flat rate with top-border separator | pass |
+| Input attributes match spec (`type=number`, `step=0.01`, `min=0`, `max=100`, `placeholder=0`) | pass |
+| Helper text reads "Applied when the hotel books on Opawey. Does not reduce the commissions above." | pass |
+| Modal labels are exactly: Transfer, Rent by hour, Tour, Experience, Legacy flat rate (fallback), Discount (%) | pass |
+| Save persists `partners.discount = 10` (SQL-verified) | pass (`"discount":"10"`) |
+| Commission columns unchanged after discount save (`commission_transfer_eur=10.00`, `commission_hourly_eur=8.00`) | pass |
+| Hotel self-booking on `/book/transfer/results` shows "Partner discount: 10% applied" banner | pass |
+| Sedan price reduced from €70.00 → €63.00 (exactly 10%) in vehicle card + sidebar | pass |
+| Booked `transfers.total_price = 63` (SQL-verified, 10% off the €70 base) | pass |
+| Commission resolver (`resolveCommissionEur`) reads only commission columns — unaffected by discount column | pass (code-level guarantee + DB separation) |
+| Modal re-open after save loads the persisted value as "10.00" | pass |
+| Clearing discount input saves `null` (SQL-verified) | pass (`"discount":null`) |
+| Next hotel booking after clear shows NO "Partner discount" banner | pass |
+| Sedan price back to €70.00 (no discount applied) after clear | pass |
+| Build (`npm run build`) — 63 pages, 0 errors, 0 warnings | pass |
+
+No findings. Feature ready to merge.
