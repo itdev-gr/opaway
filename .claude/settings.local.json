@@ -105,7 +105,10 @@
       "Bash(export SB_PAT=$\\(cat .supabase-pat\\))",
       "Bash(export SB_SERVICE_ROLE_KEY=$\\(curl -s -H \"Authorization: Bearer $SB_PAT\" \"https://api.supabase.com/v1/projects/wjqfcijisslzqxesbbox/api-keys?reveal=true\")",
       "Bash(pkill -f \"mcp-chrome-8a6e2d4\")",
-      "Bash(rm -rf \"/Users/marios/Library/Caches/ms-playwright/mcp-chrome-8a6e2d4/Singleton\"*)"
+      "Bash(rm -rf \"/Users/marios/Library/Caches/ms-playwright/mcp-chrome-8a6e2d4/Singleton\"*)",
+      "Bash(disown)",
+      "Bash(echo \"started, pid: $!\")",
+      "Bash(echo \"pid: $!\")"
     ]
   }
 }
