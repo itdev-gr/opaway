@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import LuggageCounters from '../../components/LuggageCounters.astro';
 
 const vehicles = [
 	{
@@ -134,6 +135,10 @@ const vehicles = [
 						</div>
 					</div>
 
+					<div class="mb-5">
+						<LuggageCounters rootId="hourly-page-luggage" />
+					</div>
+
 					<!-- Form-level error banner -->
 					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
@@ -263,6 +268,7 @@ const vehicles = [
 
 	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
+	import { initLuggageCounters, getLuggageCounts } from '../../lib/luggage-counters';
 
 	const hourlyFormScope = document.getElementById('hourly-form');
 
@@ -273,6 +279,7 @@ const vehicles = [
 	]);
 
 	attachPlacesAutocomplete(document.getElementById('h-pickup') as HTMLInputElement | null);
+	initLuggageCounters('hourly-page-luggage');
 
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
 		clearFormErrors(hourlyFormScope);
@@ -317,6 +324,9 @@ const vehicles = [
 			hours: String(hours),
 			passengers: String(paxCount),
 		});
+		const hourlyLuggage = getLuggageCounts('hourly-page-luggage');
+		if (hourlyLuggage.small > 0) params.set('luggageSmall', String(hourlyLuggage.small));
+		if (hourlyLuggage.big   > 0) params.set('luggageBig',   String(hourlyLuggage.big));
 		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
 </script>
