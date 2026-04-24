@@ -1,0 +1,141 @@
+---
+// Admin-facing modal for configuring a hotel's per-booking-type
+// commissions. Driven by window.OpawayHotelCommission.open(partner),
+// where `partner` is the full row from public.partners.
+---
+
+<div id="hc-modal" class="fixed inset-0 z-[60] hidden">
+    <div id="hc-overlay" class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
+            <button type="button" id="hc-close" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 class="text-lg font-bold text-neutral-900 mb-1">Commission per booking</h3>
+            <p id="hc-partner" class="text-xs text-neutral-500 mb-5"></p>
+
+            <form id="hc-form" class="space-y-4">
+                <p class="text-xs text-neutral-500">Amount paid to this hotel per confirmed booking, in EUR. Leave blank to fall back to the legacy flat commission.</p>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Transfer</span>
+                        <input id="hc-transfer" type="number" step="0.01" min="0" placeholder="0.00"
+                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Rent by hour</span>
+                        <input id="hc-hourly" type="number" step="0.01" min="0" placeholder="0.00"
+                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Tour</span>
+                        <input id="hc-tour" type="number" step="0.01" min="0" placeholder="0.00"
+                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Experience</span>
+                        <input id="hc-experience" type="number" step="0.01" min="0" placeholder="0.00"
+                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Legacy flat rate (fallback)</span>
+                        <input id="hc-legacy" type="number" step="0.01" min="0" placeholder="0.00"
+                            class="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                    <p class="text-[11px] text-neutral-400 mt-1">Applied when a type-specific rate above is blank.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <span id="hc-status" class="mr-auto text-xs hidden"></span>
+                    <button type="button" id="hc-cancel" class="px-4 py-2 rounded-xl border border-neutral-200 text-neutral-700 text-sm font-semibold hover:bg-neutral-50">Cancel</button>
+                    <button type="submit" id="hc-save" class="px-4 py-2 rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold disabled:opacity-60">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    type PartnerRow = Record<string, any>;
+
+    const modal   = document.getElementById('hc-modal')!;
+    const overlay = document.getElementById('hc-overlay')!;
+    const closeX  = document.getElementById('hc-close')!;
+    const cancel  = document.getElementById('hc-cancel')!;
+    const form    = document.getElementById('hc-form') as HTMLFormElement;
+    const save    = document.getElementById('hc-save')  as HTMLButtonElement;
+    const status  = document.getElementById('hc-status')!;
+    const partnerLabel = document.getElementById('hc-partner')!;
+
+    const inputs = {
+        transfer:   document.getElementById('hc-transfer')   as HTMLInputElement,
+        hourly:     document.getElementById('hc-hourly')     as HTMLInputElement,
+        tour:       document.getElementById('hc-tour')       as HTMLInputElement,
+        experience: document.getElementById('hc-experience') as HTMLInputElement,
+        legacy:     document.getElementById('hc-legacy')     as HTMLInputElement,
+    };
+
+    let currentPartnerId: string | null = null;
+    let onSavedCallback: (() => void) | null = null;
+
+    function setStatus(msg: string, tone: 'info' | 'success' | 'error') {
+        status.textContent = msg;
+        status.className = `mr-auto text-xs ${tone === 'error' ? 'text-red-600' : tone === 'success' ? 'text-emerald-600' : 'text-[#0C6B95]'}`;
+        status.classList.remove('hidden');
+    }
+
+    function close() { modal.classList.add('hidden'); currentPartnerId = null; onSavedCallback = null; status.classList.add('hidden'); }
+
+    closeX.addEventListener('click', close);
+    cancel.addEventListener('click', close);
+    overlay.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentPartnerId) return;
+        save.disabled = true;
+        setStatus('Saving…', 'info');
+        const parse = (el: HTMLInputElement) => el.value.trim() === '' ? null : (parseFloat(el.value) || 0);
+        const { error } = await supabase.from('partners').update({
+            commission_transfer_eur:   parse(inputs.transfer),
+            commission_hourly_eur:     parse(inputs.hourly),
+            commission_tour_eur:       parse(inputs.tour),
+            commission_experience_eur: parse(inputs.experience),
+            commission_eur:            parse(inputs.legacy),
+        }).eq('id', currentPartnerId);
+        if (error) {
+            console.error('Commission save failed:', error);
+            setStatus(`[${error.code ?? 'err'}] ${error.message}`, 'error');
+            save.disabled = false;
+            return;
+        }
+        setStatus('Saved.', 'success');
+        save.disabled = false;
+        setTimeout(() => { onSavedCallback?.(); close(); }, 600);
+    });
+
+    (window as any).OpawayHotelCommission = {
+        open(partner: PartnerRow, onSaved?: () => void) {
+            currentPartnerId = partner.id;
+            onSavedCallback = onSaved ?? null;
+            partnerLabel.textContent = partner.hotel_name || partner.display_name || partner.email || 'Hotel';
+            const fmt = (v: any) => (v == null || v === '' || Number.isNaN(Number(v))) ? '' : String(Number(v).toFixed(2));
+            inputs.transfer.value   = fmt(partner.commission_transfer_eur);
+            inputs.hourly.value     = fmt(partner.commission_hourly_eur);
+            inputs.tour.value       = fmt(partner.commission_tour_eur);
+            inputs.experience.value = fmt(partner.commission_experience_eur);
+            inputs.legacy.value     = fmt(partner.commission_eur);
+            status.classList.add('hidden');
+            save.disabled = false;
+            modal.classList.remove('hidden');
+        },
+        close,
+    };
+</script>
