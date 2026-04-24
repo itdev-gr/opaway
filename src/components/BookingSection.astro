@@ -1,4 +1,5 @@
 ---
+import LuggageCounters from './LuggageCounters.astro';
 const vehicles = [
 	{
 		title: 'Sedan',
@@ -152,6 +153,10 @@ const vehicles = [
 						</div>
 					</div>
 
+					<div class="mb-5">
+						<LuggageCounters rootId="home-xfer-luggage" />
+					</div>
+
 					<!-- Form-level error banner -->
 					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
@@ -228,6 +233,10 @@ const vehicles = [
 							<button type="button" id="hourly-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers">−</button>
 							<button type="button" id="hourly-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
 						</div>
+					</div>
+
+					<div class="mb-5">
+						<LuggageCounters rootId="home-hourly-luggage" />
 					</div>
 
 					<!-- Form-level error banner -->
@@ -396,6 +405,7 @@ const vehicles = [
 import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
 import { supabase } from '../lib/supabase';
+import { initLuggageCounters, getLuggageCounts } from '../lib/luggage-counters';
 
 document.addEventListener('astro:page-load', () => {
 	// Only run on pages that actually contain the booking section
@@ -494,6 +504,10 @@ document.addEventListener('astro:page-load', () => {
 		hourlyCount++; if (hourlyCountEl) hourlyCountEl.textContent = String(hourlyCount);
 	});
 
+	// ── Luggage counters ──
+	initLuggageCounters('home-xfer-luggage');
+	initLuggageCounters('home-hourly-luggage');
+
 	// ── Tours participant counter ──
 	const toursCountEl = document.getElementById('tours-participant-count');
 	let toursCount = 2;
@@ -587,6 +601,9 @@ document.addEventListener('astro:page-load', () => {
 
 		const params = new URLSearchParams({ from, to, date, time, passengers });
 		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
+		const xferLuggage = getLuggageCounts('home-xfer-luggage');
+		if (xferLuggage.small > 0) params.set('luggageSmall', String(xferLuggage.small));
+		if (xferLuggage.big   > 0) params.set('luggageBig',   String(xferLuggage.big));
 		window.location.href = `/book/transfer/results?${params.toString()}`;
 	});
 
@@ -619,6 +636,9 @@ document.addEventListener('astro:page-load', () => {
 		}
 
 		const params = new URLSearchParams({ pickup, date, time, hours: String(hours), passengers });
+		const hourlyLuggage = getLuggageCounts('home-hourly-luggage');
+		if (hourlyLuggage.small > 0) params.set('luggageSmall', String(hourlyLuggage.small));
+		if (hourlyLuggage.big   > 0) params.set('luggageBig',   String(hourlyLuggage.big));
 		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
 
