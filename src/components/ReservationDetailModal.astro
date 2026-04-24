@@ -52,6 +52,7 @@
 			${field('Time', r.time)}
 			${field('Return', r.return_date ? `${r.return_date} ${r.return_time ?? ''}`.trim() : '')}
 			${field('Passengers', r.passengers)}
+			${field('Luggage', (r.luggage_small || r.luggage_big) ? `${r.luggage_small || 0} small · ${r.luggage_big || 0} big` : '')}
 			${field('Child seats', r.child_seats)}
 			${field('Vehicle', r.vehicle_name || r.vehicle_slug)}
 			${field('Hours', r.hours)}
