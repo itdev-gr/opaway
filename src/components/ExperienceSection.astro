@@ -5,17 +5,8 @@
 	<div class="max-w-6xl mx-auto">
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-			<!-- Left: Illustration -->
-			<div class="rounded-2xl overflow-hidden shadow-sm bg-white aspect-4/3 lg:aspect-auto lg:h-[480px]">
-				<img
-					src="/experience_image.avif"
-					alt="Experience illustration"
-					class="w-full h-full object-cover"
-				/>
-			</div>
-
-			<!-- Right: Content -->
-			<div class="flex flex-col">
+			<!-- Left: Content -->
+			<div class="flex flex-col order-2 lg:order-1">
 
 				<!-- Label -->
 				<div class="flex items-center gap-2 mb-5">
@@ -50,6 +41,16 @@
 				</div>
 
 			</div>
+
+			<!-- Right: Illustration -->
+			<div class="rounded-2xl overflow-hidden shadow-sm bg-white aspect-[4/3] lg:aspect-auto lg:h-[480px] order-1 lg:order-2">
+				<img
+					src="/experience_image.avif"
+					alt="Experience illustration"
+					class="w-full h-full object-cover"
+				/>
+			</div>
+
 		</div>
 	</div>
 </section>
