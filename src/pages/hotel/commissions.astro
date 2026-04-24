@@ -1,0 +1,272 @@
+---
+import HotelLayout from '../../components/HotelLayout.astro';
+---
+
+<HotelLayout pageTitle="Commissions" pageDescription="Income earned per booking kind." activeSection="commissions">
+
+	<div id="c-loading" class="flex items-center justify-center py-20">
+		<svg class="w-8 h-8 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+			<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+		</svg>
+	</div>
+
+	<div id="c-content" class="hidden space-y-8">
+
+		<!-- Summary cards -->
+		<section class="grid grid-cols-2 md:grid-cols-5 gap-4">
+			<div class="rounded-2xl border border-neutral-200 bg-white p-4 md:col-span-1">
+				<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Total earned</div>
+				<div id="c-total-earned" class="text-2xl font-bold text-emerald-600">€0.00</div>
+				<div class="text-[11px] text-neutral-400 mt-1">Completed rides</div>
+			</div>
+			<div class="rounded-2xl border border-neutral-200 bg-white p-4">
+				<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Transfers</div>
+				<div id="c-total-transfer" class="text-lg font-bold text-[#0C6B95]">€0.00</div>
+				<div id="c-count-transfer" class="text-[11px] text-neutral-400 mt-1">0 completed</div>
+			</div>
+			<div class="rounded-2xl border border-neutral-200 bg-white p-4">
+				<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Rent by hour</div>
+				<div id="c-total-hourly" class="text-lg font-bold text-[#0C6B95]">€0.00</div>
+				<div id="c-count-hourly" class="text-[11px] text-neutral-400 mt-1">0 completed</div>
+			</div>
+			<div class="rounded-2xl border border-neutral-200 bg-white p-4">
+				<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Tours</div>
+				<div id="c-total-tour" class="text-lg font-bold text-[#0C6B95]">€0.00</div>
+				<div id="c-count-tour" class="text-[11px] text-neutral-400 mt-1">0 completed</div>
+			</div>
+			<div class="rounded-2xl border border-neutral-200 bg-white p-4">
+				<div class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Experiences</div>
+				<div id="c-total-experience" class="text-lg font-bold text-[#0C6B95]">€0.00</div>
+				<div id="c-count-experience" class="text-[11px] text-neutral-400 mt-1">0 completed</div>
+			</div>
+		</section>
+
+		<!-- Monthly breakdown -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4 border-b border-neutral-100">
+				<h2 class="text-base font-semibold text-neutral-800">Monthly breakdown</h2>
+				<p class="text-xs text-neutral-500 mt-0.5">Completed rides only. Pending/cancelled excluded.</p>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm text-left">
+					<thead class="bg-neutral-50 border-b border-neutral-200">
+						<tr>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Month</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Transfers</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Rent by hour</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tours</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Experiences</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Total</th>
+						</tr>
+					</thead>
+					<tbody id="c-monthly-body" class="divide-y divide-neutral-100">
+						<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No completed bookings yet.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Ledger -->
+		<section class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4">
+				<h2 class="text-base font-semibold text-neutral-800">Recent commissions</h2>
+				<div class="flex items-center gap-2">
+					<select id="c-kind-filter" class="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs text-neutral-700 bg-white">
+						<option value="all">All kinds</option>
+						<option value="transfer">Transfers</option>
+						<option value="hourly">Rent by hour</option>
+						<option value="tour">Tours</option>
+						<option value="experience">Experiences</option>
+					</select>
+					<select id="c-status-filter" class="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs text-neutral-700 bg-white">
+						<option value="completed">Completed</option>
+						<option value="upcoming">Upcoming</option>
+						<option value="all">All</option>
+					</select>
+				</div>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm text-left">
+					<thead class="bg-neutral-50 border-b border-neutral-200">
+						<tr>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Kind</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Reference</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+							<th class="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Commission</th>
+						</tr>
+					</thead>
+					<tbody id="c-ledger-body" class="divide-y divide-neutral-100">
+						<tr><td colspan="5" class="px-6 py-10 text-center text-neutral-400">No commissions recorded.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+	</div>
+</HotelLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+	import { resolveCommissionEur, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
+
+	type LedgerRow = {
+		id: string;
+		kind: CommissionKind;
+		dateISO: string;
+		ref: string;
+		status: string;
+		commission: number;
+	};
+
+	const loadingEl = document.getElementById('c-loading');
+	const contentEl = document.getElementById('c-content');
+	const authCheck = document.getElementById('hotel-auth-check');
+
+	function waitForAuth(): Promise<void> {
+		return new Promise((resolve) => {
+			if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+			const obs = new MutationObserver(() => {
+				if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+			});
+			if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+		});
+	}
+
+	const money = (n: number) => `€${n.toFixed(2)}`;
+	const monthKey = (iso: string) => (iso ?? '').slice(0, 7);
+	const monthLabel = (key: string) => {
+		if (!key || key.length < 7) return '—';
+		const [y, m] = key.split('-');
+		const d = new Date(Number(y), Number(m) - 1, 1);
+		return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+	};
+	const isCompleted = (s: string | null | undefined) => s === 'completed';
+	const isUpcoming  = (s: string | null | undefined) => s === 'new' || s === 'assigned' || s === 'pickup' || s === 'onboard';
+
+	(async () => {
+		const { data: { session } } = await supabase.auth.getSession();
+		if (!session?.user) return;
+		const partnerId = session.user.id;
+		await waitForAuth();
+
+		const [{ data: partner }, transfersRes, toursRes, expsRes] = await Promise.all([
+			supabase.from('partners')
+				.select('commission_eur, commission_transfer_eur, commission_hourly_eur, commission_tour_eur, commission_experience_eur')
+				.eq('id', partnerId)
+				.maybeSingle(),
+			supabase.from('transfers').select('id, booking_type, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
+			supabase.from('tours').select('id, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
+			supabase.from('experiences').select('id, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
+		]);
+
+		const ledger: LedgerRow[] = [];
+		(transfersRes.data ?? []).forEach(r => ledger.push({
+			id: r.id,
+			kind: kindForTransferRow(r),
+			dateISO: r.date ?? '',
+			ref: String(r.id).slice(0, 8).toUpperCase(),
+			status: r.ride_status ?? '',
+			commission: resolveCommissionEur(partner, kindForTransferRow(r)),
+		}));
+		(toursRes.data ?? []).forEach(r => ledger.push({
+			id: r.id,
+			kind: 'tour',
+			dateISO: r.date ?? '',
+			ref: String(r.id).slice(0, 8).toUpperCase(),
+			status: r.ride_status ?? '',
+			commission: resolveCommissionEur(partner, 'tour'),
+		}));
+		(expsRes.data ?? []).forEach(r => ledger.push({
+			id: r.id,
+			kind: 'experience',
+			dateISO: r.date ?? '',
+			ref: String(r.id).slice(0, 8).toUpperCase(),
+			status: r.ride_status ?? '',
+			commission: resolveCommissionEur(partner, 'experience'),
+		}));
+
+		const byKind = { transfer: 0, hourly: 0, tour: 0, experience: 0 };
+		const countByKind = { transfer: 0, hourly: 0, tour: 0, experience: 0 };
+		ledger.forEach(r => {
+			if (isCompleted(r.status)) {
+				byKind[r.kind] += r.commission;
+				countByKind[r.kind] += 1;
+			}
+		});
+		const totalEarned = byKind.transfer + byKind.hourly + byKind.tour + byKind.experience;
+
+		const setText = (id: string, txt: string) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+		setText('c-total-earned',     money(totalEarned));
+		setText('c-total-transfer',   money(byKind.transfer));
+		setText('c-total-hourly',     money(byKind.hourly));
+		setText('c-total-tour',       money(byKind.tour));
+		setText('c-total-experience', money(byKind.experience));
+		setText('c-count-transfer',   `${countByKind.transfer} completed`);
+		setText('c-count-hourly',     `${countByKind.hourly} completed`);
+		setText('c-count-tour',       `${countByKind.tour} completed`);
+		setText('c-count-experience', `${countByKind.experience} completed`);
+
+		type MonthlyRow = { key: string; transfer: number; hourly: number; tour: number; experience: number };
+		const monthlyMap = new Map<string, MonthlyRow>();
+		ledger.forEach(r => {
+			if (!isCompleted(r.status)) return;
+			const key = monthKey(r.dateISO);
+			if (!key) return;
+			const existing = monthlyMap.get(key) ?? { key, transfer: 0, hourly: 0, tour: 0, experience: 0 };
+			existing[r.kind] += r.commission;
+			monthlyMap.set(key, existing);
+		});
+		const monthlyRows = Array.from(monthlyMap.values()).sort((a, b) => b.key.localeCompare(a.key));
+
+		const monthlyBody = document.getElementById('c-monthly-body')!;
+		if (monthlyRows.length === 0) {
+			monthlyBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No completed bookings yet.</td></tr>';
+		} else {
+			monthlyBody.innerHTML = monthlyRows.map(row => {
+				const total = row.transfer + row.hourly + row.tour + row.experience;
+				return `<tr class="hover:bg-neutral-50 transition-colors">
+					<td class="px-6 py-3 font-medium text-neutral-800">${monthLabel(row.key)}</td>
+					<td class="px-6 py-3 text-neutral-700">${money(row.transfer)}</td>
+					<td class="px-6 py-3 text-neutral-700">${money(row.hourly)}</td>
+					<td class="px-6 py-3 text-neutral-700">${money(row.tour)}</td>
+					<td class="px-6 py-3 text-neutral-700">${money(row.experience)}</td>
+					<td class="px-6 py-3 font-semibold text-emerald-700">${money(total)}</td>
+				</tr>`;
+			}).join('');
+		}
+
+		const kindFilter   = document.getElementById('c-kind-filter')   as HTMLSelectElement;
+		const statusFilter = document.getElementById('c-status-filter') as HTMLSelectElement;
+		const ledgerBody   = document.getElementById('c-ledger-body')!;
+
+		function renderLedger() {
+			const k = kindFilter.value;
+			const s = statusFilter.value;
+			const rows = ledger
+				.filter(r => k === 'all' || r.kind === k)
+				.filter(r => s === 'all' || (s === 'completed' && isCompleted(r.status)) || (s === 'upcoming' && isUpcoming(r.status)))
+				.sort((a, b) => (b.dateISO ?? '').localeCompare(a.dateISO ?? ''));
+			if (rows.length === 0) {
+				ledgerBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-neutral-400">No commissions recorded for this filter.</td></tr>';
+				return;
+			}
+			const kindLabel: Record<CommissionKind, string> = { transfer: 'Transfer', hourly: 'Rent by hour', tour: 'Tour', experience: 'Experience' };
+			ledgerBody.innerHTML = rows.map(r => `<tr class="hover:bg-neutral-50 transition-colors">
+				<td class="px-6 py-3 text-neutral-700">${r.dateISO || '—'}</td>
+				<td class="px-6 py-3"><span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full bg-neutral-100 text-neutral-700 uppercase tracking-wider">${kindLabel[r.kind]}</span></td>
+				<td class="px-6 py-3 font-mono text-xs text-neutral-700">${r.ref}</td>
+				<td class="px-6 py-3 text-neutral-600">${r.status || '—'}</td>
+				<td class="px-6 py-3 font-semibold ${isCompleted(r.status) ? 'text-emerald-700' : 'text-neutral-400'}">${money(r.commission)}</td>
+			</tr>`).join('');
+		}
+
+		kindFilter.addEventListener('change', renderLedger);
+		statusFilter.addEventListener('change', renderLedger);
+		renderLedger();
+
+		loadingEl?.classList.add('hidden');
+		contentEl?.classList.remove('hidden');
+	})();
+</script>
