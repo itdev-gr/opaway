@@ -254,6 +254,7 @@ import Layout from '../layouts/Layout.astro';
 	import { supabase } from '../lib/supabase';
 	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
+	import { renderImageCarouselHTML, initImageCarousels } from '../lib/image-carousel';
 
 	attachPlacesAutocomplete(document.getElementById('experience-pickup') as HTMLInputElement | null);
 
@@ -282,6 +283,7 @@ import Layout from '../layouts/Layout.astro';
 		title: string;
 		description: string;
 		image_url: string;
+		images?: string[];
 		duration: string;
 		highlight1: string;
 		highlight2: string;
@@ -314,17 +316,16 @@ import Layout from '../layouts/Layout.astro';
 					</div>`;
 			} else {
 				inner.innerHTML = docs.map((t, i) => {
+					const images = (Array.isArray(t.images) && t.images.length > 0)
+						? t.images
+						: (t.image_url ? [t.image_url] : []);
 					const highlights = [t.highlight1, t.highlight2, t.highlight3].filter(Boolean);
 					return `
 					<article data-experience-card class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
-						<div class="aspect-[16/9] overflow-hidden">
-							<img
-								src="${esc(t.image_url)}"
-								alt="${esc(t.title)}"
-								class="w-full h-full object-cover"
-								onerror="this.parentElement.style.background='#e5e7eb';this.style.display='none'"
-							/>
-						</div>
+						${renderImageCarouselHTML(images, {
+							alt: esc(t.title),
+							wrapperClass: 'aspect-[16/9] overflow-hidden',
+						})}
 						<div class="p-6 flex flex-col">
 							${t.duration ? `
 							<div class="flex items-center gap-2 mb-2">
@@ -349,6 +350,8 @@ import Layout from '../layouts/Layout.astro';
 						</div>
 					</article>`;
 				}).join('');
+
+				initImageCarousels(inner);
 
 				/* Init carousel */
 				const carousel  = inner.closest('[data-experience-carousel]')!;
@@ -421,16 +424,17 @@ import Layout from '../layouts/Layout.astro';
 			const catalogGrid    = document.getElementById('experiences-catalog-grid')!;
 
 			// Experiences are quote-only — no pricing shown on the public website.
-			catalogGrid.innerHTML = docs.map(t => `
+			catalogGrid.innerHTML = docs.map(t => {
+				const images = (Array.isArray(t.images) && t.images.length > 0)
+					? t.images
+					: (t.image_url ? [t.image_url] : []);
+				return `
 				<div class="group bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300">
-					<div class="aspect-[4/3] overflow-hidden bg-neutral-100">
-						<img
-							src="${esc(t.image_url)}"
-							alt="${esc(t.title)}"
-							class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-							onerror="this.parentElement.style.background='#f3f4f6';this.style.display='none'"
-						/>
-					</div>
+					${renderImageCarouselHTML(images, {
+						alt: esc(t.title),
+						wrapperClass: 'aspect-[4/3] overflow-hidden',
+						imgClass: 'transition-transform duration-500 group-hover:scale-105',
+					})}
 					<div class="p-6">
 						<h3 class="text-xl font-bold text-neutral-900 mb-2 leading-snug">${esc(t.title)}</h3>
 						<p class="text-neutral-500 text-sm leading-relaxed mb-5 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${esc(t.description)}</p>
@@ -444,7 +448,10 @@ import Layout from '../layouts/Layout.astro';
 							</svg>
 						</a>
 					</div>
-				</div>`).join('');
+				</div>`;
+			}).join('');
+
+			initImageCarousels(catalogGrid);
 
 			catalogSection.classList.remove('hidden');
 
