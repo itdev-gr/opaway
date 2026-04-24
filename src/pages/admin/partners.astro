@@ -1,6 +1,7 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
 import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
+import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 ---
 
 <AdminLayout pageTitle="Partners" pageDescription="All registered partner accounts." activeSection="partners">
@@ -84,6 +85,7 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 	</div>
 
 	<PartnerDetailModal />
+	<HotelCommissionModal />
 
 </AdminLayout>
 
@@ -233,9 +235,9 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 				<td class="px-6 py-3" id="status-cell-${p.uid}">${statusBadge(p.status)}</td>
 				<td class="px-6 py-3">
 					${p.type === 'hotel'
-						? `<span class="commission-eur-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit commission">
-							${p.commission_eur != null ? `<span class="text-emerald-700 font-semibold">&euro;${Number(p.commission_eur).toFixed(2)}</span>` : '<span class="text-neutral-300">—</span>'}
-						</span>`
+						? `<button type="button" data-hotel-commission="${p.uid}" class="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:border-[#0C6B95]/30 hover:bg-sky-50 transition-colors text-neutral-700 font-medium">
+							Configure
+						</button>`
 						: `<span class="discount-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg transition-colors" data-uid="${p.uid}" title="Click to edit discount">
 							${p.discount ? `<span class="text-emerald-700 font-semibold">${p.discount}%</span>` : '<span class="text-neutral-300">—</span>'}
 						</span>`
@@ -247,7 +249,7 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 
 		attachDropdownListeners();
 		attachDiscountListeners();
-		attachCommissionEurListeners();
+		attachHotelCommissionListeners();
 		attachRowClickListeners();
 	}
 
@@ -257,7 +259,7 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 			tr.addEventListener('click', (e) => {
 				const t = e.target as HTMLElement;
 				// Ignore clicks on inline-edit inputs, the actions dropdown, the discount/commission cells, and dropdown menus
-				if (t.closest('input, select, button, .discount-cell, .commission-eur-cell, .dd-trigger, .dd-menu, .dd-item, [role="menu"]')) return;
+				if (t.closest('input, select, button, [data-hotel-commission], .discount-cell, .dd-trigger, .dd-menu, .dd-item, [role="menu"]')) return;
 				const p = partnerRowsById.get(tr.dataset.partnerId!);
 				if (p) (window as any).OpawayPartnerDetail.open(p);
 			});
@@ -302,36 +304,15 @@ import PartnerDetailModal from '../../components/PartnerDetailModal.astro';
 		});
 	}
 
-	/* ── Commission EUR inline edit ── */
-	function attachCommissionEurListeners() {
-		document.querySelectorAll<HTMLElement>('.commission-eur-cell').forEach(span => {
-			span.addEventListener('click', () => {
-				const uid = span.dataset.uid!;
-				const currentTxt = span.textContent?.replace('€', '').trim() ?? '';
-				const currentVal = currentTxt === '—' ? '' : currentTxt;
-				span.innerHTML = `
-					<span class="inline-flex items-center gap-1">
-						<input type="number" step="0.01" min="0" value="${currentVal}"
-							class="w-24 px-2 py-1 border border-neutral-200 rounded text-sm" />
-						<button class="text-xs px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-200" data-save>Save</button>
-						<button class="text-xs px-2 py-1 bg-neutral-100 text-neutral-700 rounded border border-neutral-200" data-cancel>Cancel</button>
-					</span>`;
-				const input = span.querySelector('input') as HTMLInputElement;
-				const saveBtn = span.querySelector('[data-save]') as HTMLButtonElement;
-				const cancelBtn = span.querySelector('[data-cancel]') as HTMLButtonElement;
-				input.focus();
-				saveBtn.addEventListener('click', async (ev) => {
-					ev.stopPropagation();
-					const val = parseFloat(input.value);
-					const payload = { commission_eur: isNaN(val) ? null : val };
-					const { error } = await supabase.from('partners').update(payload).eq('id', uid);
-					if (error) { alert(`Save failed: ${error.message}`); return; }
-					await loadPartners();
-				});
-				cancelBtn.addEventListener('click', async (ev) => {
-					ev.stopPropagation();
-					await loadPartners();
-				});
+	/* ── Hotel commission Configure button ── */
+	function attachHotelCommissionListeners() {
+		document.querySelectorAll<HTMLButtonElement>('[data-hotel-commission]').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const id = btn.dataset.hotelCommission!;
+				const partner = partnerRowsById.get(id);
+				if (!partner) return;
+				(window as any).OpawayHotelCommission.open(partner, () => loadPartners());
 			});
 		});
 	}
