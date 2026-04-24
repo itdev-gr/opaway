@@ -237,7 +237,15 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<div class="border-t border-neutral-100 pt-4 space-y-2">
 							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
-							<div class="flex justify-between text-sm">
+							<div class="flex justify-between text-sm text-neutral-500">
+								<span>Tour</span>
+								<span id="sb-tour-subtotal">—</span>
+							</div>
+							<div id="sb-tickets-row" class="hidden flex justify-between text-sm text-neutral-500">
+								<span>Entrance tickets</span>
+								<span id="sb-tickets-subtotal">—</span>
+							</div>
+							<div class="flex justify-between text-sm pt-1 border-t border-neutral-100">
 								<span class="font-semibold text-neutral-900">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
@@ -301,6 +309,10 @@ import Layout from '../../../layouts/Layout.astro';
 	const driverNotes = params.get('driverNotes') || '';
 	const discount = params.get('discount') || '';
 	const hotelChoiceRaw = params.get('hotelChoice') || '';
+	const ticketCount = Math.max(0, parseInt(params.get('ticketCount') || '0', 10) || 0);
+	const ticketUnitPrice = Math.max(0, parseFloat(params.get('ticketUnitPrice') || '0') || 0);
+	const ticketsSubtotal = Math.round(ticketCount * ticketUnitPrice * 100) / 100;
+
 	const hotelChoice = (hotelChoiceRaw === 'self-book' || hotelChoiceRaw === 'include-booking') ? hotelChoiceRaw : null;
 	const bookingType = params.get('bookingType') || 'tour';
 
@@ -324,13 +336,20 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-time', time);
 	setText('sb-participants', participants);
 	setText('sb-vehicle-name', vehicleName);
-	setText('sb-total', `\u20AC ${totalPrice}`);
+	const tourSubtotalNumber = parseFloat(totalPrice) || 0;
+	setText('sb-tour-subtotal', `\u20AC ${tourSubtotalNumber.toFixed(2)}`);
+	if (ticketsSubtotal > 0) {
+		document.getElementById('sb-tickets-row')?.classList.remove('hidden');
+		setText('sb-tickets-subtotal', `\u20AC ${ticketsSubtotal.toFixed(2)}`);
+	}
+	const combinedBase = tourSubtotalNumber + ticketsSubtotal;
+	setText('sb-total', `\u20AC ${combinedBase.toFixed(2)}`);
 
 	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
 
 	/* ── Payment method state ── */
-	const baseTotal = parseFloat(totalPrice);
+	const baseTotal = (parseFloat(totalPrice) || 0) + ticketsSubtotal;
 	const cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
 	const cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
 	let selectedMethod = '';
@@ -431,6 +450,8 @@ import Layout from '../../../layouts/Layout.astro';
 				notes: driverNotes || null,
 				hotel_choice: hotelChoice,
 				total_price: finalTotal,
+				entrance_tickets_count: ticketCount,
+				entrance_tickets_total: ticketsSubtotal,
 				ride_status: 'new',
 				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
 				payment_method: paymentMethod,
