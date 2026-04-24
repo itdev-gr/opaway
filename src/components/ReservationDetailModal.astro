@@ -86,6 +86,7 @@
 			${field('Date', r.date)}
 			${field('Time', r.time)}
 			${field('Participants', r.participants ?? r.passengers)}
+			${field('Entrance tickets', (r.entrance_tickets_count || 0) > 0 ? `${r.entrance_tickets_count} × €${(Number(r.entrance_tickets_total) / Number(r.entrance_tickets_count)).toFixed(2)} = €${Number(r.entrance_tickets_total).toFixed(2)}` : '')}
 			${field('Vehicle', r.vehicle || r.vehicle_name)}
 			${field('Total price', money(r.total_price))}
 			${field('Payment method', r.payment_method)}
