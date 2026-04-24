@@ -20,7 +20,12 @@ const accounts = [
     { kind: 'hotel',    email: 'smoke-hotel-2026-04-22@opawey.test',   setup: async (uid) => {
         const { error } = await supa.from('partners').upsert({ id: uid, uid: uid, email: 'smoke-hotel-2026-04-22@opawey.test',
             type: 'hotel', status: 'approved', hotel_name: 'Smoke Hotel', display_name: 'Smoke Hotel',
-            commission_eur: 10.00, discount: 0 });
+            commission_eur:            10.00,
+            commission_transfer_eur:   10.00,
+            commission_hourly_eur:      8.00,
+            commission_tour_eur:       15.00,
+            commission_experience_eur: 12.00,
+            discount: 0 });
         if (error) throw error;
     }},
     { kind: 'agency',   email: 'smoke-agency-2026-04-22@opawey.test',  setup: async (uid) => {
