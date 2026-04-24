@@ -2138,3 +2138,36 @@ No findings. All 12 checks pass.
 **Note:** Playwright MCP browser context was unavailable throughout this session. Screenshots `qa/hc-admin-configure-btn.png`, `qa/hc-admin-detail-modal.png`, `qa/hc-hotel-commissions.png`, `qa/hc-hotel-reservations.png` were **not captured**. Verification was performed entirely via source-code inspection (5 source files audited) and Supabase management API SQL queries (7 queries executed). DB mutations during A3/A4 (tour 15→20→15) confirmed correct. All values restored to baseline on completion.
 
 **Verified: 25 / Regressed: 0 / New findings: 0 / Skipped: 0**
+
+---
+
+### Section 22 — Luggage counts on transfer + hourly wizards
+
+Branch: `feat/luggage-counts` (10 commits, tip `9c81ba0`)
+Date: 2026-04-24
+Dev server: http://localhost:4321 (Astro dev build)
+Verifier: Playwright MCP drove the funnels; Supabase Management API confirmed DB rows.
+
+End-to-end test bookings:
+- Transfer — ref `4F863B17` (`4f863b17-662f-4f52-8ccb-0b5fa7e16db2`), Athens → Piraeus, 2026-05-15 10:00, Sedan, cash on-site, **luggage_small=3, luggage_big=2, booking_type=transfer**
+- Hourly — ref `4660F968` (`4660f968-ab22-4834-b17f-5a3ac575e7ab`), Athens, 2026-05-20 09:00, 3h, Sedan, cash on-site, **luggage_small=1, luggage_big=4, booking_type=hourly**
+
+| Check | Result |
+|---|---|
+| `/book/transfer` widget renders LuggageCounters | pass |
+| `-` disabled at 0 on both Small and Big (transfer + hourly pages) | pass |
+| `+` clamps at max 20 on Small (spam 25 clicks → stays at 20, `+` disabled) | pass |
+| Transfer search URL carries `luggageSmall` / `luggageBig` | pass (`luggageSmall=3&luggageBig=2`) |
+| Passenger sidebar shows "N small · M big" summary (transfer) | pass (`3 small · 2 big`) |
+| Passenger → Payment URL forwards both params (transfer) | pass |
+| Payment saves `luggage_small` / `luggage_big` into transfers row (transfer) | pass (SQL-verified) |
+| Hourly funnel end-to-end saves luggage correctly | pass (SQL-verified: `luggage_small=1, luggage_big=4, booking_type=hourly`) |
+| Hourly passenger sidebar shows luggage row | pass (`1 small · 4 big`) |
+| Home widget Transfer tab → `/book/transfer/results` carries `luggageSmall` | pass (`luggageSmall=2`) |
+| Home widget Hourly tab → `/book/hourly/results` carries `luggageBig` | pass (`luggageBig=3`, no `luggageSmall` param when 0) |
+| Admin ReservationDetailModal shows Luggage row for new rows | pass (`Luggage 3 small · 2 big`) |
+| Admin ReservationDetailModal hides Luggage row on legacy 0/0 rows | pass (row from 2026-04-30 has no Luggage field in modal) |
+| Notes placeholder updated ("Special requests, dietary needs, accessibility requirements…") | pass |
+| Build (`npm run build`) — 63 pages, 0 errors, 0 warnings | pass |
+
+No findings. Feature ready to merge.
