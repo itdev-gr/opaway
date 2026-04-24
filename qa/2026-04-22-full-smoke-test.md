@@ -2203,3 +2203,35 @@ End-to-end test booking: transfer ref `FE322C4A` (`fe322c4a-dbef-4399-a042-6a161
 | Build (`npm run build`) — 63 pages, 0 errors, 0 warnings | pass |
 
 No findings. Feature ready to merge.
+
+---
+
+### Section 24 — Tour entrance tickets
+
+Branch: `feat/tour-entrance-tickets`
+Date: 2026-04-24
+Spec: `docs/superpowers/specs/2026-04-24-tour-entrance-tickets-design.md`
+Plan: `docs/superpowers/plans/2026-04-24-tour-entrance-tickets.md`
+Dev server: http://localhost:4322
+
+End-to-end test booking: tour ref `4C5F9869` (`4c5f9869-af3b-4c37-9b6f-f54bbf978339`), tour `Smoke Multi Day` @ €500.00 + 3 tickets × €12 = €536.00, cash on-site.
+
+| Check | Result |
+|---|---|
+| Zero-price tour (`DELPHI` @ €0) — entrance-tickets block stays hidden | pass |
+| Zero-price tour sidebar shows only Tour + Total (no tickets row) | pass |
+| Priced tour (€12) — block visible, "Include" pre-checked, count defaulted to 2 (1 × 2 pax) | pass |
+| Price label shows `€12.00 per ticket` | pass |
+| Sidebar shows Tour €500.00 row | pass |
+| Sidebar shows Entrance tickets €24.00 row | pass |
+| Sidebar Total shows €524.00 | pass |
+| Toggle "No tickets" — tickets row hides, Total back to €500.00, input hidden | pass |
+| Toggle back + set count=3 — tickets subtotal €36.00, Total €536.00 (live) | pass |
+| Continue → payment URL carries `ticketCount=3&ticketUnitPrice=12.00` | pass |
+| Payment sidebar breakdown: Tour €500.00 / Entrance tickets €36.00 / Total €536.00 | pass |
+| Booked tour row: `entrance_tickets_count=3`, `entrance_tickets_total=36`, `total_price=536` (SQL-verified) | pass |
+| Admin reservation modal shows `Entrance tickets 3 × €12.00 = €36.00` for new booking | pass |
+| Admin reservation modal hides Entrance tickets row on legacy 0-count booking (`Smoke Day Tour`) | pass |
+| Build (`npm run build`) — 63 pages, 0 errors, 0 warnings | pass |
+
+No findings. Feature ready to merge.
