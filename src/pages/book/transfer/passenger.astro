@@ -111,9 +111,9 @@ import Layout from '../../../layouts/Layout.astro';
 						<div class="border-t border-neutral-100 pt-6 mb-6">
 							<label class="block text-sm font-medium text-neutral-700 mb-1.5 flex items-center gap-1.5">
 								Driver notes (Outward)
-								<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-neutral-400 text-white text-[10px] font-bold cursor-help" title="Add luggage info, special requests, or other notes for your driver.">?</span>
+								<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-neutral-400 text-white text-[10px] font-bold cursor-help" title="Add any special requests or other notes for your driver.">?</span>
 							</label>
-							<textarea id="pax-notes" rows="4" placeholder="Luggage info, special requests... No sensitive data—add phone in next step."
+							<textarea id="pax-notes" rows="4" placeholder="Special requests, dietary needs, accessibility requirements... No sensitive data—add phone in next step."
 								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] resize-y"></textarea>
 						</div>
 
@@ -151,6 +151,12 @@ import Layout from '../../../layouts/Layout.astro';
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span id="sb-passengers">2</span> Passengers
 							</span>
+						</div>
+
+						<!-- Luggage -->
+						<div id="sb-luggage-row" class="hidden flex items-center justify-between text-sm">
+							<span class="text-neutral-500">Luggage</span>
+							<span class="text-neutral-800"><span id="sb-luggage-small">0</span> small &middot; <span id="sb-luggage-big">0</span> big</span>
 						</div>
 
 						<!-- Date -->
@@ -284,6 +290,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const passengers = params.get('passengers') || '2';
 	const returnDate = params.get('returnDate') || '';
 	const returnTime = params.get('returnTime') || '';
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 	const vehicleSlug = params.get('vehicleSlug') || '';
 	const vehicleName = params.get('vehicleName') || '';
 	const vehicleImage = params.get('vehicleImage') || '';
@@ -302,6 +310,11 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-date', date);
 	setText('sb-pickup-time', time);
 	setText('sb-passengers', passengers);
+	if (luggageSmall > 0 || luggageBig > 0) {
+		setText('sb-luggage-small', String(luggageSmall));
+		setText('sb-luggage-big',   String(luggageBig));
+		document.getElementById('sb-luggage-row')?.classList.remove('hidden');
+	}
 	setText('sb-trip-type', hasReturn ? 'Round trip' : 'One way');
 	setText('sb-vehicle-name', vehicleName);
 	setText('sb-vehicle-pax', `Up to ${vehicleMaxPax}`);
@@ -394,6 +407,8 @@ import Layout from '../../../layouts/Layout.astro';
 		});
 		if (returnDate) p.set('returnDate', returnDate);
 		if (returnTime) p.set('returnTime', returnTime);
+		if (luggageSmall > 0) p.set('luggageSmall', String(luggageSmall));
+		if (luggageBig   > 0) p.set('luggageBig',   String(luggageBig));
 
 		window.location.href = `/book/transfer/payment?${p.toString()}`;
 	});

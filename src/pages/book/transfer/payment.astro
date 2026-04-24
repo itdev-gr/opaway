@@ -330,6 +330,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const signName = params.get('signName') || '';
 	const childSeats = params.get('childSeats') || '0';
 	const driverNotes = params.get('driverNotes') || '';
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 	const hasReturn = !!returnDate;
 
 	/* ── Helpers ── */
@@ -469,6 +471,8 @@ import Layout from '../../../layouts/Layout.astro';
 				uid: user?.id || null,
 				booking_type: 'transfer',
 				partner_id: partnerId,
+				luggage_small: luggageSmall,
+				luggage_big: luggageBig,
 			}).select().single();
 
 			if (error) throw error;

@@ -278,6 +278,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const passengers = parseInt(params.get('passengers') || '2', 10);
 	const returnDate = params.get('returnDate') || '';
 	const returnTime = params.get('returnTime') || '';
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 	let hasReturn = !!returnDate;
 
 	/* ── Populate sidebar ── */
@@ -639,6 +641,8 @@ import Layout from '../../../layouts/Layout.astro';
 			p.set('returnDate', returnDate || date);
 			p.set('returnTime', returnTime || time);
 		}
+		if (luggageSmall > 0) p.set('luggageSmall', String(luggageSmall));
+		if (luggageBig   > 0) p.set('luggageBig',   String(luggageBig));
 
 		window.location.href = `/book/transfer/passenger?${p.toString()}`;
 	});
