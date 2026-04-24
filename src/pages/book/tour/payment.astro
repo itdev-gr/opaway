@@ -65,7 +65,15 @@ import Layout from '../../../layouts/Layout.astro';
 								<span class="text-neutral-500">Passenger</span>
 								<span class="font-medium text-neutral-800" id="os-passenger">—</span>
 							</div>
-							<div class="flex items-center justify-between text-sm border-t border-neutral-200 pt-2 mt-2">
+							<div class="flex items-center justify-between text-sm border-t border-neutral-200 pt-2 mt-2 text-neutral-500">
+								<span>Tour</span>
+								<span id="os-tour-subtotal">—</span>
+							</div>
+							<div id="os-tickets-row" class="hidden flex items-center justify-between text-sm text-neutral-500">
+								<span>Entrance tickets</span>
+								<span id="os-tickets-subtotal">—</span>
+							</div>
+							<div class="flex items-center justify-between text-sm border-t border-neutral-200 pt-2 mt-1">
 								<span class="font-bold text-neutral-900">Total</span>
 								<span class="font-bold text-xl text-[#0C6B95]" id="os-total">—</span>
 							</div>
@@ -319,6 +327,9 @@ import Layout from '../../../layouts/Layout.astro';
 	/* ── Helpers ── */
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
+	const tourSubtotalNumber = parseFloat(totalPrice) || 0;
+	const combinedBase = tourSubtotalNumber + ticketsSubtotal;
+
 	/* ── Populate order summary ── */
 	setText('os-tour-name', tourName);
 	setText('os-pickup', pickup);
@@ -327,7 +338,12 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('os-participants', participants);
 	setText('os-vehicle', vehicleName);
 	setText('os-passenger', `${firstName} ${lastName}`);
-	setText('os-total', `\u20AC${totalPrice}`);
+	setText('os-tour-subtotal', `\u20AC${tourSubtotalNumber.toFixed(2)}`);
+	if (ticketsSubtotal > 0) {
+		document.getElementById('os-tickets-row')?.classList.remove('hidden');
+		setText('os-tickets-subtotal', `\u20AC${ticketsSubtotal.toFixed(2)}`);
+	}
+	setText('os-total', `\u20AC${combinedBase.toFixed(2)}`);
 
 	/* ── Populate sidebar ── */
 	setText('sb-tour-name', tourName);
@@ -336,13 +352,11 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-time', time);
 	setText('sb-participants', participants);
 	setText('sb-vehicle-name', vehicleName);
-	const tourSubtotalNumber = parseFloat(totalPrice) || 0;
 	setText('sb-tour-subtotal', `\u20AC ${tourSubtotalNumber.toFixed(2)}`);
 	if (ticketsSubtotal > 0) {
 		document.getElementById('sb-tickets-row')?.classList.remove('hidden');
 		setText('sb-tickets-subtotal', `\u20AC ${ticketsSubtotal.toFixed(2)}`);
 	}
-	const combinedBase = tourSubtotalNumber + ticketsSubtotal;
 	setText('sb-total', `\u20AC ${combinedBase.toFixed(2)}`);
 
 	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
