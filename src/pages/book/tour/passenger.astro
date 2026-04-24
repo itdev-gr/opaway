@@ -100,6 +100,35 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 						</div>
 
+						<!-- Entrance tickets (shown only when the catalog row has a non-zero price) -->
+						<div id="entrance-tickets-block" class="border-t border-neutral-100 pt-6 mb-6 hidden">
+							<div class="flex items-baseline justify-between mb-3">
+								<p class="block text-sm font-medium text-neutral-700">Entrance tickets</p>
+								<span id="et-unit-price" class="text-xs text-neutral-500">—</span>
+							</div>
+							<div class="flex flex-col gap-2 mb-4" role="radiogroup" aria-label="Entrance tickets choice">
+								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
+									<input type="radio" name="tickets-choice" value="include" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" checked />
+									<span class="flex-1">
+										<span class="block text-sm font-medium text-neutral-800">Include entrance tickets</span>
+										<span class="block text-xs text-neutral-500 mt-0.5">We'll add the tickets to your total and pre-arrange them.</span>
+									</span>
+								</label>
+								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
+									<input type="radio" name="tickets-choice" value="skip" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
+									<span class="flex-1">
+										<span class="block text-sm font-medium text-neutral-800">No tickets needed</span>
+										<span class="block text-xs text-neutral-500 mt-0.5">You'll arrange tickets on your own.</span>
+									</span>
+								</label>
+							</div>
+							<div id="et-count-wrap" class="flex items-center gap-3">
+								<label for="et-count" class="text-sm text-neutral-600">Number of tickets</label>
+								<input id="et-count" type="number" min="0" max="99" step="1" value="0" class="w-24 px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+								<span class="text-sm text-neutral-500 ml-auto">Subtotal: <span id="et-subtotal" class="font-semibold text-neutral-800">€0.00</span></span>
+							</div>
+						</div>
+
 						<!-- Special Requests -->
 						<div class="border-t border-neutral-100 pt-6 mb-6">
 							<label class="block text-sm font-medium text-neutral-700 mb-1.5 flex items-center gap-1.5">
@@ -181,7 +210,15 @@ import Layout from '../../../layouts/Layout.astro';
 						<!-- Price details -->
 						<div class="border-t border-neutral-100 pt-4 space-y-2">
 							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
-							<div class="flex justify-between text-sm">
+							<div class="flex justify-between text-sm text-neutral-500">
+								<span>Tour</span>
+								<span id="sb-tour-subtotal">—</span>
+							</div>
+							<div id="sb-tickets-row" class="hidden flex justify-between text-sm text-neutral-500">
+								<span>Entrance tickets</span>
+								<span id="sb-tickets-subtotal">—</span>
+							</div>
+							<div class="flex justify-between text-sm pt-1 border-t border-neutral-100">
 								<span class="font-semibold text-neutral-900">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
@@ -246,22 +283,41 @@ import Layout from '../../../layouts/Layout.astro';
 	const totalPrice = params.get('totalPrice') || '0';
 	const discount = params.get('discount') || '';
 
-	/* ── Reveal hotel-option block when the catalog row opts in ── */
+	let ticketUnitPrice = 0;
+	let ticketDefaultCount = 0;
+	let tourSubtotal = parseFloat(totalPrice) || 0;
+
+	/* ── Reveal hotel-option + entrance-tickets blocks when the catalog row opts in ── */
 	(async () => {
 		if (!tourId) return;
 		const { data: tourRow } = await supabase
 			.from('tours_catalog')
-			.select('category, hotel_option')
+			.select('category, hotel_option, entrance_ticket_per_person, entrance_ticket_count')
 			.eq('id', tourId)
 			.maybeSingle();
 		if (!tourRow) return;
+
+		// Hotel option (unchanged behavior)
 		const wantsHotel = tourRow.hotel_option === 'self-book' || tourRow.hotel_option === 'include-booking';
 		if (wantsHotel) {
 			document.getElementById('hotel-option-block')?.classList.remove('hidden');
-			// Default-select the catalog's preferred option so the form is never
-			// left empty on Continue.
 			const radio = document.querySelector<HTMLInputElement>(`input[name="hotel-choice"][value="${tourRow.hotel_option}"]`);
 			if (radio) radio.checked = true;
+		}
+
+		// Entrance tickets
+		ticketUnitPrice = Number(tourRow.entrance_ticket_per_person ?? 0) || 0;
+		const perPerson = Number(tourRow.entrance_ticket_count ?? 0) || 0;
+		const pax = parseInt(participants, 10) || 1;
+		ticketDefaultCount = perPerson > 0 ? perPerson * pax : pax;
+
+		if (ticketUnitPrice > 0) {
+			const block = document.getElementById('entrance-tickets-block');
+			block?.classList.remove('hidden');
+			setText('et-unit-price', `€${ticketUnitPrice.toFixed(2)} per ticket`);
+			const countInput = document.getElementById('et-count') as HTMLInputElement;
+			countInput.value = String(ticketDefaultCount);
+			recomputeTicketsAndSidebar();
 		}
 	})();
 
@@ -274,7 +330,39 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-time', time);
 	setText('sb-participants', participants);
 	setText('sb-vehicle-name', vehicleName);
-	setText('sb-total', `\u20AC ${totalPrice}`);
+	setText('sb-tour-subtotal', `€ ${tourSubtotal.toFixed(2)}`);
+	setText('sb-total', `€ ${tourSubtotal.toFixed(2)}`);
+
+	/* ── Recompute tickets subtotal + sidebar Total live ── */
+	function recomputeTicketsAndSidebar() {
+		const includeRadio = document.querySelector<HTMLInputElement>('input[name="tickets-choice"][value="include"]');
+		const countInput = document.getElementById('et-count') as HTMLInputElement | null;
+		const countWrap = document.getElementById('et-count-wrap');
+		const wantsTickets = includeRadio?.checked === true;
+		const count = wantsTickets ? Math.max(0, parseInt(countInput?.value || '0', 10) || 0) : 0;
+		const subtotal = count * ticketUnitPrice;
+
+		if (countWrap) countWrap.classList.toggle('hidden', !wantsTickets);
+		setText('et-subtotal', `€${subtotal.toFixed(2)}`);
+
+		const ticketsRow = document.getElementById('sb-tickets-row');
+		ticketsRow?.classList.toggle('hidden', count === 0);
+		setText('sb-tickets-subtotal', `€ ${subtotal.toFixed(2)}`);
+		setText('sb-total', `€ ${(tourSubtotal + subtotal).toFixed(2)}`);
+	}
+
+	document.addEventListener('change', (e) => {
+		const target = e.target as HTMLElement;
+		if (target instanceof HTMLInputElement && (target.name === 'tickets-choice' || target.id === 'et-count')) {
+			recomputeTicketsAndSidebar();
+		}
+	});
+	document.addEventListener('input', (e) => {
+		const target = e.target as HTMLElement;
+		if (target instanceof HTMLInputElement && target.id === 'et-count') {
+			recomputeTicketsAndSidebar();
+		}
+	});
 
 	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
@@ -338,6 +426,15 @@ import Layout from '../../../layouts/Layout.astro';
 		});
 		if (discount) p.set('discount', discount);
 		if (hotelChoice) p.set('hotelChoice', hotelChoice);
+
+		const includeRadio = document.querySelector<HTMLInputElement>('input[name="tickets-choice"][value="include"]');
+		const countInput = document.getElementById('et-count') as HTMLInputElement | null;
+		const ticketCount = (includeRadio?.checked && countInput) ? Math.max(0, parseInt(countInput.value || '0', 10) || 0) : 0;
+
+		if (ticketCount > 0 && ticketUnitPrice > 0) {
+			p.set('ticketCount', String(ticketCount));
+			p.set('ticketUnitPrice', ticketUnitPrice.toFixed(2));
+		}
 
 		window.location.href = `/book/tour/payment?${p.toString()}`;
 	});
