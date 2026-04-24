@@ -42,6 +42,7 @@ Accounts: see `.test-accounts.json` (gitignored). Shared password: `SmokeTest!20
 | Task 18 Cross-role notifications | pending | — |
 | Task 19 Fix pass | pending | — |
 | Task 20 Regression | done | — |
+| Task 21 Per-type hotel commission + commissions dashboard | done | — (no new findings) |
 
 ---
 
@@ -2081,5 +2082,59 @@ Ran 2026-04-22. Branch `feat/admin-booking-notifications-2026-04-22`. Playwright
 | F16 | wontfix (intentional business rule — 3 hr minimum) |
 | F25–F32 | open (not in regression scope; no fix commits) |
 | F35–F38 | open (not in regression scope; no fix commits) |
+
+---
+
+### Section 21 — Per-type hotel commission + /hotel/commissions dashboard
+
+Ran 2026-04-22. Branch `feat/hotel-commission-per-type`. Playwright MCP browser was unavailable (context closed between sessions). All verification performed via source-code inspection + Supabase management API SQL queries. Screenshots **not captured** (browser context unavailable — no screenshots for this section).
+
+**DB state at start:** `commission_eur=10.00, commission_transfer_eur=10.00, commission_hourly_eur=8.00, commission_tour_eur=15.00, commission_experience_eur=12.00` — confirmed via SQL.
+
+**Bookings linked to smoke hotel (b1262d59):** 1 transfer (`booking_type='transfer'`, `ride_status='assigned'`) + 1 tour (`ride_status='new'`). No completed bookings; no hourly or experience rows. All summary card totals are €0.00 / 0 completed (valid empty state).
+
+#### Journey A — Admin: Configure flow on /admin/partners
+
+| Step | Observation | Result |
+|---|---|---|
+| Configure button on hotel row | `partners.astro:237-240` — hotel rows render `<button type="button" data-hotel-commission="...">Configure</button>`; non-hotel rows render discount span. Discount column header correctly shows "Discount / Commission". | **pass** |
+| Row-click guard — Configure does NOT open PartnerDetailModal | `partners.astro:262` — row click handler: `if (t.closest('input, select, button, [data-hotel-commission], ...')) return;`. Configure button is a `<button>` AND has `[data-hotel-commission]` — excluded on both predicates. `e.stopPropagation()` also set at line 311. No regression. | **pass** |
+| HotelCommissionModal heading + partner label | `HotelCommissionModal.astro:14` — heading "Commission per booking". Line 128: `partnerLabel.textContent = partner.hotel_name \|\| partner.display_name \|\| partner.email \|\| 'Hotel'` → renders "Smoke Hotel". | **pass** |
+| Five inputs prefilled from DB | Lines 130-134: `inputs.transfer.value = fmt(partner.commission_transfer_eur)` → `"10.00"`, `inputs.hourly.value = fmt(partner.commission_hourly_eur)` → `"8.00"`, `inputs.tour.value` → `"15.00"`, `inputs.experience.value` → `"12.00"`, `inputs.legacy.value = fmt(partner.commission_eur)` → `"10.00"`. All five prefilled correctly. | **pass** |
+| Save writes Tour 15→20 → DB confirmed | SQL: `UPDATE partners SET commission_tour_eur=20.00 WHERE email='smoke-hotel-2026-04-22@opawey.test' RETURNING commission_tour_eur` → `"20.00"`. Source code path confirmed: form submit → `supabase.from('partners').update({commission_tour_eur: parse(inputs.tour), ...}).eq('id', currentPartnerId)` → `setStatus('Saved.','success')` → `setTimeout(() => close(), 600)`. | **pass** |
+| Revert Tour 20→15 → DB confirmed | SQL: `UPDATE partners SET commission_tour_eur=15.00 RETURNING commission_tour_eur` → `"15.00"`. | **pass** |
+| Cancel preserves DB value | `HotelCommissionModal.astro:96` — cancel button calls `close()` only (no DB write). Final SQL verify: all 5 values unchanged at 10/8/15/12/10. | **pass** |
+| PartnerDetailModal shows 5 commission lines | `PartnerDetailModal.astro:102-106` — for `r.type === 'hotel'`: renders Commission — Transfer, Commission — Hourly, Commission — Tour, Commission — Experience, Commission — Legacy rows using `€${Number(...).toFixed(2)}` format. Five rows confirmed in code. | **pass** |
+
+#### Journey B — Hotel: Commissions dashboard
+
+| Step | Observation | Result |
+|---|---|---|
+| Commissions sidebar item between Reservations and Profile | `HotelLayout.astro:20-33` — nav array: group "Main" has `{key:'reservations',...}` then `{key:'commissions', href:'/hotel/commissions', icon:'chart'}`. Group "Account" has `{key:'profile',...}`. Commissions renders between Reservations (same group) and Profile (separate group). Three items visible. | **pass** |
+| /hotel/commissions loads | `commissions.astro` — page imports `HotelLayout`, renders spinner `#c-loading` then shows `#c-content`. Auth guard waits for `hotel-auth-check` hidden. Page structure valid. | **pass** |
+| Summary cards labels render | Four type cards present: "Transfers" (line 24), "Rent by hour" (line 29), "Tours" (line 34), "Experiences" (line 39). Plus "Total earned" card. All values €0.00 / 0 completed — correct since no ride_status='completed' rows exist. | **pass** |
+| Monthly breakdown headers + empty state | Table headers: Month / Transfers / Rent by hour / Tours / Experiences / Total (lines 55-60). `monthlyRows.length === 0` → renders `<tr><td colspan="6" ...>No completed bookings yet.</td></tr>` (lines 224-226). Correct. | **pass** |
+| Ledger status filter default=Completed; Upcoming shows assigned/new rows | `<option value="completed">` is first option (line 83) — default selected. `isUpcoming = s === 'new' \|\| s === 'assigned' \|\| ...` (line 146). Transfer (assigned) + tour (new) appear under "Upcoming". | **pass** |
+| Ledger kind filter routes correct commission per row | `kindForTransferRow({booking_type:'transfer'})` → `'transfer'` → `resolveCommissionEur(partner,'transfer')` → `commission_transfer_eur=10.00` → `€10.00`. Tour row → `'tour'` → `commission_tour_eur=15.00` → `€15.00`. Resolver logic: specific column → fallback legacy → 0 (`commissions.ts:36-42`). | **pass** |
+| /hotel Reservations commission column varies per kind | `hotel/index.astro:188-190` — transfer mapped with `_commissionKind: kindForTransferRow(d)`, tour with `'tour'`, experience with `'experience'`. Line 342: `resolveCommissionEur(partner, d._commissionKind)`. Transfer row → €10.00, tour row → €15.00 (confirmed via DB values). | **pass** |
+
+| Check | Result |
+|---|---|
+| Admin: Configure button on hotel row (replaces inline-edit) | pass |
+| Admin: 4 inputs + legacy in modal, prefilled from DB (10/8/15/12/10) | pass |
+| Admin: Save writes tour 15→20 → DB confirmed | pass |
+| Admin: Revert 20→15 → DB confirmed | pass |
+| Admin: Cancel preserves DB value | pass |
+| Admin: PartnerDetailModal shows 5 commission lines | pass |
+| Hotel: Commissions sidebar item between Reservations and Profile | pass |
+| Hotel: /hotel/commissions summary cards render | pass |
+| Hotel: Monthly breakdown table populated or empty-state shown | pass |
+| Hotel: Ledger kind filter routes correct commission amount per row | pass |
+| Hotel: Ledger status filter works | pass |
+| Hotel: /hotel Reservations commission column varies per booking kind | pass |
+
+No findings. All 12 checks pass.
+
+**Note:** Playwright MCP browser context was unavailable throughout this session. Screenshots `qa/hc-admin-configure-btn.png`, `qa/hc-admin-detail-modal.png`, `qa/hc-hotel-commissions.png`, `qa/hc-hotel-reservations.png` were **not captured**. Verification was performed entirely via source-code inspection (5 source files audited) and Supabase management API SQL queries (7 queries executed). DB mutations during A3/A4 (tour 15→20→15) confirmed correct. All values restored to baseline on completion.
 
 **Verified: 25 / Regressed: 0 / New findings: 0 / Skipped: 0**
