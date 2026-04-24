@@ -49,6 +49,15 @@
                     <p class="text-[11px] text-neutral-400 mt-1">Applied when a type-specific rate above is blank.</p>
                 </div>
 
+                <div class="pt-4 border-t border-neutral-200">
+                    <label class="block">
+                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Discount (%)</span>
+                        <input id="hc-discount" type="number" step="0.01" min="0" max="100" placeholder="0"
+                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                    </label>
+                    <p class="text-[11px] text-neutral-400 mt-1">Applied when the hotel books on Opawey. Does not reduce the commissions above.</p>
+                </div>
+
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <span id="hc-status" class="mr-auto text-xs hidden"></span>
                     <button type="button" id="hc-cancel" class="px-4 py-2 rounded-xl border border-neutral-200 text-neutral-700 text-sm font-semibold hover:bg-neutral-50">Cancel</button>
@@ -79,6 +88,7 @@
         tour:       document.getElementById('hc-tour')       as HTMLInputElement,
         experience: document.getElementById('hc-experience') as HTMLInputElement,
         legacy:     document.getElementById('hc-legacy')     as HTMLInputElement,
+        discount:   document.getElementById('hc-discount')   as HTMLInputElement,
     };
 
     let currentPartnerId: string | null = null;
@@ -109,6 +119,7 @@
             commission_tour_eur:       parse(inputs.tour),
             commission_experience_eur: parse(inputs.experience),
             commission_eur:            parse(inputs.legacy),
+            discount:                  parse(inputs.discount),
         }).eq('id', currentPartnerId);
         if (error) {
             console.error('Commission save failed:', error);
@@ -132,6 +143,7 @@
             inputs.tour.value       = fmt(partner.commission_tour_eur);
             inputs.experience.value = fmt(partner.commission_experience_eur);
             inputs.legacy.value     = fmt(partner.commission_eur);
+            inputs.discount.value   = fmt(partner.discount);
             status.classList.add('hidden');
             save.disabled = false;
             modal.classList.remove('hidden');
