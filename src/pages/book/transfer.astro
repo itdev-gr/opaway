@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import LuggageCounters from '../../components/LuggageCounters.astro';
 
 const vehicles = [
 	{
@@ -162,6 +163,10 @@ const vehicles = [
 							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers">−</button>
 							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
 						</div>
+					</div>
+
+					<div class="mb-5">
+						<LuggageCounters rootId="xfer-page-luggage" />
 					</div>
 
 					<!-- Form-level error banner -->
@@ -334,6 +339,7 @@ const vehicles = [
 	// See prices navigation
 	import { showFieldError, clearFormErrors, wireAutoClear } from '../../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
+	import { initLuggageCounters, getLuggageCounts } from '../../lib/luggage-counters';
 
 	const transferFormScope = document.getElementById('transfer-form');
 
@@ -347,6 +353,7 @@ const vehicles = [
 
 	attachPlacesAutocomplete(document.getElementById('tf-from') as HTMLInputElement | null);
 	attachPlacesAutocomplete(document.getElementById('tf-to') as HTMLInputElement | null);
+	initLuggageCounters('xfer-page-luggage');
 
 	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
 		clearFormErrors(transferFormScope);
@@ -392,6 +399,9 @@ const vehicles = [
 
 		const params = new URLSearchParams({ from, to, date, time, passengers });
 		if (returnDate) { params.set('returnDate', returnDate); params.set('returnTime', returnTime); }
+		const pageLuggage = getLuggageCounts('xfer-page-luggage');
+		if (pageLuggage.small > 0) params.set('luggageSmall', String(pageLuggage.small));
+		if (pageLuggage.big   > 0) params.set('luggageBig',   String(pageLuggage.big));
 		window.location.href = `/book/transfer/results?${params.toString()}`;
 	});
 </script>
