@@ -133,6 +133,10 @@ import Layout from '../../../layouts/Layout.astro';
 								<span class="text-neutral-500">Duration</span>
 								<span id="sb-hours" class="font-medium text-neutral-700">—</span>
 							</div>
+							<div id="sb-luggage-row" class="hidden flex justify-between">
+								<span class="text-neutral-500">Luggage</span>
+								<span class="font-medium text-neutral-700"><span id="sb-luggage-small">0</span> small &middot; <span id="sb-luggage-big">0</span> big</span>
+							</div>
 						</div>
 
 						<!-- Vehicle -->
@@ -199,6 +203,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const vehicleImage = params.get('vehicleImage') || '';
 	const totalPrice = params.get('totalPrice') || '0';
 	const perHour = params.get('perHour') || '0';
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
@@ -207,6 +213,11 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-time', time);
 	setText('sb-hours', `${hours} hours`);
 	setText('sb-passengers', passengers);
+	if (luggageSmall > 0 || luggageBig > 0) {
+		setText('sb-luggage-small', String(luggageSmall));
+		setText('sb-luggage-big',   String(luggageBig));
+		document.getElementById('sb-luggage-row')?.classList.remove('hidden');
+	}
 	setText('sb-vehicle-name', vehicleName);
 	setText('sb-total', `\u20AC ${totalPrice}`);
 	setText('sb-rate', `\u20AC${perHour}/hour \u00D7 ${hours}h`);
@@ -259,6 +270,8 @@ import Layout from '../../../layouts/Layout.astro';
 			firstName, lastName, email, phone, driverNotes,
 			bookingType: 'hourly',
 		});
+		if (luggageSmall > 0) p.set('luggageSmall', String(luggageSmall));
+		if (luggageBig   > 0) p.set('luggageBig',   String(luggageBig));
 		window.location.href = `/book/hourly/payment?${p.toString()}`;
 	});
 </script>

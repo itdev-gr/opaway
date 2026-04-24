@@ -209,6 +209,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const time = params.get('time') || '';
 	const hours = parseInt(params.get('hours') || '3', 10);
 	const passengers = parseInt(params.get('passengers') || '2', 10);
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 
 	/* ── Populate sidebar & summary ── */
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
@@ -388,6 +390,8 @@ import Layout from '../../../layouts/Layout.astro';
 			bookingType: 'hourly',
 		});
 		if (partnerDiscount > 0) p.set('discount', String(partnerDiscount));
+		if (luggageSmall > 0) p.set('luggageSmall', String(luggageSmall));
+		if (luggageBig   > 0) p.set('luggageBig',   String(luggageBig));
 
 		window.location.href = `/book/hourly/passenger?${p.toString()}`;
 	});

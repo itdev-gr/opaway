@@ -239,6 +239,8 @@ import Layout from '../../../layouts/Layout.astro';
 	const email = params.get('email') || '';
 	const phone = params.get('phone') || '';
 	const driverNotes = params.get('driverNotes') || '';
+	const luggageSmall = parseInt(params.get('luggageSmall') || '0', 10) || 0;
+	const luggageBig   = parseInt(params.get('luggageBig')   || '0', 10) || 0;
 
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
@@ -353,6 +355,8 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_token: paymentToken || null,
 				uid: user?.id || null,
 				partner_id: partnerId,
+				luggage_small: luggageSmall,
+				luggage_big: luggageBig,
 			}).select().single();
 
 			if (error) throw error;
