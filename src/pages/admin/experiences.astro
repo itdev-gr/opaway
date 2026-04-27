@@ -150,7 +150,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { fetchApprovedDrivers, renderDriverOptionsHTML, type DriverOption } from '../../lib/driver-options';
+	import { fetchApprovedDrivers, renderDriverOptionsHTML, handleDriverAssignmentChange, type DriverOption } from '../../lib/driver-options';
 
 	const rowsById = new Map<string, any>();
 	let driverOptionsCache: DriverOption[] = [];
@@ -327,31 +327,14 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 	document.getElementById('experiences-tbody')?.addEventListener('change', async (e) => {
 		const sel = e.target as HTMLSelectElement;
 		if (!sel.classList.contains('driver-select')) return;
-
-		const docId = sel.dataset.id!;
-		const newDriverUid = sel.value;
-		const newDriverName = newDriverUid
-			? (driverOptionsCache.find(d => d.id === newDriverUid)?.fullName ?? '')
-			: '';
-
-		const update = newDriverUid
-			? { driver_uid: newDriverUid, driver: newDriverName, ride_status: 'assigned' }
-			: { driver_uid: '', driver: '', ride_status: 'new' };
-
-		const { error } = await supabase.from('experiences').update(update).eq('id', docId);
-		if (error) {
-			console.error('Experience driver assignment failed:', error);
-			alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
-			await loadExperiences();
-			return;
-		}
-
-		const row = rowsById.get(docId);
-		if (row) {
-			row.driver_uid = update.driver_uid;
-			row.driver = update.driver;
-			row.ride_status = update.ride_status;
-		}
+		await handleDriverAssignmentChange({
+			selectEl: sel,
+			table: 'experiences',
+			drivers: driverOptionsCache,
+			rowsById,
+			applyRideStatusColor,
+			reload: loadExperiences,
+		});
 	});
 
 	/* ── Modal ── */
