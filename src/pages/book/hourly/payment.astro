@@ -12,19 +12,19 @@ import Layout from '../../../layouts/Layout.astro';
 					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 					</span>
-					<span class="text-sm font-medium text-emerald-600" data-i18n-el="Όχημα">Vehicle</span>
+					<span class="text-sm font-medium text-emerald-600" data-i18n-el="Όχημα" data-i18n-es="Vehículo">Vehicle</span>
 				</div>
 				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
 				<div class="flex items-center gap-2">
 					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 					</span>
-					<span class="text-sm font-medium text-emerald-600" data-i18n-el="Επιβάτης">Passenger</span>
+					<span class="text-sm font-medium text-emerald-600" data-i18n-el="Επιβάτης" data-i18n-es="Pasajero">Passenger</span>
 				</div>
 				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
 				<div class="flex items-center gap-2">
 					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">3</span>
-					<span class="text-sm font-semibold text-[#0C6B95]" data-i18n-el="Πληρωμή">Payment</span>
+					<span class="text-sm font-semibold text-[#0C6B95]" data-i18n-el="Πληρωμή" data-i18n-es="Pago">Payment</span>
 				</div>
 			</div>
 
@@ -35,37 +35,37 @@ import Layout from '../../../layouts/Layout.astro';
 
 					<!-- Payment form -->
 					<div id="payment-form-section" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 lg:p-8">
-						<h2 class="text-xl font-bold text-neutral-900 mb-5" data-i18n-el="Ολοκληρώστε την κράτησή σας">Complete your booking</h2>
+						<h2 class="text-xl font-bold text-neutral-900 mb-5" data-i18n-el="Ολοκληρώστε την κράτησή σας" data-i18n-es="Complete su reserva">Complete your booking</h2>
 
 						<div class="bg-neutral-50 rounded-xl p-4 mb-6 space-y-2">
 							<div class="flex items-center justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Παραλαβή">Pickup</span>
+								<span class="text-neutral-500" data-i18n-el="Παραλαβή" data-i18n-es="Recogida">Pickup</span>
 								<span class="font-medium text-neutral-800" id="os-pickup">—</span>
 							</div>
 							<div class="flex items-center justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Ημερομηνία & ώρα">Date & time</span>
-								<span class="font-medium text-neutral-800"><span id="os-date">—</span> <span data-i18n-el="στις">at</span> <span id="os-time">—</span></span>
+								<span class="text-neutral-500" data-i18n-el="Ημερομηνία & ώρα" data-i18n-es="Fecha y hora">Date & time</span>
+								<span class="font-medium text-neutral-800"><span id="os-date">—</span> <span data-i18n-el="στις" data-i18n-es="a las">at</span> <span id="os-time">—</span></span>
 							</div>
 							<div class="flex items-center justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Διάρκεια">Duration</span>
+								<span class="text-neutral-500" data-i18n-el="Διάρκεια" data-i18n-es="Duración">Duration</span>
 								<span class="font-medium text-neutral-800" id="os-hours">—</span>
 							</div>
 							<div class="flex items-center justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Όχημα">Vehicle</span>
+								<span class="text-neutral-500" data-i18n-el="Όχημα" data-i18n-es="Vehículo">Vehicle</span>
 								<span class="font-medium text-neutral-800" id="os-vehicle">—</span>
 							</div>
 							<div class="flex items-center justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Επιβάτης">Passenger</span>
+								<span class="text-neutral-500" data-i18n-el="Επιβάτης" data-i18n-es="Pasajero">Passenger</span>
 								<span class="font-medium text-neutral-800" id="os-passenger">—</span>
 							</div>
 							<div class="flex items-center justify-between text-sm border-t border-neutral-200 pt-2 mt-2">
-								<span class="font-bold text-neutral-900" data-i18n-el="Σύνολο">Total</span>
+								<span class="font-bold text-neutral-900" data-i18n-el="Σύνολο" data-i18n-es="Total">Total</span>
 								<span class="font-bold text-xl text-[#0C6B95]" id="os-total">—</span>
 							</div>
 						</div>
 
 						<!-- Payment method selection -->
-						<h3 class="text-base font-bold text-neutral-900 mb-4" data-i18n-el="Επιλέξτε τρόπο πληρωμής">Choose payment method</h3>
+						<h3 class="text-base font-bold text-neutral-900 mb-4" data-i18n-el="Επιλέξτε τρόπο πληρωμής" data-i18n-es="Elija el método de pago">Choose payment method</h3>
 
 						<div class="space-y-3 mb-6">
 							<label class="pay-method-option block cursor-pointer rounded-xl border-2 border-neutral-200 hover:border-[#0C6B95]/40 transition-all p-4" data-method="stripe">
@@ -73,8 +73,8 @@ import Layout from '../../../layouts/Layout.astro';
 									<div class="flex items-center gap-3">
 										<input type="radio" name="pay-method" value="stripe" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
-											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Προπληρωμή (Online)">Prepayment (Online)</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τώρα με πιστωτική/χρεωστική κάρτα">Pay now with credit/debit card</p>
+											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Προπληρωμή (Online)" data-i18n-es="Pago anticipado (en línea)">Prepayment (Online)</span>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τώρα με πιστωτική/χρεωστική κάρτα" data-i18n-es="Pague ahora con tarjeta de crédito/débito">Pay now with credit/debit card</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-stripe-price">—</span>
@@ -85,7 +85,7 @@ import Layout from '../../../layouts/Layout.astro';
 										<p id="card-errors" class="text-sm text-red-500 mb-2 hidden"></p>
 										<p class="text-xs text-neutral-400 flex items-center gap-1.5">
 											<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-											<span data-i18n-el="Ασφαλές μέσω Stripe. Κρυπτογραφημένο από άκρο σε άκρο.">Secured by Stripe. Encrypted end-to-end.</span>
+											<span data-i18n-el="Ασφαλές μέσω Stripe. Κρυπτογραφημένο από άκρο σε άκρο." data-i18n-es="Protegido por Stripe. Cifrado de extremo a extremo.">Secured by Stripe. Encrypted end-to-end.</span>
 										</p>
 									</div>
 									<div id="stripe-not-configured" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3">
@@ -99,8 +99,8 @@ import Layout from '../../../layouts/Layout.astro';
 									<div class="flex items-center gap-3">
 										<input type="radio" name="pay-method" value="cash" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
-											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Μετρητά επί τόπου">Cash on-site</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό σε μετρητά κατά την άφιξη">Pay your driver in cash on arrival</p>
+											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Μετρητά επί τόπου" data-i18n-es="Efectivo en el lugar">Cash on-site</span>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό σε μετρητά κατά την άφιξη" data-i18n-es="Pague al conductor en efectivo al llegar">Pay your driver in cash on arrival</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-cash-price">—</span>
@@ -112,15 +112,15 @@ import Layout from '../../../layouts/Layout.astro';
 									<div class="flex items-center gap-3">
 										<input type="radio" name="pay-method" value="card-onsite" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
-											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Κάρτα επί τόπου">Card on-site</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό με κάρτα κατά την άφιξη">Pay your driver by card on arrival</p>
+											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Κάρτα επί τόπου" data-i18n-es="Tarjeta en el lugar">Card on-site</span>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό με κάρτα κατά την άφιξη" data-i18n-es="Pague al conductor con tarjeta al llegar">Pay your driver by card on arrival</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-card-price">—</span>
 								</div>
 								<p class="text-xs text-amber-600 mt-2 ml-7 flex items-center gap-1.5">
 									<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-									<span data-i18n-el="Ισχύει χρέωση συναλλαγής 5%">5% transaction fee applies</span> (<span id="card-fee-amount">+€0.00</span>)
+									<span data-i18n-el="Ισχύει χρέωση συναλλαγής 5%" data-i18n-es="Se aplica un cargo por transacción del 5%">5% transaction fee applies</span> (<span id="card-fee-amount">+€0.00</span>)
 								</p>
 							</label>
 						</div>
@@ -130,14 +130,14 @@ import Layout from '../../../layouts/Layout.astro';
 						<button id="complete-btn" type="button"
 							class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-							<span data-i18n-el="Επιβεβαίωση κράτησης">Complete Booking</span>
+							<span data-i18n-el="Επιβεβαίωση κράτησης" data-i18n-es="Confirmar reserva">Complete Booking</span>
 						</button>
 
 						<div class="mt-6 pt-4 border-t border-neutral-100">
 							<button id="back-btn" type="button"
 								class="px-5 py-3 border border-neutral-200 rounded-xl text-neutral-600 font-semibold hover:bg-neutral-50 transition-colors flex items-center gap-2">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-								<span data-i18n-el="Πίσω">Back</span>
+								<span data-i18n-el="Πίσω" data-i18n-es="Atrás">Back</span>
 							</button>
 						</div>
 					</div>
@@ -147,19 +147,19 @@ import Layout from '../../../layouts/Layout.astro';
 						<div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
 							<svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 						</div>
-						<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Η κράτησή σας επιβεβαιώθηκε!">Booking confirmed!</h2>
-						<p class="text-neutral-500 mb-6" data-i18n-el="Η ενοικίαση με την ώρα κρατήθηκε με επιτυχία.">Your hourly rental has been booked successfully.</p>
+						<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Η κράτησή σας επιβεβαιώθηκε!" data-i18n-es="Tu reserva está confirmada">Booking confirmed!</h2>
+						<p class="text-neutral-500 mb-6" data-i18n-el="Η ενοικίαση με την ώρα κρατήθηκε με επιτυχία." data-i18n-es="Su alquiler por horas se ha reservado con éxito.">Your hourly rental has been booked successfully.</p>
 						<div class="bg-neutral-50 rounded-xl p-5 mb-6 max-w-md mx-auto text-left space-y-2">
-							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Αρ. αναφοράς">Reference</span><span id="success-ref" class="font-mono font-bold text-[#0C6B95]">—</span></div>
-							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Παραλαβή">Pickup</span><span id="success-pickup" class="font-medium text-neutral-800">—</span></div>
-							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Διάρκεια">Duration</span><span id="success-hours" class="font-medium text-neutral-800">—</span></div>
-							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Όχημα">Vehicle</span><span id="success-vehicle" class="font-medium text-neutral-800">—</span></div>
-							<div class="flex justify-between text-sm border-t border-neutral-200 pt-2"><span class="font-bold text-neutral-900" data-i18n-el="Σύνολο">Total</span><span id="success-total" class="font-bold text-[#0C6B95]">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Αρ. αναφοράς" data-i18n-es="N.º de referencia">Reference</span><span id="success-ref" class="font-mono font-bold text-[#0C6B95]">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Παραλαβή" data-i18n-es="Recogida">Pickup</span><span id="success-pickup" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Διάρκεια" data-i18n-es="Duración">Duration</span><span id="success-hours" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm"><span class="text-neutral-500" data-i18n-el="Όχημα" data-i18n-es="Vehículo">Vehicle</span><span id="success-vehicle" class="font-medium text-neutral-800">—</span></div>
+							<div class="flex justify-between text-sm border-t border-neutral-200 pt-2"><span class="font-bold text-neutral-900" data-i18n-el="Σύνολο" data-i18n-es="Total">Total</span><span id="success-total" class="font-bold text-[#0C6B95]">—</span></div>
 						</div>
-						<p class="text-sm text-neutral-500 mb-6"><span data-i18n-el="Email επιβεβαίωσης θα σταλεί στο">A confirmation email will be sent to</span> <strong id="success-email">—</strong></p>
+						<p class="text-sm text-neutral-500 mb-6"><span data-i18n-el="Email επιβεβαίωσης θα σταλεί στο" data-i18n-es="Se enviará un correo electrónico de confirmación a">A confirmation email will be sent to</span> <strong id="success-email">—</strong></p>
 						<a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-							<span data-i18n-el="Επιστροφή στην αρχική">Back to home</span>
+							<span data-i18n-el="Επιστροφή στην αρχική" data-i18n-es="Volver al inicio">Back to home</span>
 						</a>
 					</div>
 				</div>
@@ -167,20 +167,20 @@ import Layout from '../../../layouts/Layout.astro';
 				<!-- RIGHT COLUMN — Sidebar -->
 				<div class="lg:col-span-1">
 					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
-						<h3 class="text-lg font-bold text-neutral-900" data-i18n-el="Η κράτησή σας">Your Booking</h3>
+						<h3 class="text-lg font-bold text-neutral-900" data-i18n-el="Η κράτησή σας" data-i18n-es="Su reserva">Your Booking</h3>
 						<div class="flex items-center justify-between text-sm">
-							<span class="font-semibold text-neutral-700" data-i18n-el="Ενοικίαση με την ώρα">Hourly rental</span>
+							<span class="font-semibold text-neutral-700" data-i18n-el="Ενοικίαση με την ώρα" data-i18n-es="Alquiler por horas">Hourly rental</span>
 							<span class="flex items-center gap-1.5 text-neutral-500">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-								<span id="sb-passengers">—</span> <span data-i18n-el="Επιβάτες">Passengers</span>
+								<span id="sb-passengers">—</span> <span data-i18n-el="Επιβάτες" data-i18n-es="Pasajeros">Passengers</span>
 							</span>
 						</div>
 						<div class="text-sm border-t border-neutral-100 pt-4 space-y-1">
-							<div class="flex justify-between"><span class="text-neutral-500" data-i18n-el="Παραλαβή">Pickup</span><span id="sb-pickup" class="font-medium text-neutral-800 text-right max-w-[60%] truncate">—</span></div>
-							<div class="flex justify-between"><span class="text-neutral-500" data-i18n-el="Διάρκεια">Duration</span><span id="sb-hours" class="font-medium text-neutral-700">—</span></div>
+							<div class="flex justify-between"><span class="text-neutral-500" data-i18n-el="Παραλαβή" data-i18n-es="Recogida">Pickup</span><span id="sb-pickup" class="font-medium text-neutral-800 text-right max-w-[60%] truncate">—</span></div>
+							<div class="flex justify-between"><span class="text-neutral-500" data-i18n-el="Διάρκεια" data-i18n-es="Duración">Duration</span><span id="sb-hours" class="font-medium text-neutral-700">—</span></div>
 						</div>
 						<div class="border-t border-neutral-100 pt-4">
-							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3" data-i18n-el="Η επιλογή σας">Your choice</p>
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3" data-i18n-el="Η επιλογή σας" data-i18n-es="Su elección">Your choice</p>
 							<div class="flex items-center gap-3">
 								<div class="w-16 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
 									<img id="sb-vehicle-img" src="" alt="" class="w-full h-full object-cover" />
@@ -189,22 +189,22 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 						</div>
 						<div class="border-t border-neutral-100 pt-4 space-y-2">
-							<h4 class="text-sm font-bold text-neutral-800" data-i18n-el="Λεπτομέρειες τιμής">Price details</h4>
+							<h4 class="text-sm font-bold text-neutral-800" data-i18n-el="Λεπτομέρειες τιμής" data-i18n-es="Detalles del precio">Price details</h4>
 							<div class="flex justify-between text-sm">
-								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο">Total</span>
+								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο" data-i18n-es="Total">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
 							<div class="flex justify-between text-xs text-neutral-500">
-								<span data-i18n-el="Χρέωση">Rate</span>
+								<span data-i18n-el="Χρέωση" data-i18n-es="Cargo">Rate</span>
 								<span id="sb-rate">—</span>
 							</div>
 						</div>
 						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full" data-i18n-el="Δωρεάν ακύρωση">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full" data-i18n-el="Δωρεάν ακύρωση" data-i18n-es="Cancelación gratuita">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Free cancellation
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Αδειούχοι οδηγοί">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Αδειούχοι οδηγοί" data-i18n-es="Conductores con licencia">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Licensed chauffeurs
 							</span>
