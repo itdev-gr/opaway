@@ -150,8 +150,10 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { fetchApprovedDrivers, renderDriverOptionsHTML, type DriverOption } from '../../lib/driver-options';
 
 	const rowsById = new Map<string, any>();
+	let driverOptionsCache: DriverOption[] = [];
 
 	/* ── Ride Status colours ── */
 	const RIDE_STATUS_COLORS: Record<string, string> = {
@@ -206,9 +208,9 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		return `<select class="payment-status-select" data-id="${docId}">${opts}</select>`;
 	};
 
-	const buildDriverCell = (docId: string, current: string) => {
-		const display = current || '—';
-		return `<span class="driver-display cursor-pointer hover:text-[#0C6B95] transition-colors" data-id="${docId}" data-col="experiences" title="Click to edit">${display}</span>`;
+	const buildDriverCell = (docId: string, driverUid: string) => {
+		const optionsHtml = renderDriverOptionsHTML(driverOptionsCache, driverUid);
+		return `<select class="driver-select w-full min-w-[140px] px-2 py-1 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-700 hover:border-[#0C6B95]/40 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20" data-id="${docId}">${optionsHtml}</select>`;
 	};
 
 	/* ── Load experience catalog into select ── */
@@ -231,6 +233,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		const tbody = document.getElementById('experiences-tbody')!;
 		const countEl = document.getElementById('experiences-count');
 		try {
+			driverOptionsCache = await fetchApprovedDrivers();
 			const { data, error } = await supabase.from('experiences').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
 			const rows = data ?? [];
@@ -257,7 +260,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.experience ?? d.experience_name ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-600 text-center">${d.participants ?? d.passengers ?? d.guests ?? '—'}</td>
 					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${d.vehicle ?? '—'}</td>
-					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${buildDriverCell(d.id, String(d.driver ?? ''))}</td>
+					<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${buildDriverCell(d.id, String(d.driver_uid ?? ''))}</td>
 					<td class="px-4 py-3">${buildRideStatusSelect(d.id, rideStatus)}</td>
 					<td class="px-4 py-3">
 						<button data-release="${d.id}" data-released="${d.released_to_drivers ? '1' : '0'}"
@@ -320,35 +323,35 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		}
 	});
 
-	/* ── Driver inline edit delegation ── */
-	document.getElementById('experiences-tbody')?.addEventListener('click', (e) => {
-		const target = e.target as HTMLElement;
-		if (!target.classList.contains('driver-display')) return;
-		const docId = target.dataset.id!;
-		const current = target.textContent === '—' ? '' : target.textContent ?? '';
-		const input = document.createElement('input');
-		input.type = 'text';
-		input.value = current;
-		input.className = 'px-2 py-0.5 border border-neutral-300 rounded-lg text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] w-24';
-		const save = async () => {
-			const val = input.value.trim();
-			const span = document.createElement('span');
-			span.className = 'driver-display cursor-pointer hover:text-[#0C6B95] transition-colors';
-			span.dataset.id = docId;
-			span.dataset.col = 'experiences';
-			span.title = 'Click to edit';
-			span.textContent = val || '—';
-			input.replaceWith(span);
-			const { error } = await supabase.from('experiences').update({ driver: val }).eq('id', docId);
-			if (error) {
-				console.error('Driver update failed:', error);
-				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
-			}
-		};
-		input.addEventListener('blur', save);
-		input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); } if (ev.key === 'Escape') { input.value = current; input.blur(); } });
-		target.replaceWith(input);
-		input.focus();
+	/* ── Driver dropdown change delegation ── */
+	document.getElementById('experiences-tbody')?.addEventListener('change', async (e) => {
+		const sel = e.target as HTMLSelectElement;
+		if (!sel.classList.contains('driver-select')) return;
+
+		const docId = sel.dataset.id!;
+		const newDriverUid = sel.value;
+		const newDriverName = newDriverUid
+			? (driverOptionsCache.find(d => d.id === newDriverUid)?.fullName ?? '')
+			: '';
+
+		const update = newDriverUid
+			? { driver_uid: newDriverUid, driver: newDriverName, ride_status: 'assigned' }
+			: { driver_uid: '', driver: '', ride_status: 'new' };
+
+		const { error } = await supabase.from('experiences').update(update).eq('id', docId);
+		if (error) {
+			console.error('Experience driver assignment failed:', error);
+			alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+			await loadExperiences();
+			return;
+		}
+
+		const row = rowsById.get(docId);
+		if (row) {
+			row.driver_uid = update.driver_uid;
+			row.driver = update.driver;
+			row.ride_status = update.ride_status;
+		}
 	});
 
 	/* ── Modal ── */
