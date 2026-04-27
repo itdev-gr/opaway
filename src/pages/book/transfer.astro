@@ -6,37 +6,43 @@ const vehicles = [
 	{
 		title: 'Sedan',
 		titleEl: 'Sedan',
+		titleEs: 'Sedán',
 		models: 'Mercedes-Benz E-Class, or similar.',
 		modelsEl: 'Mercedes-Benz E-Class ή παρόμοιο.',
+		modelsEs: 'Mercedes-Benz Clase E o similar.',
 		image: '/car.avif',
 		features: [
-			{ en: 'Fits up to 3 people', el: 'Χωράει έως 3 άτομα' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
-			{ en: 'Available for airport transfers & city tours', el: 'Διαθέσιμο για μεταφορές αεροδρομίου & τουρ πόλης' },
+			{ en: 'Fits up to 3 people', el: 'Χωράει έως 3 άτομα', es: 'Hasta 3 personas' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Available for airport transfers & city tours', el: 'Διαθέσιμο για μεταφορές αεροδρομίου & τουρ πόλης', es: 'Disponible para traslados al aeropuerto y tours por la ciudad' },
 		],
 	},
 	{
 		title: 'Van',
 		titleEl: 'Βαν',
+		titleEs: 'Furgoneta',
 		models: 'Mercedes Vito Tourer, or similar.',
 		modelsEl: 'Mercedes Vito Tourer ή παρόμοιο.',
+		modelsEs: 'Mercedes Vito Tourer o similar.',
 		image: '/mini_van.avif',
 		features: [
-			{ en: 'Fits up to 8 people', el: 'Χωράει έως 8 άτομα' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
-			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές & ιδιωτικά τουρ' },
+			{ en: 'Fits up to 8 people', el: 'Χωράει έως 8 άτομα', es: 'Hasta 8 personas' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές & ιδιωτικά τουρ', es: 'Ideal para traslados en grupo y tours privados' },
 		],
 	},
 	{
 		title: 'Minibus (or two Vans)',
 		titleEl: 'Μίνι Λεωφορείο (ή δύο Βαν)',
+		titleEs: 'Minibús (o dos furgonetas)',
 		models: 'Mercedes Sprinter, or similar.',
 		modelsEl: 'Mercedes Sprinter ή παρόμοιο.',
+		modelsEs: 'Mercedes Sprinter o similar.',
 		image: '/van.avif',
 		features: [
-			{ en: 'Fits up to 18 people', el: 'Χωράει έως 18 άτομα' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
-			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες & εταιρικές εκδηλώσεις' },
+			{ en: 'Fits up to 18 people', el: 'Χωράει έως 18 άτομα', es: 'Hasta 18 personas' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες & εταιρικές εκδηλώσεις', es: 'Perfecto para grupos grandes y eventos corporativos' },
 		],
 	},
 ];
@@ -52,19 +58,19 @@ const vehicles = [
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
 					</svg>
-					<span data-i18n-el="Κράτηση Μεταφοράς">Book a Transfer</span>
+					<span data-i18n-el="Κράτηση Μεταφοράς" data-i18n-es="Reservar un traslado">Book a Transfer</span>
 				</a>
 				<a href="/book/hourly" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
-					<span data-i18n-el="Με την ώρα">Rent per Hour</span>
+					<span data-i18n-el="Με την ώρα" data-i18n-es="Alquiler por hora">Rent per Hour</span>
 				</a>
 				<a href="/book/tour" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
 					</svg>
-					<span data-i18n-el="Κράτηση Τουρ">Book a Tour</span>
+					<span data-i18n-el="Κράτηση Τουρ" data-i18n-es="Reservar un tour">Book a Tour</span>
 				</a>
 			</div>
 
@@ -73,28 +79,28 @@ const vehicles = [
 				<!-- ── Booking form panel ── -->
 				<div id="transfer-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
 
-					<h2 class="text-2xl font-bold text-neutral-900 mb-6" data-i18n-el="Στοιχεία Μεταφοράς">Transfer Details</h2>
+					<h2 class="text-2xl font-bold text-neutral-900 mb-6" data-i18n-el="Στοιχεία Μεταφοράς" data-i18n-es="Detalles del traslado">Transfer Details</h2>
 
 					<!-- From -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Από">From</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Από" data-i18n-es="Desde">From</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-from" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- To -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Προς">To</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Προς" data-i18n-es="Hacia">To</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-to" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -102,7 +108,7 @@ const vehicles = [
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία παραλαβής">Pickup date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία παραλαβής" data-i18n-es="Fecha de recogida">Pickup date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -112,7 +118,7 @@ const vehicles = [
 							<p data-error-for="tf-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής">Pickup time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής" data-i18n-es="Hora de recogida">Pickup time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -138,7 +144,7 @@ const vehicles = [
 					<!-- Return row (hidden) -->
 					<div id="return-row" class="hidden grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία επιστροφής">Return date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία επιστροφής" data-i18n-es="Fecha de vuelta">Return date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -147,7 +153,7 @@ const vehicles = [
 							</div>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα επιστροφής">Return time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα επιστροφής" data-i18n-es="Hora de vuelta">Return time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -160,14 +166,14 @@ const vehicles = [
 
 					<!-- Passengers -->
 					<div class="mb-6">
-						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Επιβάτες">Passengers</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Επιβάτες" data-i18n-es="Pasajeros">Passengers</label>
 						<div class="flex items-center gap-3">
 							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl">
 								<svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span class="text-neutral-800 font-medium" id="passenger-count">2</span>
 							</div>
-							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers" data-i18n-aria-el="Λιγότεροι επιβάτες">−</button>
-							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers" data-i18n-aria-el="Περισσότεροι επιβάτες">+</button>
+							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers" data-i18n-aria-el="Λιγότεροι επιβάτες" data-i18n-aria-es="Menos pasajeros">−</button>
+							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers" data-i18n-aria-el="Περισσότεροι επιβάτες" data-i18n-aria-es="Más pasajeros">+</button>
 						</div>
 					</div>
 
@@ -181,7 +187,7 @@ const vehicles = [
 					<!-- See prices -->
 					<button id="see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-						<span data-i18n-el="Δείτε τις τιμές">See prices</span>
+						<span data-i18n-el="Δείτε τις τιμές" data-i18n-es="Ver precios">See prices</span>
 					</button>
 				</div>
 
@@ -190,9 +196,9 @@ const vehicles = [
 					<div class="mb-5">
 						<div class="flex items-center gap-2 mb-2">
 							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Ο στόλος μας">Our Fleet</span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Ο στόλος μας" data-i18n-es="Nuestra flota">Our Fleet</span>
 						</div>
-						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ανακαλύψτε τις κατηγορίες υπηρεσιών μας">Discover our service classes</h2>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ανακαλύψτε τις κατηγορίες υπηρεσιών μας" data-i18n-es="Descubra nuestras clases de servicio">Discover our service classes</h2>
 					</div>
 
 					<div class="relative overflow-hidden rounded-2xl flex-1">
@@ -202,14 +208,14 @@ const vehicles = [
 									<img src={v.image} alt={v.title} class="w-full h-full object-cover" />
 								</div>
 								<div class="p-6 flex flex-col">
-									<h3 class="text-2xl font-bold text-neutral-900 mb-1" data-i18n-el={v.titleEl}>{v.title}</h3>
-									<p class="text-sm text-neutral-500 mb-4" data-i18n-el={v.modelsEl}>{v.models}</p>
+									<h3 class="text-2xl font-bold text-neutral-900 mb-1" data-i18n-el={v.titleEl} data-i18n-es={v.titleEs}>{v.title}</h3>
+									<p class="text-sm text-neutral-500 mb-4" data-i18n-el={v.modelsEl} data-i18n-es={v.modelsEs}>{v.models}</p>
 									<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
 									<ul class="flex flex-col gap-3">
 										{v.features.map((f) => (
 											<li class="flex items-start gap-3">
 												<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-												<span class="text-sm text-neutral-600 leading-snug" data-i18n-el={f.el}>{f.en}</span>
+												<span class="text-sm text-neutral-600 leading-snug" data-i18n-el={f.el} data-i18n-es={f.es}>{f.en}</span>
 											</li>
 										))}
 									</ul>
@@ -219,11 +225,11 @@ const vehicles = [
 					</div>
 
 					<div class="flex items-center justify-between mt-4">
-						<button data-fleet-prev class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Previous" data-i18n-aria-el="Προηγούμενο">
+						<button data-fleet-prev class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Previous" data-i18n-aria-el="Προηγούμενο" data-i18n-aria-es="Anterior">
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
 						</button>
 						<span data-fleet-indicator class="text-sm font-semibold text-neutral-500">1 / {vehicles.length}</span>
-						<button data-fleet-next class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Next" data-i18n-aria-el="Επόμενο">
+						<button data-fleet-next class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Next" data-i18n-aria-el="Επόμενο" data-i18n-aria-es="Siguiente">
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
 						</button>
 					</div>
@@ -241,11 +247,11 @@ const vehicles = [
 			<div class="mb-12 text-center">
 				<div class="flex items-center justify-center gap-2 mb-4">
 					<span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span>
-					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Οι Μεταφορές μας">Our Transfers</span>
+					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Οι Μεταφορές μας" data-i18n-es="Nuestros traslados">Our Transfers</span>
 				</div>
-				<h2 class="text-4xl font-bold text-neutral-900 mb-4" data-i18n-el="Διαθέσιμα Πακέτα Μεταφοράς">Available Transfer Packages</h2>
+				<h2 class="text-4xl font-bold text-neutral-900 mb-4" data-i18n-el="Διαθέσιμα Πακέτα Μεταφοράς" data-i18n-es="Paquetes de traslado disponibles">Available Transfer Packages</h2>
 				<div class="w-16 h-1 bg-[#0C6B95] rounded-full mx-auto mb-4"></div>
-				<p class="text-neutral-500 text-base max-w-xl mx-auto leading-relaxed" data-i18n-el="Περιηγηθείτε στα πακέτα μεταφοράς μας — παραλαβές αεροδρομίου, διαδρομές πόλης και εξατομικευμένες διαδρομές με επαγγελματίες οδηγούς.">
+				<p class="text-neutral-500 text-base max-w-xl mx-auto leading-relaxed" data-i18n-el="Περιηγηθείτε στα πακέτα μεταφοράς μας — παραλαβές αεροδρομίου, διαδρομές πόλης και εξατομικευμένες διαδρομές με επαγγελματίες οδηγούς." data-i18n-es="Explore nuestros paquetes de traslado — recogidas en aeropuerto, trayectos por la ciudad y rutas personalizadas con chóferes profesionales.">
 					Browse our transfer packages — airport pickups, city rides, and bespoke routes with professional chauffeurs.
 				</p>
 			</div>
@@ -449,14 +455,14 @@ const vehicles = [
 							<p class="text-neutral-500 text-sm leading-relaxed mb-5 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${esc(item.description)}</p>
 							<div class="flex items-center justify-between">
 								<div>
-									<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider" data-i18n-el="Από">From</span>
+									<span class="text-xs text-neutral-400 font-medium uppercase tracking-wider" data-i18n-el="Από" data-i18n-es="Desde">From</span>
 									<p class="text-2xl font-bold text-[#0C6B95] leading-none mt-0.5">€${Number(item.price).toFixed(2)}</p>
 								</div>
 								<a
 									href="/contact"
 									class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
 								>
-									<span data-i18n-el="Κράτηση Τώρα">Book Now</span>
+									<span data-i18n-el="Κράτηση Τώρα" data-i18n-es="Reservar ahora">Book Now</span>
 									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 									</svg>
