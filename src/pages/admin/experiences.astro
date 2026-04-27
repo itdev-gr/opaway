@@ -351,81 +351,89 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		input.focus();
 	});
 
-	/* ── Modal ── */
-	const modal      = document.getElementById('add-exp-modal')!;
-	const openModal  = async () => { modal.classList.remove('hidden'); await loadExperienceOptions(); };
-	const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-exp-form') as HTMLFormElement)?.reset(); document.getElementById('ex-error')!.classList.add('hidden'); };
+	function pageInit() {
+		/* ── Modal ── */
+		const modal      = document.getElementById('add-exp-modal')!;
+		const openModal  = async () => { modal.classList.remove('hidden'); await loadExperienceOptions(); };
+		const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-exp-form') as HTMLFormElement)?.reset(); document.getElementById('ex-error')!.classList.add('hidden'); };
 
-	document.getElementById('add-exp-btn')?.addEventListener('click', openModal);
-	document.getElementById('add-exp-close')?.addEventListener('click', closeModal);
-	document.getElementById('add-exp-cancel2')?.addEventListener('click', closeModal);
-	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+		document.getElementById('add-exp-btn')?.addEventListener('click', openModal);
+		document.getElementById('add-exp-close')?.addEventListener('click', closeModal);
+		document.getElementById('add-exp-cancel2')?.addEventListener('click', closeModal);
+		modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-	document.getElementById('add-exp-form')?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		const errorEl  = document.getElementById('ex-error')!;
-		const submitBtn = document.getElementById('ex-submit') as HTMLButtonElement;
-		errorEl.classList.add('hidden');
+		document.getElementById('add-exp-form')?.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl  = document.getElementById('ex-error')!;
+			const submitBtn = document.getElementById('ex-submit') as HTMLButtonElement;
+			errorEl.classList.add('hidden');
 
-		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
+			const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
 
-		const name         = val('ex-name');
-		const email        = val('ex-email');
-		const phone        = val('ex-phone');
-		const expSel       = document.getElementById('ex-experience') as HTMLSelectElement;
-		const experienceId = expSel.value;
-		const experienceName = experienceId ? expSel.options[expSel.selectedIndex]?.text : '';
-		const pickup       = val('ex-pickup');
-		const date         = val('ex-date');
-		const time         = val('ex-time');
-		const participants = parseInt(val('ex-participants') || '1', 10);
-		const notes        = val('ex-notes');
-		const rideStatus   = val('ex-rideStatus') || 'new';
+			const name         = val('ex-name');
+			const email        = val('ex-email');
+			const phone        = val('ex-phone');
+			const expSel       = document.getElementById('ex-experience') as HTMLSelectElement;
+			const experienceId = expSel.value;
+			const experienceName = experienceId ? expSel.options[expSel.selectedIndex]?.text : '';
+			const pickup       = val('ex-pickup');
+			const date         = val('ex-date');
+			const time         = val('ex-time');
+			const participants = parseInt(val('ex-participants') || '1', 10);
+			const notes        = val('ex-notes');
+			const rideStatus   = val('ex-rideStatus') || 'new';
 
-		if (!name || !email || !experienceId || !pickup || !date || !participants) {
-			errorEl.textContent = 'Please fill in all required fields.';
-			errorEl.classList.remove('hidden');
-			return;
-		}
-
-		submitBtn.disabled = true;
-		submitBtn.textContent = 'Saving…';
-		try {
-			const { error } = await supabase.from('experiences').insert({
-				name, email, phone: phone || '',
-				experience: experienceName, experience_id: experienceId,
-				pickup, pickup_location: pickup,
-				date, time: time || '',
-				participants,
-				notes: notes || '',
-				ride_status: rideStatus,
-				payment_status: 'pending',
-				payment_method: 'cash',
-				added_by_admin: true,
-			}).select().single();
-			if (error) {
-				console.error('Experience booking insert failed:', error);
-				errorEl.textContent = `Failed to save: [${error.code ?? 'unknown'}] ${error.message}`;
+			if (!name || !email || !experienceId || !pickup || !date || !participants) {
+				errorEl.textContent = 'Please fill in all required fields.';
 				errorEl.classList.remove('hidden');
 				return;
 			}
-			closeModal();
-			await loadExperiences();
-		} finally {
-			submitBtn.disabled = false;
-			submitBtn.textContent = 'Save Booking';
-		}
-	});
 
-	/* ── Auth guard ── */
-	const authEl = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadExperiences(); }
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+			submitBtn.disabled = true;
+			submitBtn.textContent = 'Saving…';
+			try {
+				const { error } = await supabase.from('experiences').insert({
+					name, email, phone: phone || '',
+					experience: experienceName, experience_id: experienceId,
+					pickup, pickup_location: pickup,
+					date, time: time || '',
+					participants,
+					notes: notes || '',
+					ride_status: rideStatus,
+					payment_status: 'pending',
+					payment_method: 'cash',
+					added_by_admin: true,
+				}).select().single();
+				if (error) {
+					console.error('Experience booking insert failed:', error);
+					errorEl.textContent = `Failed to save: [${error.code ?? 'unknown'}] ${error.message}`;
+					errorEl.classList.remove('hidden');
+					return;
+				}
+				closeModal();
+				await loadExperiences();
+			} finally {
+				submitBtn.disabled = false;
+				submitBtn.textContent = 'Save Booking';
+			}
+		});
+
+		/* ── Auth guard ── */
+		const authEl = document.getElementById('admin-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadExperiences(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>
 
 <script>
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
-	attachPlacesAutocomplete(document.getElementById('ex-pickup') as HTMLInputElement | null);
+	document.addEventListener('astro:page-load', () => {
+		attachPlacesAutocomplete(document.getElementById('ex-pickup') as HTMLInputElement | null);
+	});
 </script>
