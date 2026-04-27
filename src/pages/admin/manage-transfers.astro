@@ -219,12 +219,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-	/* ── Add-form image preview ── */
-	const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
-	const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
-	const imgPlaceholder = document.getElementById('img-placeholder')!;
-	let previewTimer: ReturnType<typeof setTimeout>;
-
 	function applyPreview(input: HTMLInputElement, preview: HTMLImageElement, placeholder: Element) {
 		const url = input.value.trim();
 		if (url) {
@@ -238,23 +232,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	imgInput.addEventListener('input', () => {
-		clearTimeout(previewTimer);
-		previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
-	});
-
-	/* ── Edit-modal image preview ── */
-	const eImgInput       = document.getElementById('e-image')       as HTMLInputElement;
-	const eImgPreview     = document.getElementById('e-img-preview') as HTMLImageElement;
-	const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
-	let ePreviewTimer: ReturnType<typeof setTimeout>;
-
-	eImgInput.addEventListener('input', () => {
-		clearTimeout(ePreviewTimer);
-		ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
-	});
-
-	/* ── File upload handlers ── */
+	/* ── File upload handler ── */
 	async function handleFileUpload(fileInput: HTMLInputElement, urlInput: HTMLInputElement, preview: HTMLImageElement, placeholder: Element, statusEl: HTMLElement, folder: string) {
 		const file = fileInput.files?.[0];
 		if (!file) return;
@@ -273,22 +251,6 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 		fileInput.value = '';
 	}
-
-	document.getElementById('f-file')?.addEventListener('change', () => {
-		handleFileUpload(
-			document.getElementById('f-file') as HTMLInputElement,
-			imgInput, imgPreview, imgPlaceholder,
-			document.getElementById('f-upload-status')!, 'transfers'
-		);
-	});
-
-	document.getElementById('e-file')?.addEventListener('change', () => {
-		handleFileUpload(
-			document.getElementById('e-file') as HTMLInputElement,
-			eImgInput, eImgPreview, eImgPlaceholder,
-			document.getElementById('e-upload-status')!, 'transfers'
-		);
-	});
 
 	/* ── Render grid ── */
 	function renderGrid() {
@@ -406,75 +368,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	/* ── Form submit ── */
-	const form      = document.getElementById('transfer-form') as HTMLFormElement;
-	const statusEl  = document.getElementById('form-status')!;
-	const submitBtn = document.getElementById('submit-btn')    as HTMLButtonElement;
-
-	const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
-
-	form.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		const imageUrl    = (document.getElementById('f-image')       as HTMLInputElement).value.trim();
-		const title       = (document.getElementById('f-title')       as HTMLInputElement).value.trim();
-		const description = (document.getElementById('f-description') as HTMLTextAreaElement).value.trim();
-		const price       = parseFloat((document.getElementById('f-price') as HTMLInputElement).value);
-
-		if (!imageUrl || !title || !description || isNaN(price)) {
-			setStatus('Please fill in all fields.', 'text-red-500'); return;
-		}
-
-		submitBtn.disabled = true;
-		submitBtn.textContent = 'Adding…';
-		setStatus('', '');
-
-		try {
-			const { data: inserted, error: insErr } = await supabase.from('transfers_catalog').insert({
-				image_url: imageUrl, title, description, price, published: true,
-			}).select().single();
-			if (insErr) {
-				console.error('Transfer catalog insert failed:', insErr);
-				setStatus(`Error adding package: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
-				return;
-			}
-			items.unshift({ id: inserted.id, imageUrl, title, description, price, published: true });
-			renderGrid();
-			form.reset();
-			imgPreview.classList.add('hidden');
-			imgPlaceholder.classList.remove('hidden');
-			setStatus('✓ Transfer package published successfully!', 'text-emerald-600 font-medium');
-			setTimeout(() => setStatus('', ''), 4000);
-		} finally {
-			submitBtn.disabled = false;
-			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Transfer Package`;
-		}
-	});
-
 	/* ── Delete modal ── */
 	const closeDeleteModal = () => {
 		const m = document.getElementById('delete-modal')!;
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
-
-	document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
-	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
-
-	document.getElementById('delete-yes')?.addEventListener('click', async () => {
-		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
-		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
-		{
-			const { error: delErr } = await supabase.from('transfers_catalog').delete().eq('id', pendingDeleteId);
-			if (delErr) {
-				console.error('Transfer catalog delete failed:', delErr);
-				alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
-			} else {
-				items = items.filter(i => i.id !== pendingDeleteId);
-				renderGrid();
-			}
-		}
-		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
-		closeDeleteModal();
-	});
 
 	/* ── Edit modal ── */
 	function openEditModal(id: string) {
@@ -487,7 +385,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		(document.getElementById('e-price')       as HTMLInputElement).value    = String(item.price);
 		(document.getElementById('e-description') as HTMLTextAreaElement).value = item.description;
 
-		applyPreview(eImgInput, eImgPreview, eImgPlaceholder);
+		applyPreview(
+			document.getElementById('e-image') as HTMLInputElement,
+			document.getElementById('e-img-preview') as HTMLImageElement,
+			document.getElementById('e-img-placeholder')!
+		);
 
 		document.getElementById('edit-status')!.textContent = '';
 
@@ -501,50 +403,158 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
 
-	document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
-	document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
-	document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
+	function pageInit() {
+		/* ── Add-form image preview ── */
+		const imgInput       = document.getElementById('f-image')        as HTMLInputElement;
+		const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
+		const imgPlaceholder = document.getElementById('img-placeholder')!;
+		let previewTimer: ReturnType<typeof setTimeout>;
 
-	document.getElementById('edit-save')?.addEventListener('click', async () => {
-		const imageUrl    = (document.getElementById('e-image')       as HTMLInputElement).value.trim();
-		const title       = (document.getElementById('e-title')       as HTMLInputElement).value.trim();
-		const description = (document.getElementById('e-description') as HTMLTextAreaElement).value.trim();
-		const price       = parseFloat((document.getElementById('e-price') as HTMLInputElement).value);
-		const editStatus  = document.getElementById('edit-status')!;
-		const saveBtn     = document.getElementById('edit-save') as HTMLButtonElement;
+		imgInput.addEventListener('input', () => {
+			clearTimeout(previewTimer);
+			previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
+		});
 
-		if (!imageUrl || !title || !description || isNaN(price)) {
-			editStatus.textContent = 'Please fill in all fields.';
-			editStatus.className = 'text-sm text-red-500';
-			return;
-		}
+		/* ── Edit-modal image preview ── */
+		const eImgInput       = document.getElementById('e-image')           as HTMLInputElement;
+		const eImgPreview     = document.getElementById('e-img-preview')     as HTMLImageElement;
+		const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
+		let ePreviewTimer: ReturnType<typeof setTimeout>;
 
-		saveBtn.disabled = true;
-		saveBtn.textContent = 'Saving…';
-		editStatus.textContent = '';
+		eImgInput.addEventListener('input', () => {
+			clearTimeout(ePreviewTimer);
+			ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
+		});
 
-		try {
-			const { error: updErr } = await supabase.from('transfers_catalog').update({ image_url: imageUrl, title, description, price }).eq('id', pendingEditId);
-			if (updErr) {
-				console.error('Transfer catalog update failed:', updErr);
-				editStatus.textContent = `Error saving changes: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+		document.getElementById('f-file')?.addEventListener('change', () => {
+			handleFileUpload(
+				document.getElementById('f-file') as HTMLInputElement,
+				imgInput, imgPreview, imgPlaceholder,
+				document.getElementById('f-upload-status')!, 'transfers'
+			);
+		});
+
+		document.getElementById('e-file')?.addEventListener('change', () => {
+			handleFileUpload(
+				document.getElementById('e-file') as HTMLInputElement,
+				eImgInput, eImgPreview, eImgPlaceholder,
+				document.getElementById('e-upload-status')!, 'transfers'
+			);
+		});
+
+		/* ── Form submit ── */
+		const form      = document.getElementById('transfer-form') as HTMLFormElement;
+		const statusEl  = document.getElementById('form-status')!;
+		const submitBtn = document.getElementById('submit-btn')    as HTMLButtonElement;
+
+		const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const imageUrl    = (document.getElementById('f-image')       as HTMLInputElement).value.trim();
+			const title       = (document.getElementById('f-title')       as HTMLInputElement).value.trim();
+			const description = (document.getElementById('f-description') as HTMLTextAreaElement).value.trim();
+			const price       = parseFloat((document.getElementById('f-price') as HTMLInputElement).value);
+
+			if (!imageUrl || !title || !description || isNaN(price)) {
+				setStatus('Please fill in all fields.', 'text-red-500'); return;
+			}
+
+			submitBtn.disabled = true;
+			submitBtn.textContent = 'Adding…';
+			setStatus('', '');
+
+			try {
+				const { data: inserted, error: insErr } = await supabase.from('transfers_catalog').insert({
+					image_url: imageUrl, title, description, price, published: true,
+				}).select().single();
+				if (insErr) {
+					console.error('Transfer catalog insert failed:', insErr);
+					setStatus(`Error adding package: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
+					return;
+				}
+				items.unshift({ id: inserted.id, imageUrl, title, description, price, published: true });
+				renderGrid();
+				form.reset();
+				imgPreview.classList.add('hidden');
+				imgPlaceholder.classList.remove('hidden');
+				setStatus('✓ Transfer package published successfully!', 'text-emerald-600 font-medium');
+				setTimeout(() => setStatus('', ''), 4000);
+			} finally {
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Transfer Package`;
+			}
+		});
+
+		document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
+		document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
+
+		document.getElementById('delete-yes')?.addEventListener('click', async () => {
+			const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
+			yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
+			{
+				const { error: delErr } = await supabase.from('transfers_catalog').delete().eq('id', pendingDeleteId);
+				if (delErr) {
+					console.error('Transfer catalog delete failed:', delErr);
+					alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
+				} else {
+					items = items.filter(i => i.id !== pendingDeleteId);
+					renderGrid();
+				}
+			}
+			yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
+			closeDeleteModal();
+		});
+
+		document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
+		document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
+		document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
+
+		document.getElementById('edit-save')?.addEventListener('click', async () => {
+			const imageUrl    = (document.getElementById('e-image')       as HTMLInputElement).value.trim();
+			const title       = (document.getElementById('e-title')       as HTMLInputElement).value.trim();
+			const description = (document.getElementById('e-description') as HTMLTextAreaElement).value.trim();
+			const price       = parseFloat((document.getElementById('e-price') as HTMLInputElement).value);
+			const editStatus  = document.getElementById('edit-status')!;
+			const saveBtn     = document.getElementById('edit-save') as HTMLButtonElement;
+
+			if (!imageUrl || !title || !description || isNaN(price)) {
+				editStatus.textContent = 'Please fill in all fields.';
 				editStatus.className = 'text-sm text-red-500';
 				return;
 			}
-			const item = items.find(i => i.id === pendingEditId);
-			if (item) Object.assign(item, { imageUrl, title, description, price });
-			renderGrid();
-			closeEditModal();
-		} finally {
-			saveBtn.disabled = false;
-			saveBtn.textContent = 'Save Changes';
-		}
-	});
 
-	/* ── Auth guard observer ── */
-	const authEl   = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+			saveBtn.disabled = true;
+			saveBtn.textContent = 'Saving…';
+			editStatus.textContent = '';
+
+			try {
+				const { error: updErr } = await supabase.from('transfers_catalog').update({ image_url: imageUrl, title, description, price }).eq('id', pendingEditId);
+				if (updErr) {
+					console.error('Transfer catalog update failed:', updErr);
+					editStatus.textContent = `Error saving changes: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+					editStatus.className = 'text-sm text-red-500';
+					return;
+				}
+				const item = items.find(i => i.id === pendingEditId);
+				if (item) Object.assign(item, { imageUrl, title, description, price });
+				renderGrid();
+				closeEditModal();
+			} finally {
+				saveBtn.disabled = false;
+				saveBtn.textContent = 'Save Changes';
+			}
+		});
+
+		/* ── Auth guard observer ── */
+		const authEl = document.getElementById('admin-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>

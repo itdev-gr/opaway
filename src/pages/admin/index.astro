@@ -290,36 +290,42 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	// Navigation
-	document.getElementById('prev-month')?.addEventListener('click', () => {
-		currentMonth--;
-		if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-		selectedDay = null;
-		document.getElementById('day-bookings')?.classList.add('hidden');
-		renderCalendar();
-	});
+	function pageInit() {
+		// Navigation
+		document.getElementById('prev-month')?.addEventListener('click', () => {
+			currentMonth--;
+			if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+			selectedDay = null;
+			document.getElementById('day-bookings')?.classList.add('hidden');
+			renderCalendar();
+		});
 
-	document.getElementById('next-month')?.addEventListener('click', () => {
-		currentMonth++;
-		if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-		selectedDay = null;
-		document.getElementById('day-bookings')?.classList.add('hidden');
-		renderCalendar();
-	});
+		document.getElementById('next-month')?.addEventListener('click', () => {
+			currentMonth++;
+			if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+			selectedDay = null;
+			document.getElementById('day-bookings')?.classList.add('hidden');
+			renderCalendar();
+		});
 
-	document.getElementById('close-day-bookings')?.addEventListener('click', () => {
-		selectedDay = null;
-		document.getElementById('day-bookings')?.classList.add('hidden');
-		renderCalendar();
-	});
+		document.getElementById('close-day-bookings')?.addEventListener('click', () => {
+			selectedDay = null;
+			document.getElementById('day-bookings')?.classList.add('hidden');
+			renderCalendar();
+		});
 
-	// Auth guard: wait for admin-auth-check to be hidden before loading data
-	const authEl = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) {
-			observer.disconnect();
-			loadAllBookings();
+		// Auth guard: wait for admin-auth-check to be hidden before loading data
+		const authEl = document.getElementById('admin-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) {
+					observer.disconnect();
+					loadAllBookings();
+				}
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 		}
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>
