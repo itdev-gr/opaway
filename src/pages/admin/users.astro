@@ -321,32 +321,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		renderTable();
 	}
 
-	function pageInit() {
-		document.getElementById('modal-no')?.addEventListener('click', closeModal);
-		document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
-		document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
-			if (e.target === e.currentTarget) closeModal();
-		});
+	document.getElementById('modal-no')?.addEventListener('click', closeModal);
+	document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
+	document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
+		if (e.target === e.currentTarget) closeModal();
+	});
 
-		/* ── Search + filter ── */
-		document.getElementById('users-search')?.addEventListener('input', (e) => {
-			currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
-			renderTable();
-		});
-		document.getElementById('users-role-filter')?.addEventListener('change', (e) => {
-			currentRoleFilter = (e.target as HTMLSelectElement).value;
-			renderTable();
-		});
+	/* ── Search + filter ── */
+	document.getElementById('users-search')?.addEventListener('input', (e) => {
+		currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		renderTable();
+	});
+	document.getElementById('users-role-filter')?.addEventListener('change', (e) => {
+		currentRoleFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
 
-		/* ── Auth guard observer ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
-		}
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
+	/* ── Auth guard observer ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>
