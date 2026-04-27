@@ -476,50 +476,44 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 		renderTable();
 	}
 
-	function pageInit() {
-		document.getElementById('modal-no')?.addEventListener('click', closeModal);
-		document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
-		document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
-			if (e.target === e.currentTarget) closeModal();
-		});
+	document.getElementById('modal-no')?.addEventListener('click', closeModal);
+	document.getElementById('modal-yes')?.addEventListener('click', confirmAction);
+	document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
+		if (e.target === e.currentTarget) closeModal();
+	});
 
-		/* ── Search + filters ── */
-		document.getElementById('partners-search')?.addEventListener('input', (e) => {
-			currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
+	/* ── Search + filters ── */
+	document.getElementById('partners-search')?.addEventListener('input', (e) => {
+		currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		renderTable();
+	});
+	document.getElementById('partners-type-filter')?.addEventListener('change', (e) => {
+		currentTypeFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
+	document.getElementById('partners-status-filter')?.addEventListener('change', (e) => {
+		currentStatusFilter = (e.target as HTMLSelectElement).value;
+		renderTable();
+	});
+
+	/* ── Sortable headers ── */
+	document.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
+		th.addEventListener('click', () => {
+			const field = th.dataset.sort as 'type' | 'status' | 'createdAt';
+			if (sortField === field) {
+				sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+			} else {
+				sortField = field;
+				sortDirection = 'asc';
+			}
 			renderTable();
 		});
-		document.getElementById('partners-type-filter')?.addEventListener('change', (e) => {
-			currentTypeFilter = (e.target as HTMLSelectElement).value;
-			renderTable();
-		});
-		document.getElementById('partners-status-filter')?.addEventListener('change', (e) => {
-			currentStatusFilter = (e.target as HTMLSelectElement).value;
-			renderTable();
-		});
+	});
 
-		/* ── Sortable headers ── */
-		document.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
-			th.addEventListener('click', () => {
-				const field = th.dataset.sort as 'type' | 'status' | 'createdAt';
-				if (sortField === field) {
-					sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-				} else {
-					sortField = field;
-					sortDirection = 'asc';
-				}
-				renderTable();
-			});
-		});
-
-		/* ── Auth guard observer ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadPartners(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
-		}
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
+	/* ── Auth guard observer ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadPartners(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>

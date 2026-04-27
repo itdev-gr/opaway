@@ -422,6 +422,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		});
 	}
 
+	bindGalleryControls('f', addGallery, 'f-image-list');
+	bindGalleryControls('e', editGallery, 'e-image-list');
+
 	/* ── Hotel visibility toggle based on category ── */
 	const toggleHotel = (categorySelId: string, wrapId: string) => {
 		const sel = document.getElementById(categorySelId) as HTMLSelectElement | null;
@@ -437,6 +440,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 		apply();
 	};
+	toggleHotel('f-category', 'f-hotel-wrap');
 
 	/* ── Render grid ── */
 	function renderGrid() {
@@ -580,11 +584,110 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
+	/* ── Form submit ── */
+	const form      = document.getElementById('tour-form')    as HTMLFormElement;
+	const statusEl  = document.getElementById('form-status')!;
+	const submitBtn = document.getElementById('submit-btn')   as HTMLButtonElement;
+
+	const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const title        = (document.getElementById('f-title')         as HTMLInputElement).value.trim();
+		const priceSedan   = parseFloat((document.getElementById('f-price-sedan')   as HTMLInputElement).value);
+		const priceVan     = parseFloat((document.getElementById('f-price-van')     as HTMLInputElement).value);
+		const priceMinibus = parseFloat((document.getElementById('f-price-minibus') as HTMLInputElement).value);
+		const duration     = (document.getElementById('f-duration')      as HTMLInputElement).value.trim();
+		const description  = (document.getElementById('f-description')   as HTMLTextAreaElement).value.trim();
+		const h1           = (document.getElementById('f-h1')            as HTMLInputElement).value.trim();
+		const h2           = (document.getElementById('f-h2')            as HTMLInputElement).value.trim();
+		const h3           = (document.getElementById('f-h3')            as HTMLInputElement).value.trim();
+		const category     = (document.getElementById('f-category')      as HTMLSelectElement).value || 'day-tour';
+		const entrancePrice = parseFloat((document.getElementById('f-entrance-price') as HTMLInputElement).value) || 0;
+		const entranceCount = parseInt((document.getElementById('f-entrance-count') as HTMLInputElement).value) || 0;
+		const hotelOption  = (document.getElementById('f-hotel-option')  as HTMLSelectElement).value || 'none';
+
+		const cover = addGallery[0] || '';
+		if (!cover) { setStatus('Please add at least one image.', 'text-red-500'); return; }
+
+		if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
+			setStatus('Please fill in all required fields.', 'text-red-500'); return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Adding…';
+		setStatus('', '');
+
+		try {
+			const { data: inserted, error: insErr } = await supabase.from('tours_catalog').insert({
+				image_url: cover,
+				images: addGallery,
+				title, description,
+				price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrance_ticket_per_person: entrancePrice,
+				entrance_ticket_count: entranceCount,
+				hotel_option: hotelOption,
+				published: true,
+			}).select().single();
+			if (insErr) {
+				console.error('Tour catalog insert failed:', insErr);
+				setStatus(`Error adding tour: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
+				return;
+			}
+			items.unshift({
+				id: inserted.id,
+				imageUrl: cover,
+				images: [...addGallery],
+				title, description,
+				priceSedan, priceVan, priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrancePrice, entranceCount,
+				hotelOption,
+				published: true,
+			});
+			renderGrid();
+			form.reset();
+			addGallery.length = 0;
+			renderGallery('f-image-list', addGallery);
+			toggleHotel('f-category', 'f-hotel-wrap');
+			setStatus('✓ Tour published successfully!', 'text-emerald-600 font-medium');
+			setTimeout(() => setStatus('', ''), 4000);
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Tour`;
+		}
+	});
+
 	/* ── Delete modal ── */
 	const closeDeleteModal = () => {
 		const m = document.getElementById('delete-modal')!;
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
+
+	document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
+	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
+
+	document.getElementById('delete-yes')?.addEventListener('click', async () => {
+		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
+		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
+		{
+			const { error: delErr } = await supabase.from('tours_catalog').delete().eq('id', pendingDeleteId);
+			if (delErr) {
+				console.error('Tour catalog delete failed:', delErr);
+				alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
+			} else {
+				items = items.filter(i => i.id !== pendingDeleteId);
+				renderGrid();
+			}
+		}
+		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
+		closeDeleteModal();
+	});
 
 	/* ── Edit modal ── */
 	function openEditModal(id: string) {
@@ -627,196 +730,87 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
 
-	function pageInit() {
-		bindGalleryControls('f', addGallery, 'f-image-list');
-		bindGalleryControls('e', editGallery, 'e-image-list');
-		toggleHotel('f-category', 'f-hotel-wrap');
+	document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
 
-		/* ── Form submit ── */
-		const form      = document.getElementById('tour-form')    as HTMLFormElement;
-		const statusEl  = document.getElementById('form-status')!;
-		const submitBtn = document.getElementById('submit-btn')   as HTMLButtonElement;
+	document.getElementById('edit-save')?.addEventListener('click', async () => {
+		const title        = (document.getElementById('e-title')           as HTMLInputElement).value.trim();
+		const priceSedan   = parseFloat((document.getElementById('e-price-sedan')   as HTMLInputElement).value);
+		const priceVan     = parseFloat((document.getElementById('e-price-van')     as HTMLInputElement).value);
+		const priceMinibus = parseFloat((document.getElementById('e-price-minibus') as HTMLInputElement).value);
+		const duration     = (document.getElementById('e-duration')        as HTMLInputElement).value.trim();
+		const description  = (document.getElementById('e-description')     as HTMLTextAreaElement).value.trim();
+		const h1           = (document.getElementById('e-h1')              as HTMLInputElement).value.trim();
+		const h2           = (document.getElementById('e-h2')              as HTMLInputElement).value.trim();
+		const h3           = (document.getElementById('e-h3')              as HTMLInputElement).value.trim();
+		const category     = (document.getElementById('e-category')        as HTMLSelectElement).value || 'day-tour';
+		const entrancePrice = parseFloat((document.getElementById('e-entrance-price') as HTMLInputElement).value) || 0;
+		const entranceCount = parseInt((document.getElementById('e-entrance-count') as HTMLInputElement).value) || 0;
+		const hotelOption  = (document.getElementById('e-hotel-option')    as HTMLSelectElement).value || 'none';
+		const editStatus   = document.getElementById('edit-status')!;
+		const saveBtn      = document.getElementById('edit-save') as HTMLButtonElement;
 
-		const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
-
-		form.addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const title        = (document.getElementById('f-title')         as HTMLInputElement).value.trim();
-			const priceSedan   = parseFloat((document.getElementById('f-price-sedan')   as HTMLInputElement).value);
-			const priceVan     = parseFloat((document.getElementById('f-price-van')     as HTMLInputElement).value);
-			const priceMinibus = parseFloat((document.getElementById('f-price-minibus') as HTMLInputElement).value);
-			const duration     = (document.getElementById('f-duration')      as HTMLInputElement).value.trim();
-			const description  = (document.getElementById('f-description')   as HTMLTextAreaElement).value.trim();
-			const h1           = (document.getElementById('f-h1')            as HTMLInputElement).value.trim();
-			const h2           = (document.getElementById('f-h2')            as HTMLInputElement).value.trim();
-			const h3           = (document.getElementById('f-h3')            as HTMLInputElement).value.trim();
-			const category     = (document.getElementById('f-category')      as HTMLSelectElement).value || 'day-tour';
-			const entrancePrice = parseFloat((document.getElementById('f-entrance-price') as HTMLInputElement).value) || 0;
-			const entranceCount = parseInt((document.getElementById('f-entrance-count') as HTMLInputElement).value) || 0;
-			const hotelOption  = (document.getElementById('f-hotel-option')  as HTMLSelectElement).value || 'none';
-
-			const cover = addGallery[0] || '';
-			if (!cover) { setStatus('Please add at least one image.', 'text-red-500'); return; }
-
-			if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
-				setStatus('Please fill in all required fields.', 'text-red-500'); return;
-			}
-
-			submitBtn.disabled = true;
-			submitBtn.textContent = 'Adding…';
-			setStatus('', '');
-
-			try {
-				const { data: inserted, error: insErr } = await supabase.from('tours_catalog').insert({
-					image_url: cover,
-					images: addGallery,
-					title, description,
-					price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
-					duration,
-					highlight1: h1, highlight2: h2, highlight3: h3,
-					category,
-					entrance_ticket_per_person: entrancePrice,
-					entrance_ticket_count: entranceCount,
-					hotel_option: hotelOption,
-					published: true,
-				}).select().single();
-				if (insErr) {
-					console.error('Tour catalog insert failed:', insErr);
-					setStatus(`Error adding tour: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
-					return;
-				}
-				items.unshift({
-					id: inserted.id,
-					imageUrl: cover,
-					images: [...addGallery],
-					title, description,
-					priceSedan, priceVan, priceMinibus,
-					duration,
-					highlight1: h1, highlight2: h2, highlight3: h3,
-					category,
-					entrancePrice, entranceCount,
-					hotelOption,
-					published: true,
-				});
-				renderGrid();
-				form.reset();
-				addGallery.length = 0;
-				renderGallery('f-image-list', addGallery);
-				toggleHotel('f-category', 'f-hotel-wrap');
-				setStatus('✓ Tour published successfully!', 'text-emerald-600 font-medium');
-				setTimeout(() => setStatus('', ''), 4000);
-			} finally {
-				submitBtn.disabled = false;
-				submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Tour`;
-			}
-		});
-
-		document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
-		document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
-
-		document.getElementById('delete-yes')?.addEventListener('click', async () => {
-			const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
-			yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
-			{
-				const { error: delErr } = await supabase.from('tours_catalog').delete().eq('id', pendingDeleteId);
-				if (delErr) {
-					console.error('Tour catalog delete failed:', delErr);
-					alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
-				} else {
-					items = items.filter(i => i.id !== pendingDeleteId);
-					renderGrid();
-				}
-			}
-			yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
-			closeDeleteModal();
-		});
-
-		document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
-		document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
-		document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
-
-		document.getElementById('edit-save')?.addEventListener('click', async () => {
-			const title        = (document.getElementById('e-title')           as HTMLInputElement).value.trim();
-			const priceSedan   = parseFloat((document.getElementById('e-price-sedan')   as HTMLInputElement).value);
-			const priceVan     = parseFloat((document.getElementById('e-price-van')     as HTMLInputElement).value);
-			const priceMinibus = parseFloat((document.getElementById('e-price-minibus') as HTMLInputElement).value);
-			const duration     = (document.getElementById('e-duration')        as HTMLInputElement).value.trim();
-			const description  = (document.getElementById('e-description')     as HTMLTextAreaElement).value.trim();
-			const h1           = (document.getElementById('e-h1')              as HTMLInputElement).value.trim();
-			const h2           = (document.getElementById('e-h2')              as HTMLInputElement).value.trim();
-			const h3           = (document.getElementById('e-h3')              as HTMLInputElement).value.trim();
-			const category     = (document.getElementById('e-category')        as HTMLSelectElement).value || 'day-tour';
-			const entrancePrice = parseFloat((document.getElementById('e-entrance-price') as HTMLInputElement).value) || 0;
-			const entranceCount = parseInt((document.getElementById('e-entrance-count') as HTMLInputElement).value) || 0;
-			const hotelOption  = (document.getElementById('e-hotel-option')    as HTMLSelectElement).value || 'none';
-			const editStatus   = document.getElementById('edit-status')!;
-			const saveBtn      = document.getElementById('edit-save') as HTMLButtonElement;
-
-			const cover = editGallery[0] || '';
-			if (!cover) {
-				editStatus.textContent = 'Please keep at least one image.';
-				editStatus.className = 'text-sm text-red-500';
-				return;
-			}
-
-			if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
-				editStatus.textContent = 'Please fill in all required fields.';
-				editStatus.className = 'text-sm text-red-500';
-				return;
-			}
-
-			saveBtn.disabled = true;
-			saveBtn.textContent = 'Saving…';
-			editStatus.textContent = '';
-
-			try {
-				const { error: updErr } = await supabase.from('tours_catalog').update({
-					image_url: cover,
-					images: editGallery,
-					title, description,
-					price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
-					duration,
-					highlight1: h1, highlight2: h2, highlight3: h3,
-					category,
-					entrance_ticket_per_person: entrancePrice,
-					entrance_ticket_count: entranceCount,
-					hotel_option: hotelOption,
-				}).eq('id', pendingEditId);
-				if (updErr) {
-					console.error('Tour catalog update failed:', updErr);
-					editStatus.textContent = `Error saving changes: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
-					editStatus.className = 'text-sm text-red-500';
-					return;
-				}
-				const item = items.find(i => i.id === pendingEditId);
-				if (item) Object.assign(item, {
-					imageUrl: cover,
-					images: [...editGallery],
-					title, description,
-					priceSedan, priceVan, priceMinibus,
-					duration,
-					highlight1: h1, highlight2: h2, highlight3: h3,
-					category,
-					entrancePrice, entranceCount,
-					hotelOption,
-				});
-				renderGrid();
-				closeEditModal();
-			} finally {
-				saveBtn.disabled = false;
-				saveBtn.textContent = 'Save Changes';
-			}
-		});
-
-		/* ── Auth guard observer ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		const cover = editGallery[0] || '';
+		if (!cover) {
+			editStatus.textContent = 'Please keep at least one image.';
+			editStatus.className = 'text-sm text-red-500';
+			return;
 		}
-	}
 
-	document.addEventListener('astro:page-load', pageInit);
+		if (!title || !description || isNaN(priceSedan) || isNaN(priceVan) || isNaN(priceMinibus)) {
+			editStatus.textContent = 'Please fill in all required fields.';
+			editStatus.className = 'text-sm text-red-500';
+			return;
+		}
+
+		saveBtn.disabled = true;
+		saveBtn.textContent = 'Saving…';
+		editStatus.textContent = '';
+
+		try {
+			const { error: updErr } = await supabase.from('tours_catalog').update({
+				image_url: cover,
+				images: editGallery,
+				title, description,
+				price: priceSedan, price_sedan: priceSedan, price_van: priceVan, price_minibus: priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrance_ticket_per_person: entrancePrice,
+				entrance_ticket_count: entranceCount,
+				hotel_option: hotelOption,
+			}).eq('id', pendingEditId);
+			if (updErr) {
+				console.error('Tour catalog update failed:', updErr);
+				editStatus.textContent = `Error saving changes: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+				editStatus.className = 'text-sm text-red-500';
+				return;
+			}
+			const item = items.find(i => i.id === pendingEditId);
+			if (item) Object.assign(item, {
+				imageUrl: cover,
+				images: [...editGallery],
+				title, description,
+				priceSedan, priceVan, priceMinibus,
+				duration,
+				highlight1: h1, highlight2: h2, highlight3: h3,
+				category,
+				entrancePrice, entranceCount,
+				hotelOption,
+			});
+			renderGrid();
+			closeEditModal();
+		} finally {
+			saveBtn.disabled = false;
+			saveBtn.textContent = 'Save Changes';
+		}
+	});
+
+	/* ── Auth guard observer ── */
+	const authEl   = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>

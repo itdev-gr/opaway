@@ -161,35 +161,29 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		}
 	}
 
-	function pageInit() {
-		// Search filtering
-		document.getElementById('search-input')?.addEventListener('input', (e) => {
-			const term = (e.target as HTMLInputElement).value.toLowerCase().trim();
-			if (!term) {
-				renderRides(allRides);
-				return;
-			}
-			const filtered = allRides.filter(r => {
-				const ref = r.id.substring(0, 8).toLowerCase();
-				return ref.includes(term) ||
-					r.from.toLowerCase().includes(term) ||
-					r.to.toLowerCase().includes(term);
-			});
-			renderRides(filtered);
-		});
-
-		// Auth guard
-		const authEl = document.getElementById('driver-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) {
-					observer.disconnect();
-					loadRides();
-				}
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	// Search filtering
+	document.getElementById('search-input')?.addEventListener('input', (e) => {
+		const term = (e.target as HTMLInputElement).value.toLowerCase().trim();
+		if (!term) {
+			renderRides(allRides);
+			return;
 		}
-	}
+		const filtered = allRides.filter(r => {
+			const ref = r.id.substring(0, 8).toLowerCase();
+			return ref.includes(term) ||
+				r.from.toLowerCase().includes(term) ||
+				r.to.toLowerCase().includes(term);
+		});
+		renderRides(filtered);
+	});
 
-	document.addEventListener('astro:page-load', pageInit);
+	// Auth guard
+	const authEl = document.getElementById('driver-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) {
+			observer.disconnect();
+			loadRides();
+		}
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>

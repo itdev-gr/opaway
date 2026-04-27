@@ -259,6 +259,63 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	// Close dropdown on click outside
 	document.addEventListener('click', closeAllDropdowns);
 
+	/* ── Filter tabs ── */
+	document.querySelectorAll<HTMLButtonElement>('.filter-tab').forEach(tab => {
+		tab.addEventListener('click', () => {
+			currentFilter = tab.dataset.filter || 'all';
+
+			// Update tab styles
+			document.querySelectorAll('.filter-tab').forEach(t => {
+				const f = (t as HTMLElement).dataset.filter || '';
+				const isActive = f === currentFilter;
+				if (isActive) {
+					t.className = 'filter-tab px-4 py-2 text-sm font-semibold rounded-xl bg-[#0C6B95] text-white shadow-sm transition-colors';
+				} else {
+					// Restore original style based on filter type
+					const styles: Record<string, string> = {
+						'all':       'border border-neutral-200 text-neutral-600 hover:bg-neutral-50',
+						'new':       'border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100',
+						'answered':  'border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100',
+						'follow-up': 'border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100',
+						'discarded': 'border border-neutral-200 text-neutral-500 bg-neutral-50 hover:bg-neutral-100',
+						'tour':      'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]',
+						'contact':   'border border-neutral-200 text-neutral-600 hover:border-violet-300 hover:text-violet-700',
+					};
+					t.className = `filter-tab px-4 py-2 text-sm font-semibold rounded-xl ${styles[f] || styles['all']} transition-colors`;
+				}
+			});
+
+			renderTable();
+		});
+	});
+
+	/* ── Delete modal ── */
+	document.getElementById('req-delete-cancel')?.addEventListener('click', () => {
+		deleteTargetId = null;
+		document.getElementById('req-delete-modal')?.classList.add('hidden');
+	});
+
+	document.getElementById('req-delete-confirm')?.addEventListener('click', async () => {
+		if (!deleteTargetId) return;
+		const confirmBtn = document.getElementById('req-delete-confirm') as HTMLButtonElement;
+		confirmBtn.disabled = true;
+		confirmBtn.textContent = 'Deleting…';
+		{
+			const { error } = await supabase.from('requests').delete().eq('id', deleteTargetId);
+			if (error) {
+				console.error('Request delete failed:', error);
+				alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+			} else {
+				allRequests = allRequests.filter(r => r.id !== deleteTargetId);
+				deleteTargetId = null;
+				document.getElementById('req-delete-modal')?.classList.add('hidden');
+				renderTable();
+			}
+			confirmBtn.disabled = false;
+			confirmBtn.textContent = 'Delete';
+		}
+	});
+
 	/* ── Load ── */
 	async function loadRequests() {
 		{
@@ -277,73 +334,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	function pageInit() {
-		/* ── Filter tabs ── */
-		document.querySelectorAll<HTMLButtonElement>('.filter-tab').forEach(tab => {
-			tab.addEventListener('click', () => {
-				currentFilter = tab.dataset.filter || 'all';
-
-				// Update tab styles
-				document.querySelectorAll('.filter-tab').forEach(t => {
-					const f = (t as HTMLElement).dataset.filter || '';
-					const isActive = f === currentFilter;
-					if (isActive) {
-						t.className = 'filter-tab px-4 py-2 text-sm font-semibold rounded-xl bg-[#0C6B95] text-white shadow-sm transition-colors';
-					} else {
-						// Restore original style based on filter type
-						const styles: Record<string, string> = {
-							'all':       'border border-neutral-200 text-neutral-600 hover:bg-neutral-50',
-							'new':       'border border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100',
-							'answered':  'border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100',
-							'follow-up': 'border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100',
-							'discarded': 'border border-neutral-200 text-neutral-500 bg-neutral-50 hover:bg-neutral-100',
-							'tour':      'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]',
-							'contact':   'border border-neutral-200 text-neutral-600 hover:border-violet-300 hover:text-violet-700',
-						};
-						t.className = `filter-tab px-4 py-2 text-sm font-semibold rounded-xl ${styles[f] || styles['all']} transition-colors`;
-					}
-				});
-
-				renderTable();
-			});
-		});
-
-		/* ── Delete modal ── */
-		document.getElementById('req-delete-cancel')?.addEventListener('click', () => {
-			deleteTargetId = null;
-			document.getElementById('req-delete-modal')?.classList.add('hidden');
-		});
-
-		document.getElementById('req-delete-confirm')?.addEventListener('click', async () => {
-			if (!deleteTargetId) return;
-			const confirmBtn = document.getElementById('req-delete-confirm') as HTMLButtonElement;
-			confirmBtn.disabled = true;
-			confirmBtn.textContent = 'Deleting…';
-			{
-				const { error } = await supabase.from('requests').delete().eq('id', deleteTargetId);
-				if (error) {
-					console.error('Request delete failed:', error);
-					alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
-				} else {
-					allRequests = allRequests.filter(r => r.id !== deleteTargetId);
-					deleteTargetId = null;
-					document.getElementById('req-delete-modal')?.classList.add('hidden');
-					renderTable();
-				}
-				confirmBtn.disabled = false;
-				confirmBtn.textContent = 'Delete';
-			}
-		});
-
-		/* ── Auth guard ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadRequests(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
-		}
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
+	/* ── Auth guard ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadRequests(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>

@@ -43,66 +43,62 @@ import ProfileContent from '../../components/ProfileContent.astro';
 <script>
 	import { supabase } from '../../lib/supabase';
 
-	function pageInit() {
-		(async () => {
-			const { data: { user } } = await supabase.auth.getUser();
-			if (!user) { window.location.href = '/login'; return; }
+	const { data: { user } } = await supabase.auth.getUser();
+	if (!user) { window.location.href = '/login'; }
 
-			const userEmail = user.email ?? '';
-			const [{ data: transfers }, { data: tours }, { data: experiences }] = await Promise.all([
-				supabase.from('transfers').select('id, created_at, date, "from", "to", ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
-				supabase.from('tours').select('id, created_at, date, tour_name, ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
-				supabase.from('requests').select('id, created_at, date, experience_name, status').eq('source', 'experience').or(`user_id.eq.${user.id}${userEmail ? `,email.eq.${userEmail}` : ''}`).order('created_at', { ascending: false }),
-			]);
+	if (user) {
+		const userEmail = user.email ?? '';
+		const [{ data: transfers }, { data: tours }, { data: experiences }] = await Promise.all([
+			supabase.from('transfers').select('id, created_at, date, "from", "to", ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
+			supabase.from('tours').select('id, created_at, date, tour_name, ride_status').eq('uid', user.id).order('created_at', { ascending: false }),
+			supabase.from('requests').select('id, created_at, date, experience_name, status').eq('source', 'experience').or(`user_id.eq.${user.id}${userEmail ? `,email.eq.${userEmail}` : ''}`).order('created_at', { ascending: false }),
+		]);
 
-			const today = new Date().toISOString().slice(0, 10);
-			const in30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-			const inRange = (d: string | null) => typeof d === 'string' && d >= today && d <= in30;
+		const today = new Date().toISOString().slice(0, 10);
+		const in30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+		const inRange = (d: string | null) => typeof d === 'string' && d >= today && d <= in30;
 
-			const trCount = transfers?.length ?? 0;
-			const toCount = tours?.length ?? 0;
-			const exCount = experiences?.length ?? 0;
-			const upcoming = (transfers ?? []).filter(r => inRange(r.date)).length
-				+ (tours ?? []).filter(r => inRange(r.date)).length
-				+ (experiences ?? []).filter(r => inRange(r.date)).length;
+		const trCount = transfers?.length ?? 0;
+		const toCount = tours?.length ?? 0;
+		const exCount = experiences?.length ?? 0;
+		const upcoming = (transfers ?? []).filter(r => inRange(r.date)).length
+			+ (tours ?? []).filter(r => inRange(r.date)).length
+			+ (experiences ?? []).filter(r => inRange(r.date)).length;
 
-			const setCount = (k: string, n: number) => {
-				const el = document.querySelector(`[data-dash-count="${k}"]`);
-				if (el) el.textContent = String(n);
-			};
-			setCount('transfers', trCount);
-			setCount('tours', toCount);
-			setCount('experiences', exCount);
-			setCount('upcoming', upcoming);
+		const setCount = (k: string, n: number) => {
+			const el = document.querySelector(`[data-dash-count="${k}"]`);
+			if (el) el.textContent = String(n);
+		};
+		setCount('transfers', trCount);
+		setCount('tours', toCount);
+		setCount('experiences', exCount);
+		setCount('upcoming', upcoming);
 
-			const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-			const combined = [
-				...(transfers ?? []).map(r => ({ kind: 'Transfer', label: `${r.from} → ${r.to}`, date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/transfers' })),
-				...(tours ?? []).map(r => ({ kind: 'Tour', label: r.tour_name ?? 'Tour', date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/trips' })),
-				...(experiences ?? []).map(r => ({ kind: 'Experience', label: r.experience_name ?? 'Experience', date: r.date, status: r.status, ts: r.created_at, href: '/profile/experiences' })),
-			].sort((a, b) => (b.ts ?? '').localeCompare(a.ts ?? '')).slice(0, 5);
+		const esc = (s: any) => String(s ?? '—').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+		const combined = [
+			...(transfers ?? []).map(r => ({ kind: 'Transfer', label: `${r.from} → ${r.to}`, date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/transfers' })),
+			...(tours ?? []).map(r => ({ kind: 'Tour', label: r.tour_name ?? 'Tour', date: r.date, status: r.ride_status, ts: r.created_at, href: '/profile/trips' })),
+			...(experiences ?? []).map(r => ({ kind: 'Experience', label: r.experience_name ?? 'Experience', date: r.date, status: r.status, ts: r.created_at, href: '/profile/experiences' })),
+		].sort((a, b) => (b.ts ?? '').localeCompare(a.ts ?? '')).slice(0, 5);
 
-			const list = document.getElementById('dash-latest');
-			if (list) {
-				if (combined.length === 0) {
-					list.innerHTML = '<li class="text-neutral-400">No bookings yet. Book your first transfer or tour above.</li>';
-				} else {
-					list.innerHTML = combined.map(r => `
-						<li class="flex items-center gap-3 py-2 border-b border-neutral-100">
-							<span class="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">${esc(r.kind)}</span>
-							<span class="flex-1 text-neutral-800">${esc(r.label)}</span>
-							<span class="text-neutral-500">${esc(r.date)}</span>
-							<span class="text-xs text-neutral-400">${esc(r.status)}</span>
-							<a href="${r.href}" class="text-[#0C6B95] hover:underline text-sm">View</a>
-						</li>
-					`).join('');
-				}
+		const list = document.getElementById('dash-latest');
+		if (list) {
+			if (combined.length === 0) {
+				list.innerHTML = '<li class="text-neutral-400">No bookings yet. Book your first transfer or tour above.</li>';
+			} else {
+				list.innerHTML = combined.map(r => `
+					<li class="flex items-center gap-3 py-2 border-b border-neutral-100">
+						<span class="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">${esc(r.kind)}</span>
+						<span class="flex-1 text-neutral-800">${esc(r.label)}</span>
+						<span class="text-neutral-500">${esc(r.date)}</span>
+						<span class="text-xs text-neutral-400">${esc(r.status)}</span>
+						<a href="${r.href}" class="text-[#0C6B95] hover:underline text-sm">View</a>
+					</li>
+				`).join('');
 			}
+		}
 
-			document.getElementById('dash-loading')?.classList.add('hidden');
-			document.getElementById('dash-content')?.classList.remove('hidden');
-		})();
+		document.getElementById('dash-loading')?.classList.add('hidden');
+		document.getElementById('dash-content')?.classList.remove('hidden');
 	}
-
-	document.addEventListener('astro:page-load', pageInit);
 </script>

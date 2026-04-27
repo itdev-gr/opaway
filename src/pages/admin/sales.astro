@@ -254,31 +254,25 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		`).join('');
 	}
 
-	function pageInit() {
-		// Period buttons
-		document.querySelectorAll<HTMLButtonElement>('.period-btn').forEach(btn => {
-			btn.addEventListener('click', () => {
-				currentPeriod = btn.dataset.period || 'month';
-				document.querySelectorAll('.period-btn').forEach(b => {
-					const isActive = b.dataset.period === currentPeriod;
-					b.className = `period-btn px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-						isActive ? 'bg-[#0C6B95] text-white shadow-sm' : 'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]'
-					}`;
-				});
-				renderReport();
+	// Period buttons
+	document.querySelectorAll<HTMLButtonElement>('.period-btn').forEach(btn => {
+		btn.addEventListener('click', () => {
+			currentPeriod = btn.dataset.period || 'month';
+			document.querySelectorAll('.period-btn').forEach(b => {
+				const isActive = b.dataset.period === currentPeriod;
+				b.className = `period-btn px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+					isActive ? 'bg-[#0C6B95] text-white shadow-sm' : 'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]'
+				}`;
 			});
+			renderReport();
 		});
+	});
 
-		// Auth guard
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadAllBookings(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
-		}
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
+	// Auth guard
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadAllBookings(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>
 </AdminLayout>

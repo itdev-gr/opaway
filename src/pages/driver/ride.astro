@@ -267,89 +267,73 @@ import DriverLayout from '../../components/DriverLayout.astro';
 	import { supabase } from '../../lib/supabase';
 	import { showFormError } from '../../lib/form-errors';
 
-	function showError(loadingEl: HTMLElement, errorEl: HTMLElement) {
+	const rideContentScope = document.getElementById('ride-content');
+
+	/* ── Query params ── */
+	const params = new URLSearchParams(window.location.search);
+	const docId = params.get('id');
+	const collectionName = params.get('type') || 'transfers'; // transfers | tours | experiences
+
+	/* ── DOM refs ── */
+	const loadingEl    = document.getElementById('ride-loading')!;
+	const errorEl      = document.getElementById('ride-error')!;
+	const contentEl    = document.getElementById('ride-content')!;
+	const backBtn      = document.getElementById('back-btn')!;
+
+	/* ── Back button ── */
+	backBtn.addEventListener('click', () => {
+		if (window.history.length > 1) { window.history.back(); }
+		else { window.location.href = '/driver/upcoming'; }
+	});
+
+	/* ── Guard: wait for auth then load ── */
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session?.user || !docId) return;
+		const user = session.user;
+
+		try {
+			const { data: d, error } = await supabase
+				.from(collectionName)
+				.select('*')
+				.eq('id', docId)
+				.single();
+
+			if (error || !d) { showError(); return; }
+
+			/* Also load partner doc for driver's name */
+			let driverName = '';
+			try {
+				const { data: pd } = await supabase
+					.from('partners')
+					.select('*')
+					.eq('id', user.id)
+					.single();
+
+				if (pd) {
+					driverName = (pd.full_name as string) || (pd.company_name as string) || '';
+				}
+			} catch { /* ignore */ }
+
+			const isAvailable = !d.driver_uid;
+
+			// Tag the row so downstream handlers know which table it came from
+			// (transfers / tours / experiences).
+			(d as any).__table__ = collectionName;
+
+			render(d, isAvailable, user.id, driverName);
+		} catch (e) {
+			console.error('Ride detail load failed:', e);
+			showError();
+		}
+	});
+
+	function showError() {
 		loadingEl.classList.add('hidden');
 		errorEl.classList.remove('hidden');
 	}
 
-	function pageInit() {
-		const rideContentScope = document.getElementById('ride-content');
-
-		/* ── Query params ── */
-		const params = new URLSearchParams(window.location.search);
-		const docId = params.get('id');
-		const collectionName = params.get('type') || 'transfers'; // transfers | tours | experiences
-
-		/* ── DOM refs ── */
-		const loadingEl = document.getElementById('ride-loading')!;
-		const errorEl   = document.getElementById('ride-error')!;
-		const backBtn   = document.getElementById('back-btn')!;
-
-		/* ── Back button ── */
-		backBtn.addEventListener('click', () => {
-			if (window.history.length > 1) { window.history.back(); }
-			else { window.location.href = '/driver/upcoming'; }
-		});
-
-		/* ── Guard: wait for auth then load ── */
-		(async () => {
-			const { data: { session } } = await supabase.auth.getSession();
-			if (!session?.user || !docId) return;
-			const user = session.user;
-
-			// Wait for DriverLayout auth check to pass
-			await new Promise<void>((resolve) => {
-				const authEl = document.getElementById('driver-auth-check');
-				if (!authEl || authEl.classList.contains('hidden')) { resolve(); return; }
-				const obs = new MutationObserver(() => {
-					if (authEl.classList.contains('hidden')) { obs.disconnect(); resolve(); }
-				});
-				obs.observe(authEl, { attributes: true, attributeFilter: ['class'] });
-			});
-
-			try {
-				const { data: d, error } = await supabase
-					.from(collectionName)
-					.select('*')
-					.eq('id', docId)
-					.single();
-
-				if (error || !d) { showError(loadingEl, errorEl); return; }
-
-				/* Also load partner doc for driver's name */
-				let driverName = '';
-				try {
-					const { data: pd } = await supabase
-						.from('partners')
-						.select('*')
-						.eq('id', user.id)
-						.single();
-
-					if (pd) {
-						driverName = (pd.full_name as string) || (pd.company_name as string) || '';
-					}
-				} catch { /* ignore */ }
-
-				const isAvailable = !d.driver_uid;
-
-				// Tag the row so downstream handlers know which table it came from
-				// (transfers / tours / experiences).
-				(d as any).__table__ = collectionName;
-
-				render(d, isAvailable, user.id, driverName, collectionName, docId, rideContentScope);
-			} catch (e) {
-				console.error('Ride detail load failed:', e);
-				showError(loadingEl, errorEl);
-			}
-		})();
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
-
 	/* ── Render ── */
-	function render(d: Record<string, any>, isAvailable: boolean, currentUid: string, driverName: string, collectionName: string, docId: string | null, rideContentScope: HTMLElement | null) {
-		const loadingEl = document.getElementById('ride-loading')!;
-		const contentEl = document.getElementById('ride-content')!;
+	function render(d: Record<string, any>, isAvailable: boolean, currentUid: string, driverName: string) {
 		loadingEl.classList.add('hidden');
 		contentEl.classList.remove('hidden');
 

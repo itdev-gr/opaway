@@ -286,7 +286,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-	/* ── Image preview helper ── */
+	/* ── Add-form image preview ── */
+	const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
+	const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
+	const imgPlaceholder = document.getElementById('img-placeholder')!;
+	let previewTimer: ReturnType<typeof setTimeout>;
+
 	function applyPreview(input: HTMLInputElement, preview: HTMLImageElement, placeholder: Element) {
 		const url = input.value.trim();
 		if (url) {
@@ -300,7 +305,23 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 	}
 
-	/* ── File upload handler ── */
+	imgInput.addEventListener('input', () => {
+		clearTimeout(previewTimer);
+		previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
+	});
+
+	/* ── Edit-modal image preview ── */
+	const eImgInput       = document.getElementById('e-image')       as HTMLInputElement;
+	const eImgPreview     = document.getElementById('e-img-preview') as HTMLImageElement;
+	const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
+	let ePreviewTimer: ReturnType<typeof setTimeout>;
+
+	eImgInput.addEventListener('input', () => {
+		clearTimeout(ePreviewTimer);
+		ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
+	});
+
+	/* ── File upload handlers ── */
 	async function handleFileUpload(fileInput: HTMLInputElement, urlInput: HTMLInputElement, preview: HTMLImageElement, placeholder: Element, statusEl: HTMLElement, folder: string) {
 		const file = fileInput.files?.[0];
 		if (!file) return;
@@ -319,6 +340,22 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		}
 		fileInput.value = '';
 	}
+
+	document.getElementById('f-file')?.addEventListener('change', () => {
+		handleFileUpload(
+			document.getElementById('f-file') as HTMLInputElement,
+			imgInput, imgPreview, imgPlaceholder,
+			document.getElementById('f-upload-status')!, 'vehicles'
+		);
+	});
+
+	document.getElementById('e-file')?.addEventListener('change', () => {
+		handleFileUpload(
+			document.getElementById('e-file') as HTMLInputElement,
+			eImgInput, eImgPreview, eImgPlaceholder,
+			document.getElementById('e-upload-status')!, 'vehicles'
+		);
+	});
 
 	/* ── Render grid ── */
 	function renderGrid() {
@@ -446,11 +483,78 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		renderGrid();
 	}
 
+	/* ── Form submit ── */
+	const form      = document.getElementById('vehicle-form') as HTMLFormElement;
+	const statusEl  = document.getElementById('form-status')!;
+	const submitBtn = document.getElementById('submit-btn')    as HTMLButtonElement;
+
+	const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const image         = (document.getElementById('f-image')         as HTMLInputElement).value.trim();
+		const name          = (document.getElementById('f-name')          as HTMLInputElement).value.trim();
+		const slug          = (document.getElementById('f-slug')          as HTMLInputElement).value.trim();
+		const models        = (document.getElementById('f-models')        as HTMLInputElement).value.trim();
+		const maxPassengers = parseInt((document.getElementById('f-maxPassengers') as HTMLInputElement).value);
+		const maxLuggage    = parseInt((document.getElementById('f-maxLuggage')    as HTMLInputElement).value);
+		const badge         = (document.getElementById('f-badge')         as HTMLInputElement).value.trim();
+		const sortOrder     = parseInt((document.getElementById('f-sortOrder')     as HTMLInputElement).value) || 0;
+
+		if (!image || !name || !slug || !models || isNaN(maxPassengers) || isNaN(maxLuggage)) {
+			setStatus('Please fill in all required fields.', 'text-red-500'); return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Adding…';
+		setStatus('', '');
+
+		const { data: inserted, error: insErr } = await supabase.from('vehicles').insert({
+			slug, name, models, image_url: image, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder,
+			published: true, owner_id: null, is_platform: true,
+		}).select().single();
+		if (insErr) {
+			console.error('Add vehicle failed:', insErr);
+			setStatus(`Error: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
+		} else {
+			items.push({ id: inserted.id, slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder, active: true });
+			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+			renderGrid();
+			form.reset();
+			imgPreview.classList.add('hidden');
+			imgPlaceholder.classList.remove('hidden');
+			setStatus('Vehicle added successfully!', 'text-emerald-600 font-medium');
+			setTimeout(() => setStatus('', ''), 4000);
+		}
+		submitBtn.disabled = false;
+		submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Vehicle`;
+	});
+
 	/* ── Delete modal ── */
 	const closeDeleteModal = () => {
 		const m = document.getElementById('delete-modal')!;
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
+
+	document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
+	document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
+
+	document.getElementById('delete-yes')?.addEventListener('click', async () => {
+		const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
+		yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
+		{
+			const { error: delErr } = await supabase.from('vehicles').delete().eq('id', pendingDeleteId);
+			if (delErr) {
+				console.error('Vehicle delete failed:', delErr);
+				alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
+			} else {
+				items = items.filter(i => i.id !== pendingDeleteId);
+				renderGrid();
+			}
+		}
+		yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
+		closeDeleteModal();
+	});
 
 	/* ── Edit modal ── */
 	function openEditModal(id: string) {
@@ -467,11 +571,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		(document.getElementById('e-badge')         as HTMLInputElement).value = item.badge || '';
 		(document.getElementById('e-sortOrder')     as HTMLInputElement).value = String(item.sortOrder ?? 0);
 
-		applyPreview(
-			document.getElementById('e-image')       as HTMLInputElement,
-			document.getElementById('e-img-preview') as HTMLImageElement,
-			document.getElementById('e-img-placeholder')!,
-		);
+		applyPreview(eImgInput, eImgPreview, eImgPlaceholder);
 
 		document.getElementById('edit-status')!.textContent = '';
 
@@ -485,170 +585,52 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		m.classList.add('hidden'); m.classList.remove('flex');
 	};
 
-	function pageInit() {
-		/* ── Add-form image preview ── */
-		const imgInput       = document.getElementById('f-image')       as HTMLInputElement;
-		const imgPreview     = document.getElementById('img-preview')    as HTMLImageElement;
-		const imgPlaceholder = document.getElementById('img-placeholder')!;
-		let previewTimer: ReturnType<typeof setTimeout>;
+	document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
+	document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
 
-		imgInput.addEventListener('input', () => {
-			clearTimeout(previewTimer);
-			previewTimer = setTimeout(() => applyPreview(imgInput, imgPreview, imgPlaceholder), 400);
-		});
+	document.getElementById('edit-save')?.addEventListener('click', async () => {
+		const image         = (document.getElementById('e-image')         as HTMLInputElement).value.trim();
+		const name          = (document.getElementById('e-name')          as HTMLInputElement).value.trim();
+		const slug          = (document.getElementById('e-slug')          as HTMLInputElement).value.trim();
+		const models        = (document.getElementById('e-models')        as HTMLInputElement).value.trim();
+		const maxPassengers = parseInt((document.getElementById('e-maxPassengers') as HTMLInputElement).value);
+		const maxLuggage    = parseInt((document.getElementById('e-maxLuggage')    as HTMLInputElement).value);
+		const badge         = (document.getElementById('e-badge')         as HTMLInputElement).value.trim();
+		const sortOrder     = parseInt((document.getElementById('e-sortOrder')     as HTMLInputElement).value) || 0;
+		const editStatus    = document.getElementById('edit-status')!;
+		const saveBtn       = document.getElementById('edit-save') as HTMLButtonElement;
 
-		/* ── Edit-modal image preview ── */
-		const eImgInput       = document.getElementById('e-image')       as HTMLInputElement;
-		const eImgPreview     = document.getElementById('e-img-preview') as HTMLImageElement;
-		const eImgPlaceholder = document.getElementById('e-img-placeholder')!;
-		let ePreviewTimer: ReturnType<typeof setTimeout>;
-
-		eImgInput.addEventListener('input', () => {
-			clearTimeout(ePreviewTimer);
-			ePreviewTimer = setTimeout(() => applyPreview(eImgInput, eImgPreview, eImgPlaceholder), 400);
-		});
-
-		/* ── File upload listeners ── */
-		document.getElementById('f-file')?.addEventListener('change', () => {
-			handleFileUpload(
-				document.getElementById('f-file') as HTMLInputElement,
-				document.getElementById('f-image') as HTMLInputElement,
-				document.getElementById('img-preview') as HTMLImageElement,
-				document.getElementById('img-placeholder')!,
-				document.getElementById('f-upload-status')!, 'vehicles'
-			);
-		});
-
-		document.getElementById('e-file')?.addEventListener('change', () => {
-			handleFileUpload(
-				document.getElementById('e-file') as HTMLInputElement,
-				document.getElementById('e-image') as HTMLInputElement,
-				document.getElementById('e-img-preview') as HTMLImageElement,
-				document.getElementById('e-img-placeholder')!,
-				document.getElementById('e-upload-status')!, 'vehicles'
-			);
-		});
-
-		/* ── Form submit ── */
-		const form      = document.getElementById('vehicle-form') as HTMLFormElement;
-		const statusEl  = document.getElementById('form-status')!;
-		const submitBtn = document.getElementById('submit-btn')    as HTMLButtonElement;
-
-		const setStatus = (msg: string, cls: string) => { statusEl.textContent = msg; statusEl.className = `text-sm ${cls}`; };
-
-		form.addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const image         = (document.getElementById('f-image')         as HTMLInputElement).value.trim();
-			const name          = (document.getElementById('f-name')          as HTMLInputElement).value.trim();
-			const slug          = (document.getElementById('f-slug')          as HTMLInputElement).value.trim();
-			const models        = (document.getElementById('f-models')        as HTMLInputElement).value.trim();
-			const maxPassengers = parseInt((document.getElementById('f-maxPassengers') as HTMLInputElement).value);
-			const maxLuggage    = parseInt((document.getElementById('f-maxLuggage')    as HTMLInputElement).value);
-			const badge         = (document.getElementById('f-badge')         as HTMLInputElement).value.trim();
-			const sortOrder     = parseInt((document.getElementById('f-sortOrder')     as HTMLInputElement).value) || 0;
-
-			if (!image || !name || !slug || !models || isNaN(maxPassengers) || isNaN(maxLuggage)) {
-				setStatus('Please fill in all required fields.', 'text-red-500'); return;
-			}
-
-			submitBtn.disabled = true;
-			submitBtn.textContent = 'Adding…';
-			setStatus('', '');
-
-			const { data: inserted, error: insErr } = await supabase.from('vehicles').insert({
-				slug, name, models, image_url: image, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder,
-				published: true, owner_id: null, is_platform: true,
-			}).select().single();
-			if (insErr) {
-				console.error('Add vehicle failed:', insErr);
-				setStatus(`Error: [${insErr.code ?? 'unknown'}] ${insErr.message}`, 'text-red-500');
-			} else {
-				items.push({ id: inserted.id, slug, name, models, image, maxPassengers, maxLuggage, badge, sortOrder, active: true });
-				items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-				renderGrid();
-				form.reset();
-				(document.getElementById('img-preview') as HTMLImageElement).classList.add('hidden');
-				document.getElementById('img-placeholder')!.classList.remove('hidden');
-				setStatus('Vehicle added successfully!', 'text-emerald-600 font-medium');
-				setTimeout(() => setStatus('', ''), 4000);
-			}
-			submitBtn.disabled = false;
-			submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Add Vehicle`;
-		});
-
-		/* ── Delete modal listeners ── */
-		document.getElementById('delete-no')?.addEventListener('click', closeDeleteModal);
-		document.getElementById('delete-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
-
-		document.getElementById('delete-yes')?.addEventListener('click', async () => {
-			const yesBtn = document.getElementById('delete-yes') as HTMLButtonElement;
-			yesBtn.textContent = 'Deleting…'; yesBtn.disabled = true;
-			{
-				const { error: delErr } = await supabase.from('vehicles').delete().eq('id', pendingDeleteId);
-				if (delErr) {
-					console.error('Vehicle delete failed:', delErr);
-					alert(`Delete failed: [${delErr.code ?? 'unknown'}] ${delErr.message}`);
-				} else {
-					items = items.filter(i => i.id !== pendingDeleteId);
-					renderGrid();
-				}
-			}
-			yesBtn.textContent = 'Yes'; yesBtn.disabled = false;
-			closeDeleteModal();
-		});
-
-		/* ── Edit modal listeners ── */
-		document.getElementById('edit-close')?.addEventListener('click', closeEditModal);
-		document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
-		document.getElementById('edit-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditModal(); });
-
-		document.getElementById('edit-save')?.addEventListener('click', async () => {
-			const image         = (document.getElementById('e-image')         as HTMLInputElement).value.trim();
-			const name          = (document.getElementById('e-name')          as HTMLInputElement).value.trim();
-			const slug          = (document.getElementById('e-slug')          as HTMLInputElement).value.trim();
-			const models        = (document.getElementById('e-models')        as HTMLInputElement).value.trim();
-			const maxPassengers = parseInt((document.getElementById('e-maxPassengers') as HTMLInputElement).value);
-			const maxLuggage    = parseInt((document.getElementById('e-maxLuggage')    as HTMLInputElement).value);
-			const badge         = (document.getElementById('e-badge')         as HTMLInputElement).value.trim();
-			const sortOrder     = parseInt((document.getElementById('e-sortOrder')     as HTMLInputElement).value) || 0;
-			const editStatus    = document.getElementById('edit-status')!;
-			const saveBtn       = document.getElementById('edit-save') as HTMLButtonElement;
-
-			if (!image || !name || !slug || !models || isNaN(maxPassengers) || isNaN(maxLuggage)) {
-				editStatus.textContent = 'Please fill in all required fields.';
-				editStatus.className = 'text-sm text-red-500';
-				return;
-			}
-
-			saveBtn.disabled = true;
-			saveBtn.textContent = 'Saving…';
-			editStatus.textContent = '';
-
-			const { error: updErr } = await supabase.from('vehicles').update({ image_url: image, name, slug, models, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder }).eq('id', pendingEditId);
-			if (updErr) {
-				console.error('Update vehicle failed:', updErr);
-				editStatus.textContent = `Error: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
-				editStatus.className = 'text-sm text-red-500';
-			} else {
-				const item = items.find(i => i.id === pendingEditId);
-				if (item) Object.assign(item, { image, name, slug, models, maxPassengers, maxLuggage, badge, sortOrder });
-				items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-				renderGrid();
-				closeEditModal();
-			}
-			saveBtn.disabled = false;
-			saveBtn.textContent = 'Save Changes';
-		});
-
-		/* ── Auth guard observer ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		if (!image || !name || !slug || !models || isNaN(maxPassengers) || isNaN(maxLuggage)) {
+			editStatus.textContent = 'Please fill in all required fields.';
+			editStatus.className = 'text-sm text-red-500';
+			return;
 		}
-	}
 
-	document.addEventListener('astro:page-load', pageInit);
+		saveBtn.disabled = true;
+		saveBtn.textContent = 'Saving…';
+		editStatus.textContent = '';
+
+		const { error: updErr } = await supabase.from('vehicles').update({ image_url: image, name, slug, models, max_passengers: maxPassengers, max_luggage: maxLuggage, badge, sort_order: sortOrder }).eq('id', pendingEditId);
+		if (updErr) {
+			console.error('Update vehicle failed:', updErr);
+			editStatus.textContent = `Error: [${updErr.code ?? 'unknown'}] ${updErr.message}`;
+			editStatus.className = 'text-sm text-red-500';
+		} else {
+			const item = items.find(i => i.id === pendingEditId);
+			if (item) Object.assign(item, { image, name, slug, models, maxPassengers, maxLuggage, badge, sortOrder });
+			items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+			renderGrid();
+			closeEditModal();
+		}
+		saveBtn.disabled = false;
+		saveBtn.textContent = 'Save Changes';
+	});
+
+	/* ── Auth guard observer ── */
+	const authEl   = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadItems(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>

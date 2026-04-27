@@ -405,87 +405,81 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		});
 	});
 
-	function pageInit() {
-		/* ── Modal ── */
-		const modal      = document.getElementById('add-transfer-modal')!;
-		const openModal  = () => modal.classList.remove('hidden');
-		const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-transfer-form') as HTMLFormElement)?.reset(); document.getElementById('tf-error')!.classList.add('hidden'); };
+	/* ── Modal ── */
+	const modal      = document.getElementById('add-transfer-modal')!;
+	const openModal  = () => modal.classList.remove('hidden');
+	const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-transfer-form') as HTMLFormElement)?.reset(); document.getElementById('tf-error')!.classList.add('hidden'); };
 
-		document.getElementById('add-transfer-btn')?.addEventListener('click', openModal);
-		document.getElementById('add-transfer-close')?.addEventListener('click', closeModal);
-		document.getElementById('add-transfer-cancel2')?.addEventListener('click', closeModal);
-		modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+	document.getElementById('add-transfer-btn')?.addEventListener('click', openModal);
+	document.getElementById('add-transfer-close')?.addEventListener('click', closeModal);
+	document.getElementById('add-transfer-cancel2')?.addEventListener('click', closeModal);
+	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-		document.getElementById('add-transfer-form')?.addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const errorEl = document.getElementById('tf-error')!;
-			const submitBtn = document.getElementById('tf-submit') as HTMLButtonElement;
-			errorEl.classList.add('hidden');
+	document.getElementById('add-transfer-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const errorEl = document.getElementById('tf-error')!;
+		const submitBtn = document.getElementById('tf-submit') as HTMLButtonElement;
+		errorEl.classList.add('hidden');
 
-			const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
+		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
 
-			const firstName  = val('tf-firstName');
-			const lastName   = val('tf-lastName');
-			const email      = val('tf-email');
-			const phone      = val('tf-phone');
-			const from       = val('tf-from');
-			const to         = val('tf-to');
-			const date       = val('tf-date');
-			const time       = val('tf-time');
-			const passengers = parseInt(val('tf-passengers') || '1', 10);
-			const vehicle    = val('tf-vehicle');
-			const notes      = val('tf-notes');
-			const rideStatus = val('tf-rideStatus') || 'new';
+		const firstName  = val('tf-firstName');
+		const lastName   = val('tf-lastName');
+		const email      = val('tf-email');
+		const phone      = val('tf-phone');
+		const from       = val('tf-from');
+		const to         = val('tf-to');
+		const date       = val('tf-date');
+		const time       = val('tf-time');
+		const passengers = parseInt(val('tf-passengers') || '1', 10);
+		const vehicle    = val('tf-vehicle');
+		const notes      = val('tf-notes');
+		const rideStatus = val('tf-rideStatus') || 'new';
 
-			if (!firstName || !lastName || !email || !from || !to || !date || !passengers) {
-				errorEl.textContent = 'Please fill in all required fields.';
-				errorEl.classList.remove('hidden');
-				return;
-			}
-
-			submitBtn.disabled = true;
-			submitBtn.textContent = 'Saving…';
-			const { error: insErr } = await supabase.from('transfers').insert({
-				booking_type: 'transfer',
-				first_name: firstName,
-				last_name: lastName,
-				email,
-				phone: phone || '',
-				from, to, date,
-				time: time || '',
-				passengers,
-				vehicle_name: vehicle || '',
-				vehicle_slug: vehicle ? vehicle.toLowerCase() : '',
-				notes: notes || '',
-				ride_status: rideStatus,
-				payment_status: 'pending',
-				payment_method: 'cash',
-				driver: '',
-				added_by_admin: true,
-			}).select().single();
-			if (insErr) {
-				console.error('Add transfer failed:', insErr);
-				errorEl.textContent = `Failed to save: [${insErr.code ?? 'unknown'}] ${insErr.message}`;
-				errorEl.classList.remove('hidden');
-			} else {
-				closeModal();
-				await loadTransfers();
-			}
-			submitBtn.disabled = false;
-			submitBtn.textContent = 'Save Booking';
-		});
-
-		/* ── Auth guard ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadTransfers(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		if (!firstName || !lastName || !email || !from || !to || !date || !passengers) {
+			errorEl.textContent = 'Please fill in all required fields.';
+			errorEl.classList.remove('hidden');
+			return;
 		}
-	}
 
-	document.addEventListener('astro:page-load', pageInit);
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Saving…';
+		const { error: insErr } = await supabase.from('transfers').insert({
+			booking_type: 'transfer',
+			first_name: firstName,
+			last_name: lastName,
+			email,
+			phone: phone || '',
+			from, to, date,
+			time: time || '',
+			passengers,
+			vehicle_name: vehicle || '',
+			vehicle_slug: vehicle ? vehicle.toLowerCase() : '',
+			notes: notes || '',
+			ride_status: rideStatus,
+			payment_status: 'pending',
+			payment_method: 'cash',
+			driver: '',
+			added_by_admin: true,
+		}).select().single();
+		if (insErr) {
+			console.error('Add transfer failed:', insErr);
+			errorEl.textContent = `Failed to save: [${insErr.code ?? 'unknown'}] ${insErr.message}`;
+			errorEl.classList.remove('hidden');
+		} else {
+			closeModal();
+			await loadTransfers();
+		}
+		submitBtn.disabled = false;
+		submitBtn.textContent = 'Save Booking';
+	});
+
+	/* ── Auth guard ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadTransfers(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>
 
 <script>
@@ -512,9 +506,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 	if (MAPS_KEY) {
 		if (typeof google !== 'undefined' && google.maps) {
-			document.addEventListener('astro:page-load', () => {
-				initAdminTransferAutocomplete();
-			});
+			initAdminTransferAutocomplete();
 		} else {
 			const script = document.createElement('script');
 			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAdminTransferAcCb`;

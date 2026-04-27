@@ -165,6 +165,21 @@ import DriverLayout from '../../components/DriverLayout.astro';
 <script>
 	import { supabase, verifyCurrentPassword } from '../../lib/supabase';
 
+	const loadingEl = document.getElementById('settings-loading');
+	const contentEl = document.getElementById('settings-content');
+	const authCheck = document.getElementById('driver-auth-check');
+
+	/* ── Wait for DriverLayout auth check to pass ── */
+	function waitForAuth(): Promise<void> {
+		return new Promise((resolve) => {
+			if (authCheck?.classList.contains('hidden')) { resolve(); return; }
+			const obs = new MutationObserver(() => {
+				if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+			});
+			if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+		});
+	}
+
 	/* ── Status flash helper ── */
 	function showStatus(el: HTMLElement | null, msg: string, success: boolean) {
 		if (!el) return;
@@ -185,34 +200,16 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text}">${s.label}</span>`;
 	}
 
-	function pageInit() {
-		const loadingEl = document.getElementById('settings-loading');
-		const contentEl = document.getElementById('settings-content');
-		const authCheck = document.getElementById('driver-auth-check');
-
-		/* ── Wait for DriverLayout auth check to pass ── */
-		function waitForAuth(): Promise<void> {
-			return new Promise((resolve) => {
-				if (authCheck?.classList.contains('hidden')) { resolve(); return; }
-				const obs = new MutationObserver(() => {
-					if (authCheck?.classList.contains('hidden')) { obs.disconnect(); resolve(); }
-				});
-				if (authCheck) obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
-			});
-		}
-
-		/* ── Main ── */
-		// Guard so the auth flow (which may re-fire on USER_UPDATED after
-		// password change) doesn't re-bind the submit handlers — which would
-		// stack listeners and could leave the UI in a stuck "Updating..." state
-		// because a prior invocation's finally-block reference gets shadowed.
-		let handlersBound = false;
-
-		(async () => {
-			const { data: { session } } = await supabase.auth.getSession();
-			if (!session?.user) return;
-			const user = session.user;
-			await waitForAuth();
+	/* ── Main ── */
+	// Guard so onAuthStateChange (which re-fires on USER_UPDATED after
+	// password change) doesn't re-bind the submit handlers — which would
+	// stack listeners and could leave the UI in a stuck "Updating..." state
+	// because a prior invocation's finally-block reference gets shadowed.
+	let handlersBound = false;
+	supabase.auth.onAuthStateChange(async (_event, session) => {
+		if (!session?.user) return;
+		const user = session.user;
+		await waitForAuth();
 
 		// Load partner data
 		let partnerData: any = {};
@@ -382,8 +379,5 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				btn.textContent = 'Update Password';
 			}
 		});
-		})();
-	}
-
-	document.addEventListener('astro:page-load', pageInit);
+	});
 </script>

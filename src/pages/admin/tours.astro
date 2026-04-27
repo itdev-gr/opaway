@@ -351,84 +351,78 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		input.focus();
 	});
 
-	function pageInit() {
-		/* ── Modal ── */
-		const modal      = document.getElementById('add-tour-modal')!;
-		const openModal  = async () => { modal.classList.remove('hidden'); await loadTourOptions(); };
-		const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-tour-form') as HTMLFormElement)?.reset(); document.getElementById('to-error')!.classList.add('hidden'); };
+	/* ── Modal ── */
+	const modal      = document.getElementById('add-tour-modal')!;
+	const openModal  = async () => { modal.classList.remove('hidden'); await loadTourOptions(); };
+	const closeModal = () => { modal.classList.add('hidden'); (document.getElementById('add-tour-form') as HTMLFormElement)?.reset(); document.getElementById('to-error')!.classList.add('hidden'); };
 
-		document.getElementById('add-tour-btn')?.addEventListener('click', openModal);
-		document.getElementById('add-tour-close')?.addEventListener('click', closeModal);
-		document.getElementById('add-tour-cancel2')?.addEventListener('click', closeModal);
-		modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+	document.getElementById('add-tour-btn')?.addEventListener('click', openModal);
+	document.getElementById('add-tour-close')?.addEventListener('click', closeModal);
+	document.getElementById('add-tour-cancel2')?.addEventListener('click', closeModal);
+	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-		document.getElementById('add-tour-form')?.addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const errorEl  = document.getElementById('to-error')!;
-			const submitBtn = document.getElementById('to-submit') as HTMLButtonElement;
-			errorEl.classList.add('hidden');
+	document.getElementById('add-tour-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const errorEl  = document.getElementById('to-error')!;
+		const submitBtn = document.getElementById('to-submit') as HTMLButtonElement;
+		errorEl.classList.add('hidden');
 
-			const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
+		const val = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value.trim();
 
-			const name         = val('to-name');
-			const email        = val('to-email');
-			const phone        = val('to-phone');
-			const tourSel      = document.getElementById('to-tour') as HTMLSelectElement;
-			const tourId       = tourSel.value;
-			const tourName     = tourId ? tourSel.options[tourSel.selectedIndex]?.text : '';
-			const pickup       = val('to-pickup');
-			const date         = val('to-date');
-			const time         = val('to-time');
-			const participants = parseInt(val('to-participants') || '1', 10);
-			const notes        = val('to-notes');
-			const rideStatus   = val('to-rideStatus') || 'new';
+		const name         = val('to-name');
+		const email        = val('to-email');
+		const phone        = val('to-phone');
+		const tourSel      = document.getElementById('to-tour') as HTMLSelectElement;
+		const tourId       = tourSel.value;
+		const tourName     = tourId ? tourSel.options[tourSel.selectedIndex]?.text : '';
+		const pickup       = val('to-pickup');
+		const date         = val('to-date');
+		const time         = val('to-time');
+		const participants = parseInt(val('to-participants') || '1', 10);
+		const notes        = val('to-notes');
+		const rideStatus   = val('to-rideStatus') || 'new';
 
-			if (!name || !email || !tourId || !pickup || !date || !participants) {
-				errorEl.textContent = 'Please fill in all required fields.';
+		if (!name || !email || !tourId || !pickup || !date || !participants) {
+			errorEl.textContent = 'Please fill in all required fields.';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Saving…';
+		try {
+			const { error } = await supabase.from('tours').insert({
+				name, email, phone: phone || '',
+				tour: tourName, tour_id: tourId,
+				pickup, pickup_location: pickup,
+				date, time: time || '',
+				participants,
+				special_requests: notes || '',
+				ride_status: rideStatus,
+				payment_status: 'pending',
+				payment_method: 'cash',
+				added_by_admin: true,
+			}).select().single();
+			if (error) {
+				console.error('Tour booking insert failed:', error);
+				errorEl.textContent = `Failed to save: [${error.code ?? 'unknown'}] ${error.message}`;
 				errorEl.classList.remove('hidden');
 				return;
 			}
-
-			submitBtn.disabled = true;
-			submitBtn.textContent = 'Saving…';
-			try {
-				const { error } = await supabase.from('tours').insert({
-					name, email, phone: phone || '',
-					tour: tourName, tour_id: tourId,
-					pickup, pickup_location: pickup,
-					date, time: time || '',
-					participants,
-					special_requests: notes || '',
-					ride_status: rideStatus,
-					payment_status: 'pending',
-					payment_method: 'cash',
-					added_by_admin: true,
-				}).select().single();
-				if (error) {
-					console.error('Tour booking insert failed:', error);
-					errorEl.textContent = `Failed to save: [${error.code ?? 'unknown'}] ${error.message}`;
-					errorEl.classList.remove('hidden');
-					return;
-				}
-				closeModal();
-				await loadTours();
-			} finally {
-				submitBtn.disabled = false;
-				submitBtn.textContent = 'Save Booking';
-			}
-		});
-
-		/* ── Auth guard ── */
-		const authEl = document.getElementById('admin-auth-check');
-		if (authEl) {
-			const observer = new MutationObserver(() => {
-				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadTours(); }
-			});
-			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+			closeModal();
+			await loadTours();
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Save Booking';
 		}
-	}
+	});
 
-	document.addEventListener('astro:page-load', pageInit);
+	/* ── Auth guard ── */
+	const authEl = document.getElementById('admin-auth-check');
+	const observer = new MutationObserver(() => {
+		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadTours(); }
+	});
+	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 </script>
 
 <script>
@@ -451,9 +445,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 	if (MAPS_KEY) {
 		if (typeof google !== 'undefined' && google.maps) {
-			document.addEventListener('astro:page-load', () => {
-				initAdminTourAutocomplete();
-			});
+			initAdminTourAutocomplete();
 		} else {
 			const script = document.createElement('script');
 			script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places&callback=initAdminTourAcCb`;
