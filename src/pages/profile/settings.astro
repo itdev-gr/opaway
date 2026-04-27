@@ -169,90 +169,7 @@ import ProfileContent from '../../components/ProfileContent.astro';
 	import { supabase, verifyCurrentPassword } from '../../lib/supabase';
 	import { uploadImage } from '../../lib/upload';
 
-	// Avatar upload wiring. Elements may be null if the page is stripped down
-	// for tests; guard each access.
-	const avatarFileInput = document.getElementById('avatarFile') as HTMLInputElement | null;
-	const avatarPreview   = document.getElementById('avatarPreview') as HTMLImageElement | null;
-	const avatarPlaceholder = document.getElementById('avatarPlaceholder');
-	const avatarRemoveBtn = document.getElementById('avatarRemove');
-	const avatarStatus    = document.getElementById('avatarStatus');
-
-	function setAvatarStatus(msg: string, tone: 'info' | 'success' | 'error') {
-		if (!avatarStatus) return;
-		avatarStatus.textContent = msg;
-		avatarStatus.className = `text-xs ${tone === 'error' ? 'text-red-600' : tone === 'success' ? 'text-emerald-600' : 'text-[#0C6B95]'}`;
-		avatarStatus.classList.remove('hidden');
-	}
-
-	avatarFileInput?.addEventListener('change', async () => {
-		const file = avatarFileInput.files?.[0];
-		if (!file) return;
-		if (file.size > 5 * 1024 * 1024) {
-			setAvatarStatus('File too large (max 5 MB).', 'error');
-			avatarFileInput.value = '';
-			return;
-		}
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) { setAvatarStatus('Please log in again.', 'error'); return; }
-		setAvatarStatus('Uploading…', 'info');
-		try {
-			const url = await uploadImage(file, `avatars/${user.id}`);
-			const { error } = await supabase.from('users').update({ photo_url: url }).eq('id', user.id);
-			if (error) throw error;
-			await supabase.auth.updateUser({ data: { avatar_url: url } });
-			if (avatarPreview) { avatarPreview.src = url; avatarPreview.classList.remove('hidden'); }
-			avatarPlaceholder?.classList.add('hidden');
-			avatarRemoveBtn?.classList.remove('hidden');
-			setAvatarStatus('Uploaded.', 'success');
-			setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
-		} catch (err: any) {
-			console.error('Avatar upload failed:', err);
-			setAvatarStatus(err?.message || 'Upload failed.', 'error');
-		} finally {
-			avatarFileInput.value = '';
-		}
-	});
-
-	avatarRemoveBtn?.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
-		setAvatarStatus('Removing…', 'info');
-		const { error } = await supabase.from('users').update({ photo_url: null }).eq('id', user.id);
-		if (error) { setAvatarStatus(error.message, 'error'); return; }
-		await supabase.auth.updateUser({ data: { avatar_url: null } });
-		if (avatarPreview) { avatarPreview.src = ''; avatarPreview.classList.add('hidden'); }
-		avatarPlaceholder?.classList.remove('hidden');
-		avatarRemoveBtn?.classList.add('hidden');
-		setAvatarStatus('Removed.', 'success');
-		setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
-	});
-
-	// Elements
-	const displayNameInput = document.getElementById('displayName') as HTMLInputElement;
-	const emailInput = document.getElementById('email') as HTMLInputElement;
-	const providerBadge = document.getElementById('providerBadge')!;
-	const memberSince = document.getElementById('memberSince')!;
-	const profileMsg = document.getElementById('profileMsg')!;
-	const saveProfileBtn = document.getElementById('saveProfileBtn') as HTMLButtonElement;
-
-	const passwordSection = document.getElementById('passwordSection')!;
-	const currentPasswordInput = document.getElementById('currentPassword') as HTMLInputElement;
-	const newPasswordInput = document.getElementById('newPassword') as HTMLInputElement;
-	const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
-	const strengthFill = document.getElementById('strengthFill')!;
-	const strengthLabel = document.getElementById('strengthLabel')!;
-	const passwordMsg = document.getElementById('passwordMsg')!;
-	const updatePasswordBtn = document.getElementById('updatePasswordBtn') as HTMLButtonElement;
-
-	const deleteAccountBtn = document.getElementById('deleteAccountBtn')!;
-	const deleteModal = document.getElementById('deleteModal')!;
-	const cancelDeleteBtn = document.getElementById('cancelDeleteBtn')!;
-	const confirmDeleteBtn = document.getElementById('confirmDeleteBtn') as HTMLButtonElement;
-	const deleteModalMsg = document.getElementById('deleteModalMsg')!;
-
-	let currentProvider = '';
-
-	// Helpers
+	// Helpers (pure — no DOM references; safe at module level)
 	function showMsg(el: HTMLElement, text: string, type: 'success' | 'error') {
 		el.textContent = text;
 		el.className = `text-sm rounded-lg px-4 py-2 ${type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`;
@@ -263,7 +180,6 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		el.classList.add('hidden');
 	}
 
-	// Password strength
 	function getStrength(pw: string): { pct: number; label: string; color: string } {
 		let score = 0;
 		if (pw.length >= 6) score++;
@@ -278,27 +194,114 @@ import ProfileContent from '../../components/ProfileContent.astro';
 		return { pct: 100, label: 'Very strong', color: 'bg-green-600' };
 	}
 
-	newPasswordInput?.addEventListener('input', () => {
-		const val = newPasswordInput.value;
-		if (!val) {
-			strengthFill.style.width = '0%';
-			strengthFill.className = 'h-full rounded-full transition-all duration-300';
-			strengthLabel.textContent = '';
-			return;
-		}
-		const s = getStrength(val);
-		strengthFill.style.width = `${s.pct}%`;
-		strengthFill.className = `h-full rounded-full transition-all duration-300 ${s.color}`;
-		strengthLabel.textContent = s.label;
-		strengthLabel.className = `text-xs mt-1 ${s.pct <= 40 ? 'text-red-500' : s.pct <= 60 ? 'text-yellow-600' : 'text-green-600'}`;
-	});
+	function pageInit() {
+		// Avatar upload wiring. Elements may be null if the page is stripped down
+		// for tests; guard each access.
+		const avatarFileInput = document.getElementById('avatarFile') as HTMLInputElement | null;
+		const avatarPreview   = document.getElementById('avatarPreview') as HTMLImageElement | null;
+		const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+		const avatarRemoveBtn = document.getElementById('avatarRemove');
+		const avatarStatus    = document.getElementById('avatarStatus');
 
-	// Auth check + load profile (one-time, no subscription)
-	{
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) {
-			window.location.href = '/login';
-		} else {
+		function setAvatarStatus(msg: string, tone: 'info' | 'success' | 'error') {
+			if (!avatarStatus) return;
+			avatarStatus.textContent = msg;
+			avatarStatus.className = `text-xs ${tone === 'error' ? 'text-red-600' : tone === 'success' ? 'text-emerald-600' : 'text-[#0C6B95]'}`;
+			avatarStatus.classList.remove('hidden');
+		}
+
+		avatarFileInput?.addEventListener('change', async () => {
+			const file = avatarFileInput.files?.[0];
+			if (!file) return;
+			if (file.size > 5 * 1024 * 1024) {
+				setAvatarStatus('File too large (max 5 MB).', 'error');
+				avatarFileInput.value = '';
+				return;
+			}
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) { setAvatarStatus('Please log in again.', 'error'); return; }
+			setAvatarStatus('Uploading…', 'info');
+			try {
+				const url = await uploadImage(file, `avatars/${user.id}`);
+				const { error } = await supabase.from('users').update({ photo_url: url }).eq('id', user.id);
+				if (error) throw error;
+				await supabase.auth.updateUser({ data: { avatar_url: url } });
+				if (avatarPreview) { avatarPreview.src = url; avatarPreview.classList.remove('hidden'); }
+				avatarPlaceholder?.classList.add('hidden');
+				avatarRemoveBtn?.classList.remove('hidden');
+				setAvatarStatus('Uploaded.', 'success');
+				setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
+			} catch (err: any) {
+				console.error('Avatar upload failed:', err);
+				setAvatarStatus(err?.message || 'Upload failed.', 'error');
+			} finally {
+				avatarFileInput.value = '';
+			}
+		});
+
+		avatarRemoveBtn?.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
+			setAvatarStatus('Removing…', 'info');
+			const { error } = await supabase.from('users').update({ photo_url: null }).eq('id', user.id);
+			if (error) { setAvatarStatus(error.message, 'error'); return; }
+			await supabase.auth.updateUser({ data: { avatar_url: null } });
+			if (avatarPreview) { avatarPreview.src = ''; avatarPreview.classList.add('hidden'); }
+			avatarPlaceholder?.classList.remove('hidden');
+			avatarRemoveBtn?.classList.add('hidden');
+			setAvatarStatus('Removed.', 'success');
+			setTimeout(() => avatarStatus?.classList.add('hidden'), 3000);
+		});
+
+		// Elements
+		const displayNameInput = document.getElementById('displayName') as HTMLInputElement;
+		const emailInput = document.getElementById('email') as HTMLInputElement;
+		const providerBadge = document.getElementById('providerBadge')!;
+		const memberSince = document.getElementById('memberSince')!;
+		const profileMsg = document.getElementById('profileMsg')!;
+		const saveProfileBtn = document.getElementById('saveProfileBtn') as HTMLButtonElement;
+
+		const passwordSection = document.getElementById('passwordSection')!;
+		const currentPasswordInput = document.getElementById('currentPassword') as HTMLInputElement;
+		const newPasswordInput = document.getElementById('newPassword') as HTMLInputElement;
+		const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+		const strengthFill = document.getElementById('strengthFill')!;
+		const strengthLabel = document.getElementById('strengthLabel')!;
+		const passwordMsg = document.getElementById('passwordMsg')!;
+		const updatePasswordBtn = document.getElementById('updatePasswordBtn') as HTMLButtonElement;
+
+		const deleteAccountBtn = document.getElementById('deleteAccountBtn')!;
+		const deleteModal = document.getElementById('deleteModal')!;
+		const cancelDeleteBtn = document.getElementById('cancelDeleteBtn')!;
+		const confirmDeleteBtn = document.getElementById('confirmDeleteBtn') as HTMLButtonElement;
+		const deleteModalMsg = document.getElementById('deleteModalMsg')!;
+
+		let currentProvider = '';
+
+		// Password strength
+		newPasswordInput?.addEventListener('input', () => {
+			const val = newPasswordInput.value;
+			if (!val) {
+				strengthFill.style.width = '0%';
+				strengthFill.className = 'h-full rounded-full transition-all duration-300';
+				strengthLabel.textContent = '';
+				return;
+			}
+			const s = getStrength(val);
+			strengthFill.style.width = `${s.pct}%`;
+			strengthFill.className = `h-full rounded-full transition-all duration-300 ${s.color}`;
+			strengthLabel.textContent = s.label;
+			strengthLabel.className = `text-xs mt-1 ${s.pct <= 40 ? 'text-red-500' : s.pct <= 60 ? 'text-yellow-600' : 'text-green-600'}`;
+		});
+
+		// Auth check + load profile
+		(async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) {
+				window.location.href = '/login';
+				return;
+			}
+
 			emailInput.value = user.email || '';
 
 			try {
@@ -341,109 +344,111 @@ import ProfileContent from '../../components/ProfileContent.astro';
 			} catch (err) {
 				console.error('User profile load failed:', err);
 			}
-		}
-	}
+		})();
 
-	// Save profile
-	saveProfileBtn?.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		// Save profile
+		saveProfileBtn?.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
 
-		const newName = displayNameInput.value.trim();
-		if (!newName) {
-			showMsg(profileMsg, 'Display name cannot be empty.', 'error');
-			return;
-		}
-
-		saveProfileBtn.disabled = true;
-		hideMsg(profileMsg);
-
-		try {
-			await supabase.auth.updateUser({ data: { display_name: newName } });
-			await supabase.from('users').update({ display_name: newName }).eq('id', user.id);
-			showMsg(profileMsg, 'Profile updated successfully.', 'success');
-		} catch (err: any) {
-			showMsg(profileMsg, err.message || 'Failed to update profile.', 'error');
-		} finally {
-			saveProfileBtn.disabled = false;
-		}
-	});
-
-	// Update password
-	updatePasswordBtn?.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user || !user.email) return;
-
-		const currentPw = currentPasswordInput.value;
-		const newPw = newPasswordInput.value;
-		const confirm = confirmPasswordInput.value;
-
-		hideMsg(passwordMsg);
-
-		if (!currentPw) {
-			showMsg(passwordMsg, 'Please enter your current password.', 'error');
-			return;
-		}
-		if (newPw.length < 6) {
-			showMsg(passwordMsg, 'New password must be at least 6 characters.', 'error');
-			return;
-		}
-		if (newPw !== confirm) {
-			showMsg(passwordMsg, 'Passwords do not match.', 'error');
-			return;
-		}
-
-		updatePasswordBtn.disabled = true;
-
-		try {
-			// Verify current password using a throwaway client so the live session
-			// doesn't rotate and the layout auth-check doesn't re-trigger (F34).
-			const verifyErr = await verifyCurrentPassword(user.email, currentPw);
-			if (verifyErr) {
-				showMsg(passwordMsg, 'Current password is incorrect.', 'error');
+			const newName = displayNameInput.value.trim();
+			if (!newName) {
+				showMsg(profileMsg, 'Display name cannot be empty.', 'error');
 				return;
 			}
-			const { error } = await supabase.auth.updateUser({ password: newPw });
-			if (error) throw error;
-			showMsg(passwordMsg, 'Password updated successfully.', 'success');
-			currentPasswordInput.value = '';
-			newPasswordInput.value = '';
-			confirmPasswordInput.value = '';
-			strengthFill.style.width = '0%';
-			strengthLabel.textContent = '';
-		} catch (err: any) {
-			showMsg(passwordMsg, err.message || 'Failed to update password.', 'error');
-		} finally {
-			updatePasswordBtn.disabled = false;
-		}
-	});
 
-	// Delete account
-	deleteAccountBtn?.addEventListener('click', () => {
-		deleteModal.classList.remove('hidden');
-		deleteModal.classList.add('flex');
-		hideMsg(deleteModalMsg);
-	});
+			saveProfileBtn.disabled = true;
+			hideMsg(profileMsg);
 
-	cancelDeleteBtn?.addEventListener('click', () => {
-		deleteModal.classList.add('hidden');
-		deleteModal.classList.remove('flex');
-	});
+			try {
+				await supabase.auth.updateUser({ data: { display_name: newName } });
+				await supabase.from('users').update({ display_name: newName }).eq('id', user.id);
+				showMsg(profileMsg, 'Profile updated successfully.', 'success');
+			} catch (err: any) {
+				showMsg(profileMsg, err.message || 'Failed to update profile.', 'error');
+			} finally {
+				saveProfileBtn.disabled = false;
+			}
+		});
 
-	confirmDeleteBtn?.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		// Update password
+		updatePasswordBtn?.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user || !user.email) return;
 
-		confirmDeleteBtn.disabled = true;
-		hideMsg(deleteModalMsg);
+			const currentPw = currentPasswordInput.value;
+			const newPw = newPasswordInput.value;
+			const confirm = confirmPasswordInput.value;
 
-		try {
-			await supabase.from('users').delete().eq('id', user.id);
-			await supabase.auth.signOut();
-			window.location.href = '/';
-		} catch (err: any) {
-			showMsg(deleteModalMsg, err.message || 'Failed to delete account.', 'error');
-			confirmDeleteBtn.disabled = false;
-		}
-	});
+			hideMsg(passwordMsg);
+
+			if (!currentPw) {
+				showMsg(passwordMsg, 'Please enter your current password.', 'error');
+				return;
+			}
+			if (newPw.length < 6) {
+				showMsg(passwordMsg, 'New password must be at least 6 characters.', 'error');
+				return;
+			}
+			if (newPw !== confirm) {
+				showMsg(passwordMsg, 'Passwords do not match.', 'error');
+				return;
+			}
+
+			updatePasswordBtn.disabled = true;
+
+			try {
+				// Verify current password using a throwaway client so the live session
+				// doesn't rotate and the layout auth-check doesn't re-trigger (F34).
+				const verifyErr = await verifyCurrentPassword(user.email, currentPw);
+				if (verifyErr) {
+					showMsg(passwordMsg, 'Current password is incorrect.', 'error');
+					return;
+				}
+				const { error } = await supabase.auth.updateUser({ password: newPw });
+				if (error) throw error;
+				showMsg(passwordMsg, 'Password updated successfully.', 'success');
+				currentPasswordInput.value = '';
+				newPasswordInput.value = '';
+				confirmPasswordInput.value = '';
+				strengthFill.style.width = '0%';
+				strengthLabel.textContent = '';
+			} catch (err: any) {
+				showMsg(passwordMsg, err.message || 'Failed to update password.', 'error');
+			} finally {
+				updatePasswordBtn.disabled = false;
+			}
+		});
+
+		// Delete account
+		deleteAccountBtn?.addEventListener('click', () => {
+			deleteModal.classList.remove('hidden');
+			deleteModal.classList.add('flex');
+			hideMsg(deleteModalMsg);
+		});
+
+		cancelDeleteBtn?.addEventListener('click', () => {
+			deleteModal.classList.add('hidden');
+			deleteModal.classList.remove('flex');
+		});
+
+		confirmDeleteBtn?.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
+
+			confirmDeleteBtn.disabled = true;
+			hideMsg(deleteModalMsg);
+
+			try {
+				await supabase.from('users').delete().eq('id', user.id);
+				await supabase.auth.signOut();
+				window.location.href = '/';
+			} catch (err: any) {
+				showMsg(deleteModalMsg, err.message || 'Failed to delete account.', 'error');
+				confirmDeleteBtn.disabled = false;
+			}
+		});
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>
