@@ -308,11 +308,18 @@ const transferBrackets = [
 		}
 	}
 
-	document.getElementById('save-btn')?.addEventListener('click', savePrices);
+	function pageInit() {
+		document.getElementById('save-btn')?.addEventListener('click', savePrices);
 
-	const authEl = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadPrices(); }
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		/* ── Auth guard observer ── */
+		const authEl = document.getElementById('admin-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadPrices(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>
