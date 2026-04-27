@@ -3,7 +3,7 @@
 
 <nav class="absolute top-0 left-0 right-0 z-50 bg-white/80 text-black font-sans flex items-center justify-between px-6 py-1 lg:px-10">
 	<!-- Logo -->
-	<a href="/" class="flex items-center shrink-0" aria-label="Opawey - Αρχική">
+	<a href="/" class="flex items-center shrink-0" aria-label="Opawey - Home">
 		<img src="/logo-opaway.svg" alt="Opawey" class="h-24 w-auto object-contain" width="280" height="96" />
 	</a>
 
@@ -107,8 +107,14 @@
 
 	</div>
 
-	<!-- Right: Profile icon + Sign-in (guest) or Profile link (logged-in) -->
+	<!-- Right: Language toggle + Profile icon + Sign-in (guest) or Profile link (logged-in) -->
 	<div class="flex items-center gap-3 shrink-0">
+		<!-- Language toggle (placeholder for future i18n; persists selection only) -->
+		<div id="nav-language-toggle" class="flex items-center gap-0.5 rounded-full border border-neutral-200 bg-white p-0.5 shrink-0">
+			<button type="button" data-lang="el" aria-label="Greek" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">GR</button>
+			<button type="button" data-lang="en" aria-label="English" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">EN</button>
+			<button type="button" data-lang="es" aria-label="Spanish" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">ES</button>
+		</div>
 		<!-- Guest: profile icon + Sign in -->
 		<div id="nav-auth-guest" class="flex items-center gap-3">
 			<a href="/login" aria-label="My Account" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200">
@@ -143,6 +149,35 @@
 <script>
 	import { supabase } from '../lib/supabase';
 
+	const LANG_KEY = 'opaway:lang';
+	const SUPPORTED_LANGS = ['el', 'en', 'es'] as const;
+	type Lang = typeof SUPPORTED_LANGS[number];
+
+	function getStoredLang(): Lang {
+		try {
+			const v = localStorage.getItem(LANG_KEY);
+			if (v && (SUPPORTED_LANGS as readonly string[]).includes(v)) return v as Lang;
+		} catch {}
+		return 'en';
+	}
+
+	function applyLang(lang: Lang) {
+		document.documentElement.lang = lang;
+		document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach((btn) => {
+			const isActive = btn.dataset.lang === lang;
+			btn.classList.toggle('bg-[#0C6B95]', isActive);
+			btn.classList.toggle('text-white', isActive);
+			btn.classList.toggle('text-neutral-600', !isActive);
+			btn.classList.toggle('hover:bg-neutral-100', !isActive);
+		});
+	}
+
+	function setLang(lang: Lang) {
+		try { localStorage.setItem(LANG_KEY, lang); } catch {}
+		applyLang(lang);
+		document.dispatchEvent(new CustomEvent('opaway:lang-changed', { detail: lang }));
+	}
+
 	async function initNavbar() {
 		// Active link highlight
 		const pathname = window.location.pathname;
@@ -152,6 +187,18 @@
 			const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
 			link.classList.toggle('border-black', isActive);
 			link.classList.toggle('border-transparent', !isActive);
+		});
+
+		// Language toggle: paint current selection + wire clicks (DOM is fresh on each
+		// page-load, so re-binding doesn't accumulate listeners).
+		applyLang(getStoredLang());
+		document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const lang = btn.dataset.lang as Lang | undefined;
+				if (lang && (SUPPORTED_LANGS as readonly string[]).includes(lang)) {
+					setLang(lang);
+				}
+			});
 		});
 
 		// Auth state — get current session from localStorage (instant, no network)
