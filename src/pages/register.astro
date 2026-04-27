@@ -13,7 +13,7 @@ import Layout from '../layouts/Layout.astro';
 
 			<!-- Logo -->
 			<div class="flex justify-center mb-8">
-				<a href="/" aria-label="Go to homepage" data-i18n-aria-el="Μετάβαση στην αρχική σελίδα">
+				<a href="/" aria-label="Go to homepage" data-i18n-aria-el="Μετάβαση στην αρχική σελίδα" data-i18n-aria-es="Ir a la página de inicio">
 					<img src="/logo-opaway.svg" alt="Opawey" class="h-16 w-auto object-contain" />
 				</a>
 			</div>
@@ -25,10 +25,10 @@ import Layout from '../layouts/Layout.astro';
 				<div class="mb-8">
 					<div class="flex items-center gap-2 mb-3">
 						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-						<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Ξεκινήστε">Get Started</span>
+						<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Ξεκινήστε" data-i18n-es="Comience aquí">Get Started</span>
 					</div>
-					<h1 class="text-3xl font-bold text-neutral-900" data-i18n-el="Δημιουργία λογαριασμού">Create account</h1>
-					<p class="text-neutral-500 text-sm mt-1" data-i18n-el="Γίνετε μέλος της Opawey και κλείστε εύκολα το επόμενο ταξίδι σας.">Join Opawey and book your next journey with ease.</p>
+					<h1 class="text-3xl font-bold text-neutral-900" data-i18n-el="Δημιουργία λογαριασμού" data-i18n-es="Crear cuenta">Create account</h1>
+					<p class="text-neutral-500 text-sm mt-1" data-i18n-el="Γίνετε μέλος της Opawey και κλείστε εύκολα το επόμενο ταξίδι σας." data-i18n-es="Únase a Opawey y reserve su próximo viaje con facilidad.">Join Opawey and book your next journey with ease.</p>
 				</div>
 
 				<!-- Auth error message -->
@@ -39,7 +39,7 @@ import Layout from '../layouts/Layout.astro';
 
 					<!-- Full Name -->
 					<div class="flex flex-col gap-1.5">
-						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Ονοματεπώνυμο">Full Name</label>
+						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Ονοματεπώνυμο" data-i18n-es="Nombre completo">Full Name</label>
 						<div class="relative">
 							<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -51,6 +51,7 @@ import Layout from '../layouts/Layout.astro';
 								name="name"
 								placeholder="e.g. John Smith"
 								data-i18n-placeholder-el="π.χ. Γιάννης Παπαδόπουλος"
+								data-i18n-placeholder-es="p. ej. Juan García"
 								autocomplete="name"
 								class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm"
 							/>
@@ -59,7 +60,7 @@ import Layout from '../layouts/Layout.astro';
 
 					<!-- Email -->
 					<div class="flex flex-col gap-1.5">
-						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Διεύθυνση email">Email Address</label>
+						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Διεύθυνση email" data-i18n-es="Correo electrónico">Email Address</label>
 						<div class="relative">
 							<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -71,6 +72,7 @@ import Layout from '../layouts/Layout.astro';
 								name="email"
 								placeholder="e.g. john@example.com"
 								data-i18n-placeholder-el="π.χ. giannis@example.com"
+								data-i18n-placeholder-es="p. ej. juan@ejemplo.com"
 								autocomplete="email"
 								class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm"
 							/>
@@ -79,7 +81,7 @@ import Layout from '../layouts/Layout.astro';
 
 					<!-- Password -->
 					<div class="flex flex-col gap-1.5">
-						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Κωδικός πρόσβασης">Password</label>
+						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Κωδικός πρόσβασης" data-i18n-es="Contraseña">Password</label>
 						<div class="relative">
 							<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -92,6 +94,7 @@ import Layout from '../layouts/Layout.astro';
 								name="password"
 								placeholder="Min. 8 characters"
 								data-i18n-placeholder-el="Τουλάχιστον 8 χαρακτήρες"
+								data-i18n-placeholder-es="Mín. 8 caracteres"
 								autocomplete="new-password"
 								class="w-full pl-10 pr-11 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm"
 							/>
@@ -101,6 +104,7 @@ import Layout from '../layouts/Layout.astro';
 								class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
 								aria-label="Toggle password visibility"
 								data-i18n-aria-el="Εναλλαγή ορατότητας κωδικού"
+								data-i18n-aria-es="Alternar visibilidad de la contraseña"
 							>
 								<svg id="eye-icon" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -123,7 +127,7 @@ import Layout from '../layouts/Layout.astro';
 
 					<!-- Confirm Password -->
 					<div class="flex flex-col gap-1.5">
-						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Επιβεβαίωση κωδικού">Confirm Password</label>
+						<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Επιβεβαίωση κωδικού" data-i18n-es="Confirmar contraseña">Confirm Password</label>
 						<div class="relative">
 							<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -136,6 +140,7 @@ import Layout from '../layouts/Layout.astro';
 								name="confirm_password"
 								placeholder="Repeat your password"
 								data-i18n-placeholder-el="Επαναλάβετε τον κωδικό σας"
+								data-i18n-placeholder-es="Repita su contraseña"
 								autocomplete="new-password"
 								class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm"
 							/>
@@ -154,10 +159,10 @@ import Layout from '../layouts/Layout.astro';
 							</div>
 						</div>
 						<span class="text-sm text-neutral-600 leading-relaxed">
-							<span data-i18n-el="Συμφωνώ με τους">I agree to the</span>
-							<a href="/terms" class="text-[#0C6B95] font-medium hover:underline" data-i18n-el="Όρους Χρήσης">Terms of Service</a>
-							<span data-i18n-el="και την">and</span>
-							<a href="/privacy" class="text-[#0C6B95] font-medium hover:underline" data-i18n-el="Πολιτική Απορρήτου">Privacy Policy</a>
+							<span data-i18n-el="Συμφωνώ με τους" data-i18n-es="Acepto los">I agree to the</span>
+							<a href="/terms" class="text-[#0C6B95] font-medium hover:underline" data-i18n-el="Όρους Χρήσης" data-i18n-es="Términos de uso">Terms of Service</a>
+							<span data-i18n-el="και την" data-i18n-es="y la">and</span>
+							<a href="/privacy" class="text-[#0C6B95] font-medium hover:underline" data-i18n-el="Πολιτική Απορρήτου" data-i18n-es="Política de privacidad">Privacy Policy</a>
 						</span>
 					</label>
 
@@ -167,7 +172,7 @@ import Layout from '../layouts/Layout.astro';
 						id="submit-btn"
 						class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
 					>
-						<span data-i18n-el="Δημιουργία λογαριασμού">Create Account</span>
+						<span data-i18n-el="Δημιουργία λογαριασμού" data-i18n-es="Crear cuenta">Create Account</span>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 						</svg>
@@ -177,14 +182,14 @@ import Layout from '../layouts/Layout.astro';
 
 				<!-- Login link -->
 				<p class="text-center text-sm text-neutral-500 mt-6">
-					<span data-i18n-el="Έχετε ήδη λογαριασμό;">Already have an account?</span>
-					<a href="/login" class="text-[#0C6B95] font-semibold hover:text-[#0a5c82] transition-colors" data-i18n-el="Σύνδεση">Sign in</a>
+					<span data-i18n-el="Έχετε ήδη λογαριασμό;" data-i18n-es="¿Ya tiene una cuenta?">Already have an account?</span>
+					<a href="/login" class="text-[#0C6B95] font-semibold hover:text-[#0a5c82] transition-colors" data-i18n-el="Σύνδεση" data-i18n-es="Iniciar sesión">Sign in</a>
 				</p>
 
 				<!-- Partner link -->
 				<p class="text-center text-sm text-neutral-500 mt-3">
-					<span data-i18n-el="Θέλετε να συνεργαστείτε μαζί μας;">Want to work with us?</span>
-					<a href="/register-partner" class="text-[#0C6B95] font-semibold hover:text-[#0a5c82] transition-colors" data-i18n-el="Γίνετε συνεργάτης">Become a partner</a>
+					<span data-i18n-el="Θέλετε να συνεργαστείτε μαζί μας;" data-i18n-es="¿Quiere trabajar con nosotros?">Want to work with us?</span>
+					<a href="/register-partner" class="text-[#0C6B95] font-semibold hover:text-[#0a5c82] transition-colors" data-i18n-el="Γίνετε συνεργάτης" data-i18n-es="Hazte socio">Become a partner</a>
 				</p>
 
 			</div>
