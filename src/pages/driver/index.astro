@@ -220,13 +220,17 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		}
 	}
 
-	// Auth guard
+	// Race fix: layout's async getSession() can flip auth-check to hidden BEFORE
+	// this script attaches its observer. Check current state first; only observe if pending.
 	const authEl = document.getElementById('driver-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) {
-			observer.disconnect();
+	if (authEl) {
+		if (authEl.classList.contains('hidden')) {
 			loadDashboard();
+		} else {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadDashboard(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 		}
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	}
 </script>
