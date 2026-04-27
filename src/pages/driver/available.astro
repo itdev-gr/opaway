@@ -240,66 +240,72 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		}
 	}
 
-	// Confirm modal handlers
-	document.getElementById('confirm-cancel')?.addEventListener('click', () => {
-		pendingAcceptId = null;
-		document.getElementById('confirm-modal')?.classList.add('hidden');
-	});
-
-	document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
-		if (e.target === e.currentTarget) {
+	function pageInit() {
+		// Confirm modal handlers
+		document.getElementById('confirm-cancel')?.addEventListener('click', () => {
 			pendingAcceptId = null;
 			document.getElementById('confirm-modal')?.classList.add('hidden');
-		}
-	});
+		});
 
-	document.getElementById('confirm-accept')?.addEventListener('click', async () => {
-		if (!pendingAcceptId) return;
-		const rideId = pendingAcceptId;
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
-
-		const btn = document.getElementById('confirm-accept') as HTMLButtonElement;
-		btn.disabled = true;
-		btn.textContent = 'Accepting...';
-
-		try {
-			const { error } = await supabase
-				.from('transfers')
-				.update({
-					driver_uid: user.id,
-					driver: partnerName,
-					ride_status: 'assigned',
-				})
-				.eq('id', rideId);
-
-			if (error) {
-				console.error('Driver accept ride failed:', error);
-				showToast(`Failed to accept ride: [${error.code ?? 'unknown'}] ${error.message}`);
-				return;
+		document.getElementById('confirm-modal')?.addEventListener('click', (e) => {
+			if (e.target === e.currentTarget) {
+				pendingAcceptId = null;
+				document.getElementById('confirm-modal')?.classList.add('hidden');
 			}
+		});
 
-			// Remove from local list
-			allRides = allRides.filter(r => r.id !== rideId);
-			hiddenIds.delete(rideId);
+		document.getElementById('confirm-accept')?.addEventListener('click', async () => {
+			if (!pendingAcceptId) return;
+			const rideId = pendingAcceptId;
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
 
-			document.getElementById('confirm-modal')?.classList.add('hidden');
-			renderRides(getVisibleRides());
-			showToast('Ride accepted successfully!');
-		} finally {
-			btn.disabled = false;
-			btn.textContent = 'Accept';
-			pendingAcceptId = null;
+			const btn = document.getElementById('confirm-accept') as HTMLButtonElement;
+			btn.disabled = true;
+			btn.textContent = 'Accepting...';
+
+			try {
+				const { error } = await supabase
+					.from('transfers')
+					.update({
+						driver_uid: user.id,
+						driver: partnerName,
+						ride_status: 'assigned',
+					})
+					.eq('id', rideId);
+
+				if (error) {
+					console.error('Driver accept ride failed:', error);
+					showToast(`Failed to accept ride: [${error.code ?? 'unknown'}] ${error.message}`);
+					return;
+				}
+
+				// Remove from local list
+				allRides = allRides.filter(r => r.id !== rideId);
+				hiddenIds.delete(rideId);
+
+				document.getElementById('confirm-modal')?.classList.add('hidden');
+				renderRides(getVisibleRides());
+				showToast('Ride accepted successfully!');
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Accept';
+				pendingAcceptId = null;
+			}
+		});
+
+		// Auth guard
+		const authEl = document.getElementById('driver-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) {
+					observer.disconnect();
+					loadRides();
+				}
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 		}
-	});
+	}
 
-	// Auth guard
-	const authEl = document.getElementById('driver-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) {
-			observer.disconnect();
-			loadRides();
-		}
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	document.addEventListener('astro:page-load', pageInit);
 </script>

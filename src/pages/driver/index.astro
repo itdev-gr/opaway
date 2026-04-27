@@ -220,13 +220,19 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		}
 	}
 
-	// Auth guard
-	const authEl = document.getElementById('driver-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) {
-			observer.disconnect();
-			loadDashboard();
+	function pageInit() {
+		// Auth guard
+		const authEl = document.getElementById('driver-auth-check');
+		if (authEl) {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) {
+					observer.disconnect();
+					loadDashboard();
+				}
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
 		}
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	}
+
+	document.addEventListener('astro:page-load', pageInit);
 </script>
