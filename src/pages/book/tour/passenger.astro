@@ -58,7 +58,7 @@ import Layout from '../../../layouts/Layout.astro';
 								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								<span data-i18n-el="Θα σας στείλουμε εδώ το κουπόνι κράτησης." data-i18n-es="Le enviaremos aquí el bono de la reserva.">We'll send your booking voucher here.</span>
+								<span data-i18n-el="Θα σας στείλουμε εδώ το voucher της κράτησης." data-i18n-es="Le enviaremos aquí el bono de la reserva.">We'll send your booking voucher here.</span>
 							</p>
 						</div>
 
@@ -74,27 +74,27 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								<span data-i18n-el="Παρακαλούμε δώστε έναν αριθμό επικοινωνίας ώστε ο οδηγός μας να μπορεί να επικοινωνήσει με τον επιβάτη αν χρειαστεί." data-i18n-es="Indique un número de contacto para que nuestro conductor pueda comunicarse con el pasajero si es necesario.">Please provide a contact number so our driver can reach the passenger if needed.</span>
+								<span data-i18n-el="Δώστε μας έναν αριθμό επικοινωνίας, ώστε ο οδηγός να μπορεί να σας βρει αν χρειαστεί." data-i18n-es="Indique un número de contacto para que nuestro conductor pueda comunicarse con el pasajero si es necesario.">Please provide a contact number so our driver can reach the passenger if needed.</span>
 							</p>
 						</div>
 
 						<!-- Hotel option (shown only when the catalog row opts in) -->
 						<div id="hotel-option-block" class="border-t border-neutral-100 pt-6 mb-6 hidden">
-							<p class="block text-sm font-medium text-neutral-700 mb-1.5" data-i18n-el="Ξενοδοχείο για αυτή την πολυήμερη εκδρομή" data-i18n-es="Hotel para esta excursión de varios días">Hotel for this multi-day tour</p>
-							<p class="text-xs text-neutral-500 mb-3" data-i18n-el="Αυτή η εκδρομή περιλαμβάνει διανυκτέρευση(εις). Πείτε μας πώς θέλετε να διαχειριστείτε το ξενοδοχείο." data-i18n-es="Esta excursión incluye una o varias noches. Indíquenos cómo desea gestionar el hotel.">This tour includes overnight stay(s). Let us know how you want to handle the hotel.</p>
+							<p class="block text-sm font-medium text-neutral-700 mb-1.5" data-i18n-el="Διαμονή για την πολυήμερη εκδρομή" data-i18n-es="Hotel para esta excursión de varios días">Hotel for this multi-day tour</p>
+							<p class="text-xs text-neutral-500 mb-3" data-i18n-el="Η εκδρομή περιλαμβάνει διανυκτέρευση. Πείτε μας πώς θέλετε να φροντίσετε για τη διαμονή σας." data-i18n-es="Esta excursión incluye una o varias noches. Indíquenos cómo desea gestionar el hotel.">This tour includes overnight stay(s). Let us know how you want to handle the hotel.</p>
 							<div class="flex flex-col gap-2" role="radiogroup" aria-label="Hotel option" data-i18n-aria-el="Επιλογή ξενοδοχείου" data-i18n-aria-es="Selección de hotel">
 								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
 									<input type="radio" name="hotel-choice" value="self-book" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
 									<span class="flex-1">
-										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Δεν χρειάζεται ξενοδοχείο — θα κάνω δική μου κράτηση" data-i18n-es="No necesito hotel — haré mi propia reserva">No hotel needed — I'll book my own</span>
-										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Φροντίζετε εσείς για τη διαμονή σας." data-i18n-es="Usted se encarga de su alojamiento.">You arrange your own accommodation.</span>
+										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Δεν χρειάζομαι ξενοδοχείο — θα κανονίσω μόνος/η μου τη διαμονή" data-i18n-es="No necesito hotel — haré mi propia reserva">No hotel needed — I'll book my own</span>
+										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Κανονίζετε μόνοι σας τη διαμονή σας." data-i18n-es="Usted se encarga de su alojamiento.">You arrange your own accommodation.</span>
 									</span>
 								</label>
 								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
 									<input type="radio" name="hotel-choice" value="include-booking" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
 									<span class="flex-1">
-										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Συμπερίληψη κράτησης ξενοδοχείου" data-i18n-es="Incluir reserva de hotel">Include hotel booking</span>
-										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Ένας από τους συνεργάτες μας θα επικοινωνήσει μαζί σας για να επιβεβαιώσει επιλογές ξενοδοχείου μετά την ολοκλήρωση." data-i18n-es="Uno de nuestros colaboradores se pondrá en contacto con usted para confirmar las opciones de hotel tras la finalización.">One of our agents will contact you to confirm hotel options after checkout.</span>
+										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Να συμπεριληφθεί κράτηση ξενοδοχείου" data-i18n-es="Incluir reserva de hotel">Include hotel booking</span>
+										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Ένας συνεργάτης μας θα επικοινωνήσει μαζί σας μετά την ολοκλήρωση, για να επιβεβαιώσει τις επιλογές ξενοδοχείου." data-i18n-es="Uno de nuestros colaboradores se pondrá en contacto con usted para confirmar las opciones de hotel tras la finalización.">One of our agents will contact you to confirm hotel options after checkout.</span>
 									</span>
 								</label>
 							</div>
@@ -110,15 +110,15 @@ import Layout from '../../../layouts/Layout.astro';
 								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
 									<input type="radio" name="tickets-choice" value="include" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" checked />
 									<span class="flex-1">
-										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Συμπερίληψη εισιτηρίων εισόδου" data-i18n-es="Incluir entradas de admisión">Include entrance tickets</span>
-										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Θα προσθέσουμε τα εισιτήρια στο σύνολό σας και θα τα διευθετήσουμε εκ των προτέρων." data-i18n-es="Añadiremos las entradas a su total y nos encargaremos de ellas con antelación.">We'll add the tickets to your total and pre-arrange them.</span>
+										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Να συμπεριληφθούν τα εισιτήρια εισόδου" data-i18n-es="Incluir entradas de admisión">Include entrance tickets</span>
+										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Θα προσθέσουμε τα εισιτήρια στο σύνολο και θα τα κανονίσουμε εκ των προτέρων." data-i18n-es="Añadiremos las entradas a su total y nos encargaremos de ellas con antelación.">We'll add the tickets to your total and pre-arrange them.</span>
 									</span>
 								</label>
 								<label class="flex items-start gap-3 px-4 py-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 has-[:checked]:border-[#0C6B95] has-[:checked]:bg-sky-50">
 									<input type="radio" name="tickets-choice" value="skip" class="mt-0.5 text-[#0C6B95] focus:ring-[#0C6B95]/20" />
 									<span class="flex-1">
-										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Δεν χρειάζονται εισιτήρια" data-i18n-es="No necesito entradas">No tickets needed</span>
-										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Θα φροντίσετε εσείς για τα εισιτήρια." data-i18n-es="Usted se encargará de las entradas.">You'll arrange tickets on your own.</span>
+										<span class="block text-sm font-medium text-neutral-800" data-i18n-el="Δεν χρειάζομαι εισιτήρια" data-i18n-es="No necesito entradas">No tickets needed</span>
+										<span class="block text-xs text-neutral-500 mt-0.5" data-i18n-el="Θα κανονίσετε μόνοι σας τα εισιτήρια." data-i18n-es="Usted se encargará de las entradas.">You'll arrange tickets on your own.</span>
 									</span>
 								</label>
 							</div>

@@ -82,7 +82,7 @@ import Layout from '../../../layouts/Layout.astro';
 										<input type="radio" name="pay-method" value="stripe" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
 											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Προπληρωμή (Online)" data-i18n-es="Pago anticipado (en línea)">Prepayment (Online)</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τώρα με πιστωτική/χρεωστική κάρτα" data-i18n-es="Pague ahora con tarjeta de crédito/débito">Pay now with credit/debit card</p>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε άμεσα με πιστωτική ή χρεωστική κάρτα" data-i18n-es="Pague ahora con tarjeta de crédito/débito">Pay now with credit/debit card</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-stripe-price">—</span>
@@ -94,7 +94,7 @@ import Layout from '../../../layouts/Layout.astro';
 										<p id="card-errors" class="text-sm text-red-500 mb-2 hidden"></p>
 										<p class="text-xs text-neutral-400 flex items-center gap-1.5">
 											<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-											<span data-i18n-el="Ασφαλές μέσω Stripe. Κρυπτογραφημένο από άκρο σε άκρο." data-i18n-es="Protegido por Stripe. Cifrado de extremo a extremo.">Secured by Stripe. Encrypted end-to-end.</span>
+											<span data-i18n-el="Ασφαλής πληρωμή μέσω Stripe — με πλήρη κρυπτογράφηση δεδομένων." data-i18n-es="Protegido por Stripe. Cifrado de extremo a extremo.">Secured by Stripe. Encrypted end-to-end.</span>
 										</p>
 									</div>
 									<div id="stripe-not-configured" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3">
@@ -110,7 +110,7 @@ import Layout from '../../../layouts/Layout.astro';
 										<input type="radio" name="pay-method" value="cash" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
 											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Μετρητά επί τόπου" data-i18n-es="Efectivo en el lugar">Cash on-site</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό σε μετρητά κατά την άφιξη" data-i18n-es="Pague al conductor en efectivo al llegar">Pay your driver in cash on arrival</p>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώνετε τον οδηγό μετρητά μόλις φτάσετε" data-i18n-es="Pague al conductor en efectivo al llegar">Pay your driver in cash on arrival</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-cash-price">—</span>
@@ -124,14 +124,14 @@ import Layout from '../../../layouts/Layout.astro';
 										<input type="radio" name="pay-method" value="card-onsite" class="w-4 h-4 text-[#0C6B95] focus:ring-[#0C6B95]/30" />
 										<div>
 											<span class="font-semibold text-sm text-neutral-900" data-i18n-el="Κάρτα επί τόπου" data-i18n-es="Tarjeta en el lugar">Card on-site</span>
-											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώστε τον οδηγό με κάρτα κατά την άφιξη" data-i18n-es="Pague al conductor con tarjeta al llegar">Pay your driver by card on arrival</p>
+											<p class="text-xs text-neutral-500 mt-0.5" data-i18n-el="Πληρώνετε τον οδηγό με κάρτα μόλις φτάσετε" data-i18n-es="Pague al conductor con tarjeta al llegar">Pay your driver by card on arrival</p>
 										</div>
 									</div>
 									<span class="font-bold text-neutral-900" id="method-card-price">—</span>
 								</div>
 								<p class="text-xs text-amber-600 mt-2 ml-7 flex items-center gap-1.5">
 									<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-									<span data-i18n-el="Ισχύει χρέωση συναλλαγής 5%" data-i18n-es="Se aplica un cargo por transacción del 5%">5% transaction fee applies</span> (<span id="card-fee-amount">+€0.00</span>)
+									<span data-i18n-el="Επιπλέον χρέωση 5% για πληρωμή με κάρτα" data-i18n-es="Se aplica un cargo por transacción del 5%">5% transaction fee applies</span> (<span id="card-fee-amount">+€0.00</span>)
 								</p>
 							</label>
 						</div>
@@ -161,12 +161,12 @@ import Layout from '../../../layouts/Layout.astro';
 						<div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
 							<svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 						</div>
-						<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Η κράτησή σας επιβεβαιώθηκε!" data-i18n-es="Tu reserva está confirmada">Booking confirmed!</h2>
-						<p class="text-neutral-500 mb-6" data-i18n-el="Η εκδρομή σας κρατήθηκε με επιτυχία." data-i18n-es="Su excursión se ha reservado con éxito.">Your tour has been booked successfully.</p>
+						<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Η κράτησή σας ολοκληρώθηκε με επιτυχία!" data-i18n-es="Tu reserva está confirmada">Booking confirmed!</h2>
+						<p class="text-neutral-500 mb-6" data-i18n-el="Η εκδρομή σας έχει επιβεβαιωθεί — ετοιμαστείτε για μια αξέχαστη μέρα." data-i18n-es="Su excursión se ha reservado con éxito.">Your tour has been booked successfully.</p>
 
 						<div class="bg-neutral-50 rounded-xl p-5 mb-6 max-w-md mx-auto text-left space-y-2">
 							<div class="flex justify-between text-sm">
-								<span class="text-neutral-500" data-i18n-el="Αρ. αναφοράς" data-i18n-es="N.º de referencia">Reference</span>
+								<span class="text-neutral-500" data-i18n-el="Κωδικός κράτησης" data-i18n-es="N.º de referencia">Reference</span>
 								<span id="success-ref" class="font-mono font-bold text-[#0C6B95]">—</span>
 							</div>
 							<div class="flex justify-between text-sm">
@@ -187,7 +187,7 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 						</div>
 
-						<p class="text-sm text-neutral-500 mb-6"><span data-i18n-el="Email επιβεβαίωσης θα σταλεί στο" data-i18n-es="Se enviará un correo electrónico de confirmación a">A confirmation email will be sent to</span> <strong id="success-email">—</strong></p>
+						<p class="text-sm text-neutral-500 mb-6"><span data-i18n-el="Θα σας στείλουμε email επιβεβαίωσης στο" data-i18n-es="Se enviará un correo electrónico de confirmación a">A confirmation email will be sent to</span> <strong id="success-email">—</strong></p>
 
 						<a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>

@@ -397,7 +397,7 @@ import Layout from '../../../layouts/Layout.astro';
 		const container = document.getElementById('vehicle-cards')!;
 
 		const badgeHtml = partnerDiscount > 0
-			? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium" data-i18n-el="Εφαρμόστηκε έκπτωση συνεργάτη: ${partnerDiscount}%" data-i18n-es="Descuento de socio aplicado: ${partnerDiscount}%">Partner discount: ${partnerDiscount}% applied</div>`
+			? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium" data-i18n-el="Ενεργή έκπτωση συνεργάτη: ${partnerDiscount}%" data-i18n-es="Descuento de socio aplicado: ${partnerDiscount}%">Partner discount: ${partnerDiscount}% applied</div>`
 			: '';
 
 		container.innerHTML = badgeHtml + vehicles.map(v => {
