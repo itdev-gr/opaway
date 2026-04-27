@@ -4,22 +4,30 @@ import ScrollReveal from './ScrollReveal.astro';
 const values = [
 	{
 		title: 'Safety',
+		titleEl: 'Ασφάλεια',
 		description: 'The safety of our passengers is our highest priority. Our vehicles meet the highest technical standards and are operated by experienced professional drivers. Every private transfer in Athens or mainland Greece is conducted with the utmost care to ensure peace of mind.',
+		descriptionEl: 'Η ασφάλεια των επιβατών μας αποτελεί την υψηλότερη προτεραιότητά μας. Τα οχήματά μας πληρούν τις αυστηρότερες τεχνικές προδιαγραφές και οδηγούνται από έμπειρους επαγγελματίες οδηγούς. Κάθε ιδιωτική μεταφορά στην Αθήνα ή στην ηπειρωτική Ελλάδα πραγματοποιείται με ιδιαίτερη φροντίδα ώστε να εξασφαλίζεται η ηρεμία σας.',
 		icon: 'shield',
 	},
 	{
 		title: 'Hospitality',
+		titleEl: 'Φιλοξενία',
 		description: 'Inspired by the Greek tradition of philoxenia, we welcome every traveler with warmth and professionalism. Our team combines genuine hospitality with personalized service to create authentic, memorable experiences.',
+		descriptionEl: 'Εμπνευσμένοι από την ελληνική παράδοση της φιλοξενίας, υποδεχόμαστε κάθε ταξιδιώτη με ζεστασιά και επαγγελματισμό. Η ομάδα μας συνδυάζει τη γνήσια φιλοξενία με την εξατομικευμένη εξυπηρέτηση για να δημιουργήσει αυθεντικές, αξέχαστες εμπειρίες.',
 		icon: 'heart',
 	},
 	{
 		title: 'Excellence',
+		titleEl: 'Αριστεία',
 		description: 'We are committed to exceeding expectations. From luxury airport transfers in Athens to personalized private tours, every detail — punctuality, vehicle quality, and service standards — reflects our commitment to premium travel experiences.',
+		descriptionEl: 'Είμαστε δεσμευμένοι να ξεπερνάμε τις προσδοκίες σας. Από τις πολυτελείς μεταφορές αεροδρομίου στην Αθήνα έως τα εξατομικευμένα ιδιωτικά τουρ, κάθε λεπτομέρεια — η συνέπεια, η ποιότητα των οχημάτων και τα πρότυπα εξυπηρέτησης — αντικατοπτρίζει τη δέσμευσή μας για κορυφαίες ταξιδιωτικές εμπειρίες.',
 		icon: 'star',
 	},
 	{
 		title: 'Flexibility',
+		titleEl: 'Ευελιξία',
 		description: 'We understand that every traveler is unique. Our services are tailored to meet the specific needs and preferences of our clients, whether adjusting schedules, routes, or activities. Our personalized approach allows us to offer quick, efficient solutions with a proactive, open-minded attitude.',
+		descriptionEl: 'Κατανοούμε ότι κάθε ταξιδιώτης είναι μοναδικός. Οι υπηρεσίες μας είναι προσαρμοσμένες στις συγκεκριμένες ανάγκες και προτιμήσεις των πελατών μας, είτε πρόκειται για προσαρμογή προγραμμάτων, διαδρομών ή δραστηριοτήτων. Η εξατομικευμένη μας προσέγγιση μάς επιτρέπει να προσφέρουμε γρήγορες και αποτελεσματικές λύσεις με προληπτική και ανοιχτόμυαλη στάση.',
 		icon: 'adjust',
 	},
 ];
@@ -41,15 +49,15 @@ const chipColors = ['#0C6B95', '#C97B4A', '#0C6B95', '#C97B4A'];
 				<div>
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-[#C97B4A] text-lg leading-none">✦</span>
-						<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase">Our Commitment</span>
+						<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase" data-i18n-el="Η δέσμευσή μας">Our Commitment</span>
 					</div>
-					<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight">
+					<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight" data-i18n-el="Αρχές που ορίζουν την ουσία μας">
 						Principles that define<br/>our <span class="italic text-[#C97B4A]">essence</span>
 					</h2>
 				</div>
 			</ScrollReveal>
 			<ScrollReveal delay={100}>
-				<p class="text-[#6b5a47] leading-relaxed lg:text-right">
+				<p class="text-[#6b5a47] leading-relaxed lg:text-right" data-i18n-el="Στην Opawey, πιστεύουμε ότι κάθε ταξίδι θα πρέπει να είναι μια εξαιρετική εμπειρία. Γι' αυτό η δέσμευσή μας θεμελιώνεται σε αρχές που καθοδηγούν κάθε υπηρεσία που παρέχουμε.">
 					At Opawey, we believe that every journey should be an exceptional experience. That is why our commitment is founded on principles that guide every service we provide.
 				</p>
 			</ScrollReveal>
@@ -68,8 +76,8 @@ const chipColors = ['#0C6B95', '#C97B4A', '#0C6B95', '#C97B4A'];
 								<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
 							</svg>
 						</div>
-						<h3 class="font-serif text-2xl font-bold mb-3">Our Mission</h3>
-						<p class="text-[#EFF6FB]/85 text-sm leading-relaxed">Our mission is to deliver exceptional luxury transportation and private travel services in Greece, ensuring every client enjoys a seamless experience defined by comfort, reliability, and personalized attention.</p>
+						<h3 class="font-serif text-2xl font-bold mb-3" data-i18n-el="Η αποστολή μας">Our Mission</h3>
+						<p class="text-[#EFF6FB]/85 text-sm leading-relaxed" data-i18n-el="Η αποστολή μας είναι να παρέχουμε εξαιρετικές υπηρεσίες πολυτελών μεταφορών και ιδιωτικών ταξιδιών στην Ελλάδα, εξασφαλίζοντας ότι κάθε πελάτης απολαμβάνει μια αψεγάδιαστη εμπειρία που ορίζεται από την άνεση, την αξιοπιστία και την εξατομικευμένη προσοχή.">Our mission is to deliver exceptional luxury transportation and private travel services in Greece, ensuring every client enjoys a seamless experience defined by comfort, reliability, and personalized attention.</p>
 					</div>
 				</div>
 			</ScrollReveal>
@@ -87,8 +95,8 @@ const chipColors = ['#0C6B95', '#C97B4A', '#0C6B95', '#C97B4A'];
 								<path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
 							</svg>
 						</div>
-						<h3 class="font-serif text-2xl font-bold mb-3">Our Vision</h3>
-						<p class="text-[#6b5a47] text-sm leading-relaxed">Our vision is to become a trusted reference for luxury transportation and bespoke travel experiences in Greece, recognized for our commitment to excellence, professionalism, and authentic hospitality. We aspire to create journeys that combine comfort, culture, and exclusivity, transforming every trip into a remarkable memory.</p>
+						<h3 class="font-serif text-2xl font-bold mb-3" data-i18n-el="Το όραμά μας">Our Vision</h3>
+						<p class="text-[#6b5a47] text-sm leading-relaxed" data-i18n-el="Το όραμά μας είναι να γίνουμε σημείο αναφοράς για τις πολυτελείς μεταφορές και τις εξατομικευμένες ταξιδιωτικές εμπειρίες στην Ελλάδα, αναγνωρισμένοι για τη δέσμευσή μας στην αριστεία, τον επαγγελματισμό και την αυθεντική φιλοξενία. Φιλοδοξούμε να δημιουργούμε ταξίδια που συνδυάζουν άνεση, πολιτισμό και αποκλειστικότητα, μετατρέποντας κάθε ταξίδι σε μια αξιομνημόνευτη ανάμνηση.">Our vision is to become a trusted reference for luxury transportation and bespoke travel experiences in Greece, recognized for our commitment to excellence, professionalism, and authentic hospitality. We aspire to create journeys that combine comfort, culture, and exclusivity, transforming every trip into a remarkable memory.</p>
 					</div>
 				</div>
 			</ScrollReveal>
@@ -137,8 +145,8 @@ const chipColors = ['#0C6B95', '#C97B4A', '#0C6B95', '#C97B4A'];
 								<path d="M0 4 Q 6 0 12 4 T 24 4 T 36 4 L 40 4" stroke="#C97B4A" stroke-width="1.5" stroke-linecap="round" />
 							</svg>
 
-							<h3 class="font-serif text-xl font-bold text-[#2B3A3A] mb-3 relative z-10">{v.title}</h3>
-							<p class="text-[#6b5a47] text-sm leading-relaxed relative z-10">{v.description}</p>
+							<h3 class="font-serif text-xl font-bold text-[#2B3A3A] mb-3 relative z-10" data-i18n-el={v.titleEl}>{v.title}</h3>
+							<p class="text-[#6b5a47] text-sm leading-relaxed relative z-10" data-i18n-el={v.descriptionEl}>{v.description}</p>
 						</article>
 					</ScrollReveal>
 				);
