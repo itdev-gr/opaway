@@ -86,11 +86,29 @@ import { ViewTransitions } from 'astro:transitions';
 			else if (lang === 'es' && el.dataset.i18nAriaEs) translated = el.dataset.i18nAriaEs;
 			el.setAttribute('aria-label', translated ?? el.dataset.i18nAriaOriginal ?? '');
 		});
+
+		// Translatable image alt text: data-i18n-alt-el on <img>.
+		document.querySelectorAll<HTMLImageElement>(
+			'[data-i18n-alt-el], [data-i18n-alt-es]'
+		).forEach((el) => {
+			if (el.dataset.i18nAltOriginal === undefined) {
+				el.dataset.i18nAltOriginal = el.getAttribute('alt') ?? '';
+			}
+			let translated: string | undefined;
+			if (lang === 'el' && el.dataset.i18nAltEl) translated = el.dataset.i18nAltEl;
+			else if (lang === 'es' && el.dataset.i18nAltEs) translated = el.dataset.i18nAltEs;
+			el.setAttribute('alt', translated ?? el.dataset.i18nAltOriginal ?? '');
+		});
 	}
 
 	function run() {
 		applyTranslations(getLang());
 	}
+
+	// Expose the translator globally so scripts that inject content via innerHTML
+	// (Supabase-driven catalog cards, dynamic carousels, etc.) can re-run it after
+	// the new nodes hit the DOM. Usage: `window.opawayApplyI18n?.()`.
+	(window as any).opawayApplyI18n = run;
 
 	document.addEventListener('astro:page-load', run);
 	document.addEventListener('opaway:lang-changed', run);
