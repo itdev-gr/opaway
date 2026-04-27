@@ -22,11 +22,11 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Label -->
 						<div class="flex items-center justify-center lg:justify-start gap-2 mb-4">
 							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-							<span class="text-sm font-medium text-[#0C6B95] tracking-widest uppercase">Get in Touch</span>
+							<span class="text-sm font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Επικοινωνήστε μαζί μας">Get in Touch</span>
 						</div>
 
 						<!-- Heading -->
-						<h1 class="text-5xl lg:text-7xl font-bold text-neutral-900 mb-12 leading-tight">Contact Us</h1>
+						<h1 class="text-5xl lg:text-7xl font-bold text-neutral-900 mb-12 leading-tight" data-i18n-el="Επικοινωνία">Contact Us</h1>
 
 						<!-- Info blocks -->
 						<div class="flex flex-col gap-8 w-full">
@@ -39,7 +39,7 @@ import Layout from '../layouts/Layout.astro';
 									</svg>
 								</div>
 								<div>
-									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1">Call Us</p>
+									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1" data-i18n-el="Καλέστε μας">Call Us</p>
 									<p class="text-neutral-900 font-semibold text-lg">+30 210 933 3164</p>
 								</div>
 							</div>
@@ -53,9 +53,9 @@ import Layout from '../layouts/Layout.astro';
 									</svg>
 								</div>
 								<div>
-									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1">Find Us</p>
-									<p class="text-neutral-900 font-semibold text-lg">Magkriotou 6</p>
-									<p class="text-neutral-500 text-sm mt-0.5">Athens, Greece</p>
+									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1" data-i18n-el="Βρείτε μας">Find Us</p>
+									<p class="text-neutral-900 font-semibold text-lg" data-i18n-el="Μαγκριώτου 6">Magkriotou 6</p>
+									<p class="text-neutral-500 text-sm mt-0.5" data-i18n-el="Αθήνα, Ελλάδα">Athens, Greece</p>
 								</div>
 							</div>
 
@@ -67,7 +67,7 @@ import Layout from '../layouts/Layout.astro';
 									</svg>
 								</div>
 								<div>
-									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1">Email Us</p>
+									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1" data-i18n-el="Στείλτε μας email">Email Us</p>
 									<a href="mailto:info@opawey.com" class="text-neutral-900 font-semibold text-lg hover:text-[#0C6B95] transition-colors">info@opawey.com</a>
 								</div>
 							</div>
@@ -80,9 +80,9 @@ import Layout from '../layouts/Layout.astro';
 									</svg>
 								</div>
 								<div>
-									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1">Business Hours</p>
-									<p class="text-neutral-900 font-semibold text-lg">Mon – Fri: 8:00 – 21:30</p>
-									<p class="text-neutral-500 text-sm mt-0.5">Saturday: 9:00 – 16:00</p>
+									<p class="text-neutral-400 text-xs font-medium uppercase tracking-widest mb-1" data-i18n-el="Ωράριο λειτουργίας">Business Hours</p>
+									<p class="text-neutral-900 font-semibold text-lg" data-i18n-el="Δευ – Παρ: 8:00 – 21:30">Mon – Fri: 8:00 – 21:30</p>
+									<p class="text-neutral-500 text-sm mt-0.5" data-i18n-el="Σάββατο: 9:00 – 16:00">Saturday: 9:00 – 16:00</p>
 								</div>
 							</div>
 
@@ -100,55 +100,56 @@ import Layout from '../layouts/Layout.astro';
 								</svg>
 							</div>
 							<div>
-								<p class="text-xl font-bold text-neutral-900">Message sent!</p>
-								<p class="text-neutral-500 text-sm mt-1">Thank you for reaching out. We'll get back to you shortly.</p>
+								<p class="text-xl font-bold text-neutral-900" data-i18n-el="Το μήνυμα στάλθηκε!">Message sent!</p>
+								<p class="text-neutral-500 text-sm mt-1" data-i18n-el="Σας ευχαριστούμε για την επικοινωνία. Θα σας απαντήσουμε σύντομα.">Thank you for reaching out. We'll get back to you shortly.</p>
 							</div>
-							<button id="contact-reset-btn" type="button" class="mt-2 text-sm text-[#0C6B95] font-medium hover:underline">Send another message</button>
+							<button id="contact-reset-btn" type="button" class="mt-2 text-sm text-[#0C6B95] font-medium hover:underline" data-i18n-el="Αποστολή νέου μηνύματος">Send another message</button>
 						</div>
 
 						<form id="contact-form" class="flex flex-col gap-7">
 
 							<!-- Country -->
 							<div class="flex flex-col gap-2">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Country *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Χώρα *">Country *</label>
 								<select
 									id="contact-country"
 									name="country"
 									class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 py-3 text-base outline-none transition-colors duration-200 cursor-pointer"
 								>
-									<option value="" disabled selected>Select your country</option>
-									<option value="Greece">Greece</option>
-									<option value="United Kingdom">United Kingdom</option>
-									<option value="United States">United States</option>
-									<option value="Germany">Germany</option>
-									<option value="France">France</option>
-									<option value="Italy">Italy</option>
-									<option value="Spain">Spain</option>
-									<option value="Netherlands">Netherlands</option>
-									<option value="Turkey">Turkey</option>
-									<option value="Cyprus">Cyprus</option>
-									<option value="Australia">Australia</option>
-									<option value="Canada">Canada</option>
-									<option value="Switzerland">Switzerland</option>
-									<option value="Austria">Austria</option>
-									<option value="Belgium">Belgium</option>
-									<option value="Sweden">Sweden</option>
-									<option value="Norway">Norway</option>
-									<option value="Denmark">Denmark</option>
-									<option value="Portugal">Portugal</option>
-									<option value="Ireland">Ireland</option>
-									<option value="Other">Other</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε τη χώρα σας">Select your country</option>
+									<option value="Greece" data-i18n-el="Ελλάδα">Greece</option>
+									<option value="United Kingdom" data-i18n-el="Ηνωμένο Βασίλειο">United Kingdom</option>
+									<option value="United States" data-i18n-el="Ηνωμένες Πολιτείες">United States</option>
+									<option value="Germany" data-i18n-el="Γερμανία">Germany</option>
+									<option value="France" data-i18n-el="Γαλλία">France</option>
+									<option value="Italy" data-i18n-el="Ιταλία">Italy</option>
+									<option value="Spain" data-i18n-el="Ισπανία">Spain</option>
+									<option value="Netherlands" data-i18n-el="Ολλανδία">Netherlands</option>
+									<option value="Turkey" data-i18n-el="Τουρκία">Turkey</option>
+									<option value="Cyprus" data-i18n-el="Κύπρος">Cyprus</option>
+									<option value="Australia" data-i18n-el="Αυστραλία">Australia</option>
+									<option value="Canada" data-i18n-el="Καναδάς">Canada</option>
+									<option value="Switzerland" data-i18n-el="Ελβετία">Switzerland</option>
+									<option value="Austria" data-i18n-el="Αυστρία">Austria</option>
+									<option value="Belgium" data-i18n-el="Βέλγιο">Belgium</option>
+									<option value="Sweden" data-i18n-el="Σουηδία">Sweden</option>
+									<option value="Norway" data-i18n-el="Νορβηγία">Norway</option>
+									<option value="Denmark" data-i18n-el="Δανία">Denmark</option>
+									<option value="Portugal" data-i18n-el="Πορτογαλία">Portugal</option>
+									<option value="Ireland" data-i18n-el="Ιρλανδία">Ireland</option>
+									<option value="Other" data-i18n-el="Άλλο">Other</option>
 								</select>
 							</div>
 
 							<!-- City -->
 							<div class="flex flex-col gap-2">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">City *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Πόλη *">City *</label>
 								<input
 									id="contact-city"
 									type="text"
 									name="city"
 									placeholder="e.g. Athens"
+									data-i18n-placeholder-el="π.χ. Αθήνα"
 									class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 								/>
 							</div>
@@ -156,22 +157,24 @@ import Layout from '../layouts/Layout.astro';
 							<!-- Name + Last Name -->
 							<div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
 								<div class="flex flex-col gap-2">
-									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Name *</label>
+									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα *">Name *</label>
 									<input
 										id="contact-name"
 										type="text"
 										name="name"
 										placeholder="e.g. John"
+										data-i18n-placeholder-el="π.χ. Γιάννης"
 										class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 									/>
 								</div>
 								<div class="flex flex-col gap-2">
-									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Last Name *</label>
+									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Επώνυμο *">Last Name *</label>
 									<input
 										id="contact-last-name"
 										type="text"
 										name="last_name"
 										placeholder="e.g. Smith"
+										data-i18n-placeholder-el="π.χ. Παπαδόπουλος"
 										class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 									/>
 								</div>
@@ -179,24 +182,26 @@ import Layout from '../layouts/Layout.astro';
 
 							<!-- Phone Number -->
 							<div class="flex flex-col gap-2">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Phone Number *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Αριθμός τηλεφώνου *">Phone Number *</label>
 								<input
 									id="contact-phone"
 									type="tel"
 									name="phone"
 									placeholder="e.g. +30 210 933 3164"
+									data-i18n-placeholder-el="π.χ. +30 210 933 3164"
 									class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 								/>
 							</div>
 
 							<!-- Email -->
 							<div class="flex flex-col gap-2">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Email Address *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Διεύθυνση email *">Email Address *</label>
 								<input
 									id="contact-email"
 									type="email"
 									name="email"
 									placeholder="e.g. john@example.com"
+									data-i18n-placeholder-el="π.χ. giannis@example.com"
 									class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 								/>
 							</div>
@@ -204,39 +209,41 @@ import Layout from '../layouts/Layout.astro';
 							<!-- Number of Passengers + Type of Vehicle -->
 							<div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
 								<div class="flex flex-col gap-2">
-									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Number of Passengers *</label>
+									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Αριθμός επιβατών *">Number of Passengers *</label>
 									<input
 										id="contact-passengers"
 										type="number"
 										name="passengers"
 										min="1"
 										placeholder="e.g. 4"
+										data-i18n-placeholder-el="π.χ. 4"
 										class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200"
 									/>
 								</div>
 								<div class="flex flex-col gap-2">
-									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Type of Vehicle *</label>
+									<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τύπος οχήματος *">Type of Vehicle *</label>
 									<select
 										id="contact-vehicle"
 										name="vehicle_type"
 										class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 py-3 text-base outline-none transition-colors duration-200 cursor-pointer"
 									>
-										<option value="" disabled selected>Select vehicle</option>
-										<option value="Sedan">Sedan</option>
-										<option value="Van">Van</option>
-										<option value="Minibus">Minibus</option>
+										<option value="" disabled selected data-i18n-el="Επιλέξτε όχημα">Select vehicle</option>
+										<option value="Sedan" data-i18n-el="Sedan">Sedan</option>
+										<option value="Van" data-i18n-el="Van">Van</option>
+										<option value="Minibus" data-i18n-el="Minibus">Minibus</option>
 									</select>
 								</div>
 							</div>
 
 							<!-- Comments -->
 							<div class="flex flex-col gap-2">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest">Comments *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Σχόλια *">Comments *</label>
 								<textarea
 									id="contact-message"
 									name="message"
 									rows="4"
 									placeholder="Tell us about your transfer or experience request..."
+									data-i18n-placeholder-el="Πείτε μας για το αίτημα μεταφοράς ή εμπειρίας σας..."
 									class="bg-transparent border-b border-neutral-200 focus:border-[#0C6B95] text-neutral-900 placeholder-neutral-300 py-3 text-base outline-none transition-colors duration-200 resize-none"
 								></textarea>
 							</div>
@@ -250,7 +257,7 @@ import Layout from '../layouts/Layout.astro';
 								type="submit"
 								class="mt-2 w-full bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold py-4 px-8 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 disabled:opacity-60 disabled:cursor-not-allowed"
 							>
-								Send Message
+								<span data-i18n-el="Αποστολή μηνύματος">Send Message</span>
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 								</svg>
@@ -347,7 +354,7 @@ import Layout from '../layouts/Layout.astro';
 				errorEl.textContent = 'Something went wrong. Please try again.';
 				errorEl.classList.remove('hidden');
 				submitBtn.disabled = false;
-				submitBtn.innerHTML = `Send Message <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>`;
+				submitBtn.innerHTML = `<span data-i18n-el="Αποστολή μηνύματος">Send Message</span> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>`;
 			}
 		});
 
@@ -356,7 +363,7 @@ import Layout from '../layouts/Layout.astro';
 			successEl.classList.add('hidden');
 			form.classList.remove('hidden');
 			submitBtn.disabled = false;
-			submitBtn.innerHTML = `Send Message <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>`;
+			submitBtn.innerHTML = `<span data-i18n-el="Αποστολή μηνύματος">Send Message</span> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>`;
 		});
 	});
 </script>
