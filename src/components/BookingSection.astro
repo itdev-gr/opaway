@@ -6,13 +6,13 @@ const vehicles = [
 		titleEl: 'Σεντάν',
 		titleEs: 'Sedán',
 		models: 'Mercedes-Benz E-Class, or similar.',
-		modelsEl: 'Mercedes-Benz E-Class ή παρόμοιο.',
+		modelsEl: 'Mercedes-Benz E-Class ή αντίστοιχο.',
 		modelsEs: 'Mercedes-Benz Clase E o similar.',
 		image: '/car.avif',
 		features: [
-			{ en: 'Fits up to 3 people', el: 'Χωρητικότητα έως 3 άτομα', es: 'Hasta 3 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
-			{ en: 'Available for airport transfers & city tours', el: 'Διαθέσιμο για μεταφορές αεροδρομίου & τουρ πόλης', es: 'Disponible para traslados al aeropuerto y tours por la ciudad' },
+			{ en: 'Fits up to 3 people', el: 'Έως 3 επιβάτες', es: 'Hasta 3 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Available for airport transfers & city tours', el: 'Για μεταφορές από/προς αεροδρόμιο και ξεναγήσεις στην πόλη', es: 'Disponible para traslados al aeropuerto y tours por la ciudad' },
 		],
 	},
 	{
@@ -20,27 +20,27 @@ const vehicles = [
 		titleEl: 'Βαν',
 		titleEs: 'Furgoneta',
 		models: 'Mercedes Vito Tourer, or similar.',
-		modelsEl: 'Mercedes Vito Tourer ή παρόμοιο.',
+		modelsEl: 'Mercedes Vito Tourer ή αντίστοιχο.',
 		modelsEs: 'Mercedes Vito Tourer o similar.',
 		image: '/mini_van.avif',
 		features: [
-			{ en: 'Fits up to 8 people', el: 'Χωρητικότητα έως 8 άτομα', es: 'Hasta 8 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
-			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές & ιδιωτικά τουρ', es: 'Ideal para traslados en grupo y tours privados' },
+			{ en: 'Fits up to 8 people', el: 'Έως 8 επιβάτες', es: 'Hasta 8 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές και ιδιωτικές ξεναγήσεις', es: 'Ideal para traslados en grupo y tours privados' },
 		],
 	},
 	{
 		title: 'Minibus (or two Vans)',
-		titleEl: 'Μίνι λεωφορείο (ή δύο Βαν)',
+		titleEl: 'Μίνι λεωφορείο (ή δύο βαν)',
 		titleEs: 'Minibús (o dos furgonetas)',
 		models: 'Mercedes Sprinter, or similar.',
-		modelsEl: 'Mercedes Sprinter ή παρόμοιο.',
+		modelsEl: 'Mercedes Sprinter ή αντίστοιχο.',
 		modelsEs: 'Mercedes Sprinter o similar.',
 		image: '/van.avif',
 		features: [
-			{ en: 'Fits up to 18 people', el: 'Χωρητικότητα έως 18 άτομα', es: 'Hasta 18 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
-			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες & εταιρικές εκδηλώσεις', es: 'Perfecto para grupos grandes y eventos corporativos' },
+			{ en: 'Fits up to 18 people', el: 'Έως 18 επιβάτες', es: 'Hasta 18 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες και εταιρικές εκδηλώσεις', es: 'Perfecto para grupos grandes y eventos corporativos' },
 		],
 	},
 ];
@@ -59,10 +59,10 @@ const vehicles = [
 					<button type="button" data-booking-tab="transfer" class="booking-tab px-4 py-3 font-medium text-black bg-neutral-200/80 border-b-2 border-black -mb-px rounded-t-lg transition-colors" data-i18n-el="Μεταφορά" data-i18n-es="Traslado">
 						Transfer
 					</button>
-					<button type="button" data-booking-tab="hourly" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Ενοικίαση με την ώρα" data-i18n-es="Por hora">
+					<button type="button" data-booking-tab="hourly" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Με την ώρα" data-i18n-es="Por hora">
 						Rent per hour
 					</button>
-					<button type="button" data-booking-tab="tours" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Τουρ" data-i18n-es="Tours">
+					<button type="button" data-booking-tab="tours" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Ξεναγήσεις" data-i18n-es="Tours">
 						Tours
 					</button>
 				</div>
@@ -76,7 +76,7 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο…" data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-from" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -88,7 +88,7 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο…" data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-to" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -188,7 +188,7 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο…" data-i18n-placeholder-es="Dirección, aeropuerto, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="hourly-pickup" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -228,7 +228,7 @@ const vehicles = [
 							<button type="button" id="hours-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer hours" data-i18n-aria-el="Λιγότερες ώρες" data-i18n-aria-es="Menos horas">−</button>
 							<button type="button" id="hours-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More hours" data-i18n-aria-el="Περισσότερες ώρες" data-i18n-aria-es="Más horas">+</button>
 						</div>
-						<p id="hours-warning" class="hidden text-sm text-amber-600 mt-2 flex items-center gap-1.5" data-i18n-el="Η ελάχιστη ενοικίαση είναι 3 ώρες" data-i18n-es="El alquiler mínimo es de 3 horas">
+						<p id="hours-warning" class="hidden text-sm text-amber-600 mt-2 flex items-center gap-1.5" data-i18n-el="Ελάχιστη διάρκεια κράτησης: 3 ώρες" data-i18n-es="El alquiler mínimo es de 3 horas">
 							<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
 							Minimum rental is 3 hours
 						</p>
@@ -265,13 +265,13 @@ const vehicles = [
 				<div id="form-tours" class="hidden">
 					<!-- Tour Experience -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Εμπειρία τουρ" data-i18n-es="Experiencia del tour">Tour Experience</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Επιλέξτε ξενάγηση" data-i18n-es="Experiencia del tour">Tour Experience</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
 							</span>
 							<select id="tours-select" class="w-full pl-10 pr-10 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
-								<option value="" disabled selected data-i18n-el="Φόρτωση τουρ…" data-i18n-es="Cargando tours…">Loading tours…</option>
+								<option value="" disabled selected data-i18n-el="Φόρτωση ξεναγήσεων…" data-i18n-es="Cargando tours…">Loading tours…</option>
 							</select>
 							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -287,14 +287,14 @@ const vehicles = [
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tours-pickup" type="text" placeholder="Hotel, address or landmark..." data-i18n-placeholder-el="Ξενοδοχείο, διεύθυνση ή σημείο αναφοράς..." data-i18n-placeholder-es="Hotel, dirección o punto de referencia..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tours-pickup" type="text" placeholder="Hotel, address or landmark..." data-i18n-placeholder-el="Ξενοδοχείο, διεύθυνση ή σημείο αναφοράς…" data-i18n-placeholder-es="Hotel, dirección o punto de referencia..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία τουρ" data-i18n-es="Fecha del tour">Tour date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία ξενάγησης" data-i18n-es="Fecha del tour">Tour date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -347,7 +347,7 @@ const vehicles = [
 						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
 						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Ο στόλος μας" data-i18n-es="Nuestra flota">Our Fleet</span>
 					</div>
-					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ανακαλύψτε τις κατηγορίες υπηρεσιών μας" data-i18n-es="Descubra nuestras clases de servicio">Discover our service classes</h2>
+					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Επιλέξτε την κατηγορία που σας ταιριάζει" data-i18n-es="Descubra nuestras clases de servicio">Discover our service classes</h2>
 				</div>
 
 				<!-- Card viewport -->

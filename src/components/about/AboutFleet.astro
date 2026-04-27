@@ -7,13 +7,13 @@ const vehicles = [
 		titleEl: 'Σεντάν',
 		titleEs: 'Sedán',
 		models: 'Mercedes-Benz E-Class, or similar.',
-		modelsEl: 'Mercedes-Benz E-Class ή παρόμοιο.',
+		modelsEl: 'Mercedes-Benz E-Class ή αντίστοιχο.',
 		modelsEs: 'Mercedes-Benz Clase E o similar.',
 		image: '/car.avif',
 		features: [
-			{ en: 'Fits up to 3 people', el: 'Χωρητικότητα έως 3 άτομα', es: 'Hasta 3 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
-			{ en: 'Available for airport transfers & city tours', el: 'Διαθέσιμο για μεταφορές αεροδρομίου και τουρ πόλης', es: 'Disponible para traslados al aeropuerto y tours por la ciudad' },
+			{ en: 'Fits up to 3 people', el: 'Έως 3 επιβάτες', es: 'Hasta 3 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Available for airport transfers & city tours', el: 'Για μεταφορές από/προς αεροδρόμιο και ξεναγήσεις στην πόλη', es: 'Disponible para traslados al aeropuerto y tours por la ciudad' },
 		],
 	},
 	{
@@ -21,13 +21,13 @@ const vehicles = [
 		titleEl: 'Βαν',
 		titleEs: 'Furgoneta',
 		models: 'Mercedes Vito Tourer, or similar.',
-		modelsEl: 'Mercedes Vito Tourer ή παρόμοιο.',
+		modelsEl: 'Mercedes Vito Tourer ή αντίστοιχο.',
 		modelsEs: 'Mercedes Vito Tourer o similar.',
 		image: '/mini_van.avif',
 		features: [
-			{ en: 'Fits up to 8 people', el: 'Χωρητικότητα έως 8 άτομα', es: 'Hasta 8 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
-			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές και ιδιωτικά τουρ', es: 'Ideal para traslados en grupo y tours privados' },
+			{ en: 'Fits up to 8 people', el: 'Έως 8 επιβάτες', es: 'Hasta 8 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές και ιδιωτικές ξεναγήσεις', es: 'Ideal para traslados en grupo y tours privados' },
 		],
 	},
 	{
@@ -35,12 +35,12 @@ const vehicles = [
 		titleEl: 'Μίνι λεωφορείο (ή δύο βαν)',
 		titleEs: 'Minibús (o dos furgonetas)',
 		models: 'Mercedes Sprinter, or similar.',
-		modelsEl: 'Mercedes Sprinter ή παρόμοιο.',
+		modelsEl: 'Mercedes Sprinter ή αντίστοιχο.',
 		modelsEs: 'Mercedes Sprinter o similar.',
 		image: '/van.avif',
 		features: [
-			{ en: 'Fits up to 18 people', el: 'Χωρητικότητα έως 18 άτομα', es: 'Hasta 18 pasajeros' },
-			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
+			{ en: 'Fits up to 18 people', el: 'Έως 18 επιβάτες', es: 'Hasta 18 pasajeros' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη και 1 μικρή αποσκευή ανά άτομο', es: '1 maleta grande + 1 pequeña por persona' },
 			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες και εταιρικές εκδηλώσεις', es: 'Perfecto para grupos grandes y eventos corporativos' },
 		],
 	},
@@ -61,7 +61,7 @@ function paxCount(features: { en: string; el: string }[]): string | null {
 					<span class="text-[#C97B4A] text-lg leading-none">✦</span>
 					<span class="text-sm font-medium text-[#6b5a47] tracking-widest uppercase" data-i18n-el="Ο στόλος μας" data-i18n-es="Nuestra flota">Our Fleet</span>
 				</div>
-				<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight" data-i18n-el="Ανακαλύψτε τις κατηγορίες υπηρεσιών μας" data-i18n-es="Descubra nuestras clases de servicio">
+				<h2 class="font-serif text-4xl lg:text-5xl font-bold text-[#2B3A3A] leading-tight" data-i18n-el="Επιλέξτε την κατηγορία που σας ταιριάζει" data-i18n-es="Descubra nuestras clases de servicio">
 					Discover our service <span class="italic text-[#C97B4A]">classes</span>
 				</h2>
 			</div>
@@ -91,7 +91,7 @@ function paxCount(features: { en: string; el: string }[]): string | null {
 								{pax && (
 									<div
 										aria-label={`Fits up to ${pax} passengers`}
-										data-i18n-aria-el={`Χωρητικότητα έως ${pax} επιβάτες`}
+										data-i18n-aria-el={`Έως ${pax} επιβάτες`}
 										data-i18n-aria-es={`Hasta ${pax} pasajeros`}
 										class="absolute top-4 left-4 w-14 h-14 rounded-full bg-[#0C6B95] text-white ring-4 ring-[#EFF6FB] flex flex-col items-center justify-center shadow-lg"
 									>
