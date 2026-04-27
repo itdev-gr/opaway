@@ -13,19 +13,19 @@ import Layout from '../../../layouts/Layout.astro';
 					<span class="w-8 h-8 rounded-full bg-emerald-500 text-white text-sm font-bold flex items-center justify-center">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
 					</span>
-					<span class="text-sm font-medium text-emerald-600">Vehicle</span>
+					<span class="text-sm font-medium text-emerald-600" data-i18n-el="Όχημα">Vehicle</span>
 				</div>
 				<div class="w-16 h-px bg-emerald-400 mx-3"></div>
 				<!-- Step 2: Passenger (active) -->
 				<div class="flex items-center gap-2">
 					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">2</span>
-					<span class="text-sm font-semibold text-[#0C6B95]">Passenger</span>
+					<span class="text-sm font-semibold text-[#0C6B95]" data-i18n-el="Επιβάτης">Passenger</span>
 				</div>
 				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
 				<!-- Step 3: Payment (greyed) -->
 				<div class="flex items-center gap-2 opacity-40">
 					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">3</span>
-					<span class="text-sm font-medium text-neutral-400">Payment</span>
+					<span class="text-sm font-medium text-neutral-400" data-i18n-el="Πληρωμή">Payment</span>
 				</div>
 			</div>
 
@@ -37,33 +37,33 @@ import Layout from '../../../layouts/Layout.astro';
 					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 lg:p-8">
 
 						<!-- Lead passenger -->
-						<h2 class="text-xl font-bold text-neutral-900 mb-6">Lead passenger</h2>
+						<h2 class="text-xl font-bold text-neutral-900 mb-6" data-i18n-el="Επικεφαλής επιβάτης">Lead passenger</h2>
 
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
 							<div>
-								<label class="block text-sm font-medium text-neutral-700 mb-1.5">First name <span class="text-red-400">*</span></label>
-								<input id="pax-first" type="text" required placeholder="John"
+								<label class="block text-sm font-medium text-neutral-700 mb-1.5"><span data-i18n-el="Όνομα">First name</span> <span class="text-red-400">*</span></label>
+								<input id="pax-first" type="text" required placeholder="John" data-i18n-placeholder-el="Γιάννης"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-neutral-700 mb-1.5">Last name <span class="text-red-400">*</span></label>
-								<input id="pax-last" type="text" required placeholder="Doe"
+								<label class="block text-sm font-medium text-neutral-700 mb-1.5"><span data-i18n-el="Επώνυμο">Last name</span> <span class="text-red-400">*</span></label>
+								<input id="pax-last" type="text" required placeholder="Doe" data-i18n-placeholder-el="Παπαδόπουλος"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							</div>
 						</div>
 
 						<div class="mb-5">
-							<label class="block text-sm font-medium text-neutral-700 mb-1.5">Email address <span class="text-red-400">*</span></label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1.5"><span data-i18n-el="Διεύθυνση email">Email address</span> <span class="text-red-400">*</span></label>
 							<input id="pax-email" type="email" required placeholder="john@example.com"
 								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								We'll send your booking voucher here.
+								<span data-i18n-el="Θα σας στείλουμε εδώ το κουπόνι κράτησης.">We'll send your booking voucher here.</span>
 							</p>
 						</div>
 
 						<div class="mb-8">
-							<label class="block text-sm font-medium text-neutral-700 mb-1.5">Mobile number <span class="text-red-400">*</span></label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1.5"><span data-i18n-el="Κινητό τηλέφωνο">Mobile number</span> <span class="text-red-400">*</span></label>
 							<div class="flex gap-3">
 								<div class="flex items-center gap-2 px-3 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-600 shrink-0">
 									<span>🇬🇷</span>
@@ -74,20 +74,20 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 							<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 								<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								Please provide a contact number so our driver can reach the passenger if needed.
+								<span data-i18n-el="Παρακαλούμε δώστε έναν αριθμό επικοινωνίας ώστε ο οδηγός μας να μπορεί να επικοινωνήσει με τον επιβάτη αν χρειαστεί.">Please provide a contact number so our driver can reach the passenger if needed.</span>
 							</p>
 						</div>
 
 						<!-- Divider -->
 						<div class="border-t border-neutral-100 pt-6 mb-6">
-							<h3 class="text-lg font-bold text-neutral-900 mb-4">Meet & Greet</h3>
+							<h3 class="text-lg font-bold text-neutral-900 mb-4" data-i18n-el="Υποδοχή με πινακίδα">Meet & Greet</h3>
 							<div>
-								<input id="pax-sign" type="text" placeholder="Enter the name to display on the sign"
+								<input id="pax-sign" type="text" placeholder="Enter the name to display on the sign" data-i18n-placeholder-el="Εισαγάγετε το όνομα που θα εμφανιστεί στην πινακίδα"
 									class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 								<p class="text-xs text-neutral-400 mt-1.5 flex items-center gap-1">
 									<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-									Meet & Greet with a sign — enter the name to display.
-								</p>
+								<span data-i18n-el="Υποδοχή με πινακίδα — εισαγάγετε το όνομα που θα εμφανιστεί.">Meet & Greet with a sign — enter the name to display.</span>
+							</p>
 							</div>
 						</div>
 
@@ -97,7 +97,7 @@ import Layout from '../../../layouts/Layout.astro';
 								<label class="flex items-center gap-3 cursor-pointer">
 									<input id="pax-child-seat" type="checkbox"
 										class="w-5 h-5 rounded border-neutral-300 text-amber-500 focus:ring-amber-400/30 cursor-pointer" />
-									<span class="text-sm font-medium text-neutral-800">Need a child or booster seat?</span>
+									<span class="text-sm font-medium text-neutral-800" data-i18n-el="Χρειάζεστε παιδικό κάθισμα ή μπούστερ;">Need a child or booster seat?</span>
 								</label>
 								<div id="child-seat-qty" class="hidden flex items-center gap-2 ml-auto">
 									<button type="button" id="child-minus" class="w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors text-sm font-bold">−</button>
@@ -110,10 +110,10 @@ import Layout from '../../../layouts/Layout.astro';
 						<!-- Driver notes -->
 						<div class="border-t border-neutral-100 pt-6 mb-6">
 							<label class="block text-sm font-medium text-neutral-700 mb-1.5 flex items-center gap-1.5">
-								Driver notes (Outward)
+								<span data-i18n-el="Σημειώσεις για τον οδηγό (Μετάβαση)">Driver notes (Outward)</span>
 								<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-neutral-400 text-white text-[10px] font-bold cursor-help" title="Add any special requests or other notes for your driver.">?</span>
 							</label>
-							<textarea id="pax-notes" rows="4" placeholder="Special requests, dietary needs, accessibility requirements... No sensitive data—add phone in next step."
+							<textarea id="pax-notes" rows="4" placeholder="Special requests, dietary needs, accessibility requirements... No sensitive data—add phone in next step." data-i18n-placeholder-el="Ειδικά αιτήματα, διατροφικές ανάγκες, απαιτήσεις προσβασιμότητας... Χωρίς ευαίσθητα δεδομένα — προσθέστε τηλέφωνο στο επόμενο βήμα."
 								class="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] resize-y"></textarea>
 						</div>
 
@@ -128,10 +128,10 @@ import Layout from '../../../layouts/Layout.astro';
 							<button id="back-btn" type="button"
 								class="px-5 py-3 border border-neutral-200 rounded-xl text-neutral-600 font-semibold hover:bg-neutral-50 transition-colors flex items-center gap-2">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-								Back
+								<span data-i18n-el="Πίσω">Back</span>
 							</button>
 							<button id="continue-btn" type="button"
-								class="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-xl transition-colors text-center">
+								class="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-xl transition-colors text-center" data-i18n-el="Συνέχεια στην πληρωμή">
 								Continue
 							</button>
 						</div>
@@ -142,26 +142,26 @@ import Layout from '../../../layouts/Layout.astro';
 				<div class="lg:col-span-1">
 					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
 
-						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
+						<h3 class="text-lg font-bold text-neutral-900" data-i18n-el="Η κράτησή σας">Your Booking</h3>
 
 						<!-- Trip type + passengers -->
 						<div class="flex items-center justify-between text-sm">
-							<span id="sb-trip-type" class="font-semibold text-neutral-700">One way</span>
+							<span id="sb-trip-type" class="font-semibold text-neutral-700" data-i18n-el="Απλή διαδρομή">One way</span>
 							<span class="flex items-center gap-1.5 text-neutral-500">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-								<span id="sb-passengers">2</span> Passengers
+								<span id="sb-passengers">2</span> <span data-i18n-el="Επιβάτες">Passengers</span>
 							</span>
 						</div>
 
 						<!-- Luggage -->
 						<div id="sb-luggage-row" class="hidden flex items-center justify-between text-sm">
-							<span class="text-neutral-500">Luggage</span>
-							<span class="text-neutral-800"><span id="sb-luggage-small">0</span> small &middot; <span id="sb-luggage-big">0</span> big</span>
+							<span class="text-neutral-500" data-i18n-el="Αποσκευές">Luggage</span>
+							<span class="text-neutral-800"><span id="sb-luggage-small">0</span> <span data-i18n-el="μικρές">small</span> &middot; <span id="sb-luggage-big">0</span> <span data-i18n-el="μεγάλες">big</span></span>
 						</div>
 
 						<!-- Date -->
 						<div class="text-sm border-t border-neutral-100 pt-4">
-							<span class="text-neutral-500">Outward</span>
+							<span class="text-neutral-500" data-i18n-el="Μετάβαση">Outward</span>
 							<span class="mx-1 text-neutral-300">&middot;</span>
 							<span id="sb-date" class="font-medium text-neutral-700">—</span>
 						</div>
@@ -190,7 +190,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<!-- Your choice -->
 						<div class="border-t border-neutral-100 pt-4">
-							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Your choice</p>
+							<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3" data-i18n-el="Η επιλογή σας">Your choice</p>
 							<div class="flex items-center gap-3">
 								<div class="w-16 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0">
 									<img id="sb-vehicle-img" src="" alt="" class="w-full h-full object-cover" />
@@ -213,40 +213,40 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<!-- Price details -->
 						<div class="border-t border-neutral-100 pt-4 space-y-2">
-							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
+							<h4 class="text-sm font-bold text-neutral-800" data-i18n-el="Λεπτομέρειες τιμής">Price details</h4>
 							<div class="flex justify-between text-sm">
-								<span class="font-semibold text-neutral-900">Total</span>
+								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
 							<div class="flex justify-between text-sm text-neutral-500">
-								<span>Outward</span>
+								<span data-i18n-el="Μετάβαση">Outward</span>
 								<span id="sb-outward">—</span>
 							</div>
 							<div id="sb-return-price-row" class="hidden flex justify-between text-sm text-neutral-500">
-								<span>Return</span>
+								<span data-i18n-el="Επιστροφή">Return</span>
 								<span id="sb-return-price">—</span>
 							</div>
 						</div>
 
 						<!-- Feature badges -->
 						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full" data-i18n-el="Δωρεάν ακύρωση">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Free cancellation
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Υπηρεσία πόρτα-πόρτα">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Door-to-door service
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Υποδοχή με πινακίδα">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Meet & Greet
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Παρακολούθηση πτήσης">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Flight tracking
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Αδειούχοι οδηγοί">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Licensed chauffeurs
 							</span>
@@ -254,7 +254,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<!-- Payment icons -->
 						<div class="flex items-center gap-3 border-t border-neutral-100 pt-4">
-							<span class="text-xs text-neutral-400 font-medium">Accepted:</span>
+							<span class="text-xs text-neutral-400 font-medium" data-i18n-el="Δεκτές:">Accepted:</span>
 							<div class="flex gap-2 text-xs font-bold text-neutral-500">
 								<span class="px-2 py-1 bg-neutral-100 rounded">VISA</span>
 								<span class="px-2 py-1 bg-neutral-100 rounded">MC</span>

@@ -10,17 +10,17 @@ import Layout from '../../../layouts/Layout.astro';
 			<div class="flex items-center justify-center gap-0 mb-8">
 				<div class="flex items-center gap-2">
 					<span class="w-8 h-8 rounded-full bg-[#0C6B95] text-white text-sm font-bold flex items-center justify-center">1</span>
-					<span class="text-sm font-semibold text-[#0C6B95]">Vehicle</span>
+					<span class="text-sm font-semibold text-[#0C6B95]" data-i18n-el="Όχημα">Vehicle</span>
 				</div>
 				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
 				<div class="flex items-center gap-2 opacity-40">
 					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">2</span>
-					<span class="text-sm font-medium text-neutral-400">Passenger</span>
+					<span class="text-sm font-medium text-neutral-400" data-i18n-el="Επιβάτης">Passenger</span>
 				</div>
 				<div class="w-16 h-px bg-neutral-300 mx-3"></div>
 				<div class="flex items-center gap-2 opacity-40">
 					<span class="w-8 h-8 rounded-full bg-neutral-300 text-white text-sm font-bold flex items-center justify-center">3</span>
-					<span class="text-sm font-medium text-neutral-400">Payment</span>
+					<span class="text-sm font-medium text-neutral-400" data-i18n-el="Πληρωμή">Payment</span>
 				</div>
 			</div>
 
@@ -46,15 +46,15 @@ import Layout from '../../../layouts/Layout.astro';
 						</span>
 						<span class="flex items-center gap-1.5">
 							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-							<span id="summary-hours" class="font-medium">—</span> hours
+							<span id="summary-hours" class="font-medium">—</span> <span data-i18n-el="ώρες">hours</span>
 						</span>
 						<span class="flex items-center gap-1.5">
 							<svg class="w-4 h-4 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-							<span id="summary-passengers" class="font-medium">—</span> passengers
+							<span id="summary-passengers" class="font-medium">—</span> <span data-i18n-el="επιβάτες">passengers</span>
 						</span>
 						<a href="#" id="sb-edit" class="ml-auto text-[#0C6B95] font-medium hover:underline flex items-center gap-1 text-sm">
 							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" /></svg>
-							Edit
+							<span data-i18n-el="Επεξεργασία">Edit</span>
 						</a>
 					</div>
 
@@ -81,10 +81,10 @@ import Layout from '../../../layouts/Layout.astro';
 					<div id="selection-bar" class="hidden sticky bottom-4 bg-white rounded-2xl border border-[#0C6B95]/30 shadow-lg p-4 flex items-center justify-between z-10">
 						<div class="flex items-center gap-3">
 							<svg class="w-5 h-5 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-							<span class="font-semibold text-neutral-800">Your choice: <span id="selected-name" class="text-[#0C6B95]"></span></span>
+							<span class="font-semibold text-neutral-800"><span data-i18n-el="Η επιλογή σας:">Your choice:</span> <span id="selected-name" class="text-[#0C6B95]"></span></span>
 						</div>
 						<button id="continue-btn" class="bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold px-8 py-3 rounded-xl transition-colors flex items-center gap-2">
-							Continue
+							<span data-i18n-el="Συνέχεια">Continue</span>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
 						</button>
 					</div>
@@ -94,14 +94,14 @@ import Layout from '../../../layouts/Layout.astro';
 				<div class="lg:col-span-1">
 					<div class="sticky top-28 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 space-y-5">
 
-						<h3 class="text-lg font-bold text-neutral-900">Your Booking</h3>
+						<h3 class="text-lg font-bold text-neutral-900" data-i18n-el="Η κράτησή σας">Your Booking</h3>
 
 						<!-- Type + passengers -->
 						<div class="flex items-center justify-between text-sm">
-							<span class="font-semibold text-neutral-700">Hourly rental</span>
+							<span class="font-semibold text-neutral-700" data-i18n-el="Ενοικίαση με την ώρα">Hourly rental</span>
 							<span class="flex items-center gap-1.5 text-neutral-500">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-								<span id="sb-passengers">2</span> Passengers
+								<span id="sb-passengers">2</span> <span data-i18n-el="Επιβάτες">Passengers</span>
 							</span>
 						</div>
 
@@ -113,7 +113,7 @@ import Layout from '../../../layouts/Layout.astro';
 								</div>
 								<div class="flex-1 min-w-0">
 									<p id="sb-pickup" class="text-sm font-semibold text-neutral-800 truncate">—</p>
-									<p class="text-xs text-neutral-400 mt-0.5">Pickup location</p>
+									<p class="text-xs text-neutral-400 mt-0.5" data-i18n-el="Σημείο παραλαβής">Pickup location</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-4 text-sm text-neutral-600 pl-6">
@@ -128,34 +128,34 @@ import Layout from '../../../layouts/Layout.astro';
 							</div>
 							<div class="flex items-center gap-1.5 text-sm text-neutral-600 pl-6">
 								<svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								<span id="sb-hours">—</span> hours
+								<span id="sb-hours">—</span> <span data-i18n-el="ώρες">hours</span>
 							</div>
 						</div>
 
 						<!-- Price details -->
 						<div class="border-t border-neutral-100 pt-4 space-y-2">
-							<h4 class="text-sm font-bold text-neutral-800">Price details</h4>
+							<h4 class="text-sm font-bold text-neutral-800" data-i18n-el="Λεπτομέρειες τιμής">Price details</h4>
 							<div class="flex justify-between text-sm">
-								<span class="font-semibold text-neutral-900">Total</span>
+								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
 							<div class="flex justify-between text-sm text-neutral-500">
-								<span>Rate</span>
+								<span data-i18n-el="Χρέωση">Rate</span>
 								<span id="sb-rate">—</span>
 							</div>
 						</div>
 
 						<!-- Feature badges -->
 						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full" data-i18n-el="Δωρεάν ακύρωση">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Free cancellation
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Αδειούχοι οδηγοί">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Licensed chauffeurs
 							</span>
-							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full">
+							<span class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full" data-i18n-el="Υπηρεσία πόρτα-πόρτα">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 								Door-to-door service
 							</span>
@@ -163,7 +163,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 						<!-- Payment icons -->
 						<div class="flex items-center gap-3 border-t border-neutral-100 pt-4">
-							<span class="text-xs text-neutral-400 font-medium">Accepted:</span>
+							<span class="text-xs text-neutral-400 font-medium" data-i18n-el="Δεκτές:">Accepted:</span>
 							<div class="flex gap-2 text-xs font-bold text-neutral-500">
 								<span class="px-2 py-1 bg-neutral-100 rounded">VISA</span>
 								<span class="px-2 py-1 bg-neutral-100 rounded">MC</span>
@@ -274,7 +274,7 @@ import Layout from '../../../layouts/Layout.astro';
 		const container = document.getElementById('vehicle-cards')!;
 
 		const badgeHtml = partnerDiscount > 0
-			? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium">Partner discount: ${partnerDiscount}% applied</div>`
+			? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-4 text-sm text-emerald-700 font-medium" data-i18n-el="Εφαρμόστηκε έκπτωση συνεργάτη: ${partnerDiscount}%">Partner discount: ${partnerDiscount}% applied</div>`
 			: '';
 
 		container.innerHTML = badgeHtml + vehicles.map(v => {
@@ -299,7 +299,7 @@ import Layout from '../../../layouts/Layout.astro';
 						<div class="flex items-center gap-3 text-xs text-neutral-500 mb-1">
 							<span class="flex items-center gap-1">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-								Up to ${v.maxPassengers}
+								<span data-i18n-el="Έως ${v.maxPassengers}">Up to ${v.maxPassengers}</span>
 							</span>
 							<span class="flex items-center gap-1">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
