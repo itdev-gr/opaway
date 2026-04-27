@@ -24,3 +24,74 @@ import { ViewTransitions } from 'astro:transitions';
 		<Footer />
 	</body>
 </html>
+
+<script>
+	/**
+	 * In-place text translator.
+	 *
+	 * Each translatable element opts in by carrying `data-i18n-el="…"` (or any
+	 * `data-i18n-{lang}=…` for future languages). The English text in the HTML
+	 * is the default — when the user picks Greek, this script reads the matching
+	 * attribute and swaps `textContent`. When they switch back to English, it
+	 * restores the original from `data-i18n-original` (set on first apply).
+	 *
+	 * Runs on every astro:page-load and on every opaway:lang-changed event.
+	 */
+	const SUPPORTED_LANGS = ['el', 'en', 'es'] as const;
+	type Lang = typeof SUPPORTED_LANGS[number];
+
+	function getLang(): Lang {
+		try {
+			const v = localStorage.getItem('opaway:lang');
+			if (v && (SUPPORTED_LANGS as readonly string[]).includes(v)) return v as Lang;
+		} catch {}
+		return 'en';
+	}
+
+	function applyTranslations(lang: Lang) {
+		document.documentElement.lang = lang;
+		document.querySelectorAll<HTMLElement>('[data-i18n-el], [data-i18n-es]').forEach((el) => {
+			// Cache the original (English) text once.
+			if (el.dataset.i18nOriginal === undefined) {
+				el.dataset.i18nOriginal = el.textContent ?? '';
+			}
+			let translated: string | undefined;
+			if (lang === 'el' && el.dataset.i18nEl) translated = el.dataset.i18nEl;
+			else if (lang === 'es' && el.dataset.i18nEs) translated = el.dataset.i18nEs;
+			el.textContent = translated ?? el.dataset.i18nOriginal ?? el.textContent ?? '';
+		});
+
+		// Translatable placeholders: data-i18n-placeholder-el on inputs/textareas.
+		document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+			'[data-i18n-placeholder-el], [data-i18n-placeholder-es]'
+		).forEach((el) => {
+			if (el.dataset.i18nPlaceholderOriginal === undefined) {
+				el.dataset.i18nPlaceholderOriginal = el.getAttribute('placeholder') ?? '';
+			}
+			let translated: string | undefined;
+			if (lang === 'el' && el.dataset.i18nPlaceholderEl) translated = el.dataset.i18nPlaceholderEl;
+			else if (lang === 'es' && el.dataset.i18nPlaceholderEs) translated = el.dataset.i18nPlaceholderEs;
+			el.setAttribute('placeholder', translated ?? el.dataset.i18nPlaceholderOriginal ?? '');
+		});
+
+		// Translatable aria-labels: data-i18n-aria-el on any element.
+		document.querySelectorAll<HTMLElement>(
+			'[data-i18n-aria-el], [data-i18n-aria-es]'
+		).forEach((el) => {
+			if (el.dataset.i18nAriaOriginal === undefined) {
+				el.dataset.i18nAriaOriginal = el.getAttribute('aria-label') ?? '';
+			}
+			let translated: string | undefined;
+			if (lang === 'el' && el.dataset.i18nAriaEl) translated = el.dataset.i18nAriaEl;
+			else if (lang === 'es' && el.dataset.i18nAriaEs) translated = el.dataset.i18nAriaEs;
+			el.setAttribute('aria-label', translated ?? el.dataset.i18nAriaOriginal ?? '');
+		});
+	}
+
+	function run() {
+		applyTranslations(getLang());
+	}
+
+	document.addEventListener('astro:page-load', run);
+	document.addEventListener('opaway:lang-changed', run);
+</script>

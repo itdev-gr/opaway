@@ -2,11 +2,16 @@
 // Opawey contact & company info – update with your real data
 const contact = {
 	address: '9 Eirinis Street, Neo Faliro 18547, Greece',
+	addressEl: 'Ειρήνης 9, Νέο Φάληρο Τ.Κ. 18547',
 	phone: '+30 21 1234 5678',
 	mobile: '+30 693 123 4567',
 	email: 'info@opaway.com',
 	gemi: 'GEMI 123456789000',
-	hours: ['Monday – Friday 8:00–21:30', 'Saturday 9:00–16:00'],
+	gemiEl: 'Γ.Ε.ΜΗ. 123456789000',
+	hours: [
+		{ en: 'Monday – Friday 8:00–21:30', el: 'Δευτέρα – Παρασκευή 8:00–21:30' },
+		{ en: 'Saturday 9:00–16:00', el: 'Σάββατο 9:00–16:00' },
+	],
 };
 // Social profile URLs — set these to the real Opawey handles once they exist.
 // Empty string hides the icon; a real URL renders a live link (new tab, rel=noopener).
@@ -16,20 +21,20 @@ const social = {
 	linkedin: '',
 } as const;
 const companyLinks = [
-	{ label: 'About Us', href: '/about' },
-	{ label: 'Book Online', href: '/book' },
-	{ label: 'Contact', href: '/contact' },
-	{ label: 'Sign In', href: '/login' },
-	{ label: 'Register', href: '/register' },
-	{ label: 'Terms of Use', href: '/terms' },
-	{ label: 'Privacy Policy', href: '/privacy' },
+	{ label: 'About Us', el: 'Σχετικά με εμάς', href: '/about' },
+	{ label: 'Book Online', el: 'Κράτηση online', href: '/book' },
+	{ label: 'Contact', el: 'Επικοινωνία', href: '/contact' },
+	{ label: 'Sign In', el: 'Σύνδεση', href: '/login' },
+	{ label: 'Register', el: 'Εγγραφή', href: '/register' },
+	{ label: 'Terms of Use', el: 'Όροι χρήσης', href: '/terms' },
+	{ label: 'Privacy Policy', el: 'Πολιτική απορρήτου', href: '/privacy' },
 ];
 const categoryLinks = [
-	{ label: 'Airport Transfers', href: '/book/transfer' },
-	{ label: 'City', href: '/book/hourly' },
-	{ label: 'By the Hour', href: '/book/hourly' },
-	{ label: 'Tours & Experiences', href: '/book/tour' },
-	{ label: 'Experiences', href: '/experiences' },
+	{ label: 'Airport Transfers', el: 'Μεταφορές αεροδρομίου', href: '/book/transfer' },
+	{ label: 'City', el: 'Πόλη', href: '/book/hourly' },
+	{ label: 'By the Hour', el: 'Με την ώρα', href: '/book/hourly' },
+	{ label: 'Tours & Experiences', el: 'Τουρ & εμπειρίες', href: '/book/tour' },
+	{ label: 'Experiences', el: 'Εμπειρίες', href: '/experiences' },
 ];
 ---
 
@@ -42,18 +47,18 @@ const categoryLinks = [
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
 				</span>
 				<div>
-					<h3 class="text-xl font-bold text-neutral-800">Subscribe to our Newsletter</h3>
-					<p class="text-neutral-600 text-sm mt-1">Sign up for our updates and be the first to hear about offers.</p>
+					<h3 class="text-xl font-bold text-neutral-800" data-i18n-el="Εγγραφή στο Newsletter">Subscribe to our Newsletter</h3>
+					<p class="text-neutral-600 text-sm mt-1" data-i18n-el="Εγγραφείτε στα νέα μας και μάθετε πρώτοι για τις προσφορές μας.">Sign up for our updates and be the first to hear about offers.</p>
 				</div>
 			</div>
 			<div class="shrink-0 flex flex-col gap-3 w-full lg:max-w-md">
 				<div class="flex flex-col sm:flex-row gap-2">
-					<input type="email" placeholder="e.g. you@example.com" class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-					<button type="button" class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors whitespace-nowrap">SUBSCRIBE</button>
+					<input type="email" placeholder="e.g. you@example.com" data-i18n-placeholder-el="π.χ. mail@mail.gr" class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+					<button type="button" class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors whitespace-nowrap" data-i18n-el="ΕΓΓΡΑΦΗ">SUBSCRIBE</button>
 				</div>
 				<label class="flex items-center gap-2 text-sm text-sky-700 cursor-pointer">
 					<input type="checkbox" class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500" />
-					<span>I accept and agree to the terms of use</span>
+					<span data-i18n-el="Αποδέχομαι και συμφωνώ με τους όρους χρήσης">I accept and agree to the terms of use</span>
 				</label>
 			</div>
 		</div>
@@ -64,13 +69,13 @@ const categoryLinks = [
 		<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16">
 			<!-- Contact -->
 			<div class="text-neutral-700 text-sm space-y-2">
-				<p>{contact.address}</p>
-				<p>Phone: {contact.phone}</p>
-				<p>Mobile: {contact.mobile}</p>
+				<p data-i18n-el={contact.addressEl}>{contact.address}</p>
+				<p data-i18n-el={`Τηλ: ${contact.phone}`}>Phone: {contact.phone}</p>
+				<p data-i18n-el={`Κιν: ${contact.mobile}`}>Mobile: {contact.mobile}</p>
 				<p>Email: {contact.email}</p>
-				<p>{contact.gemi}</p>
-				<p class="font-semibold text-neutral-800 pt-4">Business Hours</p>
-				{contact.hours.map((line) => <p>{line}</p>)}
+				<p data-i18n-el={contact.gemiEl}>{contact.gemi}</p>
+				<p class="font-semibold text-neutral-800 pt-4" data-i18n-el="Ώρες λειτουργίας">Business Hours</p>
+				{contact.hours.map((line) => <p data-i18n-el={line.el}>{line.en}</p>)}
 				{(social.facebook || social.instagram || social.linkedin) && (
 					<div class="flex gap-3 pt-4">
 						{social.facebook && (
@@ -87,19 +92,19 @@ const categoryLinks = [
 			</div>
 			<!-- Company -->
 			<div>
-				<h4 class="font-bold text-neutral-800 mb-4">Company</h4>
+				<h4 class="font-bold text-neutral-800 mb-4" data-i18n-el="Η εταιρεία">Company</h4>
 				<ul class="space-y-2 text-sm text-neutral-700">
 					{companyLinks.map((link) => (
-						<li><a href={link.href} class="hover:text-blue-600 transition-colors">{link.label}</a></li>
+						<li><a href={link.href} class="hover:text-blue-600 transition-colors" data-i18n-el={link.el}>{link.label}</a></li>
 					))}
 				</ul>
 			</div>
 			<!-- Categories -->
 			<div>
-				<h4 class="font-bold text-neutral-800 mb-4">Categories</h4>
+				<h4 class="font-bold text-neutral-800 mb-4" data-i18n-el="Κατηγορίες">Categories</h4>
 				<ul class="space-y-2 text-sm text-neutral-700">
 					{categoryLinks.map((link) => (
-						<li><a href={link.href} class="hover:text-blue-600 transition-colors">{link.label}</a></li>
+						<li><a href={link.href} class="hover:text-blue-600 transition-colors" data-i18n-el={link.el}>{link.label}</a></li>
 					))}
 				</ul>
 			</div>
@@ -113,13 +118,13 @@ const categoryLinks = [
 				<span class="w-8 h-8 rounded bg-sky-100 flex items-center justify-center text-blue-600 shrink-0" aria-hidden="true">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
 				</span>
-				<p>Opawey provides reliable airport transfers and hourly chauffeur service in Greece and internationally.</p>
+				<p data-i18n-el="Η Opawey παρέχει αξιόπιστες μεταφορές αεροδρομίου και υπηρεσία οδηγού με την ώρα στην Ελλάδα και διεθνώς.">Opawey provides reliable airport transfers and hourly chauffeur service in Greece and internationally.</p>
 			</div>
 			<div class="flex items-center gap-3">
 				<span class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-blue-600 shrink-0" aria-hidden="true">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
 				</span>
-				<p>Verified transfer provider with a focus on safety and service quality.</p>
+				<p data-i18n-el="Επαληθευμένος πάροχος μεταφορών με έμφαση στην ασφάλεια και την ποιότητα υπηρεσιών.">Verified transfer provider with a focus on safety and service quality.</p>
 			</div>
 			<!-- Powered by -->
 			<div class="flex items-center gap-2 text-xs text-neutral-400">
