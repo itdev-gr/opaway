@@ -16,16 +16,16 @@ const { rootId, label = 'Luggage' } = Astro.props;
 		<!-- Small (carry-on) -->
 		<div data-luggage="small" class="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-3 py-2.5">
 			<div class="flex flex-col leading-tight">
-				<span class="text-sm font-semibold text-neutral-800" data-i18n-el="Μικρές" data-i18n-es="Pequeñas">Small</span>
-				<span class="text-[11px] text-neutral-400" data-i18n-el="Χειραποσκευή" data-i18n-es="Equipaje de mano">Carry-on</span>
+				<span class="text-sm font-semibold text-neutral-800" data-i18n-el="Χειραποσκευή" data-i18n-es="Pequeñas">Small</span>
+				<span class="text-[11px] text-neutral-400" data-i18n-el="Καμπίνας" data-i18n-es="Equipaje de mano">Carry-on</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<button type="button" data-action="minus" aria-label="Decrease small luggage" data-i18n-aria-el="Μείωση μικρών αποσκευών" data-i18n-aria-es="Reducir equipaje de mano"
+				<button type="button" data-action="minus" aria-label="Decrease small luggage" data-i18n-aria-el="Μείωση χειραποσκευών" data-i18n-aria-es="Reducir equipaje de mano"
 					class="w-7 h-7 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
 				</button>
 				<span data-value class="w-6 text-center text-sm font-semibold tabular-nums">0</span>
-				<button type="button" data-action="plus" aria-label="Increase small luggage" data-i18n-aria-el="Αύξηση μικρών αποσκευών" data-i18n-aria-es="Aumentar equipaje de mano"
+				<button type="button" data-action="plus" aria-label="Increase small luggage" data-i18n-aria-el="Αύξηση χειραποσκευών" data-i18n-aria-es="Aumentar equipaje de mano"
 					class="w-7 h-7 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
 				</button>
@@ -35,16 +35,16 @@ const { rootId, label = 'Luggage' } = Astro.props;
 		<!-- Big (checked) -->
 		<div data-luggage="big" class="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-3 py-2.5">
 			<div class="flex flex-col leading-tight">
-				<span class="text-sm font-semibold text-neutral-800" data-i18n-el="Μεγάλες" data-i18n-es="Grandes">Big</span>
-				<span class="text-[11px] text-neutral-400" data-i18n-el="Παραδοτέα" data-i18n-es="Facturadas">Checked</span>
+				<span class="text-sm font-semibold text-neutral-800" data-i18n-el="Βαλίτσα" data-i18n-es="Grandes">Big</span>
+				<span class="text-[11px] text-neutral-400" data-i18n-el="Check-in" data-i18n-es="Facturadas">Checked</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<button type="button" data-action="minus" aria-label="Decrease big luggage" data-i18n-aria-el="Μείωση μεγάλων αποσκευών" data-i18n-aria-es="Reducir equipaje facturado"
+				<button type="button" data-action="minus" aria-label="Decrease big luggage" data-i18n-aria-el="Μείωση βαλιτσών" data-i18n-aria-es="Reducir equipaje facturado"
 					class="w-7 h-7 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
 				</button>
 				<span data-value class="w-6 text-center text-sm font-semibold tabular-nums">0</span>
-				<button type="button" data-action="plus" aria-label="Increase big luggage" data-i18n-aria-el="Αύξηση μεγάλων αποσκευών" data-i18n-aria-es="Aumentar equipaje facturado"
+				<button type="button" data-action="plus" aria-label="Increase big luggage" data-i18n-aria-el="Αύξηση βαλιτσών" data-i18n-aria-es="Aumentar equipaje facturado"
 					class="w-7 h-7 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
 				</button>

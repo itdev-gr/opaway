@@ -12,19 +12,19 @@ import Layout from '../../layouts/Layout.astro';
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
 					</svg>
-					<span data-i18n-el="Κράτηση Μεταφοράς" data-i18n-es="Reservar un traslado">Book a Transfer</span>
+					<span data-i18n-el="Κλείστε μεταφορά" data-i18n-es="Reservar un traslado">Book a Transfer</span>
 				</a>
 				<a href="/book/hourly" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-semibold text-sm hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
-					<span data-i18n-el="Με την ώρα" data-i18n-es="Alquiler por hora">Rent per Hour</span>
+					<span data-i18n-el="Ενοικίαση με την ώρα" data-i18n-es="Alquiler por hora">Rent per Hour</span>
 				</a>
 				<a href="/book/tour" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0C6B95] text-white font-semibold text-sm shadow-md shadow-[#0C6B95]/25">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
 					</svg>
-					<span data-i18n-el="Κράτηση Τουρ" data-i18n-es="Reservar un tour">Book a Tour</span>
+					<span data-i18n-el="Κλείστε ένα τουρ" data-i18n-es="Reservar un tour">Book a Tour</span>
 				</a>
 			</div>
 
@@ -33,17 +33,17 @@ import Layout from '../../layouts/Layout.astro';
 				<!-- ── Booking form panel ── -->
 				<div id="tour-form" class="bg-white rounded-2xl p-6 lg:p-8 border border-neutral-200 shadow-sm">
 
-					<h2 class="text-2xl font-bold text-neutral-900 mb-6" data-i18n-el="Στοιχεία Τουρ" data-i18n-es="Detalles del tour">Tour Details</h2>
+					<h2 class="text-2xl font-bold text-neutral-900 mb-6" data-i18n-el="Στοιχεία τουρ" data-i18n-es="Detalles del tour">Tour Details</h2>
 
 					<!-- Tour Type -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Εμπειρία Τουρ" data-i18n-es="Experiencia de tour">Tour Experience</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Διαθέσιμα τουρ" data-i18n-es="Experiencia de tour">Tour Experience</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
 							</span>
 							<select id="tour-select" class="w-full pl-10 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
-								<option value="" disabled selected data-i18n-el="Επιλέξτε ένα τουρ..." data-i18n-es="Seleccione un tour...">Select a tour...</option>
+								<option value="" disabled selected data-i18n-el="Επιλέξτε τουρ…" data-i18n-es="Seleccione un tour...">Select a tour...</option>
 							</select>
 							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -56,19 +56,19 @@ import Layout from '../../layouts/Layout.astro';
 
 					<!-- Pickup Location -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Σημείο Παραλαβής" data-i18n-es="Lugar de recogida">Pickup Location</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Σημείο παραλαβής" data-i18n-es="Lugar de recogida">Pickup Location</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tour-pickup" type="text" placeholder="Hotel, address or landmark..." data-i18n-placeholder-el="Ξενοδοχείο, διεύθυνση ή ορόσημο..." data-i18n-placeholder-es="Hotel, dirección o punto de referencia..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tour-pickup" type="text" placeholder="Hotel, address or landmark..." data-i18n-placeholder-el="π.χ. ξενοδοχείο, διεύθυνση ή σημείο συνάντησης…" data-i18n-placeholder-es="Hotel, dirección o punto de referencia..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία τουρ" data-i18n-es="Fecha del tour">Tour date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία" data-i18n-es="Fecha del tour">Tour date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -78,7 +78,7 @@ import Layout from '../../layouts/Layout.astro';
 							<p data-error-for="tour-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής" data-i18n-es="Hora de recogida">Pickup time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα" data-i18n-es="Hora de recogida">Pickup time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -117,15 +117,15 @@ import Layout from '../../layouts/Layout.astro';
 					<div class="mb-5">
 						<div class="flex items-center gap-2 mb-2">
 							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Οι Εμπειρίες μας" data-i18n-es="Nuestras experiencias">Our Experiences</span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Οι εμπειρίες μας" data-i18n-es="Nuestras experiencias">Our Experiences</span>
 						</div>
-						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Επιλεγμένα Τουρ στην Ελλάδα" data-i18n-es="Tours seleccionados en Grecia">Curated Tours in Greece</h2>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Επιλεγμένα τουρ στην Ελλάδα" data-i18n-es="Tours seleccionados en Grecia">Curated Tours in Greece</h2>
 					</div>
 
 					<!-- Cards container — filled by JS -->
 					<div id="tour-carousel-inner" class="relative overflow-hidden rounded-2xl flex-1">
 						<div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-12 flex items-center justify-center">
-							<p class="text-neutral-400 text-sm" data-i18n-el="Φόρτωση τουρ…" data-i18n-es="Cargando tours…">Loading tours…</p>
+							<p class="text-neutral-400 text-sm" data-i18n-el="Φόρτωση…" data-i18n-es="Cargando tours…">Loading tours…</p>
 						</div>
 					</div>
 
@@ -152,11 +152,11 @@ import Layout from '../../layouts/Layout.astro';
 			<div class="mb-12 text-center">
 				<div class="flex items-center justify-center gap-2 mb-4">
 					<span class="w-2 h-2 rounded-full bg-[#0C6B95]"></span>
-					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Τα Τουρ μας" data-i18n-es="Nuestros tours">Our Tours</span>
+					<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Τα τουρ μας" data-i18n-es="Nuestros tours">Our Tours</span>
 				</div>
-				<h2 class="text-4xl font-bold text-neutral-900 mb-4" data-i18n-el="Εξερευνήστε τα Διαθέσιμα Τουρ" data-i18n-es="Explore los tours disponibles">Explore Available Tours</h2>
+				<h2 class="text-4xl font-bold text-neutral-900 mb-4" data-i18n-el="Εξερευνήστε τα διαθέσιμα τουρ" data-i18n-es="Explore los tours disponibles">Explore Available Tours</h2>
 				<div class="w-16 h-1 bg-[#0C6B95] rounded-full mx-auto mb-4"></div>
-				<p class="text-neutral-500 text-base max-w-xl mx-auto leading-relaxed" data-i18n-el="Επιλέξτε από την επιλεγμένη συλλογή ιδιωτικών τουρ μας, καθένα σχεδιασμένο να σας δώσει μια εξαιρετική γεύση της Ελλάδας." data-i18n-es="Elija entre nuestra selección de tours privados, cada uno diseñado para ofrecerle una muestra extraordinaria de Grecia.">
+				<p class="text-neutral-500 text-base max-w-xl mx-auto leading-relaxed" data-i18n-el="Διαλέξτε ανάμεσα στα επιλεγμένα ιδιωτικά μας τουρ — το καθένα σχεδιασμένο για να σας χαρίσει μια αυθεντική εμπειρία της Ελλάδας." data-i18n-es="Elija entre nuestra selección de tours privados, cada uno diseñado para ofrecerle una muestra extraordinaria de Grecia.">
 					Choose from our curated selection of private tours, each designed to give you an extraordinary taste of Greece.
 				</p>
 			</div>
@@ -237,7 +237,7 @@ import Layout from '../../layouts/Layout.astro';
 			if (docs.length === 0) {
 				inner.innerHTML = `
 					<div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-12 flex items-center justify-center">
-						<p class="text-neutral-400 text-sm text-center" data-i18n-el="Δεν υπάρχουν διαθέσιμα τουρ αυτή τη στιγμή. Ελέγξτε ξανά σύντομα." data-i18n-es="No hay tours disponibles en este momento. Vuelva a consultar pronto.">No tours available at the moment.<br/>Check back soon.</p>
+						<p class="text-neutral-400 text-sm text-center" data-i18n-el="Δεν υπάρχουν διαθέσιμα τουρ αυτή τη στιγμή. Επανέλθετε σύντομα." data-i18n-es="No hay tours disponibles en este momento. Vuelva a consultar pronto.">No tours available at the moment.<br/>Check back soon.</p>
 					</div>`;
 			} else {
 				inner.innerHTML = docs.map((t, i) => {
@@ -357,7 +357,7 @@ import Layout from '../../layouts/Layout.astro';
 			const catalogSection = document.getElementById('catalog-section')!;
 			const catalogGrid    = document.getElementById('tours-catalog-grid')!;
 
-			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium" data-i18n-el="Έκπτωση συνεργάτη: εφαρμόστηκε ${partnerDiscount}%" data-i18n-es="Descuento de socio: ${partnerDiscount}% aplicado">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
+			catalogGrid.innerHTML = (partnerDiscount > 0 ? `<div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-0 text-sm text-emerald-700 font-medium" data-i18n-el="Έκπτωση συνεργάτη ${partnerDiscount}% — ενεργοποιήθηκε" data-i18n-es="Descuento de socio: ${partnerDiscount}% aplicado">Partner discount: ${partnerDiscount}% applied</div>` : '') + docs.map(t => {
 				const images = (Array.isArray(t.images) && t.images.length > 0)
 					? t.images
 					: (t.image_url ? [t.image_url] : []);
@@ -384,7 +384,7 @@ import Layout from '../../layouts/Layout.astro';
 								href="/book/tour?tour=${encodeURIComponent(t.id)}#tour-form"
 								class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-sm shadow-[#0C6B95]/20"
 							>
-								<span data-i18n-el="Κράτηση Τώρα" data-i18n-es="Reservar ahora">Book Now</span>
+								<span data-i18n-el="Κράτηση τώρα" data-i18n-es="Reservar ahora">Book Now</span>
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 								</svg>
