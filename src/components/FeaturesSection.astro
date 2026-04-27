@@ -3,29 +3,37 @@ const features = [
 	{
 		title: 'Global',
 		titleEl: 'Παγκόσμια κάλυψη',
+		titleEs: 'Cobertura global',
 		description: 'Wherever your journey leads, Opawey ensures your comfort along the way.',
 		descriptionEl: 'Όπου κι αν σας οδηγήσει το ταξίδι σας, η Opawey εξασφαλίζει την άνεσή σας σε όλη τη διαδρομή.',
+		descriptionEs: 'Donde sea que le lleve su viaje, Opawey garantiza su comodidad durante todo el recorrido.',
 		icon: 'globe',
 	},
 	{
 		title: 'Professional drivers',
 		titleEl: 'Επαγγελματίες οδηγοί',
+		titleEs: 'Conductores profesionales',
 		description: 'Professional Drivers, Timely Rides, Relaxed Travel',
 		descriptionEl: 'Επαγγελματίες οδηγοί, έγκαιρες διαδρομές, ξεκούραστο ταξίδι.',
+		descriptionEs: 'Conductores profesionales, trayectos puntuales, viajes relajados.',
 		icon: 'driver',
 	},
 	{
 		title: 'Chauffeur by the hour',
 		titleEl: 'Οδηγός με την ώρα',
+		titleEs: 'Conductor por hora',
 		description: 'Hire an hourly chauffeur for your business or leisure needs.',
 		descriptionEl: 'Νοικιάστε οδηγό με την ώρα για επαγγελματικές ή ψυχαγωγικές ανάγκες.',
+		descriptionEs: 'Contrate un conductor por hora para sus necesidades de negocio o de ocio.',
 		icon: 'clock',
 	},
 	{
 		title: 'City rides',
 		titleEl: 'Διαδρομές στην πόλη',
+		titleEs: 'Trayectos por la ciudad',
 		description: 'Explore the city anytime, anywhere—even long distances.',
 		descriptionEl: 'Εξερευνήστε την πόλη οποιαδήποτε στιγμή, οπουδήποτε — ακόμη και για μεγάλες αποστάσεις.',
+		descriptionEs: 'Explore la ciudad en cualquier momento y lugar, incluso a largas distancias.',
 		icon: 'car',
 	},
 ];
@@ -37,7 +45,7 @@ const features = [
 			{features.map((feature) => (
 				<article class="bg-[#F5F6F8] rounded-xl p-6 flex flex-col">
 					<div class="flex justify-between items-start gap-4 mb-4">
-						<h3 class="text-lg font-bold text-neutral-900 pr-2" data-i18n-el={feature.titleEl}>{feature.title}</h3>
+						<h3 class="text-lg font-bold text-neutral-900 pr-2" data-i18n-el={feature.titleEl} data-i18n-es={feature.titleEs}>{feature.title}</h3>
 						<span class="shrink-0 w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-700" aria-hidden="true">
 							{feature.icon === 'globe' && (
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0h.5a2.5 2.5 0 002.5-2.5V3.935M12 12a4 4 0 118 0 4 4 0 01-8 0z" /></svg>
@@ -53,7 +61,7 @@ const features = [
 							)}
 						</span>
 					</div>
-					<p class="text-sm text-neutral-600 flex-1" data-i18n-el={feature.descriptionEl}>{feature.description}</p>
+					<p class="text-sm text-neutral-600 flex-1" data-i18n-el={feature.descriptionEl} data-i18n-es={feature.descriptionEs}>{feature.description}</p>
 				</article>
 			))}
 		</div>
