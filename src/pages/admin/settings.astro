@@ -220,27 +220,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 <script>
 	import { supabase, verifyCurrentPassword } from '../../lib/supabase';
 
-	/* ── DOM refs ── */
-	const nameInput      = document.getElementById('profile-name') as HTMLInputElement;
-	const emailInput     = document.getElementById('profile-email') as HTMLInputElement;
-	const providerEl     = document.getElementById('profile-provider')!;
-	const memberSinceEl  = document.getElementById('profile-member-since')!;
-	const btnSave        = document.getElementById('btn-save-profile') as HTMLButtonElement;
-	const profileStatus  = document.getElementById('profile-status')!;
-
-	const sectionPw      = document.getElementById('section-password')!;
-	const pwCurrent      = document.getElementById('pw-current') as HTMLInputElement;
-	const pwNew          = document.getElementById('pw-new') as HTMLInputElement;
-	const pwConfirm      = document.getElementById('pw-confirm') as HTMLInputElement;
-	const btnPw          = document.getElementById('btn-update-password') as HTMLButtonElement;
-	const pwStatus       = document.getElementById('password-status')!;
-
-	const sysProjectId   = document.getElementById('sys-project-id')!;
-	const sysTotalUsers  = document.getElementById('sys-total-users')!;
-	const sysTotalPartners = document.getElementById('sys-total-partners')!;
-	const sysTotalBookings = document.getElementById('sys-total-bookings')!;
-
-	/* ── Helpers ── */
+	/* ── Helpers (module-level — no DOM dependency) ── */
 	function showStatus(el: HTMLElement, msg: string, ok: boolean) {
 		el.textContent = msg;
 		el.className = `text-sm ${ok ? 'text-emerald-600' : 'text-red-600'}`;
@@ -264,150 +244,174 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border ${info.color}">${info.label}</span>`;
 	}
 
-	/* ── Wait for AdminLayout auth guard ── */
-	const authCheck = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authCheck?.classList.contains('hidden')) {
-			observer.disconnect();
-			init();
+	function pageInit() {
+		/* ── DOM refs ── */
+		const nameInput      = document.getElementById('profile-name') as HTMLInputElement;
+		const emailInput     = document.getElementById('profile-email') as HTMLInputElement;
+		const providerEl     = document.getElementById('profile-provider')!;
+		const memberSinceEl  = document.getElementById('profile-member-since')!;
+		const btnSave        = document.getElementById('btn-save-profile') as HTMLButtonElement;
+		const profileStatus  = document.getElementById('profile-status')!;
+
+		const sectionPw      = document.getElementById('section-password')!;
+		const pwCurrent      = document.getElementById('pw-current') as HTMLInputElement;
+		const pwNew          = document.getElementById('pw-new') as HTMLInputElement;
+		const pwConfirm      = document.getElementById('pw-confirm') as HTMLInputElement;
+		const btnPw          = document.getElementById('btn-update-password') as HTMLButtonElement;
+		const pwStatus       = document.getElementById('password-status')!;
+
+		const sysProjectId     = document.getElementById('sys-project-id')!;
+		const sysTotalUsers    = document.getElementById('sys-total-users')!;
+		const sysTotalPartners = document.getElementById('sys-total-partners')!;
+		const sysTotalBookings = document.getElementById('sys-total-bookings')!;
+
+		/* ── Init ── */
+		async function init() {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
+
+			// Load profile data
+			const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single();
+
+			// Fill fields
+			nameInput.value = userData?.display_name || user.user_metadata?.display_name || '';
+			nameInput.disabled = false;
+			nameInput.placeholder = 'Enter display name';
+			emailInput.value = user.email || '';
+
+			const provider = userData?.provider || user.app_metadata?.provider || 'unknown';
+			providerEl.innerHTML = providerBadge(provider === 'email' ? 'password' : provider);
+			memberSinceEl.textContent = formatDate(userData?.created_at);
+
+			btnSave.disabled = false;
+
+			// Show password section for email provider
+			if (provider === 'password' || provider === 'email') {
+				sectionPw.classList.remove('hidden');
+			}
+
+			// System info
+			sysProjectId.textContent = import.meta.env.PUBLIC_SUPABASE_URL || 'N/A';
+
+			// Fetch counts in parallel
+			loadSystemCounts();
 		}
-	});
-	if (authCheck) {
-		if (authCheck.classList.contains('hidden')) {
-			init();
-		} else {
-			observer.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
-		}
-	}
 
-	/* ── Init ── */
-	async function init() {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		async function loadSystemCounts() {
+			{
+				const [usersRes, partnersRes, transfersRes, toursRes, experiencesRes] = await Promise.all([
+					supabase.from('users').select('id', { count: 'exact', head: true }),
+					supabase.from('partners').select('id', { count: 'exact', head: true }),
+					supabase.from('transfers').select('id', { count: 'exact', head: true }),
+					supabase.from('tours').select('id', { count: 'exact', head: true }),
+					supabase.from('experiences').select('id', { count: 'exact', head: true }),
+				]);
 
-		// Load profile data
-		const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single();
+				const firstErr = usersRes.error || partnersRes.error || transfersRes.error || toursRes.error || experiencesRes.error;
+				if (firstErr) {
+					console.error('Admin system counts load failed:', firstErr);
+					sysTotalUsers.textContent = '—';
+					sysTotalPartners.textContent = '—';
+					sysTotalBookings.textContent = '—';
+					return;
+				}
 
-		// Fill fields
-		nameInput.value = userData?.display_name || user.user_metadata?.display_name || '';
-		nameInput.disabled = false;
-		nameInput.placeholder = 'Enter display name';
-		emailInput.value = user.email || '';
-
-		const provider = userData?.provider || user.app_metadata?.provider || 'unknown';
-		providerEl.innerHTML = providerBadge(provider === 'email' ? 'password' : provider);
-		memberSinceEl.textContent = formatDate(userData?.created_at);
-
-		btnSave.disabled = false;
-
-		// Show password section for email provider
-		if (provider === 'password' || provider === 'email') {
-			sectionPw.classList.remove('hidden');
+				sysTotalUsers.textContent = (usersRes.count ?? 0).toString();
+				sysTotalPartners.textContent = (partnersRes.count ?? 0).toString();
+				sysTotalBookings.textContent = ((transfersRes.count ?? 0) + (toursRes.count ?? 0) + (experiencesRes.count ?? 0)).toString();
+			}
 		}
 
-		// System info
-		sysProjectId.textContent = import.meta.env.PUBLIC_SUPABASE_URL || 'N/A';
+		/* ── Save Profile ── */
+		btnSave.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
 
-		// Fetch counts in parallel
-		loadSystemCounts();
-	}
-
-	async function loadSystemCounts() {
-		{
-			const [usersRes, partnersRes, transfersRes, toursRes, experiencesRes] = await Promise.all([
-				supabase.from('users').select('id', { count: 'exact', head: true }),
-				supabase.from('partners').select('id', { count: 'exact', head: true }),
-				supabase.from('transfers').select('id', { count: 'exact', head: true }),
-				supabase.from('tours').select('id', { count: 'exact', head: true }),
-				supabase.from('experiences').select('id', { count: 'exact', head: true }),
-			]);
-
-			const firstErr = usersRes.error || partnersRes.error || transfersRes.error || toursRes.error || experiencesRes.error;
-			if (firstErr) {
-				console.error('Admin system counts load failed:', firstErr);
-				sysTotalUsers.textContent = '—';
-				sysTotalPartners.textContent = '—';
-				sysTotalBookings.textContent = '—';
+			const newName = nameInput.value.trim();
+			if (!newName) {
+				showStatus(profileStatus, 'Display name cannot be empty.', false);
 				return;
 			}
 
-			sysTotalUsers.textContent = (usersRes.count ?? 0).toString();
-			sysTotalPartners.textContent = (partnersRes.count ?? 0).toString();
-			sysTotalBookings.textContent = ((transfersRes.count ?? 0) + (toursRes.count ?? 0) + (experiencesRes.count ?? 0)).toString();
+			btnSave.disabled = true;
+			try {
+				const [authRes, dbRes] = await Promise.all([
+					supabase.auth.updateUser({ data: { display_name: newName } }),
+					supabase.from('users').update({ display_name: newName }).eq('id', user.id),
+				]);
+				if (authRes.error) throw authRes.error;
+				if (dbRes.error) throw dbRes.error;
+				showStatus(profileStatus, 'Profile updated successfully.', true);
+
+				// Update sidebar name
+				const sidebarName = document.getElementById('admin-user-name');
+				if (sidebarName) sidebarName.textContent = newName;
+			} catch (err: any) {
+				showStatus(profileStatus, err.message || 'Failed to update profile.', false);
+			} finally {
+				btnSave.disabled = false;
+			}
+		});
+
+		/* ── Update Password ── */
+		btnPw.addEventListener('click', async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user || !user.email) return;
+
+			const current = pwCurrent.value;
+			const next = pwNew.value;
+			const confirm = pwConfirm.value;
+
+			if (!current || !next || !confirm) {
+				showStatus(pwStatus, 'All password fields are required.', false);
+				return;
+			}
+			if (next.length < 6) {
+				showStatus(pwStatus, 'New password must be at least 6 characters.', false);
+				return;
+			}
+			if (next !== confirm) {
+				showStatus(pwStatus, 'New passwords do not match.', false);
+				return;
+			}
+
+			btnPw.disabled = true;
+			try {
+				// Verify current password via throwaway client (doesn't rotate the live
+				// session, doesn't trigger the layout auth overlay — F34).
+				const verifyErr = await verifyCurrentPassword(user.email, current);
+				if (verifyErr) throw new Error('Current password is incorrect.');
+
+				const { error: updateErr } = await supabase.auth.updateUser({ password: next });
+				if (updateErr) throw updateErr;
+
+				pwCurrent.value = '';
+				pwNew.value = '';
+				pwConfirm.value = '';
+				showStatus(pwStatus, 'Password updated successfully.', true);
+			} catch (err: any) {
+				showStatus(pwStatus, err.message || 'Failed to update password.', false);
+			} finally {
+				btnPw.disabled = false;
+			}
+		});
+
+		/* ── Auth guard observer ── */
+		const authCheck = document.getElementById('admin-auth-check');
+		if (authCheck) {
+			if (authCheck.classList.contains('hidden')) {
+				init();
+			} else {
+				const observer = new MutationObserver(() => {
+					if (authCheck.classList.contains('hidden')) {
+						observer.disconnect();
+						init();
+					}
+				});
+				observer.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+			}
 		}
 	}
 
-	/* ── Save Profile ── */
-	btnSave.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
-
-		const newName = nameInput.value.trim();
-		if (!newName) {
-			showStatus(profileStatus, 'Display name cannot be empty.', false);
-			return;
-		}
-
-		btnSave.disabled = true;
-		try {
-			const [authRes, dbRes] = await Promise.all([
-				supabase.auth.updateUser({ data: { display_name: newName } }),
-				supabase.from('users').update({ display_name: newName }).eq('id', user.id),
-			]);
-			if (authRes.error) throw authRes.error;
-			if (dbRes.error) throw dbRes.error;
-			showStatus(profileStatus, 'Profile updated successfully.', true);
-
-			// Update sidebar name
-			const sidebarName = document.getElementById('admin-user-name');
-			if (sidebarName) sidebarName.textContent = newName;
-		} catch (err: any) {
-			showStatus(profileStatus, err.message || 'Failed to update profile.', false);
-		} finally {
-			btnSave.disabled = false;
-		}
-	});
-
-	/* ── Update Password ── */
-	btnPw.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user || !user.email) return;
-
-		const current = pwCurrent.value;
-		const next = pwNew.value;
-		const confirm = pwConfirm.value;
-
-		if (!current || !next || !confirm) {
-			showStatus(pwStatus, 'All password fields are required.', false);
-			return;
-		}
-		if (next.length < 6) {
-			showStatus(pwStatus, 'New password must be at least 6 characters.', false);
-			return;
-		}
-		if (next !== confirm) {
-			showStatus(pwStatus, 'New passwords do not match.', false);
-			return;
-		}
-
-		btnPw.disabled = true;
-		try {
-			// Verify current password via throwaway client (doesn't rotate the live
-			// session, doesn't trigger the layout auth overlay — F34).
-			const verifyErr = await verifyCurrentPassword(user.email, current);
-			if (verifyErr) throw new Error('Current password is incorrect.');
-
-			const { error: updateErr } = await supabase.auth.updateUser({ password: next });
-			if (updateErr) throw updateErr;
-
-			pwCurrent.value = '';
-			pwNew.value = '';
-			pwConfirm.value = '';
-			showStatus(pwStatus, 'Password updated successfully.', true);
-		} catch (err: any) {
-			showStatus(pwStatus, err.message || 'Failed to update password.', false);
-		} finally {
-			btnPw.disabled = false;
-		}
-	});
+	document.addEventListener('astro:page-load', pageInit);
 </script>
