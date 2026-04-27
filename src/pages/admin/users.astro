@@ -338,9 +338,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	});
 
 	/* ── Auth guard observer ── */
+	// Race fix: AdminLayout's async getSession() can flip auth-check to hidden BEFORE
+	// this script attaches its observer. Check current state first; only observe if pending.
 	const authEl = document.getElementById('admin-auth-check');
-	const observer = new MutationObserver(() => {
-		if (authEl?.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }
-	});
-	if (authEl) observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+	if (authEl) {
+		if (authEl.classList.contains('hidden')) {
+			loadUsers();
+		} else {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadUsers(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
 </script>
