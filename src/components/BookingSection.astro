@@ -3,32 +3,38 @@ import LuggageCounters from './LuggageCounters.astro';
 const vehicles = [
 	{
 		title: 'Sedan',
+		titleEl: 'Σεντάν',
 		models: 'Mercedes-Benz E-Class, or similar.',
+		modelsEl: 'Mercedes-Benz E-Class ή παρόμοιο.',
 		image: '/car.avif',
 		features: [
-			'Fits up to 3 people',
-			'1 big + 1 small luggage per person',
-			'Available for airport transfers & city tours',
+			{ en: 'Fits up to 3 people', el: 'Χωρητικότητα έως 3 άτομα' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
+			{ en: 'Available for airport transfers & city tours', el: 'Διαθέσιμο για μεταφορές αεροδρομίου & τουρ πόλης' },
 		],
 	},
 	{
 		title: 'Van',
+		titleEl: 'Βαν',
 		models: 'Mercedes Vito Tourer, or similar.',
+		modelsEl: 'Mercedes Vito Tourer ή παρόμοιο.',
 		image: '/mini_van.avif',
 		features: [
-			'Fits up to 8 people',
-			'1 big + 1 small luggage per person',
-			'Ideal for group transfers & private tours',
+			{ en: 'Fits up to 8 people', el: 'Χωρητικότητα έως 8 άτομα' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
+			{ en: 'Ideal for group transfers & private tours', el: 'Ιδανικό για ομαδικές μεταφορές & ιδιωτικά τουρ' },
 		],
 	},
 	{
 		title: 'Minibus (or two Vans)',
+		titleEl: 'Μίνι λεωφορείο (ή δύο Βαν)',
 		models: 'Mercedes Sprinter, or similar.',
+		modelsEl: 'Mercedes Sprinter ή παρόμοιο.',
 		image: '/van.avif',
 		features: [
-			'Fits up to 18 people',
-			'1 big + 1 small luggage per person',
-			'Perfect for large groups & corporate events',
+			{ en: 'Fits up to 18 people', el: 'Χωρητικότητα έως 18 άτομα' },
+			{ en: '1 big + 1 small luggage per person', el: '1 μεγάλη + 1 μικρή αποσκευή ανά άτομο' },
+			{ en: 'Perfect for large groups & corporate events', el: 'Ιδανικό για μεγάλες ομάδες & εταιρικές εκδηλώσεις' },
 		],
 	},
 ];
@@ -44,13 +50,13 @@ const vehicles = [
 
 				<!-- Tabs -->
 				<div class="flex border-b border-neutral-200 mb-6">
-					<button type="button" data-booking-tab="transfer" class="booking-tab px-4 py-3 font-medium text-black bg-neutral-200/80 border-b-2 border-black -mb-px rounded-t-lg transition-colors">
+					<button type="button" data-booking-tab="transfer" class="booking-tab px-4 py-3 font-medium text-black bg-neutral-200/80 border-b-2 border-black -mb-px rounded-t-lg transition-colors" data-i18n-el="Μεταφορά">
 						Transfer
 					</button>
-					<button type="button" data-booking-tab="hourly" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors">
+					<button type="button" data-booking-tab="hourly" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Ενοικίαση με την ώρα">
 						Rent per hour
 					</button>
-					<button type="button" data-booking-tab="tours" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors">
+					<button type="button" data-booking-tab="tours" class="booking-tab px-4 py-3 font-medium text-neutral-500 hover:text-neutral-700 -mb-px rounded-t-lg transition-colors" data-i18n-el="Τουρ">
 						Tours
 					</button>
 				</div>
@@ -59,24 +65,24 @@ const vehicles = [
 				<div id="form-transfer">
 					<!-- From -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">From</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Από">From</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-from" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-from" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
 
 					<!-- To -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">To</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Προς">To</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tf-to" type="text" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="tf-to" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -84,7 +90,7 @@ const vehicles = [
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία παραλαβής">Pickup date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -94,7 +100,7 @@ const vehicles = [
 							<p data-error-for="tf-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής">Pickup time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -120,7 +126,7 @@ const vehicles = [
 					<!-- Return date row (hidden by default) -->
 					<div id="return-row" class="hidden grid grid-cols-2 gap-4 mb-6">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Return date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία επιστροφής">Return date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -129,7 +135,7 @@ const vehicles = [
 							</div>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Return time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα επιστροφής">Return time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -142,14 +148,14 @@ const vehicles = [
 
 					<!-- Passengers -->
 					<div class="mb-6">
-						<label class="block text-sm font-medium text-neutral-700 mb-2">Passengers</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Επιβάτες">Passengers</label>
 						<div class="flex items-center gap-3">
 							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl">
 								<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span class="text-neutral-800 font-medium" id="passenger-count">2</span>
 							</div>
-							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers">−</button>
-							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
+							<button type="button" id="pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers" data-i18n-aria-el="Λιγότεροι επιβάτες">−</button>
+							<button type="button" id="pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers" data-i18n-aria-el="Περισσότεροι επιβάτες">+</button>
 						</div>
 					</div>
 
@@ -161,7 +167,7 @@ const vehicles = [
 					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
-					<button id="see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+					<button id="see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2" data-i18n-el="Δείτε τιμές">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 						See prices
 					</button>
@@ -171,12 +177,12 @@ const vehicles = [
 				<div id="form-hourly" class="hidden">
 					<!-- Pickup location -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup location</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Τοποθεσία παραλαβής">Pickup location</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input type="text" id="hourly-pickup" placeholder="Address, airport, hotel, ..." data-i18n-placeholder-el="Διεύθυνση, αεροδρόμιο, ξενοδοχείο, ..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 						<p data-error-for="hourly-pickup" class="text-sm text-red-500 mt-1.5 hidden"></p>
 					</div>
@@ -184,7 +190,7 @@ const vehicles = [
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία παραλαβής">Pickup date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -194,7 +200,7 @@ const vehicles = [
 							<p data-error-for="hourly-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής">Pickup time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -207,16 +213,16 @@ const vehicles = [
 
 					<!-- Hours -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-2">Hours</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Ώρες">Hours</label>
 						<div class="flex items-center gap-3">
 							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl" id="hours-display-wrapper">
 								<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 								<span class="text-neutral-800 font-medium" id="hours-count">3</span>
 							</div>
-							<button type="button" id="hours-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer hours">−</button>
-							<button type="button" id="hours-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More hours">+</button>
+							<button type="button" id="hours-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer hours" data-i18n-aria-el="Λιγότερες ώρες">−</button>
+							<button type="button" id="hours-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More hours" data-i18n-aria-el="Περισσότερες ώρες">+</button>
 						</div>
-						<p id="hours-warning" class="hidden text-sm text-amber-600 mt-2 flex items-center gap-1.5">
+						<p id="hours-warning" class="hidden text-sm text-amber-600 mt-2 flex items-center gap-1.5" data-i18n-el="Η ελάχιστη ενοικίαση είναι 3 ώρες">
 							<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
 							Minimum rental is 3 hours
 						</p>
@@ -224,14 +230,14 @@ const vehicles = [
 
 					<!-- Passengers -->
 					<div class="mb-6">
-						<label class="block text-sm font-medium text-neutral-700 mb-2">Passengers</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Επιβάτες">Passengers</label>
 						<div class="flex items-center gap-3">
 							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl">
 								<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span class="text-neutral-800 font-medium" id="hourly-passenger-count">2</span>
 							</div>
-							<button type="button" id="hourly-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers">−</button>
-							<button type="button" id="hourly-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers">+</button>
+							<button type="button" id="hourly-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer passengers" data-i18n-aria-el="Λιγότεροι επιβάτες">−</button>
+							<button type="button" id="hourly-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More passengers" data-i18n-aria-el="Περισσότεροι επιβάτες">+</button>
 						</div>
 					</div>
 
@@ -243,7 +249,7 @@ const vehicles = [
 					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
-					<button id="hourly-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+					<button id="hourly-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2" data-i18n-el="Δείτε τιμές">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 						See prices
 					</button>
@@ -253,13 +259,13 @@ const vehicles = [
 				<div id="form-tours" class="hidden">
 					<!-- Tour Experience -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Tour Experience</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Εμπειρία τουρ">Tour Experience</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
 							</span>
 							<select id="tours-select" class="w-full pl-10 pr-10 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] appearance-none cursor-pointer">
-								<option value="" disabled selected>Loading tours…</option>
+								<option value="" disabled selected data-i18n-el="Φόρτωση τουρ…">Loading tours…</option>
 							</select>
 							<span class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -270,19 +276,19 @@ const vehicles = [
 
 					<!-- Pickup location -->
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup location</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Τοποθεσία παραλαβής">Pickup location</label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 							</span>
-							<input id="tours-pickup" type="text" placeholder="Hotel, address or landmark..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
+							<input id="tours-pickup" type="text" placeholder="Hotel, address or landmark..." data-i18n-placeholder-el="Ξενοδοχείο, διεύθυνση ή σημείο αναφοράς..." autocomplete="off" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]" />
 						</div>
 					</div>
 
 					<!-- Date & Time -->
 					<div class="grid grid-cols-2 gap-4 mb-5">
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Tour date</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ημερομηνία τουρ">Tour date</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -292,7 +298,7 @@ const vehicles = [
 							<p data-error-for="tours-date" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-neutral-700 mb-1">Pickup time</label>
+							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής">Pickup time</label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
 									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -304,14 +310,14 @@ const vehicles = [
 
 					<!-- Participants -->
 					<div class="mb-6">
-						<label class="block text-sm font-medium text-neutral-700 mb-2">Participants</label>
+						<label class="block text-sm font-medium text-neutral-700 mb-2" data-i18n-el="Συμμετέχοντες">Participants</label>
 						<div class="flex items-center gap-3">
 							<div class="flex-1 flex items-center gap-2 pl-4 py-3 bg-white border border-neutral-200 rounded-xl">
 								<svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
 								<span class="text-neutral-800 font-medium" id="tours-participant-count">2</span>
 							</div>
-							<button type="button" id="tours-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants">−</button>
-							<button type="button" id="tours-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants">+</button>
+							<button type="button" id="tours-pax-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="Fewer participants" data-i18n-aria-el="Λιγότεροι συμμετέχοντες">−</button>
+							<button type="button" id="tours-pax-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors text-lg font-bold" aria-label="More participants" data-i18n-aria-el="Περισσότεροι συμμετέχοντες">+</button>
 						</div>
 					</div>
 
@@ -319,7 +325,7 @@ const vehicles = [
 					<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
 					<!-- See prices -->
-					<button id="tours-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+					<button id="tours-see-prices-btn" type="button" class="w-full py-4 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2" data-i18n-el="Δείτε τιμές">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 						See prices
 					</button>
@@ -333,9 +339,9 @@ const vehicles = [
 				<div class="mb-5">
 					<div class="flex items-center gap-2 mb-2">
 						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase">Our Fleet</span>
+						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Ο στόλος μας">Our Fleet</span>
 					</div>
-					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900">Discover our service classes</h2>
+					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ανακαλύψτε τις κατηγορίες υπηρεσιών μας">Discover our service classes</h2>
 				</div>
 
 				<!-- Card viewport -->
@@ -352,8 +358,8 @@ const vehicles = [
 
 							<!-- Content -->
 							<div class="p-6 flex flex-col">
-								<h3 class="text-2xl font-bold text-neutral-900 mb-1">{v.title}</h3>
-								<p class="text-sm text-neutral-500 mb-4">{v.models}</p>
+								<h3 class="text-2xl font-bold text-neutral-900 mb-1" data-i18n-el={v.titleEl}>{v.title}</h3>
+								<p class="text-sm text-neutral-500 mb-4" data-i18n-el={v.modelsEl}>{v.models}</p>
 								<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
 								<ul class="flex flex-col gap-3">
 									{v.features.map((f) => (
@@ -361,7 +367,7 @@ const vehicles = [
 											<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
 											</svg>
-											<span class="text-sm text-neutral-600 leading-snug">{f}</span>
+											<span class="text-sm text-neutral-600 leading-snug" data-i18n-el={f.el}>{f.en}</span>
 										</li>
 									))}
 								</ul>
@@ -375,7 +381,7 @@ const vehicles = [
 					<button
 						data-fleet-prev
 						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
-						aria-label="Previous vehicle"
+						aria-label="Previous vehicle" data-i18n-aria-el="Προηγούμενο όχημα"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -387,7 +393,7 @@ const vehicles = [
 					<button
 						data-fleet-next
 						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
-						aria-label="Next vehicle"
+						aria-label="Next vehicle" data-i18n-aria-el="Επόμενο όχημα"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
