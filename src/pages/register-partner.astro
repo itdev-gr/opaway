@@ -25,10 +25,10 @@ import Layout from '../layouts/Layout.astro';
 				<div class="mb-8">
 					<div class="flex items-center gap-2 mb-3">
 						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-						<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Πρόσβαση Συνεργατών" data-i18n-es="Acceso para socios">Partner Access</span>
+						<span class="text-xs font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Πρόσβαση συνεργατών" data-i18n-es="Acceso para socios">Partner Access</span>
 					</div>
 					<h1 class="text-3xl font-bold text-neutral-900" data-i18n-el="Γίνετε συνεργάτης" data-i18n-es="Hazte socio">Become a Partner</h1>
-					<p class="text-neutral-500 text-sm mt-1" data-i18n-el="Επιλέξτε τον τύπο συνεργασίας και συμπληρώστε τα στοιχεία σας για να υποβάλετε αίτηση." data-i18n-es="Seleccione su tipo de socio y rellene sus datos para enviar la solicitud.">Select your partner type and fill in your details to apply.</p>
+					<p class="text-neutral-500 text-sm mt-1" data-i18n-el="Επιλέξτε τον τύπο συνεργασίας και συμπληρώστε τα στοιχεία σας για να κάνετε αίτηση." data-i18n-es="Seleccione su tipo de socio y rellene sus datos para enviar la solicitud.">Select your partner type and fill in your details to apply.</p>
 				</div>
 
 				<!-- Auth / form error -->
@@ -36,15 +36,15 @@ import Layout from '../layouts/Layout.astro';
 
 				<!-- ── Partner type dropdown ── -->
 				<div class="flex flex-col gap-1.5 mb-6">
-					<label for="partner-type" class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τύπος Συνεργάτη" data-i18n-es="Tipo de socio">Partner Type</label>
+					<label for="partner-type" class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τύπος συνεργάτη" data-i18n-es="Tipo de socio">Partner Type</label>
 					<div class="relative">
 						<select
 							id="partner-type"
 							class="w-full appearance-none pl-4 pr-10 py-3.5 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer"
 						>
-							<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο συνεργάτη…" data-i18n-es="Seleccione el tipo de socio…">Select partner type…</option>
+							<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο συνεργάτη..." data-i18n-es="Seleccione el tipo de socio…">Select partner type…</option>
 							<option value="hotel" data-i18n-el="Ξενοδοχεία &amp; Boutique" data-i18n-es="Hoteles y boutiques">Hotels &amp; Boutiques</option>
-							<option value="agency" data-i18n-el="Ταξιδιωτικά Πρακτορεία" data-i18n-es="Agencias de viajes">Travel Agencies</option>
+							<option value="agency" data-i18n-el="Ταξιδιωτικά πρακτορεία" data-i18n-es="Agencias de viajes">Travel Agencies</option>
 							<option value="driver" data-i18n-el="Οδηγοί" data-i18n-es="Conductores">Drivers</option>
 						</select>
 						<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
@@ -69,7 +69,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Business Information -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Επιχειρηματικά Στοιχεία" data-i18n-es="Información empresarial">Business Information</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία επιχείρησης" data-i18n-es="Información empresarial">Business Information</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -78,7 +78,7 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="h-country"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα…" data-i18n-es="Seleccione país…">Select country…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα..." data-i18n-es="Seleccione país…">Select country…</option>
 									<option value="Greece" data-i18n-el="Ελλάδα" data-i18n-es="Grecia">Greece</option>
 									<option value="United Kingdom" data-i18n-el="Ηνωμένο Βασίλειο" data-i18n-es="Reino Unido">United Kingdom</option>
 									<option value="United States" data-i18n-el="Ηνωμένες Πολιτείες" data-i18n-es="Estados Unidos">United States</option>
@@ -86,7 +86,7 @@ import Layout from '../layouts/Layout.astro';
 									<option value="France" data-i18n-el="Γαλλία" data-i18n-es="Francia">France</option>
 									<option value="Italy" data-i18n-el="Ιταλία" data-i18n-es="Italia">Italy</option>
 									<option value="Spain" data-i18n-el="Ισπανία" data-i18n-es="España">Spain</option>
-									<option value="Netherlands" data-i18n-el="Ολλανδία" data-i18n-es="Países Bajos">Netherlands</option>
+									<option value="Netherlands" data-i18n-el="Κάτω Χώρες" data-i18n-es="Países Bajos">Netherlands</option>
 									<option value="Turkey" data-i18n-el="Τουρκία" data-i18n-es="Turquía">Turkey</option>
 									<option value="Cyprus" data-i18n-el="Κύπρος" data-i18n-es="Chipre">Cyprus</option>
 									<option value="Australia" data-i18n-el="Αυστραλία" data-i18n-es="Australia">Australia</option>
@@ -108,7 +108,7 @@ import Layout from '../layouts/Layout.astro';
 						</div>
 
 						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα ξενοδοχείου ή Boutique *" data-i18n-es="Nombre del hotel o boutique *">Hotel or Boutique Name *</label>
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα ξενοδοχείου ή boutique *" data-i18n-es="Nombre del hotel o boutique *">Hotel or Boutique Name *</label>
 							<input id="h-name" type="text" placeholder="e.g. Aegean Boutique Hotel" data-i18n-placeholder-el="π.χ. Aegean Boutique Hotel" data-i18n-placeholder-es="p. ej. Aegean Boutique Hotel"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 						</div>
@@ -118,7 +118,7 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="h-type"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο…" data-i18n-es="Seleccione el tipo…">Select type…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο..." data-i18n-es="Seleccione el tipo…">Select type…</option>
 									<option data-i18n-el="Ξενοδοχείο" data-i18n-es="Hotel">Hotel</option>
 									<option data-i18n-el="Boutique Hotel" data-i18n-es="Hotel boutique">Boutique Hotel</option>
 									<option data-i18n-el="Resort" data-i18n-es="Resort">Resort</option>
@@ -154,12 +154,12 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Contact Person -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Υπεύθυνος Επικοινωνίας" data-i18n-es="Persona de contacto">Contact Person</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Υπεύθυνος επικοινωνίας" data-i18n-es="Persona de contacto">Contact Person</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα υπευθύνου επικοινωνίας *" data-i18n-es="Nombre de la persona de contacto *">Contact Person Name *</label>
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Ονοματεπώνυμο υπευθύνου *" data-i18n-es="Nombre de la persona de contacto *">Contact Person Name *</label>
 							<input id="h-contact-name" type="text" placeholder="e.g. Maria Papadopoulou" data-i18n-placeholder-el="π.χ. Μαρία Παπαδοπούλου" data-i18n-placeholder-es="p. ej. María García"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 						</div>
@@ -180,7 +180,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Property Details -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία Καταλύματος" data-i18n-es="Detalles del alojamiento">Property Details</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία καταλύματος" data-i18n-es="Detalles del alojamiento">Property Details</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -213,7 +213,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Business Information -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Επιχειρηματικά Στοιχεία" data-i18n-es="Información empresarial">Business Information</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία επιχείρησης" data-i18n-es="Información empresarial">Business Information</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -222,7 +222,7 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="a-country"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα…" data-i18n-es="Seleccione país…">Select country…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα..." data-i18n-es="Seleccione país…">Select country…</option>
 									<option value="Greece" data-i18n-el="Ελλάδα" data-i18n-es="Grecia">Greece</option>
 									<option value="United Kingdom" data-i18n-el="Ηνωμένο Βασίλειο" data-i18n-es="Reino Unido">United Kingdom</option>
 									<option value="United States" data-i18n-el="Ηνωμένες Πολιτείες" data-i18n-es="Estados Unidos">United States</option>
@@ -230,7 +230,7 @@ import Layout from '../layouts/Layout.astro';
 									<option value="France" data-i18n-el="Γαλλία" data-i18n-es="Francia">France</option>
 									<option value="Italy" data-i18n-el="Ιταλία" data-i18n-es="Italia">Italy</option>
 									<option value="Spain" data-i18n-el="Ισπανία" data-i18n-es="España">Spain</option>
-									<option value="Netherlands" data-i18n-el="Ολλανδία" data-i18n-es="Países Bajos">Netherlands</option>
+									<option value="Netherlands" data-i18n-el="Κάτω Χώρες" data-i18n-es="Países Bajos">Netherlands</option>
 									<option value="Turkey" data-i18n-el="Τουρκία" data-i18n-es="Turquía">Turkey</option>
 									<option value="Cyprus" data-i18n-el="Κύπρος" data-i18n-es="Chipre">Cyprus</option>
 									<option value="Australia" data-i18n-el="Αυστραλία" data-i18n-es="Australia">Australia</option>
@@ -252,7 +252,7 @@ import Layout from '../layouts/Layout.astro';
 						</div>
 
 						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα Πρακτορείου *" data-i18n-es="Nombre de la agencia *">Agency Name *</label>
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα πρακτορείου *" data-i18n-es="Nombre de la agencia *">Agency Name *</label>
 							<input id="a-name" type="text" placeholder="e.g. Hellas Travel Group" data-i18n-placeholder-el="π.χ. Hellas Travel Group" data-i18n-placeholder-es="p. ej. Hellas Travel Group"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 						</div>
@@ -262,11 +262,11 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="a-type"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο…" data-i18n-es="Seleccione el tipo…">Select type…</option>
-									<option data-i18n-el="Γενικό Ταξιδιωτικό Πρακτορείο" data-i18n-es="Agencia de viajes general">General Travel Agency</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε τύπο..." data-i18n-es="Seleccione el tipo…">Select type…</option>
+									<option data-i18n-el="Γενικό ταξιδιωτικό πρακτορείο" data-i18n-es="Agencia de viajes general">General Travel Agency</option>
 									<option data-i18n-el="Tour Operator" data-i18n-es="Turoperador">Tour Operator</option>
 									<option data-i18n-el="Πρακτορείο MICE" data-i18n-es="Agencia MICE">MICE Agency</option>
-									<option data-i18n-el="Inbound Agency" data-i18n-es="Agencia receptiva">Inbound Agency</option>
+									<option data-i18n-el="Πρακτορείο εισερχόμενου τουρισμού" data-i18n-es="Agencia receptiva">Inbound Agency</option>
 									<option data-i18n-el="Άλλο" data-i18n-es="Otro">Other</option>
 								</select>
 								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
@@ -297,24 +297,24 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Contact Person -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Υπεύθυνος Επικοινωνίας" data-i18n-es="Persona de contacto">Contact Person</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Υπεύθυνος επικοινωνίας" data-i18n-es="Persona de contacto">Contact Person</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
 						<div class="flex flex-col gap-1.5">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Όνομα υπευθύνου επικοινωνίας *" data-i18n-es="Nombre de la persona de contacto *">Contact Person Name *</label>
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Ονοματεπώνυμο υπευθύνου *" data-i18n-es="Nombre de la persona de contacto *">Contact Person Name *</label>
 							<input id="a-contact-name" type="text" placeholder="e.g. Nikos Papadimitriou" data-i18n-placeholder-el="π.χ. Νίκος Παπαδημητρίου" data-i18n-placeholder-es="p. ej. Carlos Rodríguez"
 								class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 						</div>
 
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div class="flex flex-col gap-1.5">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Email υπευθύνου επικοινωνίας *" data-i18n-es="Correo electrónico de la persona de contacto *">Contact Person Email *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Email υπευθύνου *" data-i18n-es="Correo electrónico de la persona de contacto *">Contact Person Email *</label>
 								<input id="a-contact-email" type="email" placeholder="e.g. nikos@agency.com" data-i18n-placeholder-el="π.χ. nikos@agency.com" data-i18n-placeholder-es="p. ej. carlos@agencia.com"
 									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 							</div>
 							<div class="flex flex-col gap-1.5">
-								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τηλέφωνο υπευθύνου επικοινωνίας *" data-i18n-es="Teléfono de la persona de contacto *">Contact Person Phone *</label>
+								<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τηλέφωνο υπευθύνου *" data-i18n-es="Teléfono de la persona de contacto *">Contact Person Phone *</label>
 								<input id="a-contact-phone" type="tel" placeholder="e.g. +30 69…" data-i18n-placeholder-el="π.χ. +30 69…" data-i18n-placeholder-es="p. ej. +30 69…"
 									class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm" />
 							</div>
@@ -323,7 +323,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Agency Details -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία Πρακτορείου" data-i18n-es="Detalles de la agencia">Agency Details</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία πρακτορείου" data-i18n-es="Detalles de la agencia">Agency Details</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -356,7 +356,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Personal Information -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Προσωπικά Στοιχεία" data-i18n-es="Información personal">Personal Information</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Προσωπικά στοιχεία" data-i18n-es="Información personal">Personal Information</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -365,7 +365,7 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="d-country"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα…" data-i18n-es="Seleccione país…">Select country…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε χώρα..." data-i18n-es="Seleccione país…">Select country…</option>
 									<option value="Greece" data-i18n-el="Ελλάδα" data-i18n-es="Grecia">Greece</option>
 									<option value="United Kingdom" data-i18n-el="Ηνωμένο Βασίλειο" data-i18n-es="Reino Unido">United Kingdom</option>
 									<option value="United States" data-i18n-el="Ηνωμένες Πολιτείες" data-i18n-es="Estados Unidos">United States</option>
@@ -373,7 +373,7 @@ import Layout from '../layouts/Layout.astro';
 									<option value="France" data-i18n-el="Γαλλία" data-i18n-es="Francia">France</option>
 									<option value="Italy" data-i18n-el="Ιταλία" data-i18n-es="Italia">Italy</option>
 									<option value="Spain" data-i18n-el="Ισπανία" data-i18n-es="España">Spain</option>
-									<option value="Netherlands" data-i18n-el="Ολλανδία" data-i18n-es="Países Bajos">Netherlands</option>
+									<option value="Netherlands" data-i18n-el="Κάτω Χώρες" data-i18n-es="Países Bajos">Netherlands</option>
 									<option value="Turkey" data-i18n-el="Τουρκία" data-i18n-es="Turquía">Turkey</option>
 									<option value="Cyprus" data-i18n-el="Κύπρος" data-i18n-es="Chipre">Cyprus</option>
 									<option value="Australia" data-i18n-el="Αυστραλία" data-i18n-es="Australia">Australia</option>
@@ -435,7 +435,7 @@ import Layout from '../layouts/Layout.astro';
 						<!-- Vehicle Information -->
 						<div class="flex items-center gap-3 py-1">
 							<div class="flex-1 h-px bg-neutral-100"></div>
-							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία Οχημάτων" data-i18n-es="Información del vehículo">Vehicle Information</span>
+							<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία οχημάτων" data-i18n-es="Información del vehículo">Vehicle Information</span>
 							<div class="flex-1 h-px bg-neutral-100"></div>
 						</div>
 
@@ -444,7 +444,7 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="d-num-vehicles"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε εύρος…" data-i18n-es="Seleccione un rango…">Select range…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε εύρος..." data-i18n-es="Seleccione un rango…">Select range…</option>
 									<option value="1-3">1-3</option>
 									<option value="4-6">4-6</option>
 									<option value="7-9">7-9</option>
@@ -461,13 +461,13 @@ import Layout from '../layouts/Layout.astro';
 							<div class="relative">
 								<select id="d-car-type"
 									class="w-full appearance-none px-4 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] transition-colors text-sm cursor-pointer">
-									<option value="" disabled selected data-i18n-el="Επιλέξτε κύριο όχημα…" data-i18n-es="Seleccione el vehículo principal…">Select primary vehicle…</option>
+									<option value="" disabled selected data-i18n-el="Επιλέξτε κύριο όχημα..." data-i18n-es="Seleccione el vehículo principal…">Select primary vehicle…</option>
 									<option data-i18n-el="Sedan" data-i18n-es="Sedán">Sedan</option>
 									<option data-i18n-el="SUV" data-i18n-es="SUV">SUV</option>
 									<option data-i18n-el="Van" data-i18n-es="Furgoneta">Van</option>
 									<option data-i18n-el="Minibus" data-i18n-es="Microbús">Minibus</option>
 									<option data-i18n-el="Λεωφορείο" data-i18n-es="Autobús">Bus</option>
-									<option data-i18n-el="Πολυτελείας" data-i18n-es="De lujo">Luxury</option>
+									<option data-i18n-el="Πολυτελές" data-i18n-es="De lujo">Luxury</option>
 									<option data-i18n-el="Άλλο" data-i18n-es="Otro">Other</option>
 								</select>
 								<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
@@ -478,7 +478,7 @@ import Layout from '../layouts/Layout.astro';
 
 						<!-- Types of Cars checkboxes -->
 						<div class="flex flex-col gap-2">
-							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τύποι οχημάτων στόλου" data-i18n-es="Tipos de vehículos en la flota">Types of Cars in Fleet</label>
+							<label class="text-neutral-700 text-xs font-medium uppercase tracking-widest" data-i18n-el="Τύποι οχημάτων στον στόλο σας" data-i18n-es="Tipos de vehículos en la flota">Types of Cars in Fleet</label>
 							<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
 								{[
 									{ value: 'Sedan', el: 'Sedan', es: 'Sedán' },
@@ -486,7 +486,7 @@ import Layout from '../layouts/Layout.astro';
 									{ value: 'Van', el: 'Van', es: 'Furgoneta' },
 									{ value: 'Minibus', el: 'Minibus', es: 'Microbús' },
 									{ value: 'Bus', el: 'Λεωφορείο', es: 'Autobús' },
-									{ value: 'Luxury', el: 'Πολυτελείας', es: 'De lujo' },
+									{ value: 'Luxury', el: 'Πολυτελές', es: 'De lujo' },
 								].map((car) => (
 									<label class="flex items-center gap-2.5 cursor-pointer p-2.5 rounded-lg border border-neutral-200 hover:border-[#0C6B95]/40 hover:bg-sky-50/50 transition-colors select-none">
 										<input type="checkbox" name="d-car-types" value={car.value}
@@ -502,7 +502,7 @@ import Layout from '../layouts/Layout.astro';
 					<!-- ── Account Details ── -->
 					<div class="flex items-center gap-3 py-1">
 						<div class="flex-1 h-px bg-neutral-100"></div>
-						<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία Λογαριασμού" data-i18n-es="Detalles de la cuenta">Account Details</span>
+						<span class="text-xs text-neutral-400 font-medium uppercase tracking-widest" data-i18n-el="Στοιχεία λογαριασμού" data-i18n-es="Detalles de la cuenta">Account Details</span>
 						<div class="flex-1 h-px bg-neutral-100"></div>
 					</div>
 
@@ -573,7 +573,7 @@ import Layout from '../layouts/Layout.astro';
 					<!-- Submit -->
 					<button type="submit" id="p-submit"
 						class="w-full py-3.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#0C6B95]/25 mt-1 disabled:opacity-60 disabled:cursor-not-allowed">
-						<span data-i18n-el="Υποβολή Αίτησης" data-i18n-es="Enviar solicitud">Submit Application</span>
+						<span data-i18n-el="Υποβολή αίτησης" data-i18n-es="Enviar solicitud">Submit Application</span>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 						</svg>
