@@ -109,7 +109,9 @@
       "Bash(disown)",
       "Bash(echo \"started, pid: $!\")",
       "Bash(echo \"pid: $!\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(echo \"PID=$!\")"
     ]
   }
 }
