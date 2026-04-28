@@ -451,9 +451,19 @@ import DriverLayout from '../../components/DriverLayout.astro';
 				btn.disabled = true;
 				btn.textContent = 'Updating...';
 				try {
+					// For cash / card-onsite rides, completion implies the driver
+					// has just collected payment from the customer. Flip payment_status
+					// so admin sees "Paid to Driver" in the dashboard.
+					const updates: Record<string, any> = { ride_status: nextStatus };
+					if (nextStatus === 'completed') {
+						const pm = (d.payment_method || 'stripe') as string;
+						if (pm === 'cash' || pm === 'card-onsite') {
+							updates.payment_status = 'paid_to_driver';
+						}
+					}
 					const { error } = await supabase
 						.from(collectionName)
-						.update({ ride_status: nextStatus })
+						.update(updates)
 						.eq('id', docId!);
 
 					if (error) throw error;
