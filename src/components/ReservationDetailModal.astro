@@ -95,6 +95,11 @@
 			${field('Driver', r.driver || '—')}
 			${field('Released to drivers', r.released_to_drivers ? 'Yes' : 'No')}
 			${field('Hotel preference', r.hotel_choice === 'self-book' ? 'Guest books their own hotel' : r.hotel_choice === 'include-booking' ? 'Wants hotel booked by agent' : '')}
+			${kind === 'experience' ? field('Last name', r.last_name) : ''}
+			${kind === 'experience' ? field('Source', r.source ? String(r.source).charAt(0).toUpperCase() + String(r.source).slice(1) : '') : ''}
+			${kind === 'experience' ? field('Account name', r.user_display_name) : ''}
+			${kind === 'experience' && r.user_email && r.user_email !== r.email ? field('Account email', r.user_email) : ''}
+			${kind === 'experience' ? field('Submitted by', r.user_id ? 'Logged-in user' : 'Guest') : ''}
 			${field('Special requests', r.special_requests, { full: true })}
 			${field('Notes', r.notes, { full: true })}
 			${field('Added by admin', r.added_by_admin ? 'Yes' : 'No')}
