@@ -1,5 +1,6 @@
 ---
 import LuggageCounters from './LuggageCounters.astro';
+import { renderTimePickerHTML } from '../lib/time-picker';
 const vehicles = [
 	{
 		title: 'Sedan',
@@ -107,12 +108,7 @@ const vehicles = [
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής" data-i18n-es="Hora de recogida">Pickup time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="tf-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
+							<Fragment set:html={renderTimePickerHTML('tf-time', { required: true, selectClass: 'flex-1 px-3 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]' })} />
 							<p data-error-for="tf-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
@@ -142,12 +138,7 @@ const vehicles = [
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα επιστροφής" data-i18n-es="Hora de regreso">Return time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="tf-return-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
+							<Fragment set:html={renderTimePickerHTML('tf-return-time', { selectClass: 'flex-1 px-3 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]' })} />
 							<p data-error-for="tf-return-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
@@ -207,12 +198,7 @@ const vehicles = [
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής" data-i18n-es="Hora de recogida">Pickup time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="hourly-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
+							<Fragment set:html={renderTimePickerHTML('hourly-time', { required: true, selectClass: 'flex-1 px-3 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]' })} />
 							<p data-error-for="hourly-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
@@ -305,12 +291,7 @@ const vehicles = [
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα παραλαβής" data-i18n-es="Hora de recogida">Pickup time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="tours-time" type="time" class="w-full pl-10 pr-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
+							<Fragment set:html={renderTimePickerHTML('tours-time', { selectClass: 'flex-1 px-3 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]' })} />
 						</div>
 					</div>
 
@@ -418,6 +399,7 @@ import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../lib/form-errors';
 import { supabase } from '../lib/supabase';
 import { initLuggageCounters, getLuggageCounts } from '../lib/luggage-counters';
+import { readTimePickerValue } from '../lib/time-picker';
 
 document.addEventListener('astro:page-load', () => {
 	// Only run on pages that actually contain the booking section
@@ -570,11 +552,14 @@ document.addEventListener('astro:page-load', () => {
 		document.getElementById('tf-from'),
 		document.getElementById('tf-to'),
 		document.getElementById('tf-date'),
-		document.getElementById('tf-time'),
-		document.getElementById('tf-return-time'),
+		document.getElementById('tf-time-hh'),
+		document.getElementById('tf-time-mm'),
+		document.getElementById('tf-return-time-hh'),
+		document.getElementById('tf-return-time-mm'),
 		document.getElementById('hourly-pickup'),
 		document.getElementById('hourly-date'),
-		document.getElementById('hourly-time'),
+		document.getElementById('hourly-time-hh'),
+		document.getElementById('hourly-time-mm'),
 		document.getElementById('tours-select'),
 		document.getElementById('tours-date'),
 	]);
@@ -586,24 +571,26 @@ document.addEventListener('astro:page-load', () => {
 		const fromEl = document.getElementById('tf-from') as HTMLInputElement;
 		const toEl = document.getElementById('tf-to') as HTMLInputElement;
 		const dateEl = document.getElementById('tf-date') as HTMLInputElement;
-		const timeEl = document.getElementById('tf-time') as HTMLInputElement;
 		const returnDateEl = document.getElementById('tf-return-date') as HTMLInputElement;
-		const returnTimeEl = document.getElementById('tf-return-time') as HTMLInputElement;
 
 		const from = fromEl?.value.trim() ?? '';
 		const to = toEl?.value.trim() ?? '';
 		const date = dateEl?.value.trim() ?? '';
-		const time = timeEl?.value.trim() ?? '';
+		const time = readTimePickerValue('tf-time');
 		const passengers = document.getElementById('passenger-count')?.textContent?.trim() || '2';
 		const returnDate = returnDateEl?.value.trim() ?? '';
-		const returnTime = returnTimeEl?.value.trim() ?? '';
+		const returnTime = readTimePickerValue('tf-return-time');
+
+		// For field-level errors on the picker, target the HH select as anchor element
+		const tfTimeHhEl = document.getElementById('tf-time-hh') as HTMLSelectElement | null;
+		const tfReturnTimeHhEl = document.getElementById('tf-return-time-hh') as HTMLSelectElement | null;
 
 		let firstErr: HTMLElement | null = null;
 		if (!from) { showFieldError(fromEl, 'Please enter a pickup location.'); firstErr ??= fromEl; }
 		if (!to) { showFieldError(toEl, 'Please enter a destination.'); firstErr ??= toEl; }
 		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
-		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
-		if (returnDate && !returnTime) { showFieldError(returnTimeEl, 'Please select a return time.'); firstErr ??= returnTimeEl; }
+		if (!time) { showFieldError(tfTimeHhEl, 'Please select a pickup time.'); firstErr ??= tfTimeHhEl; }
+		if (returnDate && !returnTime) { showFieldError(tfReturnTimeHhEl, 'Please select a return time.'); firstErr ??= tfReturnTimeHhEl; }
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -625,17 +612,18 @@ document.addEventListener('astro:page-load', () => {
 
 		const pickupEl = document.getElementById('hourly-pickup') as HTMLInputElement;
 		const dateEl = document.getElementById('hourly-date') as HTMLInputElement;
-		const timeEl = document.getElementById('hourly-time') as HTMLInputElement;
 
 		const pickup = pickupEl?.value.trim() ?? '';
 		const date = dateEl?.value.trim() ?? '';
-		const time = timeEl?.value.trim() ?? '';
+		const time = readTimePickerValue('hourly-time');
 		const passengers = document.getElementById('hourly-passenger-count')?.textContent?.trim() || '2';
+
+		const hourlyTimeHhEl = document.getElementById('hourly-time-hh') as HTMLSelectElement | null;
 
 		let firstErr: HTMLElement | null = null;
 		if (!pickup) { showFieldError(pickupEl, 'Please enter a pickup location.'); firstErr ??= pickupEl; }
 		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
-		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
+		if (!time) { showFieldError(hourlyTimeHhEl, 'Please select a pickup time.'); firstErr ??= hourlyTimeHhEl; }
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -661,13 +649,12 @@ document.addEventListener('astro:page-load', () => {
 		const select = document.getElementById('tours-select') as HTMLSelectElement;
 		const pickupEl = document.getElementById('tours-pickup') as HTMLInputElement;
 		const dateEl = document.getElementById('tours-date') as HTMLInputElement;
-		const timeEl = document.getElementById('tours-time') as HTMLInputElement;
 
 		const tourId = select?.value || '';
 		const tourName = tourId ? select.options[select.selectedIndex]?.text ?? '' : '';
 		const pickup = pickupEl?.value.trim() ?? '';
 		const date = dateEl?.value.trim() ?? '';
-		const time = timeEl?.value.trim() ?? '';
+		const time = readTimePickerValue('tours-time');
 		const participants = document.getElementById('tours-participant-count')?.textContent?.trim() || '2';
 
 		let firstErr: HTMLElement | null = null;
