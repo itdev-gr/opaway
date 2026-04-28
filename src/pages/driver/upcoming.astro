@@ -37,17 +37,9 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { fetchAssignedRides, type UnifiedRide } from '../../lib/driver-rides';
 
-	interface Ride {
-		id: string;
-		date: string;
-		time: string;
-		from: string;
-		to: string;
-		vehicle_name: string;
-		passengers: number;
-		ride_status: string;
-	}
+	type Ride = UnifiedRide;
 
 	let allRides: Ride[] = [];
 
@@ -75,9 +67,13 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			const ref = r.id.substring(0, 8).toUpperCase();
 			const statusCls = STATUS_COLORS[r.ride_status] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
 			const statusLabel = r.ride_status.charAt(0).toUpperCase() + r.ride_status.slice(1);
+			const kindLabel = r._kind === 'transfer' ? 'Transfer' : r._kind === 'tour' ? 'Tour' : 'Experience';
+			const passengersCount = r.passengers || r.participants || 0;
+			const pickupText = r._kind === 'transfer' ? (r.from || '—') : (r.pickup_location || '—');
+			const dropoffText = r._kind === 'transfer' ? (r.to || '—') : (r.tour_name || r.experience_name || '—');
 
 			return `
-				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=transfers"
+				<a href="/driver/ride?id=${encodeURIComponent(r.id)}&type=${r._table}"
 				   class="block bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md hover:border-neutral-300 transition-all cursor-pointer">
 					<div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-5">
 						<!-- Booking Ref + Date -->
@@ -94,7 +90,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 									<circle cx="12" cy="12" r="3" />
 									<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
 								</svg>
-								<p class="text-sm text-neutral-800">${escHtml(r.from || '—')}</p>
+								<p class="text-sm text-neutral-800">${escHtml(pickupText)}</p>
 							</div>
 						</div>
 						<!-- Dropoff -->
@@ -105,20 +101,21 @@ import DriverLayout from '../../components/DriverLayout.astro';
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 								</svg>
-								<p class="text-sm text-neutral-800">${escHtml(r.to || '—')}</p>
+								<p class="text-sm text-neutral-800">${escHtml(dropoffText)}</p>
 							</div>
 						</div>
 						<!-- Details -->
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center gap-2 flex-wrap">
 								${r.vehicle_name ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">${escHtml(r.vehicle_name)}</span>` : ''}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">${escHtml(kindLabel)}</span>
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusCls}">${escHtml(statusLabel)}</span>
 							</div>
 							<div class="flex items-center gap-1.5 text-xs text-neutral-500">
 								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
 								</svg>
-								${r.passengers || '—'} passenger${(r.passengers || 0) !== 1 ? 's' : ''}
+								${passengersCount || '—'} ${r._kind === 'transfer' ? `passenger${passengersCount !== 1 ? 's' : ''}` : `participant${passengersCount !== 1 ? 's' : ''}`}
 							</div>
 						</div>
 					</div>
@@ -131,34 +128,16 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
-		{
-			const { data: rows, error } = await supabase
-				.from('transfers')
-				.select('*')
-				.eq('driver_uid', user.id)
-				.in('ride_status', ['assigned', 'pickup', 'onboard'])
-				.order('created_at', { ascending: false });
-
-			if (error) {
-				console.error('Driver upcoming rides load failed:', error);
-				document.getElementById('rides-list')!.innerHTML =
-					`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
-				return;
-			}
-
-			allRides = (rows || []).map((data: any) => ({
-				id: data.id,
-				date: data.date || '',
-				time: data.time || '',
-				from: data.from || '',
-				to: data.to || '',
-				vehicle_name: data.vehicle_name || '',
-				passengers: data.passengers || 0,
-				ride_status: data.ride_status || '',
-			}));
-
-			renderRides(allRides);
+		try {
+			allRides = await fetchAssignedRides(user.id);
+		} catch (err) {
+			console.error('Driver upcoming rides load failed:', err);
+			document.getElementById('rides-list')!.innerHTML =
+				`<div class="flex items-center justify-center py-12 text-neutral-400 text-sm">Could not load rides.</div>`;
+			return;
 		}
+
+		renderRides(allRides);
 	}
 
 	// Search filtering
@@ -171,8 +150,11 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		const filtered = allRides.filter(r => {
 			const ref = r.id.substring(0, 8).toLowerCase();
 			return ref.includes(term) ||
-				r.from.toLowerCase().includes(term) ||
-				r.to.toLowerCase().includes(term);
+				(r.from || '').toLowerCase().includes(term) ||
+				(r.to || '').toLowerCase().includes(term) ||
+				(r.tour_name || '').toLowerCase().includes(term) ||
+				(r.experience_name || '').toLowerCase().includes(term) ||
+				(r.pickup_location || '').toLowerCase().includes(term);
 		});
 		renderRides(filtered);
 	});
