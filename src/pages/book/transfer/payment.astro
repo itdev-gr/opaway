@@ -434,17 +434,15 @@ import Layout from '../../../layouts/Layout.astro';
 		btn.disabled = true; btn.textContent = 'Processing...';
 
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		// Allow guest bookings: no redirect to /login. If the user is signed in we
+		// still capture their uid for attribution; otherwise the row goes in with
+		// uid = NULL and admin sees the contact info from the form fields.
 		const { data: { user } } = await supabase.auth.getUser();
-
-		if (!user) {
-			const next = encodeURIComponent(window.location.pathname + window.location.search);
-			window.location.href = `/login?next=${next}&reason=booking`;
-			return;
-		}
+		const guestUid: string | null = user?.id ?? null;
 
 		let partnerId: string | null = null;
-		if (user) {
-			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', user.id).maybeSingle();
+		if (guestUid) {
+			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', guestUid).maybeSingle();
 			if (partner?.status === 'approved') partnerId = partner.id;
 		}
 
@@ -468,7 +466,7 @@ import Layout from '../../../layouts/Layout.astro';
 				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
-				uid: user?.id || null,
+				uid: guestUid,
 				booking_type: 'transfer',
 				partner_id: partnerId,
 				luggage_small: luggageSmall,
