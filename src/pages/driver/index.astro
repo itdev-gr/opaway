@@ -105,19 +105,19 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { fetchAssignedRides, fetchCompletedRides, type UnifiedRide } from '../../lib/driver-rides';
 
 	async function loadDashboard() {
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 
 		try {
-			// Load all rides for this driver
-			const { data: rides, error } = await supabase
-				.from('transfers')
-				.select('*')
-				.eq('driver_uid', user.id);
-
-			if (error) throw error;
+			// Load this driver's rides across all 3 tables (transfers + tours + experiences).
+			const [assigned, completed] = await Promise.all([
+				fetchAssignedRides(user.id),
+				fetchCompletedRides(user.id),
+			]);
+			const rides: UnifiedRide[] = [...assigned, ...completed];
 
 			let todoCount = 0;
 			let doneCount = 0;
@@ -132,7 +132,7 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			// 3 months ago boundary
 			const threeMonthsAgo = new Date(currentYear, currentMonth - 3, 1);
 
-			(rides || []).forEach((data: any) => {
+			rides.forEach((data: UnifiedRide) => {
 				const status = data.ride_status || '';
 
 				// To-Do: assigned, pickup, onboard
