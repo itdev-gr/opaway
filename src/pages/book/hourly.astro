@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import LuggageCounters from '../../components/LuggageCounters.astro';
+import { renderTimePickerHTML } from '../../lib/time-picker';
 
 const vehicles = [
 	{
@@ -107,12 +108,7 @@ const vehicles = [
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-neutral-700 mb-1" data-i18n-el="Ώρα" data-i18n-es="Hora de recogida">Pickup time</label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-								</span>
-								<input id="h-time" type="time" class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] cursor-pointer" />
-							</div>
+							<Fragment set:html={renderTimePickerHTML('h-time', { required: true, selectClass: 'flex-1 px-3 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]' })} />
 							<p data-error-for="h-time" class="text-sm text-red-500 mt-1.5 hidden"></p>
 						</div>
 					</div>
@@ -281,13 +277,15 @@ const vehicles = [
 	import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '../../lib/form-errors';
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
 	import { initLuggageCounters, getLuggageCounts } from '../../lib/luggage-counters';
+	import { readTimePickerValue } from '../../lib/time-picker';
 
 	const hourlyFormScope = document.getElementById('hourly-form');
 
 	wireAutoClear([
 		document.getElementById('h-pickup'),
 		document.getElementById('h-date'),
-		document.getElementById('h-time'),
+		document.getElementById('h-time-hh'),
+		document.getElementById('h-time-mm'),
 	]);
 
 	attachPlacesAutocomplete(document.getElementById('h-pickup') as HTMLInputElement | null);
@@ -298,11 +296,11 @@ const vehicles = [
 
 		const pickupEl = document.getElementById('h-pickup') as HTMLInputElement;
 		const dateEl = document.getElementById('h-date') as HTMLInputElement;
-		const timeEl = document.getElementById('h-time') as HTMLInputElement;
+		const timeHhEl = document.getElementById('h-time-hh') as HTMLSelectElement | null;
 
 		const pickup = pickupEl?.value.trim() ?? '';
 		const date = dateEl?.value.trim() ?? '';
-		const time = timeEl?.value.trim() ?? '';
+		const time = readTimePickerValue('h-time');
 
 		let firstErr: HTMLElement | null = null;
 		if (!pickup) { showFieldError(pickupEl, 'Please enter a pickup location.'); firstErr ??= pickupEl; }
@@ -318,7 +316,12 @@ const vehicles = [
 				firstErr ??= dateEl;
 			}
 		}
-		if (!time) { showFieldError(timeEl, 'Please select a pickup time.'); firstErr ??= timeEl; }
+		if (!time) {
+			const timeErrEl = document.querySelector<HTMLElement>('[data-error-for="h-time"]');
+			if (timeErrEl) { timeErrEl.textContent = 'Please select a pickup time.'; timeErrEl.classList.remove('hidden'); }
+			if (timeHhEl) { timeHhEl.classList.add('border-red-400', 'focus:border-red-400'); }
+			firstErr ??= timeHhEl;
+		}
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
