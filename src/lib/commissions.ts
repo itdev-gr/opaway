@@ -1,30 +1,41 @@
 // src/lib/commissions.ts
 //
 // Resolves the commission amount (in EUR) owed to a hotel partner for a
-// single booking. Looks up the type-specific column first, falls back to
-// the legacy flat `commission_eur`, and returns 0 when nothing is set.
+// single booking under the new per-vehicle / per-type-percentage model.
 //
-// Call site chooses `kind` from the booking row:
-//   - transfers: kind = row.booking_type === 'hourly' ? 'hourly' : 'transfer'
-//   - tours:     kind = 'tour'
-//   - experiences: kind = 'experience'
+// Transfers (kind='transfer'/'hourly') -> fix EUR per vehicle class
+//   commission_transfer_sedan_eur   for vehicle_name matching /sedan/i
+//   commission_transfer_van_eur     for vehicle_name matching /van/i (and not "minibus")
+//   commission_transfer_minibus_eur for vehicle_name matching /minibus/i
+//
+// Hourly bookings still use the per-vehicle EUR (they ride in the same vehicle classes).
+//
+// Tours / experiences -> percentage of total_price.
+//   commission_tour_pct       for kind='tour'
+//   commission_experience_pct for kind='experience'
+//
+// Returns 0 when the relevant column is null / missing / non-numeric.
 
 export type CommissionKind = 'transfer' | 'hourly' | 'tour' | 'experience';
 
 export interface PartnerCommission {
-    commission_eur?: number | string | null;
-    commission_transfer_eur?: number | string | null;
-    commission_hourly_eur?: number | string | null;
-    commission_tour_eur?: number | string | null;
-    commission_experience_eur?: number | string | null;
+    // New per-vehicle EUR columns (transfers + hourly use these)
+    commission_transfer_sedan_eur?: number | string | null;
+    commission_transfer_van_eur?: number | string | null;
+    commission_transfer_minibus_eur?: number | string | null;
+    // New per-type percentage columns
+    commission_hourly_pct?: number | string | null;
+    commission_tour_pct?: number | string | null;
+    commission_experience_pct?: number | string | null;
 }
 
-const COL_FOR_KIND: Record<CommissionKind, keyof PartnerCommission> = {
-    transfer: 'commission_transfer_eur',
-    hourly: 'commission_hourly_eur',
-    tour: 'commission_tour_eur',
-    experience: 'commission_experience_eur',
-};
+export interface CommissionBooking {
+    kind: CommissionKind;
+    vehicle_name?: string | null;
+    total_price?: number | string | null;
+}
+
+export type VehicleClass = 'sedan' | 'van' | 'minibus' | 'unknown';
 
 function toNumber(v: unknown): number | null {
     if (v == null) return null;
@@ -32,13 +43,65 @@ function toNumber(v: unknown): number | null {
     return Number.isFinite(n) ? n : null;
 }
 
-/** Returns the commission owed for one booking of the given kind, in EUR. */
-export function resolveCommissionEur(partner: PartnerCommission | null | undefined, kind: CommissionKind): number {
+/**
+ * Map a free-text vehicle_name to one of three classes.
+ * Order matters: minibus is checked before van because "minibus" contains "bus" but not
+ * "van", and we don't want false positives. "Sedan" is matched last as a fallback when
+ * a row mentions a model only.
+ */
+export function classifyVehicle(vehicleName: string | null | undefined): VehicleClass {
+    if (!vehicleName) return 'unknown';
+    const v = vehicleName.toLowerCase();
+    if (v.includes('minibus')) return 'minibus';
+    if (v.includes('van')) return 'van';
+    if (v.includes('sedan')) return 'sedan';
+    return 'unknown';
+}
+
+/** Resolves the commission EUR for one booking. */
+export function resolveHotelCommission(
+    partner: PartnerCommission | null | undefined,
+    booking: CommissionBooking,
+): number {
     if (!partner) return 0;
-    const specific = toNumber(partner[COL_FOR_KIND[kind]]);
-    if (specific != null) return specific;
-    const legacy = toNumber(partner.commission_eur);
-    return legacy ?? 0;
+
+    if (booking.kind === 'transfer' || booking.kind === 'hourly') {
+        const cls = classifyVehicle(booking.vehicle_name);
+        if (cls === 'sedan')   return toNumber(partner.commission_transfer_sedan_eur)   ?? 0;
+        if (cls === 'van')     return toNumber(partner.commission_transfer_van_eur)     ?? 0;
+        if (cls === 'minibus') return toNumber(partner.commission_transfer_minibus_eur) ?? 0;
+        // Unknown vehicle: pick the smallest configured rate as a conservative default,
+        // or 0 if none. Better to under-pay than over-pay; admin can fix the row.
+        const candidates = [
+            toNumber(partner.commission_transfer_sedan_eur),
+            toNumber(partner.commission_transfer_van_eur),
+            toNumber(partner.commission_transfer_minibus_eur),
+        ].filter((n): n is number => n != null);
+        return candidates.length ? Math.min(...candidates) : 0;
+    }
+
+    // tour / experience: percentage × total_price
+    const total = toNumber(booking.total_price) ?? 0;
+    if (total <= 0) return 0;
+    const pctRaw = booking.kind === 'tour'
+        ? toNumber(partner.commission_tour_pct)
+        : toNumber(partner.commission_experience_pct);
+    if (pctRaw == null || pctRaw <= 0) return 0;
+    // Round to cents.
+    return Math.round(total * pctRaw) / 100;
+}
+
+/** Backwards-compatible thin wrapper. */
+export function resolveCommissionEur(
+    partner: PartnerCommission | null | undefined,
+    kind: CommissionKind,
+    extra?: { vehicle_name?: string | null; total_price?: number | string | null },
+): number {
+    return resolveHotelCommission(partner, {
+        kind,
+        vehicle_name: extra?.vehicle_name,
+        total_price: extra?.total_price,
+    });
 }
 
 /** Infer the commission kind from a row from the transfers table. */
