@@ -30,6 +30,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		<button data-filter="tour" class="filter-tab px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">
 			Tour Requests
 		</button>
+		<button data-filter="experience" class="filter-tab px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-violet-400 hover:text-violet-700 transition-colors">
+			Experience Requests
+		</button>
 		<button data-filter="contact" class="filter-tab px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-violet-300 hover:text-violet-700 transition-colors">
 			Contact Messages
 		</button>
@@ -75,7 +78,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	interface Request {
 		id: string;
-		source: 'tour' | 'contact';
+		source: 'tour' | 'experience' | 'contact';
 		status: 'new' | 'answered' | 'follow-up' | 'discarded';
 		created_at: string | null;
 		user_id?: string | null;
@@ -83,15 +86,19 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		user_email?: string | null;
 		tour_name?: string;
 		name?: string;
+		last_name?: string | null;
 		contact_info?: string;
 		pickup_location?: string;
 		date?: string;
 		time?: string;
-		participants?: number;
-		special_requests?: string;
+		participants?: number | null;
+		special_requests?: string | null;
+		phone?: string | null;
 		email?: string;
 		subject?: string;
 		message?: string;
+		experience_id?: string | null;
+		experience_name?: string | null;
 	}
 
 	const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -116,8 +123,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	};
 
 	const SOURCE_BADGE: Record<string, string> = {
-		'tour':    'bg-[#0C6B95]/10 text-[#0C6B95]',
-		'contact': 'bg-violet-50 text-violet-700',
+		'tour':       'bg-[#0C6B95]/10 text-[#0C6B95]',
+		'experience': 'bg-violet-100 text-violet-700',
+		'contact':    'bg-neutral-100 text-neutral-600',
 	};
 
 	function closeAllDropdowns() {
@@ -150,6 +158,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			filtered = allRequests.filter(r => r.source === 'tour' && r.status !== 'discarded');
 		} else if (currentFilter === 'contact') {
 			filtered = allRequests.filter(r => r.source === 'contact' && r.status !== 'discarded');
+		} else if (currentFilter === 'experience') {
+			filtered = allRequests.filter(r => r.source === 'experience' && r.status !== 'discarded');
 		} else {
 			filtered = allRequests.filter(r => r.status === currentFilter);
 		}
@@ -161,17 +171,30 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 		tbody.innerHTML = filtered.map(r => {
 			const isTour = r.source === 'tour';
+			const sourceLabel = r.source === 'tour' ? 'Tour' : r.source === 'experience' ? 'Experience' : 'Contact';
 			const sourceCls = SOURCE_BADGE[r.source] || 'bg-neutral-100 text-neutral-600';
 			const statusCls = STATUS_BADGE[r.status] || 'bg-neutral-50 text-neutral-600 border-neutral-200';
 			const statusLabel = r.status === 'follow-up' ? 'Follow up' : r.status.charAt(0).toUpperCase() + r.status.slice(1);
 
-			const nameContact = isTour
-				? `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.contact_info || r.email || '')}</div>`
-				: `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.email || '')}</div>`;
+			let nameContact: string;
+			if (r.source === 'tour') {
+				nameContact = `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.contact_info || r.email || '')}</div>`;
+			} else if (r.source === 'experience') {
+				const fullName = [r.name, r.last_name].filter(Boolean).join(' ') || '—';
+				const contactLine = [r.email, r.phone].filter(Boolean).join(' · ');
+				nameContact = `<div class="font-medium text-neutral-900">${esc(fullName)}</div><div class="text-xs text-neutral-500">${esc(contactLine)}</div>`;
+			} else {
+				nameContact = `<div class="font-medium text-neutral-900">${esc(r.name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.email || '')}</div>`;
+			}
 
-			const details = isTour
-				? `<div class="text-neutral-800">${esc(r.tour_name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.pickup_location || '')}${r.date ? ` · ${esc(r.date)}` : ''}</div>`
-				: `<div class="text-neutral-800">${esc(r.subject || '—')}</div><div class="text-xs text-neutral-500 truncate max-w-[300px]">${esc(r.message || '')}</div>`;
+			let details: string;
+			if (r.source === 'tour') {
+				details = `<div class="text-neutral-800">${esc(r.tour_name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.pickup_location || '')}${r.date ? ` · ${esc(r.date)}` : ''}${r.time ? ` · ${esc(r.time)}` : ''}${r.participants ? ` · ${r.participants} pax` : ''}</div>`;
+			} else if (r.source === 'experience') {
+				details = `<div class="text-neutral-800">${esc(r.experience_name || '—')}</div><div class="text-xs text-neutral-500">${esc(r.pickup_location || '')}${r.date ? ` · ${esc(r.date)}` : ''}${r.time ? ` · ${esc(r.time)}` : ''}${r.participants ? ` · ${r.participants} pax` : ''}</div>`;
+			} else {
+				details = `<div class="text-neutral-800">${esc(r.subject || '—')}</div><div class="text-xs text-neutral-500 truncate max-w-[300px]">${esc(r.message || '')}</div>`;
+			}
 
 			// Action buttons for dropdown
 			const actions: string[] = [];
@@ -185,7 +208,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			return `
 			<tr class="border-t border-neutral-100 hover:bg-neutral-50/50 transition-colors">
 				<td class="px-4 py-3 text-neutral-500 whitespace-nowrap text-xs">${fmtDate(r)}</td>
-				<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${sourceCls}">${isTour ? 'Tour' : 'Contact'}</span></td>
+				<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${sourceCls}">${sourceLabel}</span></td>
 				<td class="px-4 py-3 min-w-[150px]">${nameContact}</td>
 				<td class="px-4 py-3 min-w-[200px]">${details}</td>
 				<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${statusCls}">${esc(statusLabel)}</span></td>
@@ -278,8 +301,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						'answered':  'border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100',
 						'follow-up': 'border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100',
 						'discarded': 'border border-neutral-200 text-neutral-500 bg-neutral-50 hover:bg-neutral-100',
-						'tour':      'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]',
-						'contact':   'border border-neutral-200 text-neutral-600 hover:border-violet-300 hover:text-violet-700',
+						'tour':       'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]',
+						'experience': 'border border-neutral-200 text-neutral-600 hover:border-violet-400 hover:text-violet-700',
+						'contact':    'border border-neutral-200 text-neutral-600 hover:border-violet-300 hover:text-violet-700',
 					};
 					t.className = `filter-tab px-4 py-2 text-sm font-semibold rounded-xl ${styles[f] || styles['all']} transition-colors`;
 				}
