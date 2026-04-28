@@ -111,7 +111,12 @@
       "Bash(echo \"pid: $!\")",
       "Bash(npx tsc *)",
       "Bash(npm run *)",
-      "Bash(echo \"PID=$!\")"
+      "Bash(echo \"PID=$!\")",
+      "Bash(ffprobe -v error -show_entries format=duration,size,bit_rate -show_entries stream=width,height,codec_name,r_frame_rate -of default=noprint_wrappers=0 \"/Users/marios/Downloads/OPAWEY VIDEO.mp4\")",
+      "Bash(brew list *)",
+      "Bash(ffmpeg -i \"/Users/marios/Downloads/OPAWEY VIDEO.mp4\")",
+      "Bash(ffmpeg *)",
+      "Bash(awk NR<=5 {for\\(i=1;i<=length\\($0\\);i++\\){c=substr\\($0,i,1\\); if\\(c==\"\\\\t\"\\) printf \"<TAB>\"; else if\\(c==\" \"\\) printf \"·\"; else printf \"%s\", c} print \"\"} *)"
     ]
   }
 }
