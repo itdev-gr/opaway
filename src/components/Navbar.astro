@@ -1,7 +1,7 @@
 ---
 ---
 
-<nav class="absolute top-0 left-0 right-0 z-50 bg-white/80 text-black font-sans flex items-center justify-between px-6 py-1 lg:px-10">
+<nav class="absolute top-0 left-0 right-0 z-50 bg-[#000724] text-white font-sans flex items-center justify-between px-6 py-1 lg:px-10">
 	<!-- Logo -->
 	<a href="/" class="flex items-center shrink-0" aria-label="Opawey - Home" data-i18n-aria-el="Opawey - Αρχική" data-i18n-aria-es="Opawey - Inicio">
 		<img src="/logo-opaway.svg" alt="Opawey" class="h-16 w-auto object-contain" width="187" height="64" />
@@ -11,13 +11,13 @@
 	<div class="hidden md:flex items-center gap-8 flex-1 justify-center font-medium tracking-wide">
 
 		<a href="/" data-navlink data-href="/"
-			class="pb-0.5 border-b-2 border-transparent text-black hover:text-black/70 hover:border-black/30 transition-colors duration-300"
+			class="pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300"
 			data-i18n-el="ΑΡΧΙΚΗ" data-i18n-es="INICIO">
 			HOME
 		</a>
 
 		<a href="/about" data-navlink data-href="/about"
-			class="pb-0.5 border-b-2 border-transparent text-black hover:text-black/70 hover:border-black/30 transition-colors duration-300"
+			class="pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300"
 			data-i18n-el="ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ" data-i18n-es="SOBRE NOSOTROS">
 			ABOUT US
 		</a>
@@ -27,7 +27,7 @@
 			<button
 				data-navlink
 				data-href="/book"
-				class="flex items-center gap-1 pb-0.5 border-b-2 border-transparent text-black hover:text-black/70 hover:border-black/30 transition-colors duration-300 cursor-default select-none"
+				class="flex items-center gap-1 pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300 cursor-default select-none"
 				data-i18n-el="ΚΡΑΤΗΣΗ ONLINE" data-i18n-es="RESERVAR ONLINE"
 			>
 				BOOK ONLINE
@@ -99,13 +99,13 @@
 		</div>
 
 		<a href="/work-with-us" data-navlink data-href="/work-with-us"
-			class="pb-0.5 border-b-2 border-transparent text-black hover:text-black/70 hover:border-black/30 transition-colors duration-300"
+			class="pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300"
 			data-i18n-el="ΣΥΝΕΡΓΑΣΙΑ" data-i18n-es="TRABAJA CON NOSOTROS">
 			WORK WITH US
 		</a>
 
 		<a href="/contact" data-navlink data-href="/contact"
-			class="pb-0.5 border-b-2 border-transparent text-black hover:text-black/70 hover:border-black/30 transition-colors duration-300"
+			class="pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300"
 			data-i18n-el="ΕΠΙΚΟΙΝΩΝΙΑ" data-i18n-es="CONTACTO">
 			CONTACT
 		</a>
@@ -128,7 +128,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
 				</svg>
 			</a>
-			<a href="/login" class="inline-flex items-center gap-2 bg-black text-white font-medium px-5 py-2.5 rounded-full hover:bg-neutral-800 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">
+			<a href="/login" class="inline-flex items-center gap-2 bg-white text-[#000724] font-medium px-5 py-2.5 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">
 				Sign in
 			</a>
 		</div>
@@ -139,7 +139,7 @@
 			<a id="nav-driver-btn" href="/driver" class="hidden items-center gap-2 bg-emerald-600 text-white font-medium px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors text-sm shrink-0" aria-label="Driver Dashboard">Driver</a>
 			<a id="nav-hotel-btn" href="/hotel" class="hidden items-center gap-2 bg-amber-600 text-white font-medium px-4 py-2 rounded-full hover:bg-amber-700 transition-colors text-sm shrink-0" aria-label="Hotel Dashboard">Hotel</a>
 			<a id="nav-agency-btn" href="/agency" class="hidden items-center gap-2 bg-violet-600 text-white font-medium px-4 py-2 rounded-full hover:bg-violet-700 transition-colors text-sm shrink-0" aria-label="Agency Dashboard">Agency</a>
-			<span id="nav-user-name" class="text-sm font-medium text-neutral-700 truncate max-w-[140px] sm:max-w-[180px]" title=""></span>
+			<span id="nav-user-name" class="text-sm font-medium text-neutral-200 truncate max-w-[140px] sm:max-w-[180px]" title=""></span>
 			<a href="/profile" aria-label="My profile" data-i18n-aria-el="Το προφίλ μου" data-i18n-aria-es="Mi perfil" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200 shrink-0">
 				<svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" aria-hidden="true">
 					<circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -190,7 +190,7 @@
 			const link = el as HTMLElement;
 			const href = link.getAttribute('data-href') ?? '';
 			const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-			link.classList.toggle('border-black', isActive);
+			link.classList.toggle('border-white', isActive);
 			link.classList.toggle('border-transparent', !isActive);
 		});
 
