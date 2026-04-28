@@ -109,7 +109,7 @@ import HotelLayout from '../../components/HotelLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { resolveCommissionEur, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
+	import { resolveHotelCommission, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
 
 	type LedgerRow = {
 		id: string;
@@ -153,12 +153,12 @@ import HotelLayout from '../../components/HotelLayout.astro';
 
 		const [{ data: partner }, transfersRes, toursRes, expsRes] = await Promise.all([
 			supabase.from('partners')
-				.select('commission_eur, commission_transfer_eur, commission_hourly_eur, commission_tour_eur, commission_experience_eur')
+				.select('commission_transfer_sedan_eur, commission_transfer_van_eur, commission_transfer_minibus_eur, commission_hourly_pct, commission_tour_pct, commission_experience_pct')
 				.eq('id', partnerId)
 				.maybeSingle(),
-			supabase.from('transfers').select('id, booking_type, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
-			supabase.from('tours').select('id, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
-			supabase.from('experiences').select('id, date, ride_status').eq('partner_id', partnerId).order('date', { ascending: false }),
+			supabase.from('transfers').select('id, booking_type, date, ride_status, vehicle_name, total_price').eq('partner_id', partnerId).order('date', { ascending: false }),
+			supabase.from('tours').select('id, date, ride_status, total_price').eq('partner_id', partnerId).order('date', { ascending: false }),
+			supabase.from('experiences').select('id, date, ride_status, total_price').eq('partner_id', partnerId).order('date', { ascending: false }),
 		]);
 
 		const ledger: LedgerRow[] = [];
@@ -168,7 +168,11 @@ import HotelLayout from '../../components/HotelLayout.astro';
 			dateISO: r.date ?? '',
 			ref: String(r.id).slice(0, 8).toUpperCase(),
 			status: r.ride_status ?? '',
-			commission: resolveCommissionEur(partner, kindForTransferRow(r)),
+			commission: resolveHotelCommission(partner, {
+				kind: kindForTransferRow(r),
+				vehicle_name: r.vehicle_name,
+				total_price: r.total_price,
+			}),
 		}));
 		(toursRes.data ?? []).forEach(r => ledger.push({
 			id: r.id,
@@ -176,7 +180,10 @@ import HotelLayout from '../../components/HotelLayout.astro';
 			dateISO: r.date ?? '',
 			ref: String(r.id).slice(0, 8).toUpperCase(),
 			status: r.ride_status ?? '',
-			commission: resolveCommissionEur(partner, 'tour'),
+			commission: resolveHotelCommission(partner, {
+				kind: 'tour',
+				total_price: r.total_price,
+			}),
 		}));
 		(expsRes.data ?? []).forEach(r => ledger.push({
 			id: r.id,
@@ -184,7 +191,10 @@ import HotelLayout from '../../components/HotelLayout.astro';
 			dateISO: r.date ?? '',
 			ref: String(r.id).slice(0, 8).toUpperCase(),
 			status: r.ride_status ?? '',
-			commission: resolveCommissionEur(partner, 'experience'),
+			commission: resolveHotelCommission(partner, {
+				kind: 'experience',
+				total_price: r.total_price,
+			}),
 		}));
 
 		const byKind = { transfer: 0, hourly: 0, tour: 0, experience: 0 };
