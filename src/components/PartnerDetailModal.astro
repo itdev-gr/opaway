@@ -99,11 +99,12 @@
 			field('Provider', r.provider),
 			field('Status', r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : ''),
 			field('Discount (%)', r.discount != null && r.discount !== 0 ? `${r.discount}%` : ''),
-			r.type === 'hotel' ? field('Commission — Transfer',   r.commission_transfer_eur   != null ? `€${Number(r.commission_transfer_eur).toFixed(2)}`   : '—') : '',
-			r.type === 'hotel' ? field('Commission — Hourly',     r.commission_hourly_eur     != null ? `€${Number(r.commission_hourly_eur).toFixed(2)}`     : '—') : '',
-			r.type === 'hotel' ? field('Commission — Tour',       r.commission_tour_eur       != null ? `€${Number(r.commission_tour_eur).toFixed(2)}`       : '—') : '',
-			r.type === 'hotel' ? field('Commission — Experience', r.commission_experience_eur != null ? `€${Number(r.commission_experience_eur).toFixed(2)}` : '—') : '',
-			r.type === 'hotel' ? field('Commission — Legacy',     r.commission_eur            != null ? `€${Number(r.commission_eur).toFixed(2)}`            : '—') : '',
+			r.type === 'hotel' ? field('Transfer — Sedan',   r.commission_transfer_sedan_eur   != null ? `€${Number(r.commission_transfer_sedan_eur).toFixed(2)}`   : '—') : '',
+			r.type === 'hotel' ? field('Transfer — Van',     r.commission_transfer_van_eur     != null ? `€${Number(r.commission_transfer_van_eur).toFixed(2)}`     : '—') : '',
+			r.type === 'hotel' ? field('Transfer — Minibus', r.commission_transfer_minibus_eur != null ? `€${Number(r.commission_transfer_minibus_eur).toFixed(2)}` : '—') : '',
+			r.type === 'hotel' ? field('Hourly — %',         r.commission_hourly_pct           != null ? `${Number(r.commission_hourly_pct).toFixed(2)}%`           : '—') : '',
+			r.type === 'hotel' ? field('Tour — %',           r.commission_tour_pct             != null ? `${Number(r.commission_tour_pct).toFixed(2)}%`             : '—') : '',
+			r.type === 'hotel' ? field('Experience — %',     r.commission_experience_pct       != null ? `${Number(r.commission_experience_pct).toFixed(2)}%`       : '—') : '',
 			field('Created', r.created_at),
 		].join(''));
 	}
