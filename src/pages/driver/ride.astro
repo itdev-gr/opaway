@@ -286,10 +286,11 @@ import DriverLayout from '../../components/DriverLayout.astro';
 		else { window.location.href = '/driver/upcoming'; }
 	});
 
-	/* ── Guard: wait for auth then load ── */
-	supabase.auth.onAuthStateChange(async (_event, session) => {
-		if (!session?.user || !docId) return;
-		const user = session.user;
+	/* ── Load the ride for the current driver ── */
+	async function loadRide() {
+		if (!docId) { showError(); return; }
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) { showError(); return; }
 
 		try {
 			const { data: d, error } = await supabase
@@ -325,7 +326,21 @@ import DriverLayout from '../../components/DriverLayout.astro';
 			console.error('Ride detail load failed:', e);
 			showError();
 		}
-	});
+	}
+
+	/* Race fix: layout's async getSession() can flip auth-check to hidden BEFORE
+	   this script attaches its observer. Check current state first; only observe if pending. */
+	const authEl = document.getElementById('driver-auth-check');
+	if (authEl) {
+		if (authEl.classList.contains('hidden')) {
+			loadRide();
+		} else {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadRide(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	}
 
 	function showError() {
 		loadingEl.classList.add('hidden');
