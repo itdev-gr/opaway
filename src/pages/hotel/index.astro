@@ -106,7 +106,7 @@ import HotelLayout from '../../components/HotelLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { resolveCommissionEur, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
+	import { resolveHotelCommission, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
 
 	function initHotelReservations() {
 		const loadingEl = document.getElementById('reservations-loading');
@@ -153,7 +153,7 @@ import HotelLayout from '../../components/HotelLayout.astro';
 			// Get partner commission
 			const { data: partner } = await supabase
 				.from('partners')
-				.select('discount, commission_eur, commission_transfer_eur, commission_hourly_eur, commission_tour_eur, commission_experience_eur')
+				.select('discount, commission_transfer_sedan_eur, commission_transfer_van_eur, commission_transfer_minibus_eur, commission_hourly_pct, commission_tour_pct, commission_experience_pct')
 				.eq('id', userId)
 				.maybeSingle();
 
@@ -339,7 +339,11 @@ import HotelLayout from '../../components/HotelLayout.astro';
 				const pickup = d.from || d.pickup || '\u2014';
 				const dropoff = d.to || d.dropoff || '\u2014';
 				const totalPrice = typeof d.total_price === 'number' ? d.total_price : 0;
-				const commission = resolveCommissionEur(partner, (d as any)._commissionKind as CommissionKind);
+				const commission = resolveHotelCommission(partner, {
+					kind: (d as any)._commissionKind as CommissionKind,
+					vehicle_name: (d as any).vehicle_name ?? null,
+					total_price: (d as any).total_price ?? null,
+				});
 				const rideStatus = d.ride_status || d.status || 'new';
 
 				return `<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
