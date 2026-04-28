@@ -17,11 +17,3 @@ const videoSrc = '/opawey-hero.mp4';
 		<source src={videoSrc} type="video/mp4" />
 	</video>
 </section>
-
-<script>
-	const video = document.getElementById('hero-video') as HTMLVideoElement;
-	if (video) {
-		video.playbackRate = 0.5;
-		video.addEventListener('play', () => { video.playbackRate = 0.5; });
-	}
-</script>
