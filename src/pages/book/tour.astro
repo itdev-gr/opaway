@@ -190,9 +190,9 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 	let partnerDiscount = 0;
 
 	async function detectPartnerDiscount(): Promise<number> {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return 0;
 		try {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return 0;
 			const { data: partner } = await supabase
 				.from('partners')
 				.select('status, discount')
@@ -435,8 +435,16 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 		window.location.href = `/book/tour/results?${params.toString()}`;
 	});
 
-	detectPartnerDiscount().then(d => {
+	// Race partner-discount detection against a 2s timeout so the public catalog
+	// never hangs waiting for auth. Falls back to no discount on timeout.
+	Promise.race<number>([
+		detectPartnerDiscount(),
+		new Promise<number>((resolve) => setTimeout(() => resolve(0), 2000)),
+	]).then(d => {
 		partnerDiscount = d;
+		loadTours();
+	}).catch(() => {
+		partnerDiscount = 0;
 		loadTours();
 	});
 </script>
