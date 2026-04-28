@@ -14,49 +14,72 @@
             <h3 class="text-lg font-bold text-neutral-900 mb-1">Commission per booking</h3>
             <p id="hc-partner" class="text-xs text-neutral-500 mb-5"></p>
 
-            <form id="hc-form" class="space-y-4">
-                <p class="text-xs text-neutral-500">Amount paid to this hotel per confirmed booking, in EUR. Leave blank to fall back to the legacy flat commission.</p>
+            <form id="hc-form" class="space-y-5">
+                <p class="text-xs text-neutral-500">
+                    Configure how much this hotel earns per confirmed booking. Transfers use
+                    a fix EUR amount per vehicle class. Hourly, tours, and experiences use a
+                    percentage of the booking total.
+                </p>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Transfer</span>
-                        <input id="hc-transfer" type="number" step="0.01" min="0" placeholder="0.00"
-                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Rent by hour</span>
-                        <input id="hc-hourly" type="number" step="0.01" min="0" placeholder="0.00"
-                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Tour</span>
-                        <input id="hc-tour" type="number" step="0.01" min="0" placeholder="0.00"
-                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Experience</span>
-                        <input id="hc-experience" type="number" step="0.01" min="0" placeholder="0.00"
-                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                </div>
+                <fieldset class="space-y-3">
+                    <legend class="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Transfers — fix EUR per vehicle</legend>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Sedan</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-sedan" type="number" step="0.01" min="0" placeholder="0.00"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">€</span>
+                            </div>
+                        </label>
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Van</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-van" type="number" step="0.01" min="0" placeholder="0.00"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">€</span>
+                            </div>
+                        </label>
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Minibus</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-minibus" type="number" step="0.01" min="0" placeholder="0.00"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">€</span>
+                            </div>
+                        </label>
+                    </div>
+                </fieldset>
 
-                <div>
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Legacy flat rate (fallback)</span>
-                        <input id="hc-legacy" type="number" step="0.01" min="0" placeholder="0.00"
-                            class="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                    <p class="text-[11px] text-neutral-400 mt-1">Applied when a type-specific rate above is blank.</p>
-                </div>
-
-                <div class="pt-4 border-t border-neutral-200">
-                    <label class="block">
-                        <span class="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">Discount (%)</span>
-                        <input id="hc-discount" type="number" step="0.01" min="0" max="100" placeholder="0"
-                            class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
-                    </label>
-                    <p class="text-[11px] text-neutral-400 mt-1">Applied when the hotel books on Opawey. Does not reduce the commissions above.</p>
-                </div>
+                <fieldset class="space-y-3">
+                    <legend class="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Hourly / Tours / Experiences — percentage</legend>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Rent by hour</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-hourly-pct" type="number" step="0.01" min="0" max="100" placeholder="0"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">%</span>
+                            </div>
+                        </label>
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Tour</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-tour-pct" type="number" step="0.01" min="0" max="100" placeholder="0"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">%</span>
+                            </div>
+                        </label>
+                        <label class="block">
+                            <span class="block text-xs text-neutral-600 mb-1">Experience</span>
+                            <div class="flex items-center gap-1">
+                                <input id="hc-experience-pct" type="number" step="0.01" min="0" max="100" placeholder="0"
+                                    class="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-800 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95] outline-none" />
+                                <span class="text-xs text-neutral-400">%</span>
+                            </div>
+                        </label>
+                    </div>
+                </fieldset>
 
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <span id="hc-status" class="mr-auto text-xs hidden"></span>
@@ -83,12 +106,12 @@
     const partnerLabel = document.getElementById('hc-partner')!;
 
     const inputs = {
-        transfer:   document.getElementById('hc-transfer')   as HTMLInputElement,
-        hourly:     document.getElementById('hc-hourly')     as HTMLInputElement,
-        tour:       document.getElementById('hc-tour')       as HTMLInputElement,
-        experience: document.getElementById('hc-experience') as HTMLInputElement,
-        legacy:     document.getElementById('hc-legacy')     as HTMLInputElement,
-        discount:   document.getElementById('hc-discount')   as HTMLInputElement,
+        sedan:         document.getElementById('hc-sedan')          as HTMLInputElement,
+        van:           document.getElementById('hc-van')            as HTMLInputElement,
+        minibus:       document.getElementById('hc-minibus')        as HTMLInputElement,
+        hourlyPct:     document.getElementById('hc-hourly-pct')     as HTMLInputElement,
+        tourPct:       document.getElementById('hc-tour-pct')       as HTMLInputElement,
+        experiencePct: document.getElementById('hc-experience-pct') as HTMLInputElement,
     };
 
     let currentPartnerId: string | null = null;
@@ -112,15 +135,21 @@
         if (!currentPartnerId) return;
         save.disabled = true;
         setStatus('Saving…', 'info');
-        const parse = (el: HTMLInputElement) => el.value.trim() === '' ? null : (parseFloat(el.value) || 0);
-        const { error } = await supabase.from('partners').update({
-            commission_transfer_eur:   parse(inputs.transfer),
-            commission_hourly_eur:     parse(inputs.hourly),
-            commission_tour_eur:       parse(inputs.tour),
-            commission_experience_eur: parse(inputs.experience),
-            commission_eur:            parse(inputs.legacy),
-            discount:                  parse(inputs.discount),
-        }).eq('id', currentPartnerId);
+        const parseField = (v: string): number | null => {
+            const t = (v ?? '').trim();
+            if (!t) return null;
+            const n = Number(t);
+            return Number.isFinite(n) ? n : null;
+        };
+        const payload = {
+            commission_transfer_sedan_eur:   parseField(inputs.sedan.value),
+            commission_transfer_van_eur:     parseField(inputs.van.value),
+            commission_transfer_minibus_eur: parseField(inputs.minibus.value),
+            commission_hourly_pct:           parseField(inputs.hourlyPct.value),
+            commission_tour_pct:             parseField(inputs.tourPct.value),
+            commission_experience_pct:       parseField(inputs.experiencePct.value),
+        };
+        const { error } = await supabase.from('partners').update(payload).eq('id', currentPartnerId);
         if (error) {
             console.error('Commission save failed:', error);
             setStatus(`[${error.code ?? 'err'}] ${error.message}`, 'error');
@@ -137,13 +166,16 @@
             currentPartnerId = partner.id;
             onSavedCallback = onSaved ?? null;
             partnerLabel.textContent = partner.hotel_name || partner.display_name || partner.email || 'Hotel';
-            const fmt = (v: any) => (v == null || v === '' || Number.isNaN(Number(v))) ? '' : String(Number(v).toFixed(2));
-            inputs.transfer.value   = fmt(partner.commission_transfer_eur);
-            inputs.hourly.value     = fmt(partner.commission_hourly_eur);
-            inputs.tour.value       = fmt(partner.commission_tour_eur);
-            inputs.experience.value = fmt(partner.commission_experience_eur);
-            inputs.legacy.value     = fmt(partner.commission_eur);
-            inputs.discount.value   = fmt(partner.discount);
+            const fmt = (v: unknown): string => {
+                if (v == null) return '';
+                return String(v);
+            };
+            inputs.sedan.value         = fmt(partner.commission_transfer_sedan_eur);
+            inputs.van.value           = fmt(partner.commission_transfer_van_eur);
+            inputs.minibus.value       = fmt(partner.commission_transfer_minibus_eur);
+            inputs.hourlyPct.value     = fmt(partner.commission_hourly_pct);
+            inputs.tourPct.value       = fmt(partner.commission_tour_pct);
+            inputs.experiencePct.value = fmt(partner.commission_experience_pct);
             status.classList.add('hidden');
             save.disabled = false;
             modal.classList.remove('hidden');
