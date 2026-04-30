@@ -8,14 +8,41 @@ import { ViewTransitions } from 'astro:transitions';
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/svg+xml" href="/logo-opawey.svg" />
+		<link rel="icon" type="image/png" sizes="500x500" href="/logo-opawey.png" />
+		<link rel="apple-touch-icon" href="/logo-opawey.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content="Opawey — premium luxury transportation, private airport transfers, hourly chauffeur service and curated private tours in Athens and across Greece." />
+		<link rel="canonical" href="https://opaway.vercel.app/" />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Opawey" />
+		<meta property="og:title" content="Opawey — Luxury Transfers & Private Tours in Greece" />
+		<meta property="og:description" content="Premium airport transfers, hourly chauffeur service and curated private tours in Athens and across Greece." />
+		<meta property="og:url" content="https://opaway.vercel.app/" />
+		<meta property="og:image" content="https://opaway.vercel.app/logo-opawey.png" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content="Opawey — Luxury Transfers & Private Tours in Greece" />
+		<meta name="twitter:description" content="Premium airport transfers, hourly chauffeur service and curated private tours in Athens and across Greece." />
+		<meta name="twitter:image" content="https://opaway.vercel.app/logo-opawey.png" />
+		<script type="application/ld+json" set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "Organization",
+			"name": "Opawey",
+			"url": "https://opaway.vercel.app/",
+			"logo": "https://opaway.vercel.app/logo-opawey.png",
+			"email": "info@opawey.com",
+			"address": {
+				"@type": "PostalAddress",
+				"streetAddress": "Magkriotou 6",
+				"addressLocality": "Athens",
+				"addressCountry": "GR"
+			}
+		})} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Inter:wght@300..700&display=swap" rel="stylesheet" />
-		<title>Opawey</title>
+		<title>Opawey — Luxury Transfers & Private Tours in Greece</title>
 		<ViewTransitions />
 	</head>
 	<body class="flex flex-col min-h-screen">
