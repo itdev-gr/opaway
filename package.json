@@ -17,5 +17,8 @@
     "astro": "^5.17.1",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@astrojs/sitemap": "^3.7.2"
   }
 }

@@ -1,0 +1,19 @@
+# Opawey
+
+> Opawey is a premium luxury transportation and private transfer service based in Athens, Greece, offering airport transfers, hourly chauffeur service, private tours, and curated experiences across mainland Greece.
+
+## Core pages
+
+- [Home](https://www.opawey.com/): Overview of services — airport transfers, hourly chauffeur, private tours, and experiences.
+- [About Us](https://www.opawey.com/about): Company background, fleet, and values.
+- [Book a Transfer](https://www.opawey.com/book/transfer): Reserve a private airport or city transfer.
+- [Rent by the Hour](https://www.opawey.com/book/hourly): Hire a chauffeur and vehicle by the hour.
+- [Book a Tour](https://www.opawey.com/book/tour): Curated private tours across Greece.
+- [Experiences](https://www.opawey.com/experiences): Wine tastings, yacht cruises, gastronomy, and other VIP experiences.
+- [Work With Us](https://www.opawey.com/work-with-us): Partnership program for hotels, travel agencies, and professional drivers.
+- [Contact](https://www.opawey.com/contact): Phone, email, and office address in Nea Smyrni, Athens.
+
+## Optional
+
+- [Terms of Use](https://www.opawey.com/terms)
+- [Privacy Policy](https://www.opawey.com/privacy)

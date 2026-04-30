@@ -1,14 +1,16 @@
 ---
-// Opawey contact & company info – update with your real data
+// Opawey contact & company info
 const contact = {
-	address: '9 Eirinis Street, Neo Faliro 18547, Greece',
-	addressEl: 'Ειρήνης 9, Νέο Φάληρο Τ.Κ. 18547',
-	addressEs: 'Calle Eirinis 9, Neo Faliro 18547, Grecia',
-	phone: '+30 21 1234 5678',
-	mobile: '+30 693 123 4567',
-	email: 'info@opaway.com',
-	gemi: 'GEMI 123456789000',
-	gemiEl: 'Γ.Ε.ΜΗ. 123456789000',
+	address: 'Magkriotou 6, Nea Smyrni 171 21',
+	addressEl: 'Μαγκριώτου 6, Νέα Σμύρνη 171 21',
+	addressEs: 'Magkriotou 6, Nea Smyrni 171 21',
+	phone: '210 933 3164',
+	phoneTel: '+302109333164',
+	mobile: '+30 6972680618',
+	mobileTel: '+306972680618',
+	email: 'info@opawey.com',
+	website: 'www.opawey.com',
+	mhte: 'MH.TE NUMBER (0206Ε70000370500)',
 	hours: [
 		{ en: 'Monday – Friday 8:00–21:30', el: 'Δευτέρα – Παρασκευή 8:00–21:30', es: 'Lunes – viernes 8:00–21:30' },
 		{ en: 'Saturday 9:00–16:00', el: 'Σάββατο 9:00–16:00', es: 'Sábado 9:00–16:00' },
@@ -71,10 +73,11 @@ const categoryLinks = [
 			<!-- Contact -->
 			<div class="text-neutral-700 text-sm space-y-2">
 				<p data-i18n-el={contact.addressEl} data-i18n-es={contact.addressEs}>{contact.address}</p>
-				<p data-i18n-el={`Τηλ: ${contact.phone}`} data-i18n-es={`Teléfono: ${contact.phone}`}>Phone: {contact.phone}</p>
-				<p data-i18n-el={`Κιν: ${contact.mobile}`} data-i18n-es={`Móvil: ${contact.mobile}`}>Mobile: {contact.mobile}</p>
-				<p>Email: {contact.email}</p>
-				<p data-i18n-el={contact.gemiEl} data-i18n-es={contact.gemi}>{contact.gemi}</p>
+				<p><a href={`tel:${contact.phoneTel}`} class="hover:text-blue-600 transition-colors">{contact.phone}</a></p>
+				<p><a href={`tel:${contact.mobileTel}`} class="hover:text-blue-600 transition-colors">{contact.mobile}</a></p>
+				<p><a href={`mailto:${contact.email}`} class="hover:text-blue-600 transition-colors">{contact.email}</a></p>
+				<p><a href={`https://${contact.website}`} target="_blank" rel="noopener" class="hover:text-blue-600 transition-colors">{contact.website}</a></p>
+				<p class="text-neutral-500 text-xs pt-1">{contact.mhte}</p>
 				<p class="font-semibold text-neutral-800 pt-4" data-i18n-el="Ώρες λειτουργίας" data-i18n-es="Horario">Business Hours</p>
 				{contact.hours.map((line) => <p data-i18n-el={line.el} data-i18n-es={line.es}>{line.en}</p>)}
 				{(social.facebook || social.instagram || social.linkedin) && (

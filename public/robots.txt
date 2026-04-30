@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /driver/
+Disallow: /hotel/
+Disallow: /agency/
+Disallow: /profile
+Disallow: /profile/
+Disallow: /book/transfer/passenger
+Disallow: /book/transfer/payment
+Disallow: /book/transfer/results
+Disallow: /book/hourly/passenger
+Disallow: /book/hourly/payment
+Disallow: /book/hourly/results
+Disallow: /book/tour/passenger
+Disallow: /book/tour/payment
+Disallow: /book/tour/results
+Disallow: /forgot-password
+Disallow: /logout
+Disallow: /register-partner
+
+Sitemap: https://www.opawey.com/sitemap-index.xml
