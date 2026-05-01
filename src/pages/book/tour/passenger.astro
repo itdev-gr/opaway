@@ -261,14 +261,6 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 
-	(async () => {
-		const { data: { session } } = await supabase.auth.getSession();
-		if (!session?.user) {
-			const next = encodeURIComponent(window.location.pathname + window.location.search);
-			window.location.href = `/login?next=${next}&reason=booking`;
-		}
-	})();
-
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
 	const tourId = params.get('tourId') || '';
