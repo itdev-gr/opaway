@@ -8,7 +8,7 @@
 	</a>
 
 	<!-- Center nav links -->
-	<div class="hidden md:flex items-center gap-8 flex-1 justify-center font-medium tracking-wide">
+	<div class="hidden lg:flex items-center gap-8 flex-1 justify-center font-medium tracking-wide">
 
 		<a href="/" data-navlink data-href="/"
 			class="pb-0.5 border-b-2 border-transparent text-white hover:text-white/70 hover:border-white/30 transition-colors duration-300"
@@ -120,6 +120,19 @@
 			<button type="button" data-lang="en" aria-label="English" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">EN</button>
 			<button type="button" data-lang="es" aria-label="Spanish" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">ES</button>
 		</div>
+		<!-- Hamburger (mobile + tablet only) -->
+		<button
+			id="nav-burger"
+			type="button"
+			class="lg:hidden w-10 h-10 rounded-full border border-white/20 hover:bg-white/10 flex items-center justify-center transition-colors duration-200 shrink-0"
+			aria-label="Open menu"
+			aria-expanded="false"
+			aria-controls="nav-drawer"
+		>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+			</svg>
+		</button>
 		<!-- Guest: profile icon + Sign in -->
 		<div id="nav-auth-guest" class="flex items-center gap-3">
 			<a href="/login" aria-label="My Account" data-i18n-aria-el="Ο λογαριασμός μου" data-i18n-aria-es="Mi cuenta" class="w-10 h-10 rounded-full border-2 border-neutral-200 bg-white hover:border-[#0C6B95] hover:bg-sky-50 flex items-center justify-center transition-colors duration-200">
@@ -128,7 +141,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
 				</svg>
 			</a>
-			<a href="/login" class="inline-flex items-center gap-2 bg-white text-[#000724] font-medium px-5 py-2.5 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">
+			<a href="/login" class="hidden sm:inline-flex items-center gap-2 bg-white text-[#000724] font-medium px-5 py-2.5 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">
 				Sign in
 			</a>
 		</div>
@@ -150,6 +163,60 @@
 		</div>
 	</div>
 </nav>
+
+<!-- Mobile/tablet backdrop -->
+<div
+	id="nav-drawer-backdrop"
+	class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden"
+	aria-hidden="true"
+></div>
+
+<!-- Mobile/tablet drawer -->
+<div
+	id="nav-drawer"
+	class="fixed top-0 left-0 right-0 z-50 lg:hidden bg-[#000724] text-white shadow-2xl -translate-y-full transition-transform duration-300 ease-out"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Mobile navigation"
+>
+	<!-- Drawer header (logo + close) -->
+	<div class="flex items-center justify-between px-6 py-1 border-b border-white/10">
+		<a href="/" class="flex items-center shrink-0" aria-label="Opawey - Home">
+			<img src="/logo-opaway-white.svg" alt="Opawey" class="h-14 w-auto object-contain" width="187" height="56" />
+		</a>
+		<button
+			id="nav-drawer-close"
+			type="button"
+			class="w-10 h-10 rounded-full border border-white/20 hover:bg-white/10 flex items-center justify-center transition-colors duration-200"
+			aria-label="Close menu"
+		>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M6 18L18 6" />
+			</svg>
+		</button>
+	</div>
+
+	<!-- Scrollable nav body -->
+	<nav class="overflow-y-auto max-h-[calc(100vh-4.5rem)] py-4">
+		<a href="/" data-drawer-link class="block px-6 py-3 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΑΡΧΙΚΗ" data-i18n-es="INICIO">HOME</a>
+		<a href="/about" data-drawer-link class="block px-6 py-3 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ" data-i18n-es="SOBRE NOSOTROS">ABOUT US</a>
+
+		<!-- Book Online (always expanded inline on mobile) -->
+		<div class="px-6 pt-3 pb-1 text-xs uppercase tracking-widest text-white/50" data-i18n-el="ΚΡΑΤΗΣΗ ONLINE" data-i18n-es="RESERVAR ONLINE">BOOK ONLINE</div>
+		<a href="/book/transfer" data-drawer-link class="block pl-10 pr-6 py-3 text-sm hover:bg-white/5" data-i18n-el="Κράτηση μεταφοράς" data-i18n-es="Reservar un traslado">Book a Transfer</a>
+		<a href="/book/hourly" data-drawer-link class="block pl-10 pr-6 py-3 text-sm hover:bg-white/5" data-i18n-el="Ενοικίαση με την ώρα" data-i18n-es="Alquiler por hora">Rent per hour</a>
+		<a href="/book/tour" data-drawer-link class="block pl-10 pr-6 py-3 text-sm hover:bg-white/5" data-i18n-el="Κράτηση τουρ" data-i18n-es="Reservar un tour">Book a Tour</a>
+		<a href="/experiences" data-drawer-link class="block pl-10 pr-6 py-3 text-sm hover:bg-white/5" data-i18n-el="Εμπειρίες" data-i18n-es="Experiencias">Experiences</a>
+
+		<a href="/work-with-us" data-drawer-link class="block px-6 py-3 mt-2 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΣΥΝΕΡΓΑΣΙΑ" data-i18n-es="TRABAJA CON NOSOTROS">WORK WITH US</a>
+		<a href="/contact" data-drawer-link class="block px-6 py-3 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΕΠΙΚΟΙΝΩΝΙΑ" data-i18n-es="CONTACTO">CONTACT</a>
+
+		<!-- Sign in (visible on phones where the top-bar pill is hidden) -->
+		<div class="sm:hidden px-6 pt-4 pb-2">
+			<a href="/login" data-drawer-link class="inline-flex items-center justify-center w-full gap-2 bg-white text-[#000724] font-medium px-5 py-3 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">Sign in</a>
+		</div>
+	</nav>
+</div>
 
 <script>
 	import { supabase } from '../lib/supabase';
@@ -183,7 +250,68 @@
 		document.dispatchEvent(new CustomEvent('opaway:lang-changed', { detail: lang }));
 	}
 
+	function initDrawer() {
+		const burger = document.getElementById('nav-burger');
+		const drawer = document.getElementById('nav-drawer');
+		const backdrop = document.getElementById('nav-drawer-backdrop');
+		const closeBtn = document.getElementById('nav-drawer-close');
+		if (!burger || !drawer || !backdrop) return;
+
+		const open = () => {
+			drawer.classList.remove('-translate-y-full');
+			backdrop.classList.remove('hidden');
+			burger.setAttribute('aria-expanded', 'true');
+			document.body.style.overflow = 'hidden';
+		};
+		const close = () => {
+			drawer.classList.add('-translate-y-full');
+			backdrop.classList.add('hidden');
+			burger.setAttribute('aria-expanded', 'false');
+			document.body.style.overflow = '';
+		};
+
+		burger.addEventListener('click', () => {
+			const isOpen = burger.getAttribute('aria-expanded') === 'true';
+			isOpen ? close() : open();
+		});
+		closeBtn?.addEventListener('click', close);
+		backdrop.addEventListener('click', close);
+		document.querySelectorAll<HTMLAnchorElement>('[data-drawer-link]').forEach((a) => {
+			a.addEventListener('click', close);
+		});
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') close();
+		});
+	}
+
+	function initDesktopDropdownTap() {
+		const trigger = document.querySelector<HTMLButtonElement>('[data-href="/book"]');
+		const panel = trigger?.nextElementSibling as HTMLElement | null;
+		if (!trigger || !panel) return;
+		trigger.addEventListener('click', (e) => {
+			e.preventDefault();
+			const isOpen = panel.classList.contains('group-tap-open');
+			panel.classList.toggle('group-tap-open', !isOpen);
+			panel.classList.toggle('opacity-100', !isOpen);
+			panel.classList.toggle('visible', !isOpen);
+			panel.classList.toggle('translate-y-0', !isOpen);
+			panel.classList.toggle('opacity-0', isOpen);
+			panel.classList.toggle('invisible', isOpen);
+			panel.classList.toggle('translate-y-1', isOpen);
+		});
+		document.addEventListener('click', (e) => {
+			if (!trigger.parentElement?.contains(e.target as Node)) {
+				panel.classList.remove('group-tap-open', 'opacity-100', 'visible', 'translate-y-0');
+				panel.classList.add('opacity-0', 'invisible', 'translate-y-1');
+			}
+		});
+	}
+
 	async function initNavbar() {
+		// Drawer + dropdown setup (idempotent — re-runs on every astro:page-load)
+		initDrawer();
+		initDesktopDropdownTap();
+
 		// Active link highlight
 		const pathname = window.location.pathname;
 		document.querySelectorAll('[data-navlink]').forEach((el) => {
@@ -273,5 +401,12 @@
 	}
 
 	// Run on every page load (initial + view transitions)
-	document.addEventListener('astro:page-load', initNavbar);
+	document.addEventListener('astro:page-load', () => {
+		// Reset body scroll lock and drawer position from any previous page
+		document.body.style.overflow = '';
+		document.getElementById('nav-drawer')?.classList.add('-translate-y-full');
+		document.getElementById('nav-drawer-backdrop')?.classList.add('hidden');
+		document.getElementById('nav-burger')?.setAttribute('aria-expanded', 'false');
+		initNavbar();
+	});
 </script>
