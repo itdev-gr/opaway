@@ -115,7 +115,7 @@
 	<!-- Right: Language toggle + Profile icon + Sign-in (guest) or Profile link (logged-in) -->
 	<div class="flex items-center gap-3 shrink-0">
 		<!-- Language toggle (placeholder for future i18n; persists selection only) -->
-		<div id="nav-language-toggle" class="flex items-center gap-0.5 rounded-full border border-neutral-200 bg-white p-0.5 shrink-0">
+		<div id="nav-language-toggle" class="hidden lg:flex items-center gap-0.5 rounded-full border border-neutral-200 bg-white p-0.5 shrink-0">
 			<button type="button" data-lang="el" aria-label="Greek" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">GR</button>
 			<button type="button" data-lang="en" aria-label="English" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">EN</button>
 			<button type="button" data-lang="es" aria-label="Spanish" class="lang-btn px-2.5 py-1 text-xs font-semibold rounded-full transition-colors">ES</button>
@@ -211,9 +211,29 @@
 		<a href="/work-with-us" data-drawer-link class="block px-6 py-3 mt-2 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΣΥΝΕΡΓΑΣΙΑ" data-i18n-es="TRABAJA CON NOSOTROS">WORK WITH US</a>
 		<a href="/contact" data-drawer-link class="block px-6 py-3 text-base font-medium tracking-wide hover:bg-white/5" data-i18n-el="ΕΠΙΚΟΙΝΩΝΙΑ" data-i18n-es="CONTACTO">CONTACT</a>
 
-		<!-- Sign in (visible on phones where the top-bar pill is hidden) -->
-		<div class="sm:hidden px-6 pt-4 pb-2">
+		<!-- Language toggle (drawer) -->
+		<div class="px-6 pt-5 pb-2 border-t border-white/10 mt-3">
+			<div class="text-xs uppercase tracking-widest text-white/50 mb-2" data-i18n-el="Γλώσσα" data-i18n-es="Idioma">Language</div>
+			<div class="inline-flex items-center gap-0.5 rounded-full border border-white/20 bg-white p-0.5">
+				<button type="button" data-lang="el" aria-label="Greek" class="lang-btn px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">GR</button>
+				<button type="button" data-lang="en" aria-label="English" class="lang-btn px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">EN</button>
+				<button type="button" data-lang="es" aria-label="Spanish" class="lang-btn px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">ES</button>
+			</div>
+		</div>
+
+		<!-- Drawer auth: guest -->
+		<div data-drawer-auth-guest class="px-6 pt-3 pb-4">
 			<a href="/login" data-drawer-link class="inline-flex items-center justify-center w-full gap-2 bg-white text-[#000724] font-medium px-5 py-3 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Συνδεθείτε" data-i18n-es="Iniciar sesión">Sign in</a>
+		</div>
+
+		<!-- Drawer auth: logged-in user (hidden until JS confirms session) -->
+		<div data-drawer-auth-user class="hidden px-6 pt-3 pb-4 space-y-2">
+			<p data-drawer-user-name class="text-sm text-white/70 truncate"></p>
+			<a data-drawer-role-btn="admin" href="/admin" target="_blank" rel="noopener noreferrer" data-drawer-link class="hidden items-center justify-center w-full gap-2 bg-[#0C6B95] text-white font-medium px-4 py-2.5 rounded-full hover:bg-[#0a5c82] transition-colors text-sm">Admin</a>
+			<a data-drawer-role-btn="driver" href="/driver" data-drawer-link class="hidden items-center justify-center w-full gap-2 bg-emerald-600 text-white font-medium px-4 py-2.5 rounded-full hover:bg-emerald-700 transition-colors text-sm">Driver</a>
+			<a data-drawer-role-btn="hotel" href="/hotel" data-drawer-link class="hidden items-center justify-center w-full gap-2 bg-amber-600 text-white font-medium px-4 py-2.5 rounded-full hover:bg-amber-700 transition-colors text-sm">Hotel</a>
+			<a data-drawer-role-btn="agency" href="/agency" data-drawer-link class="hidden items-center justify-center w-full gap-2 bg-violet-600 text-white font-medium px-4 py-2.5 rounded-full hover:bg-violet-700 transition-colors text-sm">Agency</a>
+			<a href="/profile" data-drawer-link class="inline-flex items-center justify-center w-full gap-2 bg-white text-[#000724] font-medium px-5 py-3 rounded-full hover:bg-neutral-100 transition-colors" data-i18n-el="Το προφίλ μου" data-i18n-es="Mi perfil">My Profile</a>
 		</div>
 	</nav>
 </div>
@@ -343,24 +363,40 @@
 		const hotelBtn = document.getElementById('nav-hotel-btn');
 		const agencyBtn = document.getElementById('nav-agency-btn');
 
+		// Drawer counterparts
+		const drawerGuest = document.querySelector<HTMLElement>('[data-drawer-auth-guest]');
+		const drawerUser = document.querySelector<HTMLElement>('[data-drawer-auth-user]');
+		const drawerNameEl = document.querySelector<HTMLElement>('[data-drawer-user-name]');
+		const drawerRoleBtn = (role: string) => document.querySelector<HTMLAnchorElement>(`[data-drawer-role-btn="${role}"]`);
+		const drawerAdmin = drawerRoleBtn('admin');
+		const drawerDriver = drawerRoleBtn('driver');
+		const drawerHotel = drawerRoleBtn('hotel');
+		const drawerAgency = drawerRoleBtn('agency');
+
 		const { data: { session } } = await supabase.auth.getSession();
 		const user = session?.user ?? null;
 
-		// Toggle guest vs logged-in UI
+		// Toggle guest vs logged-in UI (topbar + drawer)
 		if (guest) guest.classList.toggle('hidden', !!user);
 		if (userEl) userEl.classList.toggle('hidden', !user);
+		if (drawerGuest) drawerGuest.classList.toggle('hidden', !!user);
+		if (drawerUser) drawerUser.classList.toggle('hidden', !user);
 
-		// Reset role buttons
-		if (adminBtn) { adminBtn.classList.add('hidden'); adminBtn.classList.remove('inline-flex'); }
-		if (driverBtn) { driverBtn.classList.add('hidden'); driverBtn.classList.remove('inline-flex'); }
-		if (hotelBtn) { hotelBtn.classList.add('hidden'); hotelBtn.classList.remove('inline-flex'); }
-		if (agencyBtn) { agencyBtn.classList.add('hidden'); agencyBtn.classList.remove('inline-flex'); }
+		// Reset role buttons (topbar uses inline-flex, drawer uses flex)
+		const resetTopbar = (b: HTMLElement | null) => { if (b) { b.classList.add('hidden'); b.classList.remove('inline-flex'); } };
+		const resetDrawer = (b: HTMLElement | null) => { if (b) { b.classList.add('hidden'); b.classList.remove('flex'); } };
+		resetTopbar(adminBtn); resetTopbar(driverBtn); resetTopbar(hotelBtn); resetTopbar(agencyBtn);
+		resetDrawer(drawerAdmin); resetDrawer(drawerDriver); resetDrawer(drawerHotel); resetDrawer(drawerAgency);
 
-		if (!user || !nameEl) return;
+		const showTopbar = (b: HTMLElement | null) => { if (b) { b.classList.remove('hidden'); b.classList.add('inline-flex'); } };
+		const showDrawer = (b: HTMLElement | null) => { if (b) { b.classList.remove('hidden'); b.classList.add('flex'); } };
+
+		if (!user) return;
 
 		// Set name from auth metadata first (instant)
-		nameEl.textContent = user.user_metadata?.full_name?.trim() || user.email || 'Account';
-		nameEl.setAttribute('title', nameEl.textContent);
+		const initialName = user.user_metadata?.full_name?.trim() || user.email || 'Account';
+		if (nameEl) { nameEl.textContent = initialName; nameEl.setAttribute('title', initialName); }
+		if (drawerNameEl) drawerNameEl.textContent = initialName;
 
 		// Then fetch DB data for role + display name
 		const { data: dbUser } = await supabase
@@ -370,13 +406,14 @@
 			.maybeSingle();
 
 		if (dbUser?.display_name?.trim()) {
-			nameEl.textContent = dbUser.display_name.trim();
-			nameEl.setAttribute('title', dbUser.display_name.trim());
+			const dn = dbUser.display_name.trim();
+			if (nameEl) { nameEl.textContent = dn; nameEl.setAttribute('title', dn); }
+			if (drawerNameEl) drawerNameEl.textContent = dn;
 		}
 
-		if (dbUser?.type === 'admin' && adminBtn) {
-			adminBtn.classList.remove('hidden');
-			adminBtn.classList.add('inline-flex');
+		if (dbUser?.type === 'admin') {
+			showTopbar(adminBtn);
+			showDrawer(drawerAdmin);
 		}
 
 		// Check driver status
@@ -386,17 +423,17 @@
 			.eq('id', user.id)
 			.maybeSingle();
 
-		if (pData?.type === 'driver' && pData?.status === 'approved' && driverBtn) {
-			driverBtn.classList.remove('hidden');
-			driverBtn.classList.add('inline-flex');
+		if (pData?.type === 'driver' && pData?.status === 'approved') {
+			showTopbar(driverBtn);
+			showDrawer(drawerDriver);
 		}
-		if (pData?.type === 'hotel' && pData?.status === 'approved' && hotelBtn) {
-			hotelBtn.classList.remove('hidden');
-			hotelBtn.classList.add('inline-flex');
+		if (pData?.type === 'hotel' && pData?.status === 'approved') {
+			showTopbar(hotelBtn);
+			showDrawer(drawerHotel);
 		}
-		if (pData?.type === 'agency' && pData?.status === 'approved' && agencyBtn) {
-			agencyBtn.classList.remove('hidden');
-			agencyBtn.classList.add('inline-flex');
+		if (pData?.type === 'agency' && pData?.status === 'approved') {
+			showTopbar(agencyBtn);
+			showDrawer(drawerAgency);
 		}
 	}
 
