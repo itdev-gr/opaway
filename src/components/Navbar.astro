@@ -393,10 +393,14 @@
 
 		if (!user) return;
 
+		// Drop the surname on the mobile drawer when the full name would
+		// overflow the row (>12 chars). Topbar keeps the full name.
+		const drawerName = (full: string) => (full.length > 12 ? (full.split(/\s+/)[0] || full) : full);
+
 		// Set name from auth metadata first (instant)
 		const initialName = user.user_metadata?.full_name?.trim() || user.email || 'Account';
 		if (nameEl) { nameEl.textContent = initialName; nameEl.setAttribute('title', initialName); }
-		if (drawerNameEl) drawerNameEl.textContent = initialName;
+		if (drawerNameEl) drawerNameEl.textContent = drawerName(initialName);
 
 		// Then fetch DB data for role + display name
 		const { data: dbUser } = await supabase
@@ -408,7 +412,7 @@
 		if (dbUser?.display_name?.trim()) {
 			const dn = dbUser.display_name.trim();
 			if (nameEl) { nameEl.textContent = dn; nameEl.setAttribute('title', dn); }
-			if (drawerNameEl) drawerNameEl.textContent = dn;
+			if (drawerNameEl) drawerNameEl.textContent = drawerName(dn);
 		}
 
 		if (dbUser?.type === 'admin') {
