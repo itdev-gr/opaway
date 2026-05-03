@@ -434,7 +434,11 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			const { data: inserted, error } = await supabase.from('tours').insert({
+			// Generate the booking id client-side so we don't need RETURNING — see
+			// the matching note in transfer/payment.astro.
+			const bookingId = crypto.randomUUID();
+			const { error } = await supabase.from('tours').insert({
+				id: bookingId,
 				tour: tourName,
 				tour_id: tourId,
 				tour_name: tourName,
@@ -463,14 +467,13 @@ import Layout from '../../../layouts/Layout.astro';
 				uid: guestUid,
 				partner_id: partnerId,
 				added_by_admin: false,
-			}).select().single();
+			});
 
 			if (error) throw error;
-			if (!inserted) throw new Error('Booking was not returned after insert');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', inserted.id.substring(0, 8).toUpperCase());
+			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
 			setText('success-tour', tourName);
 			setText('success-date', `${date} at ${time}`);
 			setText('success-vehicle', vehicleName);

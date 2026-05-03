@@ -338,7 +338,11 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			const { data: inserted, error } = await supabase.from('transfers').insert({
+			// Generate the booking id client-side so we don't need RETURNING — see
+			// the matching note in transfer/payment.astro.
+			const bookingId = crypto.randomUUID();
+			const { error } = await supabase.from('transfers').insert({
+				id: bookingId,
 				booking_type: 'hourly',
 				from: pickup, to: pickup,
 				date, time,
@@ -360,14 +364,13 @@ import Layout from '../../../layouts/Layout.astro';
 				partner_id: partnerId,
 				luggage_small: luggageSmall,
 				luggage_big: luggageBig,
-			}).select().single();
+			});
 
 			if (error) throw error;
-			if (!inserted) throw new Error('Booking was not returned after insert');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', inserted.id.substring(0, 8).toUpperCase());
+			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
 			setText('success-pickup', pickup);
 			setText('success-hours', `${hours} hours`);
 			setText('success-vehicle', vehicleName);

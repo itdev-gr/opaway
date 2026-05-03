@@ -451,7 +451,12 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			const { data: inserted, error } = await supabase.from('transfers').insert({
+			// Generate the booking id client-side so we don't need RETURNING — the
+			// anon SELECT policies on `transfers` would otherwise reject the implicit
+			// SELECT that .select() / Prefer:return=representation triggers.
+			const bookingId = crypto.randomUUID();
+			const { error } = await supabase.from('transfers').insert({
+				id: bookingId,
 				from, to, date, time,
 				passengers: parseInt(passengers, 10) || 1,
 				return_date: returnDate || null,
@@ -478,14 +483,13 @@ import Layout from '../../../layouts/Layout.astro';
 				partner_id: partnerId,
 				luggage_small: luggageSmall,
 				luggage_big: luggageBig,
-			}).select().single();
+			});
 
 			if (error) throw error;
-			if (!inserted) throw new Error('Booking was not returned after insert');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', inserted.id.substring(0, 8).toUpperCase());
+			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
 			setText('success-route', `${from} \u2192 ${to}`);
 			setText('success-date', `${date} at ${time}`);
 			setText('success-vehicle', vehicleName);
