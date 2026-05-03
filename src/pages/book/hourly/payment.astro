@@ -338,39 +338,39 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			// Generate the booking id client-side so we don't need RETURNING — see
-			// the matching note in transfer/payment.astro.
-			const bookingId = crypto.randomUUID();
-			const { error } = await supabase.from('transfers').insert({
-				id: bookingId,
-				booking_type: 'hourly',
-				from: pickup, to: pickup,
-				date, time,
-				hours: parseInt(hours, 10) || 1,
-				passengers: parseInt(passengers, 10) || 1,
-				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
-				first_name: firstName, last_name: lastName, email, phone,
-				driver_notes: driverNotes || null,
-				total_price: finalTotal,
-				base_price: baseTotal,
-				per_hour: parseFloat(perHour) || 0,
-				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
-				ride_status: 'new',
-				// See note in transfer/payment.astro: no server-side Stripe capture yet.
-				payment_status: 'pending',
-				payment_method: paymentMethod,
-				payment_token: paymentToken || null,
-				uid: guestUid,
-				partner_id: partnerId,
-				luggage_small: luggageSmall,
-				luggage_big: luggageBig,
+			// Insert via SECURITY DEFINER RPC — see transfer/payment.astro for the
+			// rationale + db/migrations/2026-05-04-guest-booking-rpcs.sql.
+			const { data: bookingId, error } = await supabase.rpc('create_transfer_booking', {
+				payload: {
+					booking_type: 'hourly',
+					from: pickup, to: pickup,
+					date, time,
+					hours: parseInt(hours, 10) || 1,
+					passengers: parseInt(passengers, 10) || 1,
+					vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
+					first_name: firstName, last_name: lastName, email, phone,
+					driver_notes: driverNotes || null,
+					total_price: finalTotal,
+					base_price: baseTotal,
+					per_hour: parseFloat(perHour) || 0,
+					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+					ride_status: 'new',
+					// See note in transfer/payment.astro: no server-side Stripe capture yet.
+					payment_status: 'pending',
+					payment_method: paymentMethod,
+					payment_token: paymentToken || null,
+					partner_id: partnerId,
+					luggage_small: luggageSmall,
+					luggage_big: luggageBig,
+				},
 			});
 
 			if (error) throw error;
+			if (!bookingId) throw new Error('Booking RPC returned no id');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
+			setText('success-ref', String(bookingId).substring(0, 8).toUpperCase());
 			setText('success-pickup', pickup);
 			setText('success-hours', `${hours} hours`);
 			setText('success-vehicle', vehicleName);

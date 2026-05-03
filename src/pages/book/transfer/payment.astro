@@ -451,45 +451,46 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			// Generate the booking id client-side so we don't need RETURNING — the
-			// anon SELECT policies on `transfers` would otherwise reject the implicit
-			// SELECT that .select() / Prefer:return=representation triggers.
-			const bookingId = crypto.randomUUID();
-			const { error } = await supabase.from('transfers').insert({
-				id: bookingId,
-				from, to, date, time,
-				passengers: parseInt(passengers, 10) || 1,
-				return_date: returnDate || null,
-				return_time: returnTime || null,
-				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
-				first_name: firstName, last_name: lastName, email, phone,
-				sign_name: signName || null,
-				child_seats: parseInt(childSeats, 10) || 0,
-				driver_notes: driverNotes || null,
-				total_price: finalTotal,
-				base_price: baseTotal,
-				outward_price: parseFloat(outwardPrice) || 0,
-				return_price: parseFloat(returnPrice) || 0,
-				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
-				ride_status: 'new',
-				// Stripe.createToken() only tokenizes — no server-side capture exists yet,
-				// so every booking lands as 'pending' and an operator captures the saved
-				// payment_token from the Stripe dashboard.
-				payment_status: 'pending',
-				payment_method: paymentMethod,
-				payment_token: paymentToken || null,
-				uid: guestUid,
-				booking_type: 'transfer',
-				partner_id: partnerId,
-				luggage_small: luggageSmall,
-				luggage_big: luggageBig,
+			// Insert via SECURITY DEFINER RPC: server generates the row id, sets
+			// uid = auth.uid() (or NULL for guests), and bypasses RLS for the
+			// implicit SELECT on the new row. See the matching migration:
+			// db/migrations/2026-05-04-guest-booking-rpcs.sql.
+			const { data: bookingId, error } = await supabase.rpc('create_transfer_booking', {
+				payload: {
+					from, to, date, time,
+					passengers: parseInt(passengers, 10) || 1,
+					return_date: returnDate || null,
+					return_time: returnTime || null,
+					vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
+					first_name: firstName, last_name: lastName, email, phone,
+					sign_name: signName || null,
+					child_seats: parseInt(childSeats, 10) || 0,
+					driver_notes: driverNotes || null,
+					total_price: finalTotal,
+					base_price: baseTotal,
+					outward_price: parseFloat(outwardPrice) || 0,
+					return_price: parseFloat(returnPrice) || 0,
+					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+					ride_status: 'new',
+					// Stripe.createToken() only tokenizes — no server-side capture exists
+					// yet, so every booking lands as 'pending' and an operator captures
+					// the saved payment_token from the Stripe dashboard.
+					payment_status: 'pending',
+					payment_method: paymentMethod,
+					payment_token: paymentToken || null,
+					booking_type: 'transfer',
+					partner_id: partnerId,
+					luggage_small: luggageSmall,
+					luggage_big: luggageBig,
+				},
 			});
 
 			if (error) throw error;
+			if (!bookingId) throw new Error('Booking RPC returned no id');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
+			setText('success-ref', String(bookingId).substring(0, 8).toUpperCase());
 			setText('success-route', `${from} \u2192 ${to}`);
 			setText('success-date', `${date} at ${time}`);
 			setText('success-vehicle', vehicleName);

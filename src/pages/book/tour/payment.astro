@@ -434,46 +434,46 @@ import Layout from '../../../layouts/Layout.astro';
 		}
 
 		try {
-			// Generate the booking id client-side so we don't need RETURNING — see
-			// the matching note in transfer/payment.astro.
-			const bookingId = crypto.randomUUID();
-			const { error } = await supabase.from('tours').insert({
-				id: bookingId,
-				tour: tourName,
-				tour_id: tourId,
-				tour_name: tourName,
-				pickup: pickup,
-				pickup_location: pickup,
-				destination: tourName,
-				date, time,
-				passengers: parseInt(participants, 10) || 1,
-				participants: parseInt(participants, 10) || 1,
-				vehicle: vehicleName,
-				vehicle_name: vehicleName,
-				name: `${firstName} ${lastName}`.trim(),
-				email, phone,
-				special_requests: driverNotes || null,
-				notes: driverNotes || null,
-				hotel_choice: hotelChoice,
-				total_price: finalTotal,
-				entrance_tickets_count: ticketCount,
-				entrance_tickets_total: ticketsSubtotal,
-				ride_status: 'new',
-				// See note in transfer/payment.astro: no server-side Stripe capture yet.
-				payment_status: 'pending',
-				payment_method: paymentMethod,
-				payment_token: paymentToken || null,
-				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
-				uid: guestUid,
-				partner_id: partnerId,
-				added_by_admin: false,
+			// Insert via SECURITY DEFINER RPC — see transfer/payment.astro for the
+			// rationale + db/migrations/2026-05-04-guest-booking-rpcs.sql.
+			const { data: bookingId, error } = await supabase.rpc('create_tour_booking', {
+				payload: {
+					tour: tourName,
+					tour_id: tourId,
+					tour_name: tourName,
+					pickup: pickup,
+					pickup_location: pickup,
+					destination: tourName,
+					date, time,
+					passengers: parseInt(participants, 10) || 1,
+					participants: parseInt(participants, 10) || 1,
+					vehicle: vehicleName,
+					vehicle_name: vehicleName,
+					name: `${firstName} ${lastName}`.trim(),
+					email, phone,
+					special_requests: driverNotes || null,
+					notes: driverNotes || null,
+					hotel_choice: hotelChoice,
+					total_price: finalTotal,
+					entrance_tickets_count: ticketCount,
+					entrance_tickets_total: ticketsSubtotal,
+					ride_status: 'new',
+					// See note in transfer/payment.astro: no server-side Stripe capture yet.
+					payment_status: 'pending',
+					payment_method: paymentMethod,
+					payment_token: paymentToken || null,
+					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
+					partner_id: partnerId,
+					added_by_admin: false,
+				},
 			});
 
 			if (error) throw error;
+			if (!bookingId) throw new Error('Booking RPC returned no id');
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
-			setText('success-ref', bookingId.substring(0, 8).toUpperCase());
+			setText('success-ref', String(bookingId).substring(0, 8).toUpperCase());
 			setText('success-tour', tourName);
 			setText('success-date', `${date} at ${time}`);
 			setText('success-vehicle', vehicleName);
