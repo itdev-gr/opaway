@@ -426,6 +426,10 @@ import Layout from '../../../layouts/Layout.astro';
 		})();
 	} else {
 		document.getElementById('stripe-not-configured')?.classList.remove('hidden');
+		const stripeLabel = document.querySelector<HTMLLabelElement>('.pay-method-option[data-method="stripe"]');
+		const stripeRadio = stripeLabel?.querySelector<HTMLInputElement>('input[type="radio"]');
+		if (stripeLabel) stripeLabel.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+		if (stripeRadio) stripeRadio.disabled = true;
 	}
 
 	/* ── Save booking to Supabase ── */
@@ -449,21 +453,24 @@ import Layout from '../../../layouts/Layout.astro';
 		try {
 			const { data: inserted, error } = await supabase.from('transfers').insert({
 				from, to, date, time,
-				passengers: parseInt(passengers, 10),
+				passengers: parseInt(passengers, 10) || 1,
 				return_date: returnDate || null,
 				return_time: returnTime || null,
 				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
 				first_name: firstName, last_name: lastName, email, phone,
 				sign_name: signName || null,
-				child_seats: parseInt(childSeats, 10),
+				child_seats: parseInt(childSeats, 10) || 0,
 				driver_notes: driverNotes || null,
 				total_price: finalTotal,
 				base_price: baseTotal,
-				outward_price: parseFloat(outwardPrice),
-				return_price: parseFloat(returnPrice),
+				outward_price: parseFloat(outwardPrice) || 0,
+				return_price: parseFloat(returnPrice) || 0,
 				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
 				ride_status: 'new',
-				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
+				// Stripe.createToken() only tokenizes — no server-side capture exists yet,
+				// so every booking lands as 'pending' and an operator captures the saved
+				// payment_token from the Stripe dashboard.
+				payment_status: 'pending',
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
 				uid: guestUid,
@@ -485,9 +492,12 @@ import Layout from '../../../layouts/Layout.astro';
 			setText('success-passenger', `${firstName} ${lastName}`);
 			setText('success-total', `\u20AC${finalTotal.toFixed(2)}`);
 			setText('success-email', email);
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Save booking failed:', err);
-			showFormError(formScope, 'Failed to save booking. Please try again.');
+			const detail = err?.message || err?.error_description || '';
+			showFormError(formScope, detail
+				? `Failed to save booking: ${detail}`
+				: 'Failed to save booking. Please try again.');
 			btn.disabled = false;
 			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
 		}

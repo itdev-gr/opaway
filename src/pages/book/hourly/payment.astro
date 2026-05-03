@@ -315,6 +315,10 @@ import Layout from '../../../layouts/Layout.astro';
 		})();
 	} else {
 		document.getElementById('stripe-not-configured')?.classList.remove('hidden');
+		const stripeLabel = document.querySelector<HTMLLabelElement>('.pay-method-option[data-method="stripe"]');
+		const stripeRadio = stripeLabel?.querySelector<HTMLInputElement>('input[type="radio"]');
+		if (stripeLabel) stripeLabel.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+		if (stripeRadio) stripeRadio.disabled = true;
 	}
 
 	async function saveBooking(paymentMethod: string, paymentToken = '') {
@@ -338,17 +342,18 @@ import Layout from '../../../layouts/Layout.astro';
 				booking_type: 'hourly',
 				from: pickup, to: pickup,
 				date, time,
-				hours: parseInt(hours, 10),
-				passengers: parseInt(passengers, 10),
+				hours: parseInt(hours, 10) || 1,
+				passengers: parseInt(passengers, 10) || 1,
 				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
 				first_name: firstName, last_name: lastName, email, phone,
 				driver_notes: driverNotes || null,
 				total_price: finalTotal,
 				base_price: baseTotal,
-				per_hour: parseFloat(perHour),
+				per_hour: parseFloat(perHour) || 0,
 				card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
 				ride_status: 'new',
-				payment_status: paymentMethod === 'stripe' ? 'paid' : 'pending',
+				// See note in transfer/payment.astro: no server-side Stripe capture yet.
+				payment_status: 'pending',
 				payment_method: paymentMethod,
 				payment_token: paymentToken || null,
 				uid: guestUid,
@@ -368,9 +373,12 @@ import Layout from '../../../layouts/Layout.astro';
 			setText('success-vehicle', vehicleName);
 			setText('success-total', `\u20AC${finalTotal.toFixed(2)}`);
 			setText('success-email', email);
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Save booking failed:', err);
-			showFormError(formScope, 'Failed to save booking. Please try again.');
+			const detail = err?.message || err?.error_description || '';
+			showFormError(formScope, detail
+				? `Failed to save booking: ${detail}`
+				: 'Failed to save booking. Please try again.');
 			btn.disabled = false;
 			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
 		}
