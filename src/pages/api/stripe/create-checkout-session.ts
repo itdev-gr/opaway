@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import Stripe from 'stripe';
 import { stripe, supabaseAdmin, supabaseForUser, originFromRequest, isFlow, type Flow } from '../../../lib/stripe/server';
 
 export const prerender = false;
@@ -88,7 +89,11 @@ export const POST: APIRoute = async ({ request }) => {
       cancel_url:  `${originFromRequest(request)}/book/${flow}/payment/cancelled?booking_id=${bookingId}`,
     });
   } catch (err) {
-    console.error('[create-checkout-session] Stripe session create failed', { flow, bookingId, err });
+    // Stripe error objects can echo card-detail metadata; log only the structured fields.
+    const safe = err instanceof Stripe.errors.StripeError
+      ? { type: err.type, code: err.code, message: err.message, requestId: err.requestId }
+      : { message: String(err) };
+    console.error('[create-checkout-session] Stripe session create failed', { flow, bookingId, err: safe });
     return jsonError(502, 'Failed to start payment session');
   }
 
@@ -98,6 +103,8 @@ export const POST: APIRoute = async ({ request }) => {
     .eq('id', bookingId);
 
   if (updateErr) {
+    // The webhook (Task 6) MUST fall back to looking up by metadata.booking_id when the
+    // session_id lookup misses zero rows, otherwise this booking becomes unreconcilable.
     console.error('[create-checkout-session] Failed to attach session_id', { bookingId, sessionId: session.id, error: updateErr });
   }
 
