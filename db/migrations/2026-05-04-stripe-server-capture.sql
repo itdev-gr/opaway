@@ -31,13 +31,13 @@ alter table public.tours
 alter table public.transfers drop constraint if exists transfers_payment_status_check;
 alter table public.transfers add constraint transfers_payment_status_check
   check (payment_status in (
-    'pending','awaiting_payment','paid','paid_to_driver','failed','refunded','partially_refunded'
+    'pending','awaiting_payment','paid','paid_to_driver','cancelled','failed','refunded','partially_refunded'
   ));
 
 alter table public.tours drop constraint if exists tours_payment_status_check;
 alter table public.tours add constraint tours_payment_status_check
   check (payment_status in (
-    'pending','awaiting_payment','paid','paid_to_driver','failed','refunded','partially_refunded'
+    'pending','awaiting_payment','paid','paid_to_driver','cancelled','failed','refunded','partially_refunded'
   ));
 
 -- ──────────────────────────────────────────────────────────────────────
