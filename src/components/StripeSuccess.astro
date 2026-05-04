@@ -4,14 +4,14 @@ const { flow } = Astro.props;
 ---
 
 <section id="stripe-success-root" data-flow={flow} class="max-w-2xl mx-auto p-6">
-  <div id="ss-loading" class="text-center py-12">
-    <div class="inline-block w-10 h-10 border-4 border-neutral-200 border-t-[#0C6B95] rounded-full animate-spin"></div>
+  <div id="ss-loading" role="status" aria-live="polite" class="text-center py-12">
+    <div class="inline-block w-10 h-10 border-4 border-neutral-200 border-t-[#0C6B95] rounded-full animate-spin" aria-hidden="true"></div>
     <p class="mt-4 text-neutral-600 text-sm">Confirming your payment…</p>
   </div>
 
-  <div id="ss-paid" class="hidden bg-white border border-neutral-100 rounded-2xl p-8 shadow-sm">
+  <div id="ss-paid" role="status" aria-live="polite" class="hidden bg-white border border-neutral-100 rounded-2xl p-8 shadow-sm">
     <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+      <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center" aria-hidden="true">
         <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
       </div>
       <h2 class="text-2xl font-bold text-neutral-900">Booking confirmed</h2>
@@ -28,13 +28,13 @@ const { flow } = Astro.props;
     <a href="/" class="inline-block mt-4 text-[#0C6B95] hover:underline">← Back to home</a>
   </div>
 
-  <div id="ss-failed" class="hidden bg-white border border-red-100 rounded-2xl p-8 shadow-sm">
+  <div id="ss-failed" role="alert" aria-live="assertive" class="hidden bg-white border border-red-100 rounded-2xl p-8 shadow-sm">
     <h2 class="text-xl font-bold text-red-700 mb-2">Payment failed</h2>
     <p class="text-sm text-neutral-700 mb-4">Your card couldn't be charged. No booking was completed.</p>
     <a id="ss-try-again" href="/" class="inline-block px-4 py-2 rounded-xl bg-[#0C6B95] text-white text-sm font-medium hover:bg-[#0a5a7e]">Try again</a>
   </div>
 
-  <div id="ss-delayed" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-8">
+  <div id="ss-delayed" role="status" aria-live="polite" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-8">
     <h2 class="text-xl font-bold text-amber-900 mb-2">Confirmation delayed</h2>
     <p class="text-sm text-amber-900 mb-4">
       Your payment was received, but our system is taking a bit longer than usual to confirm it.
@@ -63,12 +63,12 @@ const { flow } = Astro.props;
   }
 
   function renderPaid(summary: { ref: string; route: string; date: string; vehicle: string; total: number; email: string }) {
-    setText('ss-ref',     summary.ref);
-    setText('ss-route',   summary.route);
-    setText('ss-date',    summary.date);
+    setText('ss-ref',     summary.ref ?? '—');
+    setText('ss-route',   summary.route ?? '—');
+    setText('ss-date',    summary.date ?? '—');
     setText('ss-vehicle', summary.vehicle ?? '—');
-    setText('ss-total',   `€${Number(summary.total).toFixed(2)}`);
-    setText('ss-email',   summary.email);
+    setText('ss-total',   Number.isFinite(summary.total) ? `€${summary.total.toFixed(2)}` : '—');
+    setText('ss-email',   summary.email ?? '—');
     show('ss-paid');
   }
 
@@ -81,6 +81,8 @@ const { flow } = Astro.props;
       return;
     }
 
+    // Budget: 10 × 1s. Webhook normally lands in <2s; "delayed" copy after
+    // 10s is honest UX rather than spinner forever. Keep this short.
     for (let i = 0; i < 10; i++) {
       try {
         const res = await fetch(`/api/stripe/session-status?session_id=${encodeURIComponent(sessionId)}`);
@@ -88,8 +90,13 @@ const { flow } = Astro.props;
           const data = await res.json();
           if (data.payment_status === 'paid')   { renderPaid(data.summary); return; }
           if (data.payment_status === 'failed') { show('ss-failed'); return; }
+          // 'awaiting_payment' or unknown — keep polling.
+        } else if (i === 9) {
+          console.error('[stripe-success] poll exhausted; last response not OK', { status: res.status });
         }
-      } catch { /* ignore, retry */ }
+      } catch (e) {
+        if (i === 9) console.error('[stripe-success] poll exhausted; fetch threw', e);
+      }
       await new Promise(r => setTimeout(r, 1000));
     }
     show('ss-delayed');
