@@ -326,7 +326,9 @@ import Layout from '../../../layouts/Layout.astro';
 					per_hour: parseFloat(perHour) || 0,
 					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
 					ride_status: 'new',
-					// See note in transfer/payment.astro: no server-side Stripe capture yet.
+					// saveBooking() is only used for cash / card-on-site flows now;
+					// Stripe bookings are persisted by the server endpoint after
+					// Checkout redirect, so payment_status starts as 'pending' here.
 					payment_status: 'pending',
 					payment_method: paymentMethod,
 					partner_id: partnerId,
