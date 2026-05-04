@@ -5,11 +5,17 @@ export const prerender = false;
 
 type Flow = 'transfer' | 'hourly' | 'tour';
 
+const NO_CACHE_JSON_HEADERS = {
+  'content-type': 'application/json',
+  'cache-control': 'no-store',
+};
+
 function jsonError(status: number, error: string): Response {
-  return new Response(JSON.stringify({ error }), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  });
+  return new Response(JSON.stringify({ error }), { status, headers: NO_CACHE_JSON_HEADERS });
+}
+
+function jsonOk(body: unknown): Response {
+  return new Response(JSON.stringify(body), { status: 200, headers: NO_CACHE_JSON_HEADERS });
 }
 
 export const GET: APIRoute = async ({ url }) => {
@@ -18,15 +24,20 @@ export const GET: APIRoute = async ({ url }) => {
     return jsonError(400, 'Missing or invalid session_id');
   }
 
-  const { data: t } = await supabaseAdmin
+  const { data: t, error: tErr } = await supabaseAdmin
     .from('transfers')
     .select('id, payment_status, booking_type, "from", "to", date, time, vehicle_name, total_price, email')
     .eq('stripe_session_id', sessionId)
     .maybeSingle();
 
+  if (tErr) {
+    console.error('[session-status] transfers lookup failed', { sessionId, error: tErr });
+    return jsonError(500, 'Lookup failed');
+  }
+
   if (t) {
     const flow: Flow = t.booking_type === 'hourly' ? 'hourly' : 'transfer';
-    return new Response(JSON.stringify({
+    return jsonOk({
       payment_status: t.payment_status,
       booking_id: t.id,
       flow,
@@ -38,17 +49,22 @@ export const GET: APIRoute = async ({ url }) => {
         total: t.total_price,
         email: t.email,
       },
-    }), { status: 200, headers: { 'content-type': 'application/json' } });
+    });
   }
 
-  const { data: tour } = await supabaseAdmin
+  const { data: tour, error: tourErr } = await supabaseAdmin
     .from('tours')
-    .select('id, payment_status, tour_name, pickup, destination, date, time, vehicle_name, total_price, email')
+    .select('id, payment_status, pickup, destination, date, time, vehicle_name, total_price, email')
     .eq('stripe_session_id', sessionId)
     .maybeSingle();
 
+  if (tourErr) {
+    console.error('[session-status] tours lookup failed', { sessionId, error: tourErr });
+    return jsonError(500, 'Lookup failed');
+  }
+
   if (tour) {
-    return new Response(JSON.stringify({
+    return jsonOk({
       payment_status: tour.payment_status,
       booking_id: tour.id,
       flow: 'tour' as Flow,
@@ -60,7 +76,7 @@ export const GET: APIRoute = async ({ url }) => {
         total: tour.total_price,
         email: tour.email,
       },
-    }), { status: 200, headers: { 'content-type': 'application/json' } });
+    });
   }
 
   return jsonError(404, 'Booking not found for this session');
