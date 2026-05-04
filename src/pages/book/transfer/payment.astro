@@ -299,6 +299,7 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
+	import { resolvePartnerId } from '../../../lib/resolve-partner-id';
 
 	const formScope = document.getElementById('payment-form-section');
 
@@ -410,22 +411,15 @@ import Layout from '../../../layouts/Layout.astro';
 	}
 
 	/* ── Save booking to Supabase ── */
-	async function saveBooking(paymentMethod: string, paymentToken: string = '') {
+	async function saveBooking(paymentMethod: string) {
 		const btn = document.getElementById('complete-btn') as HTMLButtonElement;
 		btn.disabled = true; btn.textContent = 'Processing...';
 
 		const finalTotal = paymentMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
-		// Allow guest bookings: no redirect to /login. If the user is signed in we
-		// still capture their uid for attribution; otherwise the row goes in with
-		// uid = NULL and admin sees the contact info from the form fields.
-		const { data: { user } } = await supabase.auth.getUser();
-		const guestUid: string | null = user?.id ?? null;
-
-		let partnerId: string | null = null;
-		if (guestUid) {
-			const { data: partner } = await supabase.from('partners').select('id, status').eq('id', guestUid).maybeSingle();
-			if (partner?.status === 'approved') partnerId = partner.id;
-		}
+		// Allow guest bookings: no redirect to /login. If the user is signed in and
+		// is an approved partner, attribute the booking; otherwise it lands as a
+		// guest booking with partner_id = NULL.
+		const partnerId = await resolvePartnerId();
 
 		try {
 			// Insert via SECURITY DEFINER RPC: server generates the row id, sets
@@ -454,7 +448,6 @@ import Layout from '../../../layouts/Layout.astro';
 					// Checkout redirect, so payment_status starts as 'pending' here.
 					payment_status: 'pending',
 					payment_method: paymentMethod,
-					payment_token: paymentToken || null,
 					booking_type: 'transfer',
 					partner_id: partnerId,
 					luggage_small: luggageSmall,
@@ -499,17 +492,7 @@ import Layout from '../../../layouts/Layout.astro';
 			btn.textContent = 'Redirecting to Stripe…';
 
 			const finalTotal = baseTotal;
-
-			// Resolve partner attribution the same way saveBooking() does, so the
-			// server endpoint can persist partner_id when the booking is finalized
-			// after Stripe redirect.
-			const { data: { user } } = await supabase.auth.getUser();
-			const guestUid: string | null = user?.id ?? null;
-			let partnerId: string | null = null;
-			if (guestUid) {
-				const { data: partner } = await supabase.from('partners').select('id, status').eq('id', guestUid).maybeSingle();
-				if (partner?.status === 'approved') partnerId = partner.id;
-			}
+			const partnerId = await resolvePartnerId();
 
 			const bookingPayload = {
 				from, to, date, time,
