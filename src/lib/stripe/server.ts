@@ -40,8 +40,22 @@ export function supabaseForUser(accessToken: string | null): SupabaseClient {
   });
 }
 
-/** Builds the absolute origin (e.g. https://www.opawey.com) from the incoming request. */
+/**
+ * Builds the absolute origin (e.g. https://www.opawey.com) from the incoming
+ * request. On Vercel serverless functions, request.url often points to the
+ * internal hostname ("localhost" or similar), so prefer the x-forwarded-* headers
+ * that Vercel populates with the original public hostname/protocol. Fall back to
+ * the request's own host header, then to request.url as a last resort.
+ */
 export function originFromRequest(request: Request): string {
+  const fwdHost = request.headers.get('x-forwarded-host');
+  const fwdProto = request.headers.get('x-forwarded-proto');
+  if (fwdHost) return `${fwdProto || 'https'}://${fwdHost}`;
+  const host = request.headers.get('host');
+  if (host && host !== 'localhost' && !host.startsWith('localhost:')) {
+    const proto = fwdProto || (host.startsWith('localhost') ? 'http' : 'https');
+    return `${proto}://${host}`;
+  }
   const url = new URL(request.url);
   return `${url.protocol}//${url.host}`;
 }
