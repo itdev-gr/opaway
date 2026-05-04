@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ url }) => {
         route: `${t.from} → ${t.to}`,
         date: `${t.date} ${t.time}`,
         vehicle: t.vehicle_name,
-        total: t.total_price,
+        total: Number(t.total_price),
         email: t.email,
       },
     });
@@ -73,7 +73,7 @@ export const GET: APIRoute = async ({ url }) => {
         route: `${tour.pickup} → ${tour.destination}`,
         date: `${tour.date} ${tour.time}`,
         vehicle: tour.vehicle_name,
-        total: tour.total_price,
+        total: Number(tour.total_price),
         email: tour.email,
       },
     });

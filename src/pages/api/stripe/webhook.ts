@@ -31,8 +31,15 @@ async function normalize(event: Stripe.Event): Promise<NormalizedPayload | null>
       return { session_id: s.id, payment_intent: pi.id, charge_id: chargeId };
     }
     case 'payment_intent.payment_failed': {
+      // Decline events fire BEFORE checkout.session.completed, so the booking row
+      // typically has no stripe_payment_intent_id yet. Pass metadata.booking_id /
+      // booking_table so apply_stripe_event can fall back to lookup-by-id.
       const pi = event.data.object as Stripe.PaymentIntent;
-      return { payment_intent: pi.id };
+      return {
+        payment_intent: pi.id,
+        booking_id: pi.metadata?.booking_id ?? null,
+        booking_table: pi.metadata?.booking_table ?? null,
+      };
     }
     case 'charge.refunded': {
       const ch = event.data.object as Stripe.Charge;
