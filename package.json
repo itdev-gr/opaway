@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",
+    "@astrojs/vercel": "^9.0.5",
     "@stripe/stripe-js": "^8.11.0",
     "@supabase/supabase-js": "^2.102.0",
     "@tailwindcss/vite": "^4.2.1",
     "astro": "^5.17.1",
+    "stripe": "^22.1.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
   },
