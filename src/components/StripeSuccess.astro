@@ -81,9 +81,12 @@ const { flow } = Astro.props;
       return;
     }
 
-    // Budget: 10 × 1s. Webhook normally lands in <2s; "delayed" copy after
-    // 10s is honest UX rather than spinner forever. Keep this short.
-    for (let i = 0; i < 10; i++) {
+    // Budget: 60 × 1s. Stripe webhook usually lands in <2s, but cold-start
+    // delivery has been seen at ~40s — covering up to 60s avoids showing the
+    // "delayed" copy on legitimately-paid bookings. After 60s, the webhook
+    // really is delayed and the amber message is honest.
+    const MAX_POLLS = 60;
+    for (let i = 0; i < MAX_POLLS; i++) {
       try {
         const res = await fetch(`/api/stripe/session-status?session_id=${encodeURIComponent(sessionId)}`);
         if (res.ok) {
@@ -91,11 +94,11 @@ const { flow } = Astro.props;
           if (data.payment_status === 'paid')   { renderPaid(data.summary); return; }
           if (data.payment_status === 'failed') { show('ss-failed'); return; }
           // 'awaiting_payment' or unknown — keep polling.
-        } else if (i === 9) {
+        } else if (i === MAX_POLLS - 1) {
           console.error('[stripe-success] poll exhausted; last response not OK', { status: res.status });
         }
       } catch (e) {
-        if (i === 9) console.error('[stripe-success] poll exhausted; fetch threw', e);
+        if (i === MAX_POLLS - 1) console.error('[stripe-success] poll exhausted; fetch threw', e);
       }
       await new Promise(r => setTimeout(r, 1000));
     }
