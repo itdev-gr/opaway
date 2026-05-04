@@ -54,7 +54,10 @@ async function repairOrphan(session: Stripe.Checkout.Session): Promise<void> {
   const bookingId = session.metadata?.booking_id;
   const bookingTable = session.metadata?.booking_table;
   if (!bookingId) return;
-  if (bookingTable !== 'transfers' && bookingTable !== 'tours') return;
+  if (bookingTable !== 'transfers' && bookingTable !== 'tours') {
+    console.warn('[stripe-webhook] Unknown booking_table in metadata', { bookingTable, sessionId: session.id });
+    return;
+  }
   const { error } = await supabaseAdmin
     .from(bookingTable)
     .update({ stripe_session_id: session.id })
