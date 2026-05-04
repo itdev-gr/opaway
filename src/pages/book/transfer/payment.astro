@@ -81,16 +81,11 @@ import Layout from '../../../layouts/Layout.astro';
 								</div>
 								<!-- Stripe card element (shown when selected) -->
 								<div id="stripe-expand" class="hidden mt-4 pt-4 border-t border-neutral-100">
-									<div id="stripe-available" class="hidden">
-										<div id="card-element" class="px-4 py-3.5 bg-white border border-neutral-200 rounded-xl mb-2"></div>
-										<p id="card-errors" class="text-sm text-red-500 mb-2 hidden"></p>
-										<p class="text-xs text-neutral-400 flex items-center gap-1.5">
-											<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-											<span data-i18n-el="Ασφαλής πληρωμή μέσω Stripe — με πλήρη κρυπτογράφηση δεδομένων." data-i18n-es="Protegido por Stripe. Cifrado de extremo a extremo.">Secured by Stripe. Encrypted end-to-end.</span>
+									<div class="flex items-start gap-3">
+										<svg class="w-5 h-5 mt-0.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+										<p class="text-sm text-neutral-700 leading-relaxed">
+											You'll be redirected to <strong>Stripe</strong>'s secure checkout to enter your card details. You'll come back here once payment is complete.
 										</p>
-									</div>
-									<div id="stripe-not-configured" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3">
-										<p class="text-xs text-amber-800 font-medium">Stripe not configured — add <code class="bg-amber-100 px-1 rounded">PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to <code class="bg-amber-100 px-1 rounded">.env</code></p>
 									</div>
 								</div>
 							</label>
@@ -303,7 +298,6 @@ import Layout from '../../../layouts/Layout.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
-	import { loadStripe } from '@stripe/stripe-js';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
 
 	const formScope = document.getElementById('payment-form-section');
@@ -370,8 +364,6 @@ import Layout from '../../../layouts/Layout.astro';
 	const cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
 	const cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
 	let selectedMethod = '';
-	let stripeInstance: any = null;
-	let cardElement: any = null;
 
 	// Set method prices
 	setText('method-stripe-price', `\u20AC${baseTotal.toFixed(2)}`);
@@ -407,25 +399,10 @@ import Layout from '../../../layouts/Layout.astro';
 		label.addEventListener('click', () => selectMethod(label.dataset.method || ''));
 	});
 
-	/* ── Stripe setup ── */
+	/* ── Stripe setup (feature flag) ── */
 	const STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY;
-
-	if (STRIPE_KEY) {
-		document.getElementById('stripe-available')?.classList.remove('hidden');
-		(async () => {
-			stripeInstance = await loadStripe(STRIPE_KEY);
-			if (!stripeInstance) return;
-			const elements = stripeInstance.elements();
-			cardElement = elements.create('card', { style: { base: { fontSize: '16px', color: '#1a1a1a', '::placeholder': { color: '#a3a3a3' } } } });
-			cardElement.mount('#card-element');
-			const errorsEl = document.getElementById('card-errors')!;
-			cardElement.on('change', (event: any) => {
-				if (event.error) { errorsEl.textContent = event.error.message; errorsEl.classList.remove('hidden'); }
-				else { errorsEl.classList.add('hidden'); }
-			});
-		})();
-	} else {
-		document.getElementById('stripe-not-configured')?.classList.remove('hidden');
+	if (!STRIPE_KEY) {
+		// Disable the Stripe radio when Stripe isn't configured for this environment.
 		const stripeLabel = document.querySelector<HTMLLabelElement>('.pay-method-option[data-method="stripe"]');
 		const stripeRadio = stripeLabel?.querySelector<HTMLInputElement>('input[type="radio"]');
 		if (stripeLabel) stripeLabel.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
@@ -472,9 +449,9 @@ import Layout from '../../../layouts/Layout.astro';
 					return_price: parseFloat(returnPrice) || 0,
 					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
 					ride_status: 'new',
-					// Stripe.createToken() only tokenizes — no server-side capture exists
-					// yet, so every booking lands as 'pending' and an operator captures
-					// the saved payment_token from the Stripe dashboard.
+					// saveBooking() is only used for cash / card-on-site flows now;
+					// Stripe bookings are persisted by the server endpoint after
+					// Checkout redirect, so payment_status starts as 'pending' here.
 					payment_status: 'pending',
 					payment_method: paymentMethod,
 					payment_token: paymentToken || null,
@@ -513,23 +490,75 @@ import Layout from '../../../layouts/Layout.astro';
 		clearFormErrors(formScope);
 		if (!selectedMethod) { showFormError(formScope, 'Please select a payment method.'); return; }
 
+		const btn = document.getElementById('complete-btn') as HTMLButtonElement;
+		const originalLabel = btn.innerHTML;
+		btn.disabled = true;
+		btn.textContent = 'Processing…';
+
 		if (selectedMethod === 'stripe') {
-			if (!stripeInstance || !cardElement) { showFormError(formScope, 'Stripe is not loaded yet.'); return; }
-			const btn = document.getElementById('complete-btn') as HTMLButtonElement;
-			btn.disabled = true; btn.textContent = 'Processing...';
-			const { error, token } = await stripeInstance.createToken(cardElement);
-			if (error) {
-				const errorsEl = document.getElementById('card-errors')!;
-				errorsEl.textContent = error.message || 'Payment failed.';
-				errorsEl.classList.remove('hidden');
-				btn.disabled = false;
-				btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
-				return;
+			btn.textContent = 'Redirecting to Stripe…';
+
+			const finalTotal = baseTotal;
+
+			// Resolve partner attribution the same way saveBooking() does, so the
+			// server endpoint can persist partner_id when the booking is finalized
+			// after Stripe redirect.
+			const { data: { user } } = await supabase.auth.getUser();
+			const guestUid: string | null = user?.id ?? null;
+			let partnerId: string | null = null;
+			if (guestUid) {
+				const { data: partner } = await supabase.from('partners').select('id, status').eq('id', guestUid).maybeSingle();
+				if (partner?.status === 'approved') partnerId = partner.id;
 			}
-			await saveBooking('stripe', token?.id || '');
-		} else {
-			await saveBooking(selectedMethod);
+
+			const bookingPayload = {
+				from, to, date, time,
+				passengers: parseInt(passengers, 10) || 1,
+				return_date: returnDate || null,
+				return_time: returnTime || null,
+				vehicle_slug: vehicleSlug, vehicle_name: vehicleName,
+				first_name: firstName, last_name: lastName, email, phone,
+				sign_name: signName || null,
+				child_seats: parseInt(childSeats, 10) || 0,
+				driver_notes: driverNotes || null,
+				total_price: finalTotal,
+				base_price: baseTotal,
+				outward_price: parseFloat(outwardPrice) || 0,
+				return_price: parseFloat(returnPrice) || 0,
+				card_surcharge: 0,
+				booking_type: 'transfer',
+				partner_id: partnerId,
+				luggage_small: luggageSmall,
+				luggage_big: luggageBig,
+			};
+
+			const { data: { session } } = await supabase.auth.getSession();
+			const headers: Record<string, string> = { 'content-type': 'application/json' };
+			if (session?.access_token) headers.authorization = `Bearer ${session.access_token}`;
+
+			try {
+				const res = await fetch('/api/stripe/create-checkout-session', {
+					method: 'POST',
+					headers,
+					body: JSON.stringify({ flow: 'transfer', booking: bookingPayload }),
+				});
+				if (!res.ok) {
+					const { error } = await res.json().catch(() => ({ error: 'unknown' }));
+					showFormError(formScope, `Couldn't start payment: ${error}`);
+					btn.disabled = false; btn.innerHTML = originalLabel;
+					return;
+				}
+				const { url } = await res.json();
+				window.location.href = url;
+			} catch (err) {
+				console.error('Failed to start Stripe checkout:', err);
+				showFormError(formScope, 'Network error starting payment. Please try again.');
+				btn.disabled = false; btn.innerHTML = originalLabel;
+			}
+			return;
 		}
+
+		await saveBooking(selectedMethod);
 	});
 
 	/* ── Back button ── */
