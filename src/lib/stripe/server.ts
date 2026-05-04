@@ -1,3 +1,7 @@
+// Server-only module: validates required env vars at import time and throws if any are missing.
+// Import ONLY from `prerender = false` endpoints under src/pages/api/. Importing from a
+// prerendered (.astro) page would crash the static build if env is unset in CI.
+
 import Stripe from 'stripe';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
