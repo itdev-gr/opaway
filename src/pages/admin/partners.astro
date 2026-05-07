@@ -104,7 +104,15 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 		commission_eur: number | null;
 		createdAt:      string;
 	}
-	type ActionType = 'approve' | 'reject' | 'delete';
+	type ActionType = 'approve' | 'reject' | 'delete' | 'convert-hotel' | 'convert-agency' | 'convert-driver';
+	type PartnerType = 'hotel' | 'agency' | 'driver';
+	const PARTNER_TYPES: PartnerType[] = ['hotel', 'agency', 'driver'];
+	const TYPE_LABEL: Record<PartnerType, string> = { hotel: 'Hotel', agency: 'Agency', driver: 'Driver' };
+	const ACTION_TO_TYPE: Record<'convert-hotel' | 'convert-agency' | 'convert-driver', PartnerType> = {
+		'convert-hotel':  'hotel',
+		'convert-agency': 'agency',
+		'convert-driver': 'driver',
+	};
 
 	/* ── Helpers ── */
 	const fmtDate = (ts: string | null | undefined) => {
@@ -133,7 +141,7 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 	};
 
 	/* ── Action dropdown per partner ── */
-	const actionDropdown = (uid: string, status: string) => {
+	const actionDropdown = (uid: string, status: string, type: string) => {
 		const approveItem = status !== 'approved'
 			? `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
 					data-uid="${uid}" data-action="approve">
@@ -148,6 +156,15 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 					Reject
 				</button>` : '';
 
+		const convertItems = PARTNER_TYPES
+			.filter(t => t !== type)
+			.map(t => `<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#0C6B95] hover:bg-sky-50 transition-colors"
+					data-uid="${uid}" data-action="convert-${t}">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+					Convert to ${TYPE_LABEL[t]}
+				</button>`)
+			.join('');
+
 		return `
 			<div class="relative flex justify-end" id="dd-wrap-${uid}">
 				<button class="dd-trigger flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 text-xs font-medium transition-colors shadow-sm"
@@ -157,10 +174,12 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
 					</svg>
 				</button>
-				<div class="dd-menu fixed w-44 bg-white rounded-xl border border-neutral-200 shadow-lg z-[100] hidden overflow-hidden py-1" id="dd-menu-${uid}">
+				<div class="dd-menu fixed w-52 bg-white rounded-xl border border-neutral-200 shadow-lg z-[100] hidden overflow-hidden py-1" id="dd-menu-${uid}">
 					${approveItem}
 					${rejectItem}
 					${(approveItem || rejectItem) ? '<div class="border-t border-neutral-100 my-1"></div>' : ''}
+					${convertItems}
+					${convertItems ? '<div class="border-t border-neutral-100 my-1"></div>' : ''}
 					<button class="dd-item w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
 						data-uid="${uid}" data-action="delete">
 						<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -244,7 +263,7 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 					}
 				</td>
 				<td class="px-6 py-3 text-neutral-600 whitespace-nowrap">${p.createdAt}</td>
-				<td class="px-6 py-3" id="action-cell-${p.uid}">${actionDropdown(p.uid, p.status)}</td>
+				<td class="px-6 py-3" id="action-cell-${p.uid}">${actionDropdown(p.uid, p.status, p.type)}</td>
 			</tr>`).join('');
 
 		attachDropdownListeners();
@@ -337,7 +356,7 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 					// Position the fixed dropdown below the trigger button
 					const rect = btn.getBoundingClientRect();
 					menu.style.top = `${rect.bottom + 6}px`;
-					menu.style.left = `${rect.right - 176}px`; // 176 = w-44 (11rem)
+					menu.style.left = `${rect.right - 208}px`; // 208 = w-52 (13rem)
 					menu.classList.remove('hidden');
 					openDropdownUid = uid;
 				}
@@ -421,6 +440,27 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 			iconBg: 'bg-red-100',
 			yesCls: 'bg-red-600 hover:bg-red-700',
 		},
+		'convert-hotel': {
+			title:  'Convert to Hotel',
+			body:   (n) => `Convert "${n}" to a Hotel partner? Bookings, status, and discount stay attached. Type-specific fields (e.g. agency_name, full_name) are NOT migrated, so you'll likely need to edit the partner profile and configure commissions before completed bookings reconcile correctly. The partner will be routed to the Hotel dashboard at next login.`,
+			icon:   `<svg class="w-6 h-6 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>`,
+			iconBg: 'bg-[#0C6B95]/10',
+			yesCls: 'bg-[#0C6B95] hover:bg-[#0a5c82]',
+		},
+		'convert-agency': {
+			title:  'Convert to Agency',
+			body:   (n) => `Convert "${n}" to an Agency partner? Bookings, status, and discount stay attached. Type-specific fields (e.g. hotel_name, full_name) are NOT migrated, so you'll likely need to edit the partner profile afterwards. The partner will be routed to the Agency dashboard at next login.`,
+			icon:   `<svg class="w-6 h-6 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>`,
+			iconBg: 'bg-[#0C6B95]/10',
+			yesCls: 'bg-[#0C6B95] hover:bg-[#0a5c82]',
+		},
+		'convert-driver': {
+			title:  'Convert to Driver',
+			body:   (n) => `Convert "${n}" to a Driver partner? Bookings, status, and discount stay attached. Type-specific fields (e.g. hotel_name, agency_name) are NOT migrated, so you'll likely need to edit the partner profile afterwards. The partner will be routed to the Driver dashboard at next login.`,
+			icon:   `<svg class="w-6 h-6 text-[#0C6B95]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>`,
+			iconBg: 'bg-[#0C6B95]/10',
+			yesCls: 'bg-[#0C6B95] hover:bg-[#0a5c82]',
+		},
 	};
 
 	function openModal(uid: string, name: string, action: ActionType) {
@@ -459,6 +499,26 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 				return;
 			}
 			allPartners = allPartners.filter(p => p.uid !== pendingUid);
+			partnerRowsById.delete(pendingUid);
+		} else if (pendingAction === 'convert-hotel' || pendingAction === 'convert-agency' || pendingAction === 'convert-driver') {
+			const newType = ACTION_TO_TYPE[pendingAction];
+			const { error } = await supabase.from('partners').update({ type: newType }).eq('id', pendingUid);
+			if (error) {
+				console.error('Partner type conversion failed:', error);
+				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
+			}
+			const partner = allPartners.find(p => p.uid === pendingUid);
+			if (partner) {
+				partner.type = newType;
+				if (newType === 'hotel')      partner.businessName = String(partnerRowsById.get(pendingUid)?.hotel_name  ?? '—');
+				else if (newType === 'agency') partner.businessName = String(partnerRowsById.get(pendingUid)?.agency_name ?? '—');
+				else                           partner.businessName = '—';
+			}
+			const cached = partnerRowsById.get(pendingUid);
+			if (cached) cached.type = newType;
 		} else {
 			const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected';
 			const { error } = await supabase.from('partners').update({ status: newStatus }).eq('id', pendingUid);
@@ -471,6 +531,8 @@ import HotelCommissionModal from '../../components/HotelCommissionModal.astro';
 			}
 			const partner = allPartners.find(p => p.uid === pendingUid);
 			if (partner) partner.status = newStatus;
+			const cached = partnerRowsById.get(pendingUid);
+			if (cached) cached.status = newStatus;
 		}
 		closeModal();
 		renderTable();
