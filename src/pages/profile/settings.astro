@@ -431,14 +431,28 @@ import ProfileContent from '../../components/ProfileContent.astro';
 	});
 
 	confirmDeleteBtn?.addEventListener('click', async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		const { data: { session } } = await supabase.auth.getSession();
+		const accessToken = session?.access_token;
+		if (!accessToken) {
+			showMsg(deleteModalMsg, 'Your session expired. Please log in again.', 'error');
+			return;
+		}
 
 		confirmDeleteBtn.disabled = true;
 		hideMsg(deleteModalMsg);
 
 		try {
-			await supabase.from('users').delete().eq('id', user.id);
+			const res = await fetch('/api/account/delete', {
+				method: 'POST',
+				headers: {
+					'content-type': 'application/json',
+					authorization: `Bearer ${accessToken}`,
+				},
+			});
+			if (!res.ok) {
+				const { error } = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+				throw new Error(error);
+			}
 			await supabase.auth.signOut();
 			window.location.href = '/';
 		} catch (err: any) {

@@ -295,10 +295,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		yesBtn.disabled = true;
 
 		if (pendingAction === 'delete') {
-			const { error } = await supabase.from('users').delete().eq('id', pendingUid);
-			if (error) {
+			const { data: { session } } = await supabase.auth.getSession();
+			const accessToken = session?.access_token;
+			if (!accessToken) {
+				alert('Your session expired. Please log in again.');
+				yesBtn.textContent = 'Error — retry';
+				yesBtn.disabled = false;
+				return;
+			}
+			const res = await fetch('/api/admin/delete-user', {
+				method: 'POST',
+				headers: {
+					'content-type': 'application/json',
+					authorization: `Bearer ${accessToken}`,
+				},
+				body: JSON.stringify({ userId: pendingUid }),
+			});
+			if (!res.ok) {
+				const { error } = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
 				console.error('User delete failed:', error);
-				alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+				alert(`Delete failed: ${error}`);
 				yesBtn.textContent = 'Error — retry';
 				yesBtn.disabled = false;
 				return;
