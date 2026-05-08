@@ -517,7 +517,11 @@ import { renderTimePickerHTML } from '../lib/time-picker';
 		const { data: { user } } = await supabase.auth.getUser();
 
 		try {
+			// Generate the row id client-side so we can hand it to the email endpoint
+			// without depending on a SELECT policy (requests has none for guests).
+			const requestId = crypto.randomUUID();
 			const { error } = await supabase.from('requests').insert({
+				id: requestId,
 				source: 'experience',
 				status: 'new',
 				experience_id: experienceId,
@@ -537,6 +541,13 @@ import { renderTimePickerHTML } from '../lib/time-picker';
 			});
 
 			if (error) throw error;
+
+			// Fire-and-forget confirmation email; never block the success UI.
+			fetch('/api/email/send-experience-request', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ request_id: requestId }),
+			}).catch((e) => console.error('experience email request failed:', e));
 
 			document.getElementById('request-form-body')?.classList.add('hidden');
 			document.getElementById('request-success')?.classList.remove('hidden');

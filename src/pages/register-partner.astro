@@ -844,6 +844,13 @@ import Layout from '../layouts/Layout.astro';
 			const { error: insertError } = await supabase.from('partners').insert(partnerData);
 			if (insertError) throw insertError;
 
+			// 3a. Fire-and-forget confirmation email; never block the success UI.
+			fetch('/api/email/send-partner-registered', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ partner_id: user.id }),
+			}).catch((e) => console.error('partner email request failed:', e));
+
 			// 4. Sign out immediately so the partner is NOT shown as logged in
 			await supabase.auth.signOut();
 

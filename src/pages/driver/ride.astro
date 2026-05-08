@@ -470,6 +470,12 @@ import DriverLayout from '../../components/DriverLayout.astro';
 
 					if (nextStatus === 'completed') {
 						sectionBtn.classList.add('hidden');
+						// Fire-and-forget review email; never block the UI on email delivery.
+						fetch('/api/email/send-ride-review', {
+							method: 'POST',
+							headers: { 'content-type': 'application/json' },
+							body: JSON.stringify({ booking_id: docId, table: collectionName }),
+						}).catch((e) => console.error('review email request failed:', e));
 					} else {
 						setStatusButton(btn, nextStatus);
 					}

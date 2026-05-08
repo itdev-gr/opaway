@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 import { stripe, stripeWebhookSecret, supabaseAdmin } from '../../../lib/stripe/server';
+import { sendBookingConfirmation } from '../../../lib/email/send';
+import type { BookingTable } from '../../../lib/email/templates/booking-confirmation';
 
 export const prerender = false;
 
@@ -121,6 +123,28 @@ export const POST: APIRoute = async ({ request }) => {
   if (error) {
     console.error('[stripe-webhook] RPC failed', { eventId: event.id, type: event.type, error });
     return new Response('Internal error', { status: 500 });
+  }
+
+  // After a successful Stripe checkout, send the booking confirmation email.
+  // Lookup is by stripe_session_id across the two tables that go through Checkout.
+  // Failure here must NOT fail the webhook (Stripe would retry and double-process payment).
+  if (event.type === 'checkout.session.completed' && typeof payload.session_id === 'string') {
+    const sessionId = payload.session_id;
+    const tables: BookingTable[] = ['transfers', 'tours'];
+    for (const table of tables) {
+      try {
+        const { data } = await supabaseAdmin.from(table).select('id').eq('stripe_session_id', sessionId).maybeSingle();
+        if (data?.id) {
+          const result = await sendBookingConfirmation(table, data.id);
+          if (!result.ok) {
+            console.error('[stripe-webhook] confirmation email failed', { table, id: data.id, status: result.status, error: result.error });
+          }
+          break;
+        }
+      } catch (err) {
+        console.error('[stripe-webhook] confirmation email threw', { table, sessionId, err: safeError(err) });
+      }
+    }
   }
 
   return new Response('ok', { status: 200 });

@@ -340,6 +340,13 @@ import Layout from '../../../layouts/Layout.astro';
 			if (error) throw error;
 			if (!bookingId) throw new Error('Booking RPC returned no id');
 
+			// Fire-and-forget confirmation email; hourly rides save to the transfers table.
+			fetch('/api/email/send-booking-confirmation', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ booking_id: String(bookingId), table: 'transfers' }),
+			}).catch((e) => console.error('confirmation email request failed:', e));
+
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
 			setText('success-ref', String(bookingId).substring(0, 8).toUpperCase());
