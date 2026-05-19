@@ -17,7 +17,7 @@ import Layout from '../layouts/Layout.astro';
 			</div>
 
 			<!-- Option cards -->
-			<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+			<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
 
 				<!-- Book a Transfer -->
 				<a
@@ -71,6 +71,26 @@ import Layout from '../layouts/Layout.astro';
 					</div>
 					<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Κλείστε ένα τουρ" data-i18n-es="Reservar un tour">Book a Tour</h2>
 					<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-6" data-i18n-el="Οινογνωσίες, κρουαζιέρες στην Αθηναϊκή Ριβιέρα και προσεκτικά επιλεγμένες εμπειρίες σε όλη την Ελλάδα, με έμπειρους ξεναγούς." data-i18n-es="Catas de vino, cruceros por la Riviera y experiencias seleccionadas por toda Grecia con guías expertos.">Wine tastings, Riviera cruises, and curated experiences across Greece with expert guides.</p>
+					<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200" data-i18n-el="Κράτηση τώρα" data-i18n-es="Reservar ahora">
+						Book Now
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+						</svg>
+					</span>
+				</a>
+
+				<!-- Book a Ferry -->
+				<a
+					href="/book/ferries"
+					class="group bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm hover:shadow-xl hover:border-[#0C6B95]/30 transition-all duration-300 flex flex-col"
+				>
+					<div class="w-14 h-14 rounded-2xl bg-[#0C6B95] flex items-center justify-center mb-6 shadow-lg shadow-[#0C6B95]/25 group-hover:scale-110 transition-transform duration-300">
+						<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3l-3 8h6l-3-8zM4 19l2-6h12l2 6M3 21h18" />
+						</svg>
+					</div>
+					<h2 class="text-2xl font-bold text-neutral-900 mb-2" data-i18n-el="Κράτηση πλοίου" data-i18n-es="Reservar un ferry">Book a Ferry</h2>
+					<p class="text-neutral-500 text-sm leading-relaxed flex-1 mb-6" data-i18n-el="Εισιτήρια πλοίων από όλα τα μεγάλα ελληνικά λιμάνια προς τα νησιά του Αιγαίου και του Ιονίου." data-i18n-es="Billetes de ferry desde los principales puertos griegos hacia las islas del Egeo y del Jónico.">Ferry tickets from every major Greek port to the islands of the Aegean and Ionian.</p>
 					<span class="inline-flex items-center gap-2 text-[#0C6B95] font-semibold text-sm group-hover:gap-3 transition-all duration-200" data-i18n-el="Κράτηση τώρα" data-i18n-es="Reservar ahora">
 						Book Now
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
