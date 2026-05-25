@@ -1,6 +1,6 @@
 ---
 // Reservation detail modal — opened via window.OpawayReservationDetail.open(row, kind)
-// kind: 'transfer' | 'tour' | 'experience'
+// kind: 'transfer' | 'tour' | 'experience' | 'request'
 ---
 
 <div id="res-detail-modal" class="fixed inset-0 z-[60] hidden">
@@ -107,6 +107,50 @@
 		</div>`;
 	}
 
+	function renderRequest(r: Row) {
+		const sourceLabel = r.source ? String(r.source).charAt(0).toUpperCase() + String(r.source).slice(1) : '';
+		const statusLabel = r.status === 'follow-up'
+			? 'Follow up'
+			: (r.status ? String(r.status).charAt(0).toUpperCase() + String(r.status).slice(1) : '');
+		const fullName = [r.name, r.last_name].filter(Boolean).join(' ');
+
+		// Per-source field set — empty values are auto-hidden by field().
+		const isContact    = r.source === 'contact';
+		const isTour       = r.source === 'tour';
+		const isExperience = r.source === 'experience';
+
+		return `<div class="grid grid-cols-2 gap-4">
+			${field('Source', sourceLabel)}
+			${field('Status', statusLabel)}
+			${field('Created', r.created_at)}
+			${field('Name', fullName)}
+			${field('Email', r.email)}
+			${field('Phone', r.phone)}
+			${isContact ? field('Country', r.country) : ''}
+			${isContact ? field('City', r.city) : ''}
+			${isContact ? field('Passengers', r.participants) : ''}
+			${isContact ? field('Vehicle type', r.vehicle_type) : ''}
+			${isContact ? field('Subject', r.subject) : ''}
+			${isContact ? field('Message', r.message, { full: true }) : ''}
+			${isTour ? field('Tour', r.tour_name) : ''}
+			${isTour ? field('Pickup', r.pickup_location) : ''}
+			${isTour ? field('Date', r.date) : ''}
+			${isTour ? field('Time', r.time) : ''}
+			${isTour ? field('Participants', r.participants) : ''}
+			${isTour ? field('Contact info', r.contact_info) : ''}
+			${isTour ? field('Special requests', r.special_requests, { full: true }) : ''}
+			${isExperience ? field('Experience', r.experience_name) : ''}
+			${isExperience ? field('Pickup', r.pickup_location) : ''}
+			${isExperience ? field('Date', r.date) : ''}
+			${isExperience ? field('Time', r.time) : ''}
+			${isExperience ? field('Participants', r.participants) : ''}
+			${isExperience ? field('Special requests', r.special_requests, { full: true }) : ''}
+			${field('Account name', r.user_display_name)}
+			${r.user_email && r.user_email !== r.email ? field('Account email', r.user_email) : ''}
+			${field('Submitted by', r.user_id ? 'Logged-in user' : 'Guest')}
+		</div>`;
+	}
+
 	const modal = document.getElementById('res-detail-modal')!;
 	const body  = document.getElementById('res-detail-body')!;
 	const title = document.getElementById('res-detail-title')!;
@@ -120,12 +164,14 @@
 	});
 
 	(window as any).OpawayReservationDetail = {
-		open(row: Row, kind: 'transfer' | 'tour' | 'experience') {
-			const labels = { transfer: 'Transfer booking', tour: 'Tour booking', experience: 'Experience booking' };
+		open(row: Row, kind: 'transfer' | 'tour' | 'experience' | 'request') {
+			const labels = { transfer: 'Transfer booking', tour: 'Tour booking', experience: 'Experience booking', request: 'Request' };
 			title.textContent = labels[kind] ?? 'Booking';
 			refEl.textContent = row?.id ? `Ref ${String(row.id).slice(0, 8).toUpperCase()}` : '';
 			body.innerHTML = kind === 'transfer'
 				? renderTransfer(row)
+				: kind === 'request'
+				? renderRequest(row)
 				: renderTourOrExperience(row, kind);
 			modal.classList.remove('hidden');
 		},

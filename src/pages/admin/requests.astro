@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
+import ReservationDetailModal from '../../components/ReservationDetailModal.astro';
 ---
 
 <AdminLayout
@@ -58,6 +59,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			</table>
 		</div>
 	</div>
+
+	<ReservationDetailModal />
 
 	<!-- Delete confirm modal -->
 	<div id="req-delete-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
@@ -206,7 +209,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			actions.push(`<button class="req-delete w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 transition-colors" data-id="${esc(r.id)}">Delete</button>`);
 
 			return `
-			<tr class="border-t border-neutral-100 hover:bg-neutral-50/50 transition-colors">
+			<tr class="border-t border-neutral-100 hover:bg-neutral-50/50 transition-colors cursor-pointer" data-row-id="${esc(r.id)}">
 				<td class="px-4 py-3 text-neutral-500 whitespace-nowrap text-xs">${fmtDate(r)}</td>
 				<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${sourceCls}">${sourceLabel}</span></td>
 				<td class="px-4 py-3 min-w-[150px]">${nameContact}</td>
@@ -275,6 +278,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				closeAllDropdowns();
 				deleteTargetId = btn.dataset.id!;
 				document.getElementById('req-delete-modal')?.classList.remove('hidden');
+			});
+		});
+
+		// Row click → open detail modal (ignore clicks on the Actions dropdown / its menu items)
+		document.querySelectorAll<HTMLElement>('#req-tbody [data-row-id]').forEach(tr => {
+			tr.addEventListener('click', (e) => {
+				if ((e.target as HTMLElement).closest('button, a, input, select, .req-dd-menu')) return;
+				const id = tr.dataset.rowId!;
+				const row = allRequests.find(r => r.id === id);
+				if (row) (window as any).OpawayReservationDetail?.open(row, 'request');
 			});
 		});
 	}
