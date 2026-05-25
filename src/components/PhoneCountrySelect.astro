@@ -1,0 +1,63 @@
+---
+// Phone country-code picker. Pairs with a sibling <input type="tel"> (e.g.
+// id="pax-phone"). The select's value is the international dial code (e.g.
+// "+30"); the submit handler should prepend it to the typed local number so
+// the persisted phone is fully international, e.g. "+30 6912345678".
+//
+// Default: Greece. The other 35 entries cover the top inbound-tourism markets
+// to Greece, ordered alphabetically after the default. Flag emojis fall back
+// to a 2-letter regional indicator on systems without flag support (Windows),
+// so the option remains readable.
+
+interface Props { id?: string }
+const { id = 'pax-phone-cc' } = Astro.props;
+
+const COUNTRIES: ReadonlyArray<{ flag: string; name: string; dial: string }> = [
+	{ flag: '🇬🇷', name: 'Greece',         dial: '+30'  },
+	{ flag: '🇦🇺', name: 'Australia',      dial: '+61'  },
+	{ flag: '🇦🇹', name: 'Austria',        dial: '+43'  },
+	{ flag: '🇧🇪', name: 'Belgium',        dial: '+32'  },
+	{ flag: '🇧🇷', name: 'Brazil',         dial: '+55'  },
+	{ flag: '🇧🇬', name: 'Bulgaria',       dial: '+359' },
+	{ flag: '🇨🇦', name: 'Canada',         dial: '+1'   },
+	{ flag: '🇨🇳', name: 'China',          dial: '+86'  },
+	{ flag: '🇭🇷', name: 'Croatia',        dial: '+385' },
+	{ flag: '🇨🇾', name: 'Cyprus',         dial: '+357' },
+	{ flag: '🇨🇿', name: 'Czechia',        dial: '+420' },
+	{ flag: '🇩🇰', name: 'Denmark',        dial: '+45'  },
+	{ flag: '🇫🇮', name: 'Finland',        dial: '+358' },
+	{ flag: '🇫🇷', name: 'France',         dial: '+33'  },
+	{ flag: '🇩🇪', name: 'Germany',        dial: '+49'  },
+	{ flag: '🇭🇺', name: 'Hungary',        dial: '+36'  },
+	{ flag: '🇮🇳', name: 'India',          dial: '+91'  },
+	{ flag: '🇮🇪', name: 'Ireland',        dial: '+353' },
+	{ flag: '🇮🇱', name: 'Israel',         dial: '+972' },
+	{ flag: '🇮🇹', name: 'Italy',          dial: '+39'  },
+	{ flag: '🇯🇵', name: 'Japan',          dial: '+81'  },
+	{ flag: '🇲🇽', name: 'Mexico',         dial: '+52'  },
+	{ flag: '🇳🇱', name: 'Netherlands',    dial: '+31'  },
+	{ flag: '🇳🇴', name: 'Norway',         dial: '+47'  },
+	{ flag: '🇵🇱', name: 'Poland',         dial: '+48'  },
+	{ flag: '🇵🇹', name: 'Portugal',       dial: '+351' },
+	{ flag: '🇷🇴', name: 'Romania',        dial: '+40'  },
+	{ flag: '🇷🇺', name: 'Russia',         dial: '+7'   },
+	{ flag: '🇸🇦', name: 'Saudi Arabia',   dial: '+966' },
+	{ flag: '🇪🇸', name: 'Spain',          dial: '+34'  },
+	{ flag: '🇸🇪', name: 'Sweden',         dial: '+46'  },
+	{ flag: '🇨🇭', name: 'Switzerland',    dial: '+41'  },
+	{ flag: '🇹🇷', name: 'Turkey',         dial: '+90'  },
+	{ flag: '🇦🇪', name: 'United Arab Emirates', dial: '+971' },
+	{ flag: '🇬🇧', name: 'United Kingdom', dial: '+44'  },
+	{ flag: '🇺🇸', name: 'United States',  dial: '+1'   },
+];
+---
+
+<select
+	id={id}
+	aria-label="Country dialing code"
+	class="px-3 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/20 focus:border-[#0C6B95]"
+>
+	{COUNTRIES.map((c, i) => (
+		<option value={c.dial} selected={i === 0}>{c.flag} {c.name} {c.dial}</option>
+	))}
+</select>
