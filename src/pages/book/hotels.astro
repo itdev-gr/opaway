@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout>
+	<main class="min-h-screen bg-sky-50 pt-36 pb-24 px-6 lg:px-10">
+		<div class="max-w-4xl mx-auto">
+
+			<!-- Header -->
+			<div class="text-center mb-10">
+				<div class="flex items-center justify-center gap-2 mb-4">
+					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+					<span class="text-sm font-medium text-[#0C6B95] tracking-widest uppercase" data-i18n-el="Κράτηση ξενοδοχείου" data-i18n-es="Reservar un hotel">Book a Hotel</span>
+				</div>
+				<h1 class="text-5xl lg:text-6xl font-bold text-neutral-900 leading-tight" data-i18n-el="Ξενοδοχεία και καταλύματα" data-i18n-es="Hoteles y alojamientos">Hotels & Stays</h1>
+				<p class="text-neutral-500 text-lg mt-4 max-w-xl mx-auto" data-i18n-el="Αναζητήστε και κλείστε ξενοδοχεία σε όλη την Ελλάδα και τον κόσμο απευθείας παρακάτω." data-i18n-es="Busque y reserve hoteles en toda Grecia y en el mundo directamente abajo.">Search and book hotels across Greece and worldwide, right below.</p>
+			</div>
+
+			<!-- Booking widget -->
+			<div id="zenhotels-widget" class="bg-white rounded-3xl border border-neutral-200 shadow-sm p-4 sm:p-6">
+				<script
+					is:inline
+					src="https://cpa.zenhotels.com/static/widget/scripts/4ac9aab925c29dfae2ba2afab182b772.js"
+					type="text/javascript"
+					charset="utf-8"
+					async
+				></script>
+			</div>
+
+			<p class="text-center text-xs text-neutral-400 mt-6" data-i18n-el="Η μηχανή κρατήσεων παρέχεται από το ZenHotels." data-i18n-es="Motor de reservas proporcionado por ZenHotels.">Booking engine provided by ZenHotels.</p>
+
+		</div>
+	</main>
+</Layout>
