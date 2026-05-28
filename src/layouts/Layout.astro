@@ -53,6 +53,31 @@ const { noindex = false } = Astro.props;
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Inter:wght@300..700&display=swap" rel="stylesheet" />
 		<title>Opawey — Luxury Transfers & Private Tours in Greece</title>
+		<!-- Google tag (gtag.js) — GA4 + Google Ads -->
+		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-5VNP4P6C3V"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-5VNP4P6C3V');
+			gtag('config', 'AW-17517973593');
+		</script>
+		<!-- Event snippet for Website traffic conversion page
+		In your html page, add the snippet and call gtag_report_conversion when someone clicks on the chosen link or button. -->
+		<script is:inline>
+			function gtag_report_conversion(url) {
+				var callback = function () {
+					if (typeof(url) != 'undefined') {
+						window.location = url;
+					}
+				};
+				gtag('event', 'conversion', {
+					'send_to': 'AW-17517973593/ZVJzCJ2loZIbENmgnKFB',
+					'event_callback': callback
+				});
+				return false;
+			}
+		</script>
 		<ViewTransitions />
 	</head>
 	<body class="flex flex-col min-h-screen">
