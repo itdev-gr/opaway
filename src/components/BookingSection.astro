@@ -401,8 +401,18 @@ import { supabase } from '../lib/supabase';
 import { initLuggageCounters, getLuggageCounts } from '../lib/luggage-counters';
 import { readTimePickerValue } from '../lib/time-picker';
 
+function trackBookSearch(flow: 'transfer' | 'hourly' | 'tour', extra: Record<string, unknown> = {}) {
+	const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+	if (typeof gtag !== 'function') return;
+	gtag('event', 'generate_lead', {
+		currency: 'EUR',
+		value: 0,
+		lead_source: `booking_form_${flow}`,
+		...extra,
+	});
+}
+
 document.addEventListener('astro:page-load', () => {
-	// Only run on pages that actually contain the booking section
 	if (!document.getElementById('form-transfer')) return;
 
 	// ── Tab switching ──
@@ -603,6 +613,7 @@ document.addEventListener('astro:page-load', () => {
 		const xferLuggage = getLuggageCounts('home-xfer-luggage');
 		if (xferLuggage.small > 0) params.set('luggageSmall', String(xferLuggage.small));
 		if (xferLuggage.big   > 0) params.set('luggageBig',   String(xferLuggage.big));
+		trackBookSearch('transfer', { from, to, date, passengers: Number(passengers) });
 		window.location.href = `/book/transfer/results?${params.toString()}`;
 	});
 
@@ -639,6 +650,7 @@ document.addEventListener('astro:page-load', () => {
 		const hourlyLuggage = getLuggageCounts('home-hourly-luggage');
 		if (hourlyLuggage.small > 0) params.set('luggageSmall', String(hourlyLuggage.small));
 		if (hourlyLuggage.big   > 0) params.set('luggageBig',   String(hourlyLuggage.big));
+		trackBookSearch('hourly', { pickup, date, hours, passengers: Number(passengers) });
 		window.location.href = `/book/hourly/results?${params.toString()}`;
 	});
 
@@ -668,6 +680,7 @@ document.addEventListener('astro:page-load', () => {
 		}
 
 		const params = new URLSearchParams({ tourId, tourName, pickup, date, time, participants });
+		trackBookSearch('tour', { tourName, date, participants: Number(participants) });
 		window.location.href = `/book/tour/results?${params.toString()}`;
 	});
 });
