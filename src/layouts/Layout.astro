@@ -62,22 +62,6 @@ const { noindex = false } = Astro.props;
 			gtag('config', 'G-5VNP4P6C3V');
 			gtag('config', 'AW-17517973593');
 		</script>
-		<!-- Event snippet for Website traffic conversion page
-		In your html page, add the snippet and call gtag_report_conversion when someone clicks on the chosen link or button. -->
-		<script is:inline>
-			function gtag_report_conversion(url) {
-				var callback = function () {
-					if (typeof(url) != 'undefined') {
-						window.location = url;
-					}
-				};
-				gtag('event', 'conversion', {
-					'send_to': 'AW-17517973593/ZVJzCJ2loZIbENmgnKFB',
-					'event_callback': callback
-				});
-				return false;
-			}
-		</script>
 		<ViewTransitions />
 	</head>
 	<body class="flex flex-col min-h-screen">

@@ -69,7 +69,37 @@ const { flow } = Astro.props;
     setText('ss-vehicle', summary.vehicle ?? '—');
     setText('ss-total',   Number.isFinite(summary.total) ? `€${summary.total.toFixed(2)}` : '—');
     setText('ss-email',   summary.email ?? '—');
+    trackPurchase(summary, flow, sessionId ?? summary.ref);
     show('ss-paid');
+  }
+
+  function trackPurchase(
+    summary: { ref: string; total: number },
+    bookingFlow: string,
+    dedupeKey: string,
+  ) {
+    const storageKey = `opaway:purchase:${dedupeKey}`;
+    try {
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, '1');
+    } catch {}
+
+    const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+    if (typeof gtag !== 'function') return;
+
+    const value = Number.isFinite(summary.total) ? summary.total : 0;
+
+    gtag('event', 'purchase', {
+      transaction_id: summary.ref,
+      value,
+      currency: 'EUR',
+      items: [{
+        item_id: bookingFlow,
+        item_name: `${bookingFlow} booking`,
+        price: value,
+        quantity: 1,
+      }],
+    });
   }
 
   async function poll() {
