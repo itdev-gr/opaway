@@ -25,6 +25,10 @@ export async function verifyCurrentPassword(email: string, currentPassword: stri
 	});
 	const { error } = await probe.auth.signInWithPassword({ email, password: currentPassword });
 	// Signing out the probe client releases the ephemeral tokens immediately.
-	try { await probe.auth.signOut(); } catch { /* best-effort */ }
+	// IMPORTANT: scope 'local' only clears the probe's in-memory session.
+	// The default 'global' scope revokes ALL of the user's refresh tokens
+	// server-side — including the live session that is about to call
+	// updateUser({ password }) — which breaks password change for every role.
+	try { await probe.auth.signOut({ scope: 'local' }); } catch { /* best-effort */ }
 	return error ? (error instanceof Error ? error : new Error(error.message ?? 'verification failed')) : null;
 }

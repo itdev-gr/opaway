@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 export interface PricingRow {
 	id: string;
 	sedan: number;
@@ -15,14 +13,22 @@ export interface PricingData {
 	hourly: PricingRow;
 }
 
+// Contiguous, gap-free brackets. A distance belongs to the FIRST bracket whose
+// `max` it does not exceed, so there are no gaps (e.g. 25.3 km) or overlaps.
+// IDs match the rows in the `pricing` table — do not rename them.
 const TRANSFER_BRACKETS = [
-	{ id: 'transfer_0_15', from: 0, to: 15 },
-	{ id: 'transfer_16_25', from: 16, to: 25 },
-	{ id: 'transfer_26_35', from: 26, to: 35 },
-	{ id: 'transfer_36_45', from: 36, to: 45 },
-	{ id: 'transfer_45_60', from: 45, to: 60 },
-	{ id: 'transfer_60_99', from: 60, to: 99 },
+	{ id: 'transfer_0_15',  max: 15 },
+	{ id: 'transfer_16_25', max: 25 },
+	{ id: 'transfer_26_35', max: 35 },
+	{ id: 'transfer_36_45', max: 45 },
+	{ id: 'transfer_45_60', max: 60 },
+	{ id: 'transfer_60_99', max: 99 },
 ];
+
+// Distances above this are billed per-km from the `transfer_100_plus` row,
+// using `transfer_60_99` as the base. Threshold = top of the last fixed bracket
+// so there is no gap between 99 km and the per-km tier.
+const PER_KM_THRESHOLD = 99;
 
 const DEFAULT_PRICING: PricingData = {
 	transfer: {
@@ -42,6 +48,7 @@ let cachedPricing: PricingData | null = null;
 export async function loadPricing(): Promise<PricingData> {
 	if (cachedPricing) return cachedPricing;
 	try {
+		const { supabase } = await import('./supabase');
 		const { data, error } = await supabase.from('pricing').select('*');
 		if (error || !data || data.length === 0) return DEFAULT_PRICING;
 
@@ -100,34 +107,26 @@ function applyDiscount(price: number, discount?: number): number {
 
 export function calculatePrice(input: PriceInput, pricing: PricingData): PriceResult {
 	const night = isNightTime(input.time || '');
-	const km = input.distanceKm;
+	const km = Math.max(0, input.distanceKm);
 	const slug = input.vehicleSlug as 'sedan' | 'van' | 'minibus';
 	const nightKey = `${slug}_night` as keyof PricingRow;
 
 	let outward = 0;
 
-	if (km >= 100) {
+	if (km > PER_KM_THRESHOLD) {
 		const perKmRow = pricing.transfer['transfer_100_plus'];
 		const bracket99 = pricing.transfer['transfer_60_99'];
 		if (perKmRow && bracket99) {
 			const base99 = night ? Number(bracket99[nightKey]) : Number(bracket99[slug]);
 			const perKm = night ? Number(perKmRow[nightKey]) : Number(perKmRow[slug]);
-			outward = base99 + (km - 99) * perKm;
+			outward = base99 + (km - PER_KM_THRESHOLD) * perKm;
 		}
 	} else {
-		let matched = false;
-		for (const b of TRANSFER_BRACKETS) {
-			if (km >= b.from && km <= b.to) {
-				const row = pricing.transfer[b.id];
-				if (row) outward = night ? Number(row[nightKey]) : Number(row[slug]);
-				matched = true;
-				break;
-			}
-		}
-		if (!matched) {
-			const fallback = pricing.transfer['transfer_0_15'];
-			if (fallback) outward = night ? Number(fallback[nightKey]) : Number(fallback[slug]);
-		}
+		// First bracket whose upper bound `km` does not exceed (contiguous, no gaps).
+		const bracket = TRANSFER_BRACKETS.find(b => km <= b.max)
+			?? TRANSFER_BRACKETS[TRANSFER_BRACKETS.length - 1];
+		const row = pricing.transfer[bracket.id];
+		if (row) outward = night ? Number(row[nightKey]) : Number(row[slug]);
 	}
 
 	const outwardBase = Math.round(outward * 100) / 100;

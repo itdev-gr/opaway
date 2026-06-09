@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "seed:vehicles": "node scripts/seed-vehicles.mjs"
+    "seed:vehicles": "node scripts/seed-vehicles.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",
@@ -22,6 +23,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "^3.7.2"
+    "@astrojs/sitemap": "^3.7.2",
+    "vitest": "^2.1.9"
   }
 }

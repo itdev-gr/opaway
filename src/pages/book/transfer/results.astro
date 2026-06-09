@@ -293,8 +293,9 @@ import Layout from '../../../layouts/Layout.astro';
 	setText('sb-from-time', `Pickup at ${time}`);
 
 	/* ── State (declared early so setReturnState's render call doesn't hit TDZ) ── */
-	let routeDistanceKm = 0;
-	let routeDurationMin = 0;
+	let routeDistanceKm = 0;       // outward leg — shown in the UI
+	let routeDurationMin = 0;      // outward leg — shown in the UI
+	let pricingDistanceKm = 0;     // direction-independent (avg of both legs) — used for pricing
 
 	// Persist the selected vehicle so browser-Back from the passenger page
 	// restores the highlight + Continue-ready state (F15). Keyed by from/to/
@@ -367,7 +368,7 @@ import Layout from '../../../layouts/Layout.astro';
 		if (!selectedVehicleSlug) return;
 		const price = calculatePrice({
 			vehicleSlug: selectedVehicleSlug,
-			distanceKm: routeDistanceKm,
+			distanceKm: pricingDistanceKm,
 			durationMinutes: routeDurationMin,
 			passengers,
 			isReturn: hasReturn,
@@ -403,7 +404,7 @@ import Layout from '../../../layouts/Layout.astro';
 		container.innerHTML = badgeHtml + vehicles.map(v => {
 			const price = calculatePrice({
 				vehicleSlug: v.slug,
-				distanceKm: routeDistanceKm,
+				distanceKm: pricingDistanceKm,
 				durationMinutes: routeDurationMin,
 				passengers,
 				isReturn: hasReturn,
@@ -547,39 +548,62 @@ import Layout from '../../../layouts/Layout.astro';
 			polylineOptions: { strokeColor: '#0C6B95', strokeWeight: 5 },
 		});
 
-		directionsService.route(
-			{ origin: from, destination: to, travelMode: google.maps.TravelMode.DRIVING },
-			(result, status) => {
-				if (status === 'OK' && result) {
-					directionsRenderer.setDirections(result);
-
-					const leg = result.routes[0]?.legs[0];
-					if (leg) {
-						routeDistanceKm = (leg.distance?.value || 0) / 1000;
-						routeDurationMin = (leg.duration?.value || 0) / 60;
-
-						setText('route-distance', leg.distance?.text || '—');
-						setText('route-duration', leg.duration?.text || '—');
-						setText('sb-dist', leg.distance?.text || '—');
-						setText('sb-dur', leg.duration?.text || '—');
-						setText('sb-arrival-time', `~${Math.round(routeDurationMin)} min`);
-
-						document.getElementById('route-info')?.classList.remove('hidden');
-
-						// Re-render vehicles with actual distance-based prices
-						renderVehicles();
+		// Helper: resolve a leg's distance in km (0 on failure), optionally rendering the route.
+		const requestLegKm = (origin: string, destination: string, render: boolean): Promise<number> =>
+			new Promise((resolve) => {
+				directionsService.route(
+					{ origin, destination, travelMode: google.maps.TravelMode.DRIVING },
+					(result, status) => {
+						if (status === 'OK' && result) {
+							const leg = result.routes[0]?.legs[0];
+							if (render) {
+								directionsRenderer.setDirections(result);
+								if (leg) {
+									routeDistanceKm = (leg.distance?.value || 0) / 1000;
+									routeDurationMin = (leg.duration?.value || 0) / 60;
+									setText('route-distance', leg.distance?.text || '—');
+									setText('route-duration', leg.duration?.text || '—');
+									setText('sb-dist', leg.distance?.text || '—');
+									setText('sb-dur', leg.duration?.text || '—');
+									setText('sb-arrival-time', `~${Math.round(routeDurationMin)} min`);
+									document.getElementById('route-info')?.classList.remove('hidden');
+								}
+							}
+							resolve(leg ? (leg.distance?.value || 0) / 1000 : 0);
+						} else {
+							console.warn(`Directions request failed (${origin} -> ${destination}):`, status);
+							resolve(0);
+						}
 					}
-				} else {
-					console.warn('Directions request failed:', status);
-					setText('map-status', `Could not calculate route. Showing estimated prices.`);
-					fallback.classList.remove('hidden');
-					// Use fallback distance
-					routeDistanceKm = 30;
-					routeDurationMin = 35;
-					renderVehicles();
+				);
+			});
+
+		// Outward leg drives the map + visible distance; return leg is for symmetric pricing only.
+		Promise.all([
+			requestLegKm(from, to, true),
+			requestLegKm(to, from, false),
+		]).then(([outwardKm, returnKm]) => {
+			const legs = [outwardKm, returnKm].filter(d => d > 0);
+			if (legs.length === 2) {
+				pricingDistanceKm = (outwardKm + returnKm) / 2; // direction-independent
+			} else if (legs.length === 1) {
+				pricingDistanceKm = legs[0];
+				if (outwardKm <= 0) {
+					// Return leg priced fine, but the outward route couldn't be drawn.
+					setText('map-status', 'Could not draw route. Showing estimated prices.');
+					document.getElementById('map-fallback')?.classList.remove('hidden');
 				}
+			} else {
+				// Both directions failed — fall back to an estimate so prices still render.
+				setText('map-status', 'Could not calculate route. Showing estimated prices.');
+				document.getElementById('map-fallback')?.classList.remove('hidden');
+				pricingDistanceKm = 30;
+				routeDistanceKm = 30;
+				routeDurationMin = 35;
 			}
-		);
+			renderVehicles();
+			updateSidebarPrices();
+		});
 	}
 
 	// Load Maps script or use fallback
@@ -597,6 +621,7 @@ import Layout from '../../../layouts/Layout.astro';
 				setText('map-status', 'Map unavailable. Showing estimated prices.');
 				routeDistanceKm = 30;
 				routeDurationMin = 35;
+				pricingDistanceKm = 30;
 				renderVehicles();
 			};
 			document.head.appendChild(script);
@@ -605,6 +630,7 @@ import Layout from '../../../layouts/Layout.astro';
 		setText('map-status', 'Map API key not configured. Showing estimated prices.');
 		routeDistanceKm = 30;
 		routeDurationMin = 35;
+		pricingDistanceKm = 30;
 	}
 
 	/* ── Continue to passenger page ── */
@@ -614,7 +640,7 @@ import Layout from '../../../layouts/Layout.astro';
 		const selectedVehicle = vehicles.find(v => v.slug === selectedVehicleSlug);
 		const price = calculatePrice({
 			vehicleSlug: selectedVehicleSlug,
-			distanceKm: routeDistanceKm,
+			distanceKm: pricingDistanceKm,
 			durationMinutes: routeDurationMin,
 			passengers,
 			isReturn: hasReturn,
