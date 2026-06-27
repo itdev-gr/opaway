@@ -1,6 +1,7 @@
 ---
 import AdminLayout from '../../components/AdminLayout.astro';
 import ReservationDetailModal from '../../components/ReservationDetailModal.astro';
+import BookingsToolbar from '../../components/BookingsToolbar.astro';
 ---
 
 <AdminLayout pageTitle="Tours" pageDescription="All tour bookings." activeSection="tours">
@@ -19,6 +20,9 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 				Add Booking
 			</button>
 		</div>
+
+		<BookingsToolbar />
+
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
@@ -157,8 +161,11 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 <script>
 	import { supabase } from '../../lib/supabase';
 	import { fetchApprovedDrivers, renderDriverOptionsHTML, handleDriverAssignmentChange, type DriverOption } from '../../lib/driver-options';
+	import { filterAndSortBookings, getBookingDate } from '../../lib/booking-filters';
+	import { getBookingFilterState, wireBookingsToolbar } from '../../lib/bookings-toolbar';
 
 	const rowsById = new Map<string, any>();
+	let allTours: any[] = [];
 	let driverOptionsCache: DriverOption[] = [];
 
 	/* ── Ride Status colours ── */
@@ -237,20 +244,33 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 	async function loadTours() {
 		const tbody = document.getElementById('tours-tbody')!;
-		const countEl = document.getElementById('tours-count');
 		try {
 			driverOptionsCache = await fetchApprovedDrivers();
 			const { data, error } = await supabase.from('tours').select('*').order('created_at', { ascending: false });
 			if (error) throw error;
-			const rows = data ?? [];
+			allTours = data ?? [];
 			rowsById.clear();
-			rows.forEach((r: any) => rowsById.set(r.id, r));
-			if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
-			if (rows.length === 0) {
-				tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-neutral-400">No tours found.</td></tr>`;
-				return;
-			}
-			tbody.innerHTML = rows.map(d => {
+			allTours.forEach((r: any) => rowsById.set(r.id, r));
+			renderTours();
+		} catch (err) {
+			console.error('Tours load failed:', err);
+			tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
+		}
+	}
+
+	function renderTours() {
+		const tbody = document.getElementById('tours-tbody')!;
+		const countEl = document.getElementById('tours-count');
+		const rows = filterAndSortBookings(allTours, getBookingFilterState(), {
+			getDate: getBookingDate,
+			getStatus: (r: any) => String(r.ride_status ?? r.status ?? ''),
+		});
+		if (countEl) countEl.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''}`;
+		if (rows.length === 0) {
+			tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-neutral-400">${allTours.length === 0 ? 'No tours found.' : 'No bookings match the current filters.'}</td></tr>`;
+			return;
+		}
+		tbody.innerHTML = rows.map(d => {
 				const date = d.date ? String(d.date) : (d.created_at ? (() => { const _d = new Date(d.created_at); return !isNaN(_d.getTime()) ? _d.toLocaleDateString() : '—'; })() : '—');
 				const time = d.time ? String(d.time) : '—';
 				const rideStatus = String(d.ride_status ?? d.status ?? 'new');
@@ -301,9 +321,6 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 					if (row) (window as any).OpawayReservationDetail.open(row, 'tour');
 				});
 			});
-		} catch {
-			tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-neutral-400">Could not load data.</td></tr>`;
-		}
 	}
 
 	/* ── Ride Status & Payment Status change delegation ── */
@@ -316,6 +333,10 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			if (error) {
 				console.error('Tour ride_status update failed:', error);
 				alert(`Save failed: [${error.code ?? 'unknown'}] ${error.message}`);
+			} else {
+				const row = rowsById.get(docId);
+				if (row) row.ride_status = sel.value;
+				renderTours();
 			}
 		}
 		if (sel.classList.contains('payment-status-select')) {
@@ -410,6 +431,10 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			submitBtn.textContent = 'Save Booking';
 		}
 	});
+
+	/* ── Filter toolbar + cross-page refresh ── */
+	wireBookingsToolbar(renderTours);
+	window.addEventListener('opaway:reservation-changed', () => loadTours());
 
 	/* ── Auth guard observer ── */
 	// Race fix: AdminLayout's async getSession() can flip auth-check to hidden BEFORE

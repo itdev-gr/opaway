@@ -117,6 +117,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				continue;
 			}
 			(data ?? []).forEach((d: any) => {
+				// Cancelled bookings are not revenue — exclude them from the report.
+				if (String(d.ride_status ?? '').toLowerCase() === 'cancelled') return;
 				const createdAt = d.created_at ? new Date(d.created_at) : null;
 				allBookings.push({
 					id: d.id,

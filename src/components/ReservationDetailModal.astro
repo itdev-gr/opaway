@@ -16,11 +16,20 @@
 			<h3 id="res-detail-title" class="text-lg font-bold text-neutral-900 mb-2">Reservation</h3>
 			<p id="res-detail-ref" class="text-xs font-mono text-neutral-500 mb-5"></p>
 			<div id="res-detail-body" class="space-y-5 text-sm"></div>
+			<div id="res-detail-footer" class="mt-6 pt-4 border-t border-neutral-100 flex justify-end">
+				<button type="button" id="res-detail-delete"
+					class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+					Delete booking
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
 
 <script>
+	import { supabase } from '../lib/supabase';
+
 	type Row = Record<string, any>;
 
 	const esc = (s: string) => String(s)
@@ -163,8 +172,37 @@
 		if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
 	});
 
+	/* ── Delete (admin) ── */
+	const KIND_TABLE: Record<string, string> = {
+		transfer: 'transfers', tour: 'tours', experience: 'experiences', request: 'requests',
+	};
+	const footer = document.getElementById('res-detail-footer');
+	const deleteBtn = document.getElementById('res-detail-delete') as HTMLButtonElement | null;
+	let currentRow: Row | null = null;
+	let currentKind: 'transfer' | 'tour' | 'experience' | 'request' | null = null;
+
+	deleteBtn?.addEventListener('click', async () => {
+		if (!currentRow || !currentKind) return;
+		const table = KIND_TABLE[currentKind];
+		if (!table) return;
+		if (!confirm('Permanently delete this booking? This cannot be undone.')) return;
+		deleteBtn.disabled = true;
+		const { error } = await supabase.from(table).delete().eq('id', currentRow.id);
+		deleteBtn.disabled = false;
+		if (error) {
+			console.error('Booking delete failed:', error);
+			alert(`Delete failed: [${error.code ?? 'unknown'}] ${error.message}`);
+			return;
+		}
+		const detail = { kind: currentKind, id: currentRow.id };
+		close();
+		window.dispatchEvent(new CustomEvent('opaway:reservation-changed', { detail }));
+	});
+
 	(window as any).OpawayReservationDetail = {
 		open(row: Row, kind: 'transfer' | 'tour' | 'experience' | 'request') {
+			currentRow = row;
+			currentKind = kind;
 			const labels = { transfer: 'Transfer booking', tour: 'Tour booking', experience: 'Experience booking', request: 'Request' };
 			title.textContent = labels[kind] ?? 'Booking';
 			refEl.textContent = row?.id ? `Ref ${String(row.id).slice(0, 8).toUpperCase()}` : '';
@@ -173,6 +211,8 @@
 				: kind === 'request'
 				? renderRequest(row)
 				: renderTourOrExperience(row, kind);
+			// Requests have their own delete flow on the Requests page — hide it here.
+			footer?.classList.toggle('hidden', kind === 'request');
 			modal.classList.remove('hidden');
 		},
 		close,
