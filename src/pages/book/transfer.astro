@@ -344,6 +344,7 @@ const vehicles = [
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
 	import { initLuggageCounters, getLuggageCounts } from '../../lib/luggage-counters';
 	import { readTimePickerValue } from '../../lib/time-picker';
+	import { applyMinBookingDate, isPastBookingDate } from '../../lib/booking-date';
 
 	const transferFormScope = document.getElementById('transfer-form');
 
@@ -360,6 +361,7 @@ const vehicles = [
 	attachPlacesAutocomplete(document.getElementById('tf-from') as HTMLInputElement | null);
 	attachPlacesAutocomplete(document.getElementById('tf-to') as HTMLInputElement | null);
 	initLuggageCounters('xfer-page-luggage');
+	applyMinBookingDate('tf-date', 'tf-return-date');
 
 	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
 		clearFormErrors(transferFormScope);
@@ -386,14 +388,16 @@ const vehicles = [
 		if (!date) {
 			showFieldError(dateEl, 'Please select a pickup date.');
 			firstErr ??= dateEl;
-		} else {
-			const selectedDate = new Date(date + 'T00:00:00');
-			const today = new Date();
-			today.setHours(0, 0, 0, 0);
-			if (selectedDate < today) {
-				showFieldError(dateEl, 'Please select a future date.');
-				firstErr ??= dateEl;
-			}
+		} else if (isPastBookingDate(date)) {
+			showFieldError(dateEl, 'Please select a future date.');
+			firstErr ??= dateEl;
+		}
+		if (returnDate && isPastBookingDate(returnDate)) {
+			showFieldError(returnDateEl, 'Please select a future date.');
+			firstErr ??= returnDateEl;
+		} else if (returnDate && date && returnDate < date) {
+			showFieldError(returnDateEl, 'Return date cannot be before the pickup date.');
+			firstErr ??= returnDateEl;
 		}
 		if (!time) {
 			// Manually show the time-picker error (error <p> is keyed to 'tf-time', not the select ids)
