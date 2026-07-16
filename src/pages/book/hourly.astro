@@ -278,6 +278,7 @@ const vehicles = [
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
 	import { initLuggageCounters, getLuggageCounts } from '../../lib/luggage-counters';
 	import { readTimePickerValue } from '../../lib/time-picker';
+	import { applyMinBookingDate, isPastBookingDate } from '../../lib/booking-date';
 
 	const hourlyFormScope = document.getElementById('hourly-form');
 
@@ -290,6 +291,7 @@ const vehicles = [
 
 	attachPlacesAutocomplete(document.getElementById('h-pickup') as HTMLInputElement | null);
 	initLuggageCounters('hourly-page-luggage');
+	applyMinBookingDate('h-date');
 
 	document.getElementById('continue-btn')?.addEventListener('click', () => {
 		clearFormErrors(hourlyFormScope);
@@ -307,14 +309,9 @@ const vehicles = [
 		if (!date) {
 			showFieldError(dateEl, 'Please select a pickup date.');
 			firstErr ??= dateEl;
-		} else {
-			const selectedDate = new Date(date + 'T00:00:00');
-			const today = new Date();
-			today.setHours(0, 0, 0, 0);
-			if (selectedDate < today) {
-				showFieldError(dateEl, 'Please select a future date.');
-				firstErr ??= dateEl;
-			}
+		} else if (isPastBookingDate(date)) {
+			showFieldError(dateEl, 'Please select a future date.');
+			firstErr ??= dateEl;
 		}
 		if (!time) {
 			const timeErrEl = document.querySelector<HTMLElement>('[data-error-for="h-time"]');

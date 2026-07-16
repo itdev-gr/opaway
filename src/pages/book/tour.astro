@@ -184,6 +184,7 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 	import { attachPlacesAutocomplete } from '../../lib/places-autocomplete';
 	import { renderImageCarouselHTML, initImageCarousels } from '../../lib/image-carousel';
 	import { readTimePickerValue } from '../../lib/time-picker';
+	import { applyMinBookingDate, isPastBookingDate } from '../../lib/booking-date';
 
 	attachPlacesAutocomplete(document.getElementById('tour-pickup') as HTMLInputElement | null);
 
@@ -408,6 +409,8 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 		document.getElementById('tour-date'),
 	]);
 
+	applyMinBookingDate('tour-date');
+
 	document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
 		clearFormErrors(tourFormScope);
 
@@ -424,6 +427,7 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 		let firstErr: HTMLElement | null = null;
 		if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
 		if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
+		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
