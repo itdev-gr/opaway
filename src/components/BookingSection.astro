@@ -400,6 +400,7 @@ import { showFieldError, showFormError, clearFormErrors, wireAutoClear } from '.
 import { supabase } from '../lib/supabase';
 import { initLuggageCounters, getLuggageCounts } from '../lib/luggage-counters';
 import { readTimePickerValue } from '../lib/time-picker';
+import { applyMinBookingDate, isPastBookingDate } from '../lib/booking-date';
 
 function trackBookSearch(flow: 'transfer' | 'hourly' | 'tour', extra: Record<string, unknown> = {}) {
 	const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
@@ -574,6 +575,8 @@ document.addEventListener('astro:page-load', () => {
 		document.getElementById('tours-date'),
 	]);
 
+	applyMinBookingDate('tf-date', 'tf-return-date', 'hourly-date', 'tours-date');
+
 	// ── Transfer: See prices ──
 	document.getElementById('see-prices-btn')?.addEventListener('click', () => {
 		clearFormErrors(formTransfer);
@@ -599,6 +602,9 @@ document.addEventListener('astro:page-load', () => {
 		if (!from) { showFieldError(fromEl, 'Please enter a pickup location.'); firstErr ??= fromEl; }
 		if (!to) { showFieldError(toEl, 'Please enter a destination.'); firstErr ??= toEl; }
 		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
+		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
+		if (returnDate && isPastBookingDate(returnDate)) { showFieldError(returnDateEl, 'Please select a future date.'); firstErr ??= returnDateEl; }
+		else if (returnDate && date && returnDate < date) { showFieldError(returnDateEl, 'Return date cannot be before the pickup date.'); firstErr ??= returnDateEl; }
 		if (!time) { showFieldError(tfTimeHhEl, 'Please select a pickup time.'); firstErr ??= tfTimeHhEl; }
 		if (returnDate && !returnTime) { showFieldError(tfReturnTimeHhEl, 'Please select a return time.'); firstErr ??= tfReturnTimeHhEl; }
 
@@ -634,6 +640,7 @@ document.addEventListener('astro:page-load', () => {
 		let firstErr: HTMLElement | null = null;
 		if (!pickup) { showFieldError(pickupEl, 'Please enter a pickup location.'); firstErr ??= pickupEl; }
 		if (!date) { showFieldError(dateEl, 'Please select a pickup date.'); firstErr ??= dateEl; }
+		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
 		if (!time) { showFieldError(hourlyTimeHhEl, 'Please select a pickup time.'); firstErr ??= hourlyTimeHhEl; }
 
 		if (firstErr) {
@@ -672,6 +679,7 @@ document.addEventListener('astro:page-load', () => {
 		let firstErr: HTMLElement | null = null;
 		if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
 		if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
+		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
 
 		if (firstErr) {
 			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
