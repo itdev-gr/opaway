@@ -17,17 +17,23 @@ begin
   safe := coalesce(payload, '{}'::jsonb) - 'id' - 'uid' - 'created_at';
 
   -- Reject missing/malformed/past booking dates (Europe/Athens "today").
-  if (safe->>'date') is null
-     or (safe->>'date') !~ '^\d{4}-\d{2}-\d{2}$'
-     or (safe->>'date')::date < (now() at time zone 'Europe/Athens')::date then
-    raise exception 'BOOKING_DATE_PAST';
-  end if;
-  if coalesce(safe->>'return_date', '') <> '' then
-    if (safe->>'return_date') !~ '^\d{4}-\d{2}-\d{2}$'
-       or (safe->>'return_date')::date < (safe->>'date')::date then
+  begin
+    if (safe->>'date') is null
+       or (safe->>'date') !~ '^\d{4}-\d{2}-\d{2}$'
+       or (safe->>'date')::date < (now() at time zone 'Europe/Athens')::date then
       raise exception 'BOOKING_DATE_PAST';
     end if;
-  end if;
+    if coalesce(safe->>'return_date', '') <> '' then
+      if (safe->>'return_date') !~ '^\d{4}-\d{2}-\d{2}$'
+         or (safe->>'return_date')::date < (safe->>'date')::date then
+        raise exception 'BOOKING_DATE_PAST';
+      end if;
+    end if;
+  exception
+    when datetime_field_overflow or invalid_datetime_format then
+      -- Shape-valid but calendar-invalid (e.g. 2026-02-30): same contract.
+      raise exception 'BOOKING_DATE_PAST';
+  end;
 
   insert into public.transfers (
     id, uid,
@@ -76,6 +82,9 @@ $$;
 revoke all on function public.create_transfer_booking(jsonb) from public;
 grant execute on function public.create_transfer_booking(jsonb) to anon, authenticated;
 
+-- ──────────────────────────────────────────────────────────────────────
+-- create_tour_booking — used by /book/tour
+-- ──────────────────────────────────────────────────────────────────────
 create or replace function public.create_tour_booking(payload jsonb)
 returns uuid
 language plpgsql
@@ -89,11 +98,17 @@ begin
   safe := coalesce(payload, '{}'::jsonb) - 'id' - 'uid' - 'created_at';
 
   -- Reject missing/malformed/past booking dates (Europe/Athens "today").
-  if (safe->>'date') is null
-     or (safe->>'date') !~ '^\d{4}-\d{2}-\d{2}$'
-     or (safe->>'date')::date < (now() at time zone 'Europe/Athens')::date then
-    raise exception 'BOOKING_DATE_PAST';
-  end if;
+  begin
+    if (safe->>'date') is null
+       or (safe->>'date') !~ '^\d{4}-\d{2}-\d{2}$'
+       or (safe->>'date')::date < (now() at time zone 'Europe/Athens')::date then
+      raise exception 'BOOKING_DATE_PAST';
+    end if;
+  exception
+    when datetime_field_overflow or invalid_datetime_format then
+      -- Shape-valid but calendar-invalid (e.g. 2026-02-30): same contract.
+      raise exception 'BOOKING_DATE_PAST';
+  end;
 
   insert into public.tours (
     id, uid,
