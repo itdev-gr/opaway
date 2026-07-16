@@ -1,7 +1,9 @@
 -- Block past-date bookings at the RPC layer (spec: 2026-07-16-no-past-date-bookings).
 -- "Today" is Europe/Athens — the business timezone. Both RPCs raise
 -- BOOKING_DATE_PAST so callers can map the failure. Bodies otherwise
--- identical to 2026-05-04-guest-booking-rpcs.sql. Idempotent.
+-- identical to 2026-05-04-stripe-server-capture.sql (the current versions,
+-- with stripe_* passthrough — NOT the older 2026-05-04-guest-booking-rpcs.sql).
+-- Verified against live prod definitions before authoring. Idempotent.
 
 create or replace function public.create_transfer_booking(payload jsonb)
 returns uuid
@@ -13,7 +15,6 @@ declare
   new_id uuid := gen_random_uuid();
   safe   jsonb;
 begin
-  -- Strip caller-controlled trust fields; we'll re-attach our own.
   safe := coalesce(payload, '{}'::jsonb) - 'id' - 'uid' - 'created_at';
 
   -- Reject missing/malformed/past booking dates (Europe/Athens "today").
@@ -45,7 +46,8 @@ begin
     total_price, base_price, outward_price, return_price, card_surcharge,
     ride_status, payment_status, payment_method, payment_token,
     booking_type, partner_id, luggage_small, luggage_big,
-    hours, per_hour
+    hours, per_hour,
+    stripe_session_id, stripe_payment_intent_id, stripe_charge_id
   )
   values (
     new_id,
@@ -72,7 +74,10 @@ begin
     coalesce((safe->>'luggage_small')::int, 0),
     coalesce((safe->>'luggage_big')::int, 0),
     nullif((safe->>'hours')::text, '')::int,
-    nullif((safe->>'per_hour')::text, '')::numeric
+    nullif((safe->>'per_hour')::text, '')::numeric,
+    safe->>'stripe_session_id',
+    safe->>'stripe_payment_intent_id',
+    safe->>'stripe_charge_id'
   );
 
   return new_id;
@@ -122,7 +127,8 @@ begin
     total_price,
     entrance_tickets_count, entrance_tickets_total,
     ride_status, payment_status, payment_method, payment_token,
-    card_surcharge, partner_id, added_by_admin
+    card_surcharge, partner_id, added_by_admin,
+    stripe_session_id, stripe_payment_intent_id, stripe_charge_id
   )
   values (
     new_id,
@@ -144,7 +150,10 @@ begin
     safe->>'payment_token',
     coalesce((safe->>'card_surcharge')::numeric, 0),
     safe->>'partner_id',
-    coalesce((safe->>'added_by_admin')::boolean, false)
+    coalesce((safe->>'added_by_admin')::boolean, false),
+    safe->>'stripe_session_id',
+    safe->>'stripe_payment_intent_id',
+    safe->>'stripe_charge_id'
   );
 
   return new_id;
