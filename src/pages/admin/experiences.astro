@@ -164,6 +164,7 @@ import BookingsToolbar from '../../components/BookingsToolbar.astro';
 	import { fetchApprovedDrivers, renderDriverOptionsHTML, handleDriverAssignmentChange, type DriverOption } from '../../lib/driver-options';
 	import { filterAndSortBookings, getBookingDate } from '../../lib/booking-filters';
 	import { getBookingFilterState, wireBookingsToolbar } from '../../lib/bookings-toolbar';
+	import { applyMinBookingDate, isPastBookingDate } from '../../lib/booking-date';
 
 	const rowsById = new Map<string, any>();
 	let allExperiences: any[] = [];
@@ -374,6 +375,8 @@ import BookingsToolbar from '../../components/BookingsToolbar.astro';
 	document.getElementById('add-exp-cancel2')?.addEventListener('click', closeModal);
 	modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
+	applyMinBookingDate('ex-date');
+
 	document.getElementById('add-exp-form')?.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const errorEl  = document.getElementById('ex-error')!;
@@ -398,6 +401,12 @@ import BookingsToolbar from '../../components/BookingsToolbar.astro';
 
 		if (!name || !email || !experienceId || !pickup || !date || !participants || !(totalPrice > 0)) {
 			errorEl.textContent = 'Please fill in all required fields (price must be greater than 0).';
+			errorEl.classList.remove('hidden');
+			return;
+		}
+
+		if (isPastBookingDate(date)) {
+			errorEl.textContent = 'Booking date cannot be in the past.';
 			errorEl.classList.remove('hidden');
 			return;
 		}
