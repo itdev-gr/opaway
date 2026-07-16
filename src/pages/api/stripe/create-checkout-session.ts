@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 import { stripe, supabaseAdmin, supabaseForUser, originFromRequest, isFlow, type Flow } from '../../../lib/stripe/server';
+import { isPastBookingDate } from '../../../lib/booking-date';
 
 export const prerender = false;
 
@@ -52,6 +53,16 @@ export const POST: APIRoute = async ({ request }) => {
   if (!Number.isFinite(totalPrice))                         return jsonError(400, 'booking.total_price must be a number');
   if (totalPrice < MIN_TOTAL_EUR || totalPrice > MAX_TOTAL_EUR) {
     return jsonError(400, `booking.total_price must be between €${MIN_TOTAL_EUR} and €${MAX_TOTAL_EUR}`);
+  }
+
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  const bookingDate = String(booking.date ?? '').trim();
+  if (!DATE_RE.test(bookingDate) || isPastBookingDate(bookingDate)) {
+    return jsonError(400, 'BOOKING_DATE_PAST');
+  }
+  const bookingReturnDate = String(booking.return_date ?? '').trim();
+  if (bookingReturnDate && (!DATE_RE.test(bookingReturnDate) || bookingReturnDate < bookingDate)) {
+    return jsonError(400, 'BOOKING_DATE_PAST');
   }
 
   const accessToken = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
