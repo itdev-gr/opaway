@@ -254,6 +254,7 @@ import { renderTimePickerHTML } from '../lib/time-picker';
 	import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 	import { renderImageCarouselHTML, initImageCarousels } from '../lib/image-carousel';
 	import { readTimePickerValue } from '../lib/time-picker';
+	import { applyMinBookingDate, isPastBookingDate } from '../lib/booking-date';
 
 	attachPlacesAutocomplete(document.getElementById('experience-pickup') as HTMLInputElement | null);
 
@@ -471,6 +472,8 @@ import { renderTimePickerHTML } from '../lib/time-picker';
 		document.getElementById('r-phone'),
 	]);
 
+	applyMinBookingDate('experience-date');
+
 	document.getElementById('experience-submit-btn')?.addEventListener('click', async () => {
 		clearFormErrors(experienceFormScope);
 
@@ -498,6 +501,7 @@ import { renderTimePickerHTML } from '../lib/time-picker';
 		let firstErr: HTMLElement | null = null;
 		if (!experienceId) { showFieldError(select, 'Please select an experience.'); firstErr ??= select; }
 		if (!date)        { showFieldError(dateEl, 'Please select an experience date.'); firstErr ??= dateEl; }
+		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
 		if (!firstName)   { showFieldError(firstEl, 'First name is required.'); firstErr ??= firstEl; }
 		if (!lastName)    { showFieldError(lastEl, 'Last name is required.'); firstErr ??= lastEl; }
 		if (!email)       { showFieldError(emailEl, 'Email is required.'); firstErr ??= emailEl; }
