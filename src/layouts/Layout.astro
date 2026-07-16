@@ -55,6 +55,25 @@ const { noindex = false } = Astro.props;
 		<title>Opawey — Luxury Transfers & Private Tours in Greece</title>
 		<!-- Cookie-Script consent banner — must load before analytics -->
 		<script is:inline type="text/javascript" charset="UTF-8" src="https://cdn.cookie-script.com/s/61e3926e8db2ddf737475870c24b830e.js"></script>
+		<script is:inline>
+			/**
+			 * Astro view transitions swap the <body> on client-side navigation,
+			 * which wipes the banner Cookie-Script injected at runtime. If the
+			 * visitor hasn't answered yet (no "action" in the CookieScriptConsent
+			 * cookie), reload the script after each swap so the banner comes back.
+			 * Once a choice is saved this does nothing.
+			 */
+			document.addEventListener('astro:after-swap', () => {
+				const decided = /CookieScriptConsent=[^;]*action/.test(document.cookie);
+				if (decided || document.getElementById('cookiescript_injected')) return;
+				try { delete window.CookieScript; } catch (_) { /* ignore */ }
+				document.querySelectorAll('script[src*="cookie-script.com"]').forEach((s) => s.remove());
+				const s = document.createElement('script');
+				s.src = 'https://cdn.cookie-script.com/s/61e3926e8db2ddf737475870c24b830e.js';
+				s.charset = 'UTF-8';
+				document.head.appendChild(s);
+			});
+		</script>
 		<!-- Google tag (gtag.js) — GA4 + Google Ads -->
 		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-5VNP4P6C3V"></script>
 		<script is:inline>
