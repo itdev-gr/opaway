@@ -320,76 +320,103 @@ const vehicles = [
 				</div>
 			</div>
 
-			<!-- ── Service class carousel ── -->
-			<div data-fleet-carousel class="flex flex-col">
+			<!-- ── Service showcase (swaps with the active tab) ── -->
+			<div class="flex flex-col">
 
-				<!-- Header -->
-				<div class="mb-5">
-					<div class="flex items-center gap-2 mb-2">
-						<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
-						<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Ο στόλος μας" data-i18n-es="Nuestra flota">Our Fleet</span>
+				<!-- Transfer showcase -->
+				<div data-service-panel="transfer" class="flex flex-col">
+					<div class="mb-5">
+						<div class="flex items-center gap-2 mb-2">
+							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Η υπηρεσία μας" data-i18n-es="Nuestro servicio">Our Service</span>
+						</div>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ιδιωτικές μεταφορές" data-i18n-es="Traslados privados">Private Transfers</h2>
 					</div>
-					<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Επιλέξτε την κατηγορία που σας ταιριάζει" data-i18n-es="Descubra nuestras clases de servicio">Discover our service classes</h2>
+					<article class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col flex-1">
+						<div class="bg-neutral-100 aspect-[16/9] overflow-hidden">
+							<img src="/book-a-transfer.webp" alt="Chauffeur welcoming a passenger into a luxury Mercedes" class="w-full h-full object-cover" data-i18n-alt-el="Οδηγός υποδέχεται επιβάτη σε πολυτελές Mercedes" data-i18n-alt-es="Chófer recibiendo a un pasajero en un Mercedes de lujo" />
+						</div>
+						<div class="p-6 flex flex-col">
+							<p class="text-sm text-neutral-500 mb-4 leading-relaxed" data-i18n-el="Ιδιωτικές μεταφορές με σοφέρ σε premium οχήματα Mercedes. Σταθερές τιμές, παρακολούθηση πτήσης και επαγγελματίας οδηγός να σας περιμένει." data-i18n-es="Traslados privados con chófer en vehículos Mercedes premium. Precios fijos, seguimiento de vuelos y un conductor profesional esperándole.">Door-to-door chauffeured transfers in premium Mercedes vehicles. Fixed prices, flight tracking and a professional driver ready when you arrive.</p>
+							<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+							<ul class="flex flex-col gap-3">
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Σταθερές τιμές, χωρίς κρυφές χρεώσεις" data-i18n-es="Precios fijos, sin cargos ocultos">Fixed, all-inclusive prices</span>
+								</li>
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Υποδοχή με πινακίδα στο αεροδρόμιο" data-i18n-es="Recepción con cartel en el aeropuerto">Meet &amp; greet at the airport</span>
+								</li>
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Επαγγελματίες, αγγλόφωνοι οδηγοί" data-i18n-es="Conductores profesionales que hablan inglés">Professional, English-speaking drivers</span>
+								</li>
+							</ul>
+						</div>
+					</article>
 				</div>
 
-				<!-- Card viewport -->
-				<div class="relative overflow-hidden rounded-2xl flex-1">
-					{vehicles.map((v, i) => (
-						<article
-							data-fleet-card
-							class={`fleet-card bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-opacity duration-300 ${i === 0 ? '' : 'hidden'}`}
-						>
-							<!-- Image -->
-							<div class="bg-neutral-100 aspect-[16/9] overflow-hidden">
-								<img src={v.image} alt={v.title} class="w-full h-full object-cover" />
-							</div>
-
-							<!-- Content -->
-							<div class="p-6 flex flex-col">
-								<h3 class="text-2xl font-bold text-neutral-900 mb-1" data-i18n-el={v.titleEl} data-i18n-es={v.titleEs}>{v.title}</h3>
-								<p class="text-sm text-neutral-500 mb-4" data-i18n-el={v.modelsEl} data-i18n-es={v.modelsEs}>{v.models}</p>
-								<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
-								<ul class="flex flex-col gap-3">
-									{v.features.map((f) => (
-										<li class="flex items-start gap-3">
-											<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-											</svg>
-											<span class="text-sm text-neutral-600 leading-snug" data-i18n-el={f.el} data-i18n-es={f.es}>{f.en}</span>
-										</li>
-									))}
-								</ul>
-							</div>
-						</article>
-					))}
+				<!-- Rent per hour showcase -->
+				<div data-service-panel="hourly" class="flex flex-col hidden">
+					<div class="mb-5">
+						<div class="flex items-center gap-2 mb-2">
+							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Η υπηρεσία μας" data-i18n-es="Nuestro servicio">Our Service</span>
+						</div>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Ενοικίαση με την ώρα" data-i18n-es="Alquiler por hora">Rent by the Hour</h2>
+					</div>
+					<article class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col flex-1">
+						<div class="bg-neutral-100 aspect-[16/9] overflow-hidden">
+							<img src="/rent-by-the-hour.png" alt="Chauffeur opening the door of a luxury Mercedes van outside a hotel" class="w-full h-full object-cover" data-i18n-alt-el="Οδηγός ανοίγει την πόρτα πολυτελούς Mercedes έξω από ξενοδοχείο" data-i18n-alt-es="Chófer abriendo la puerta de un Mercedes de lujo frente a un hotel" />
+						</div>
+						<div class="p-6 flex flex-col">
+							<p class="text-sm text-neutral-500 mb-4 leading-relaxed" data-i18n-el="Κρατήστε ένα ιδιωτικό αυτοκίνητο και οδηγό στη διάθεσή σας όσο χρειάζεστε — ιδανικό για ραντεβού, ψώνια ή εξερεύνηση της πόλης με τον δικό σας ρυθμό." data-i18n-es="Mantenga un coche privado y un chófer a su lado el tiempo que necesite: perfecto para reuniones, compras o descubrir la ciudad a su propio ritmo.">Keep a private car and chauffeur at your side for as long as you need — perfect for meetings, shopping or discovering the city at your own pace.</p>
+							<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div>
+							<ul class="flex flex-col gap-3">
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Όχημα και οδηγός στη διάθεσή σας" data-i18n-es="Vehículo y chófer a su disposición">Car &amp; chauffeur on standby</span>
+								</li>
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Ελάχιστη κράτηση 3 ώρες" data-i18n-es="Reserva mínima de 3 horas">Minimum booking of 3 hours</span>
+								</li>
+								<li class="flex items-start gap-3">
+									<svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+									<span class="text-sm text-neutral-600 leading-snug" data-i18n-el="Απεριόριστες στάσεις, πλήρης ευελιξία" data-i18n-es="Paradas ilimitadas, total flexibilidad">Unlimited stops, total flexibility</span>
+								</li>
+							</ul>
+						</div>
+					</article>
 				</div>
 
-				<!-- Navigation row -->
-				<div class="flex items-center justify-between mt-4">
-					<button
-						data-fleet-prev
-						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
-						aria-label="Previous vehicle" data-i18n-aria-el="Προηγούμενο όχημα" data-i18n-aria-es="Vehículo anterior"
-					>
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-						</svg>
-					</button>
-
-					<span data-fleet-indicator class="text-sm font-semibold text-neutral-500 tracking-wide">1 / {vehicles.length}</span>
-
-					<button
-						data-fleet-next
-						class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm"
-						aria-label="Next vehicle" data-i18n-aria-el="Επόμενο όχημα" data-i18n-aria-es="Vehículo siguiente"
-					>
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-						</svg>
-					</button>
+				<!-- Tours carousel (synced with the Tour Experience dropdown) -->
+				<div data-service-panel="tours" class="flex flex-col hidden">
+					<div class="mb-5">
+						<div class="flex items-center gap-2 mb-2">
+							<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+							<span class="text-sm font-medium text-neutral-500 tracking-widest uppercase" data-i18n-el="Οι εμπειρίες μας" data-i18n-es="Nuestras experiencias">Our Experiences</span>
+						</div>
+						<h2 class="text-2xl lg:text-3xl font-bold text-neutral-900" data-i18n-el="Επιλεγμένα τουρ στην Ελλάδα" data-i18n-es="Tours seleccionados en Grecia">Curated Tours in Greece</h2>
+					</div>
+					<div id="home-tours-carousel-inner" class="relative overflow-hidden rounded-2xl flex-1">
+						<div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-12 flex items-center justify-center">
+							<p class="text-neutral-400 text-sm" data-i18n-el="Φόρτωση τουρ…" data-i18n-es="Cargando tours…">Loading tours…</p>
+						</div>
+					</div>
+					<div class="flex items-center justify-between mt-4">
+						<button data-home-tour-prev class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Previous tour" data-i18n-aria-el="Προηγούμενο τουρ" data-i18n-aria-es="Tour anterior">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+						</button>
+						<span data-home-tour-indicator class="text-sm font-semibold text-neutral-500 tracking-wide">— / —</span>
+						<button data-home-tour-next class="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:bg-[#0C6B95] hover:border-[#0C6B95] hover:text-white text-neutral-600 transition-all duration-200 shadow-sm" aria-label="Next tour" data-i18n-aria-el="Επόμενο τουρ" data-i18n-aria-es="Tour siguiente">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+						</button>
+					</div>
 				</div>
 
-			</div><!-- end carousel -->
+			</div><!-- end service showcase -->
 
 		</div>
 	</div>
@@ -402,6 +429,7 @@ import { supabase } from '../lib/supabase';
 import { initLuggageCounters, getLuggageCounts } from '../lib/luggage-counters';
 import { readTimePickerValue } from '../lib/time-picker';
 import { applyMinBookingDate, isPastBookingDate } from '../lib/booking-date';
+import { renderImageCarouselHTML, initImageCarousels } from '../lib/image-carousel';
 
 function trackBookSearch(flow: 'transfer' | 'hourly' | 'tour', extra: Record<string, unknown> = {}) {
 	const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
@@ -422,6 +450,9 @@ document.addEventListener('astro:page-load', () => {
 	const formTransfer = document.getElementById('form-transfer') as HTMLElement;
 	const formHourly = document.getElementById('form-hourly') as HTMLElement;
 	const formTours = document.getElementById('form-tours') as HTMLElement;
+	const panelTransfer = document.querySelector('[data-service-panel="transfer"]') as HTMLElement | null;
+	const panelHourly = document.querySelector('[data-service-panel="hourly"]') as HTMLElement | null;
+	const panelTours = document.querySelector('[data-service-panel="tours"]') as HTMLElement | null;
 
 	const activeClasses = ['text-black', 'bg-neutral-200/80', 'border-b-2', 'border-black'];
 	const inactiveClasses = ['text-neutral-500', 'hover:text-neutral-700'];
@@ -436,29 +467,14 @@ document.addEventListener('astro:page-load', () => {
 		formTransfer.classList.toggle('hidden', tabName !== 'transfer');
 		formHourly.classList.toggle('hidden', tabName !== 'hourly');
 		formTours.classList.toggle('hidden', tabName !== 'tours');
+
+		panelTransfer?.classList.toggle('hidden', tabName !== 'transfer');
+		panelHourly?.classList.toggle('hidden', tabName !== 'hourly');
+		panelTours?.classList.toggle('hidden', tabName !== 'tours');
 	}
 
 	tabs.forEach((tab) => {
 		tab.addEventListener('click', () => switchTab(tab.dataset.bookingTab!));
-	});
-
-	// ── Fleet carousel ──
-	document.querySelectorAll('[data-fleet-carousel]').forEach((carousel) => {
-		const cards = Array.from(carousel.querySelectorAll('[data-fleet-card]')) as HTMLElement[];
-		const prevBtn = carousel.querySelector('[data-fleet-prev]') as HTMLButtonElement;
-		const nextBtn = carousel.querySelector('[data-fleet-next]') as HTMLButtonElement;
-		const indicator = carousel.querySelector('[data-fleet-indicator]') as HTMLElement;
-		let current = 0;
-
-		function goTo(idx: number) {
-			cards[current].classList.add('hidden');
-			current = (idx + cards.length) % cards.length;
-			cards[current].classList.remove('hidden');
-			if (indicator) indicator.textContent = `${current + 1} / ${cards.length}`;
-		}
-
-		prevBtn?.addEventListener('click', () => goTo(current - 1));
-		nextBtn?.addEventListener('click', () => goTo(current + 1));
 	});
 
 	// ── Transfer passenger counter ──
@@ -524,27 +540,96 @@ document.addEventListener('astro:page-load', () => {
 		toursCount++; if (toursCountEl) toursCountEl.textContent = String(toursCount);
 	});
 
-	// ── Populate tours dropdown from Supabase ──
+	// ── Tours: populate dropdown + build carousel synced with it ──
 	(async () => {
 		const select = document.getElementById('tours-select') as HTMLSelectElement | null;
 		if (!select) return;
+		const panel = document.querySelector('[data-service-panel="tours"]');
+		const inner = document.getElementById('home-tours-carousel-inner');
+		const prevBtn = panel?.querySelector('[data-home-tour-prev]') as HTMLButtonElement | null;
+		const nextBtn = panel?.querySelector('[data-home-tour-next]') as HTMLButtonElement | null;
+		const indicator = panel?.querySelector('[data-home-tour-indicator]') as HTMLElement | null;
+
+		const esc = (s: unknown) => String(s ?? '')
+			.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 		try {
 			const { data, error } = await supabase
 				.from('tours_catalog')
-				.select('id, title')
+				.select('id, title, description, duration, image_url, images, highlight1, highlight2, highlight3')
 				.neq('published', false)
 				.order('created_at', { ascending: false });
 			if (error) throw error;
+			const docs = (data ?? []) as any[];
 
-			// Reset placeholder text
+			// Dropdown
 			const placeholder = select.querySelector('option');
 			if (placeholder) placeholder.textContent = 'Select a tour...';
-
-			(data ?? []).forEach((t: { id: string; title: string }) => {
+			docs.forEach((t) => {
 				const opt = document.createElement('option');
 				opt.value = t.id;
 				opt.textContent = t.title;
 				select.appendChild(opt);
+			});
+
+			if (!inner) return;
+
+			if (docs.length === 0) {
+				inner.innerHTML = `
+					<div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-12 flex items-center justify-center">
+						<p class="text-neutral-400 text-sm text-center" data-i18n-el="Δεν υπάρχουν διαθέσιμα τουρ αυτή τη στιγμή." data-i18n-es="No hay tours disponibles en este momento.">No tours available at the moment.</p>
+					</div>`;
+				prevBtn?.classList.add('invisible');
+				nextBtn?.classList.add('invisible');
+				if (indicator) indicator.textContent = '';
+				(window as any).opawayApplyI18n?.();
+				return;
+			}
+
+			inner.innerHTML = docs.map((t, i) => {
+				const images = (Array.isArray(t.images) && t.images.length > 0) ? t.images : (t.image_url ? [t.image_url] : []);
+				const highlights = [t.highlight1, t.highlight2, t.highlight3].filter(Boolean);
+				return `
+				<article data-home-tour-card data-tour-id="${esc(t.id)}" class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
+					${renderImageCarouselHTML(images, { alt: esc(t.title), wrapperClass: 'aspect-[16/9] overflow-hidden' })}
+					<div class="p-6 flex flex-col">
+						${t.duration ? `<div class="flex items-center gap-2 mb-2"><svg class="w-4 h-4 text-[#0C6B95] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="text-xs font-semibold text-[#0C6B95] uppercase tracking-wide">${esc(t.duration)}</span></div>` : ''}
+						<h3 class="text-2xl font-bold text-neutral-900 mb-2">${esc(t.title)}</h3>
+						${t.description ? `<p class="text-sm text-neutral-500 mb-4 leading-relaxed">${esc(t.description)}</p>` : ''}
+						${highlights.length > 0 ? `<div class="w-16 h-1 bg-[#0C6B95] rounded-full mb-5"></div><ul class="flex flex-col gap-3">${highlights.map((h: string) => `<li class="flex items-start gap-3"><svg class="w-4 h-4 text-[#0C6B95] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg><span class="text-sm text-neutral-600 leading-snug">${esc(h)}</span></li>`).join('')}</ul>` : ''}
+					</div>
+				</article>`;
+			}).join('');
+
+			initImageCarousels(inner);
+			(window as any).opawayApplyI18n?.();
+
+			const cards = Array.from(inner.querySelectorAll<HTMLElement>('[data-home-tour-card]'));
+			let current = 0;
+			if (indicator) indicator.textContent = `1 / ${cards.length}`;
+			if (cards.length <= 1) {
+				prevBtn?.classList.add('invisible');
+				nextBtn?.classList.add('invisible');
+			}
+
+			const goTo = (idx: number) => {
+				cards[current].classList.add('hidden');
+				current = (idx + cards.length) % cards.length;
+				cards[current].classList.remove('hidden');
+				if (indicator) indicator.textContent = `${current + 1} / ${cards.length}`;
+				const id = cards[current].dataset.tourId;
+				if (id && select.value !== id) select.value = id;
+			};
+
+			prevBtn?.addEventListener('click', () => goTo(current - 1));
+			nextBtn?.addEventListener('click', () => goTo(current + 1));
+
+			// Selecting a tour in the dropdown drives the carousel to that tour.
+			select.addEventListener('change', () => {
+				if (!select.value) return;
+				const idx = cards.findIndex((c) => c.dataset.tourId === select.value);
+				if (idx >= 0 && idx !== current) goTo(idx);
 			});
 		} catch (err) {
 			console.error('[BookingSection] tours load failed:', err);
