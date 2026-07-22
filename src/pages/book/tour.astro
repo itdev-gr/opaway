@@ -232,6 +232,10 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 			/* ── Carousel ──────────────────────────────────────────────── */
 			const inner = document.getElementById('tour-carousel-inner')!;
 
+			// Bridge between the "Tour Experience" dropdown and the carousel.
+			// Reassigned once the carousel is initialised; stays a no-op for 0/1 tours.
+			let goToTourById: (id: string) => void = () => {};
+
 			if (docs.length === 0) {
 				inner.innerHTML = `
 					<div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm p-12 flex items-center justify-center">
@@ -244,7 +248,7 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 						: (t.image_url ? [t.image_url] : []);
 					const highlights = [t.highlight1, t.highlight2, t.highlight3].filter(Boolean);
 					return `
-					<article data-tour-card class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
+					<article data-tour-card data-tour-id="${esc(t.id)}" class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm flex flex-col ${i === 0 ? '' : 'hidden'}">
 						${renderImageCarouselHTML(images, {
 							alt: esc(t.title),
 							wrapperClass: 'aspect-[16/9] overflow-hidden',
@@ -319,6 +323,12 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 
 						current = nextIdx;
 						if (indicator) indicator.textContent = `${current + 1} / ${cards.length}`;
+
+						// Keep the dropdown in sync with whichever card is showing.
+						const syncSel = document.getElementById('tour-select') as HTMLSelectElement | null;
+						const visibleId = cards[current].dataset.tourId;
+						if (syncSel && visibleId && syncSel.value !== visibleId) syncSel.value = visibleId;
+
 						await wait(220);
 						inc.style.cssText = '';
 						animating = false;
@@ -326,6 +336,12 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 
 					prevBtn?.addEventListener('click', () => goTo(current - 1, 'prev'));
 					nextBtn?.addEventListener('click', () => goTo(current + 1, 'next'));
+
+					// Selecting a tour in the dropdown drives the carousel to that card.
+					goToTourById = (id: string) => {
+						const idx = cards.findIndex(c => c.dataset.tourId === id);
+						if (idx >= 0 && idx !== current) goTo(idx, idx > current ? 'next' : 'prev');
+					};
 				}
 			}
 
@@ -337,6 +353,11 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 					opt.value = t.id;
 					opt.textContent = t.title;
 					select.appendChild(opt);
+				});
+
+				// Selecting a tour loads its details in the carousel on the right.
+				select.addEventListener('change', () => {
+					if (select.value) goToTourById(select.value);
 				});
 
 				// Pre-select a tour passed via ?tour=<id> and scroll to the form.
