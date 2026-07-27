@@ -166,15 +166,23 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 </Layout>
 
 <script>
-	// Participant counter
-	const countEl = document.getElementById('participant-count');
-	let count = 2;
-	document.getElementById('pax-minus')?.addEventListener('click', () => {
-		if (count > 1) { count--; if (countEl) countEl.textContent = String(count); }
-	});
-	document.getElementById('pax-plus')?.addEventListener('click', () => {
-		count++; if (countEl) countEl.textContent = String(count);
-	});
+	// Participant counter. Runs via astro:page-load because the ViewTransitions
+	// router swaps the DOM without re-executing this module, so listeners must
+	// be re-attached to the fresh elements after every navigation.
+	function initParticipantCounter() {
+		const countEl = document.getElementById('participant-count');
+		const minusBtn = document.getElementById('pax-minus');
+		const plusBtn = document.getElementById('pax-plus');
+		if (!countEl || !minusBtn || !plusBtn) return;
+		let count = 2;
+		minusBtn.addEventListener('click', () => {
+			if (count > 1) { count--; countEl.textContent = String(count); }
+		});
+		plusBtn.addEventListener('click', () => {
+			count++; countEl.textContent = String(count);
+		});
+	}
+	document.addEventListener('astro:page-load', initParticipantCounter);
 </script>
 
 <script>
@@ -185,8 +193,6 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 	import { renderImageCarouselHTML, initImageCarousels } from '../../lib/image-carousel';
 	import { readTimePickerValue } from '../../lib/time-picker';
 	import { applyMinBookingDate, isPastBookingDate } from '../../lib/booking-date';
-
-	attachPlacesAutocomplete(document.getElementById('tour-pickup') as HTMLInputElement | null);
 
 	let partnerDiscount = 0;
 
@@ -422,55 +428,67 @@ import { renderTimePickerHTML } from '../../lib/time-picker';
 		}
 	}
 
-	/* ── Navigate to vehicle selection ─────────────────────────── */
-	const tourFormScope = document.getElementById('tour-form');
+	/* ── Page init ─────────────────────────────────────────────── */
+	// Everything below touches the DOM, so it must re-run after every
+	// ViewTransitions swap (this module itself only executes once per session).
+	function initTourPage() {
+		// Bail on any page that isn't /book/tour.
+		if (!document.getElementById('tour-select') || !document.getElementById('tour-carousel-inner')) return;
 
-	wireAutoClear([
-		document.getElementById('tour-select'),
-		document.getElementById('tour-date'),
-	]);
+		attachPlacesAutocomplete(document.getElementById('tour-pickup') as HTMLInputElement | null);
 
-	applyMinBookingDate('tour-date');
+		const tourFormScope = document.getElementById('tour-form');
 
-	document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
-		clearFormErrors(tourFormScope);
+		wireAutoClear([
+			document.getElementById('tour-select'),
+			document.getElementById('tour-date'),
+		]);
 
-		const select = document.getElementById('tour-select') as HTMLSelectElement;
-		const pickupEl = document.getElementById('tour-pickup') as HTMLInputElement;
-		const dateEl = document.getElementById('tour-date') as HTMLInputElement;
-		const tourId = select?.value || '';
-		const tourName = tourId ? select.options[select.selectedIndex]?.text ?? '' : '';
-		const pickup = pickupEl?.value.trim() ?? '';
-		const date = dateEl?.value.trim() ?? '';
-		const time = readTimePickerValue('tour-time');
-		const participants = document.getElementById('participant-count')?.textContent?.trim() || '2';
+		applyMinBookingDate('tour-date');
 
-		let firstErr: HTMLElement | null = null;
-		if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
-		if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
-		else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
+		document.getElementById('tour-submit-btn')?.addEventListener('click', () => {
+			clearFormErrors(tourFormScope);
 
-		if (firstErr) {
-			firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			firstErr.focus?.();
-			return;
-		}
+			const select = document.getElementById('tour-select') as HTMLSelectElement;
+			const pickupEl = document.getElementById('tour-pickup') as HTMLInputElement;
+			const dateEl = document.getElementById('tour-date') as HTMLInputElement;
+			const tourId = select?.value || '';
+			const tourName = tourId ? select.options[select.selectedIndex]?.text ?? '' : '';
+			const pickup = pickupEl?.value.trim() ?? '';
+			const date = dateEl?.value.trim() ?? '';
+			const time = readTimePickerValue('tour-time');
+			const participants = document.getElementById('participant-count')?.textContent?.trim() || '2';
 
-		const params = new URLSearchParams({ tourId, tourName, pickup, date, time, participants });
-		window.location.href = `/book/tour/results?${params.toString()}`;
-	});
+			let firstErr: HTMLElement | null = null;
+			if (!tourId) { showFieldError(select, 'Please select a tour.'); firstErr ??= select; }
+			if (!date) { showFieldError(dateEl, 'Please select a tour date.'); firstErr ??= dateEl; }
+			else if (isPastBookingDate(date)) { showFieldError(dateEl, 'Please select a future date.'); firstErr ??= dateEl; }
 
-	// Race partner-discount detection against a 2s timeout so the public catalog
-	// never hangs waiting for auth. Falls back to no discount on timeout.
-	Promise.race<number>([
-		detectPartnerDiscount(),
-		new Promise<number>((resolve) => setTimeout(() => resolve(0), 2000)),
-	]).then(d => {
-		partnerDiscount = d;
-		loadTours();
-	}).catch(() => {
-		partnerDiscount = 0;
-		loadTours();
-	});
+			if (firstErr) {
+				firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				firstErr.focus?.();
+				return;
+			}
+
+			const params = new URLSearchParams({ tourId, tourName, pickup, date, time, participants });
+			window.location.href = `/book/tour/results?${params.toString()}`;
+		});
+
+		// Race partner-discount detection against a 2s timeout so the public catalog
+		// never hangs waiting for auth. Falls back to no discount on timeout.
+		Promise.race<number>([
+			detectPartnerDiscount(),
+			new Promise<number>((resolve) => setTimeout(() => resolve(0), 2000)),
+		]).then(d => {
+			partnerDiscount = d;
+			loadTours();
+		}).catch(() => {
+			partnerDiscount = 0;
+			loadTours();
+		});
+	}
+
+	// Fires on the initial page load and after every ViewTransitions navigation.
+	document.addEventListener('astro:page-load', initTourPage);
 </script>
 
