@@ -257,3 +257,208 @@ until a human runs them.**
 
 9 of 9 server-side/unit checks PASS. 5 browser-only checks NOT RUN (deferred
 to manual QA with steps above). 0 FAIL.
+
+---
+
+## Customer-group targeting (2026-08-26)
+
+Branch: `feature/coupon-customer-groups`. Verification of Task 1's
+group-aware `validate_coupon(p_code, p_flow)` (columns
+`applies_to_all_groups`/`groups` on `public.coupons`, caller's group resolved
+server-side from `auth.uid()` — no JWT → `retail`; an approved partner row →
+its `type`). Same method as the section above: queries run directly against
+the live Supabase project (`wjqfcijisslzqxesbbox`) via the Management API SQL
+endpoint, future booking date (2026-09-15), test coupons prefixed `QA_GRP_`,
+test booking email `qa-grp@test.local`. Access token used to authenticate is
+not reproduced here or anywhere in this repo.
+
+Baseline before starting: no `QA_GRP_%` coupons present, `TEST10` present
+(`applies_to_all_groups=true`, `groups={}`), one approved hotel partner
+available to simulate (`partners.type='hotel'`, `status='approved'`), and
+`public.coupons` contained only `TEST10`.
+
+A quirk of the Management API surfaced while running these checks: when a
+batch of two statements (`select set_config(...); select * from
+validate_coupon(...)`) has its last statement return **zero rows**, the API
+response shows the *first* statement's result (the `set_config` row) instead
+of an empty array — it does not reliably return an empty result set as `[]`
+for a multi-statement batch. Wrapping the last statement as `select count(*)
+as rows from validate_coupon(...)` sidesteps this (a count query always
+returns exactly one row, so there's no empty-result ambiguity), and this is
+the pattern used for checks 2 through 5 below.
+
+### 1. Group-only coupon rejected for retail (guest), booking RPC rejects it too — PASS
+
+Created `QA_GRP_HOTEL` (percent 10, all services, `applies_to_all_groups=false`, `groups=['hotel']`):
+
+```sql
+insert into public.coupons (code, discount_type, discount_value, valid_from, valid_until,
+  active, applies_to_all, flows, applies_to_all_groups, groups)
+values ('QA_GRP_HOTEL','percent',10,current_date,current_date+30,true,true,'{}',false,array['hotel']);
+
+select * from public.validate_coupon('QA_GRP_HOTEL','transfer');
+
+select public.create_transfer_booking('{"date":"2026-09-15","time":"10:00","from":"A","to":"B",
+  "email":"qa-grp@test.local","total_price":45,"coupon_code":"QA_GRP_HOTEL","coupon_discount":4.5,
+  "booking_type":"transfer"}'::jsonb);
+
+select count(*) from public.transfers where email='qa-grp@test.local';
+```
+
+Observed: `validate_coupon` with no JWT (retail caller) returned `[]` (0
+rows). `create_transfer_booking` as a guest raised
+`ERROR: P0001: COUPON_INVALID`. `select count(*) from public.transfers where
+email='qa-grp@test.local'` was `0` — no booking row inserted. **PASS.**
+
+### 2. Simulated hotel-partner JWT sees the hotel-only coupon — PASS
+
+```sql
+select set_config('request.jwt.claims',
+  json_build_object('sub', (select p.id::text from public.partners p
+    where p.type='hotel' and p.status='approved' limit 1),
+    'role','authenticated')::text, true);
+select count(*) as rows from public.validate_coupon('QA_GRP_HOTEL','transfer');
+```
+
+Observed: `{"rows":1}`. Simulated as an approved hotel partner, the
+hotel-only coupon validates. **PASS.**
+
+### 3. Mixed-group coupon (`retail`,`agency`): retail sees it, hotel does not — PASS
+
+Created `QA_GRP_MIX` (`applies_to_all_groups=false`, `groups=['retail','agency']`):
+
+```sql
+insert into public.coupons (code, discount_type, discount_value, valid_from, valid_until,
+  active, applies_to_all, flows, applies_to_all_groups, groups)
+values ('QA_GRP_MIX','percent',10,current_date,current_date+30,true,true,'{}',false,array['retail','agency']);
+
+select count(*) as rows from public.validate_coupon('QA_GRP_MIX','transfer');   -- no JWT (retail)
+
+select set_config('request.jwt.claims',
+  json_build_object('sub', (select p.id::text from public.partners p
+    where p.type='hotel' and p.status='approved' limit 1),
+    'role','authenticated')::text, true);
+select count(*) as rows from public.validate_coupon('QA_GRP_MIX','transfer');   -- simulated hotel partner
+```
+
+Observed: retail (no JWT) → `{"rows":1}`. Simulated hotel partner →
+`{"rows":0}`. Group filter correctly includes `retail`/`agency` and excludes
+`hotel`. **PASS.**
+
+### 4. Group + flow restriction combined (both must hold simultaneously) — PASS
+
+Updated `QA_GRP_HOTEL` to also restrict by flow: `applies_to_all=false`,
+`flows=array['tour']` (still `groups=['hotel']`, `applies_to_all_groups=false`):
+
+```sql
+update public.coupons set applies_to_all=false, flows=array['tour'] where code='QA_GRP_HOTEL';
+
+-- simulated hotel partner, each in its own set_config + validate_coupon batch:
+select count(*) as rows from public.validate_coupon('QA_GRP_HOTEL','transfer');  -- expect 0
+select count(*) as rows from public.validate_coupon('QA_GRP_HOTEL','tour');      -- expect 1
+```
+
+Observed: hotel partner + flow `transfer` → `{"rows":0}` (flow restriction
+correctly blocks it even though the group matches). Hotel partner + flow
+`tour` → `{"rows":1}` (both the group restriction and the flow restriction
+are satisfied together). Confirms the two filters (`applies_to_all_groups`/
+`groups` and `applies_to_all`/`flows`) are applied as independent, combined
+`and` conditions. **PASS.**
+
+### 5. Backward compatibility: all-groups coupon still validates for retail — PASS
+
+```sql
+select count(*) as rows from public.validate_coupon('TEST10','transfer');
+```
+
+Observed: `{"rows":1}` — `TEST10` (`applies_to_all_groups=true`) is
+unaffected by the new group filter for a retail (no-JWT) caller. **PASS.**
+
+### 6. Invalid group value rejected by the check constraint — PASS
+
+```sql
+insert into public.coupons (code, discount_type, discount_value, valid_from, valid_until,
+  active, applies_to_all, applies_to_all_groups, groups)
+values ('QA_GRP_BAD','percent',10,current_date,current_date+30,true,true,false,array['vip']);
+```
+
+Observed:
+
+```
+ERROR:  23514: new row for relation "coupons" violates check constraint "coupons_groups_known"
+DETAIL:  Failing row contains (..., QA_GRP_BAD, percent, 10, ..., {vip}).
+```
+
+The insert was rejected outright — no `QA_GRP_BAD` row exists afterward.
+**PASS.**
+
+### Cleanup performed
+
+```sql
+delete from public.coupons where code like 'QA_GRP_%';
+delete from public.transfers where email='qa-grp@test.local';
+```
+
+Verification after cleanup:
+
+```sql
+select code from public.coupons order by code;                              -- [{"code":"TEST10"}]
+select count(*) as cnt from public.coupons where code like 'QA_GRP_%';       -- {"cnt":0}
+select count(*) as cnt from public.transfers where email='qa-grp@test.local'; -- {"cnt":0}
+select count(*) as cnt from public.coupons where code='QA_GRP_BAD';          -- {"cnt":0}
+```
+
+Confirmed: only `TEST10` remains in `public.coupons`; no `QA_GRP_%` rows, no
+leftover `qa-grp@test.local` booking rows, and the constraint-rejected
+`QA_GRP_BAD` never persisted. **PASS.**
+
+### Gates re-run (Step 3)
+
+`npm test`:
+
+```
+Test Files  4 passed (4)
+     Tests  41 passed (41)
+```
+41/41. **PASS.**
+
+`npx astro check`:
+
+```
+Result (148 files):
+- 43 errors
+- 0 warnings
+- 18 hints
+```
+43 errors — matches the pre-existing baseline exactly (same unrelated files
+as recorded in the Step 1 section above: `Layout` prop typing on `.astro`
+pages, `google` global, implicit-any callback params). No new errors
+introduced by the group-targeting feature. **PASS.**
+
+### Browser-only: NOT RUN, deferred to manual QA (added to the list above)
+
+6. **Admin coupon-groups form + partner checkout behavior** — in
+   `/admin/coupons`, create a coupon with "Selected groups" → Hotels only,
+   and confirm the admin list's Customers column renders "Hotels" (not
+   "Everyone"). Then sign in as an approved hotel partner and confirm that
+   coupon applies successfully at checkout, while a guest (retail) entering
+   the same code gets "Invalid or expired coupon code."
+
+### Summary
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Hotel-only coupon rejected for retail/guest (validate + booking RPC) | PASS |
+| 2 | Simulated hotel partner sees hotel-only coupon | PASS |
+| 3 | Mixed-group coupon (retail/agency): retail yes, hotel no | PASS |
+| 4 | Group + flow restriction combined (both enforced together) | PASS |
+| 5 | Backward compat: all-groups coupon (`TEST10`) still validates for retail | PASS |
+| 6 | Invalid group value rejected by `coupons_groups_known` check constraint | PASS |
+| — | Cleanup verified (only `TEST10` remains, no test booking rows) | PASS |
+| — | `npm test` (41/41) | PASS |
+| — | `npx astro check` (43 baseline, 0 new) | PASS |
+| 2b.6 | Admin groups form + partner/guest checkout behavior | NOT RUN — deferred |
+
+6 of 6 DB-level checks PASS, both regression gates PASS, cleanup verified.
+1 browser-only check NOT RUN (deferred to manual QA, added to the list
+above). 0 FAIL.
