@@ -402,10 +402,11 @@ import Layout from '../../../layouts/Layout.astro';
 			return;
 		}
 		couponBtn.disabled = true;
+		const applyLabel = couponBtn.textContent || 'Apply';
 		couponBtn.textContent = 'Checking\u2026';
 		const coupon = await validateCoupon(codeValue, 'tour');
 		couponBtn.disabled = false;
-		couponBtn.textContent = 'Apply';
+		couponBtn.textContent = applyLabel;
 		appliedCoupon = coupon;
 		recomputeTotals();
 		if (coupon) setCouponStatus(`Coupon "${coupon.code}" applied: -\u20AC${couponDiscount.toFixed(2)}`, true);
@@ -519,9 +520,11 @@ import Layout from '../../../layouts/Layout.astro';
 		} catch (err: any) {
 			console.error('Save booking failed:', err);
 			const detail = err?.message || err?.error_description || '';
-			showFormError(formScope, detail
-				? `Failed to save booking: ${detail}`
-				: 'Failed to save booking. Please try again.');
+			showFormError(formScope, detail.includes('COUPON_INVALID')
+				? 'The coupon is no longer valid. Remove it or try another code.'
+				: detail
+					? `Failed to save booking: ${detail}`
+					: 'Failed to save booking. Please try again.');
 			btn.disabled = false;
 			btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Complete Booking`;
 		}
