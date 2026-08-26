@@ -1,0 +1,310 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Coupons" activeSection="coupons" docTitle="Coupons — Admin">
+	<div class="max-w-5xl">
+		<h1 class="text-2xl font-bold text-neutral-900 mb-1">Coupons</h1>
+		<p class="text-sm text-neutral-500 mb-6">Create discount codes, set their validity period, and choose which services they apply to.</p>
+
+		<!-- ── Create form ── -->
+		<form id="coupon-form" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 mb-8">
+			<h2 class="text-base font-bold text-neutral-900 mb-4">New coupon</h2>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="cp-code" class="block text-sm font-medium text-neutral-700 mb-1">Name / code</label>
+					<input id="cp-code" type="text" required placeholder="e.g. SUMMER25"
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<p class="text-xs text-neutral-400 mt-1">This is what the customer types at checkout. Case-insensitive, must be unique.</p>
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="cp-type" class="block text-sm font-medium text-neutral-700 mb-1">Discount type</label>
+						<select id="cp-type"
+							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]">
+							<option value="percent">Percent (%)</option>
+							<option value="fixed">Fixed (&euro;)</option>
+						</select>
+					</div>
+					<div>
+						<label for="cp-value" class="block text-sm font-medium text-neutral-700 mb-1">Value</label>
+						<input id="cp-value" type="number" min="0.01" step="0.01" required placeholder="10"
+							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="cp-from" class="block text-sm font-medium text-neutral-700 mb-1">Valid from</label>
+					<input id="cp-from" type="date" required
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+				<div>
+					<label for="cp-until" class="block text-sm font-medium text-neutral-700 mb-1">Valid until</label>
+					<input id="cp-until" type="date" required
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+			</div>
+
+			<div class="mb-5">
+				<span class="block text-sm font-medium text-neutral-700 mb-2">Applies to</span>
+				<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+					<label class="flex items-center gap-2 text-sm text-neutral-700">
+						<input type="radio" name="cp-scope" value="all" checked class="w-4 h-4 text-[#0C6B95]" />
+						All services
+					</label>
+					<label class="flex items-center gap-2 text-sm text-neutral-700">
+						<input type="radio" name="cp-scope" value="selected" class="w-4 h-4 text-[#0C6B95]" />
+						Selected services:
+					</label>
+					<div id="cp-flows" class="flex items-center gap-4 opacity-40 pointer-events-none">
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="transfer" class="cp-flow w-4 h-4 rounded text-[#0C6B95]" /> Transfers
+						</label>
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="hourly" class="cp-flow w-4 h-4 rounded text-[#0C6B95]" /> Hourly
+						</label>
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="tour" class="cp-flow w-4 h-4 rounded text-[#0C6B95]" /> Tours
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="flex items-center gap-4">
+				<button type="submit"
+					class="px-6 py-2.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
+					Create coupon
+				</button>
+				<p id="cp-status" class="text-sm"></p>
+			</div>
+		</form>
+
+		<!-- ── List ── -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50 text-left text-neutral-500">
+							<th class="px-5 py-3 font-medium">Code</th>
+							<th class="px-5 py-3 font-medium">Discount</th>
+							<th class="px-5 py-3 font-medium">Period</th>
+							<th class="px-5 py-3 font-medium">Services</th>
+							<th class="px-5 py-3 font-medium">Status</th>
+							<th class="px-5 py-3 font-medium text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody id="coupon-rows">
+						<tr><td colspan="6" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- ── Delete confirm modal ── -->
+	<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+		<div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+			<h3 class="text-base font-bold text-neutral-900 mb-2">Delete coupon?</h3>
+			<p class="text-sm text-neutral-500 mb-5">This permanently deletes <strong id="delete-modal-code"></strong>. Existing bookings keep their recorded discount.</p>
+			<div class="flex justify-end gap-3">
+				<button id="delete-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50">Cancel</button>
+				<button id="delete-confirm" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white">Delete</button>
+			</div>
+		</div>
+	</div>
+</AdminLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+	import { couponStatusOn, athensTodayISO, type CouponStatus } from '../../lib/coupons';
+
+	type CouponRow = {
+		id: string;
+		code: string;
+		discount_type: 'percent' | 'fixed';
+		discount_value: number;
+		valid_from: string;
+		valid_until: string;
+		active: boolean;
+		applies_to_all: boolean;
+		flows: string[];
+		created_at: string;
+	};
+
+	const rowsEl = document.getElementById('coupon-rows') as HTMLTableSectionElement;
+	const statusEl = document.getElementById('cp-status');
+	let pendingDeleteId: string | null = null;
+
+	function setStatus(msg: string, cls: string) {
+		if (!statusEl) return;
+		statusEl.textContent = msg;
+		statusEl.className = `text-sm ${cls}`;
+	}
+
+	function escapeHtml(s: string): string {
+		return s.replace(/[&<>"']/g, (c) => (
+			{ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+		));
+	}
+
+	const STATUS_BADGE: Record<CouponStatus, string> = {
+		active:    'bg-green-100 text-green-700',
+		scheduled: 'bg-amber-100 text-amber-700',
+		expired:   'bg-neutral-100 text-neutral-500',
+		closed:    'bg-red-100 text-red-700',
+	};
+
+	function servicesLabel(c: CouponRow): string {
+		if (c.applies_to_all) return 'All services';
+		const names: Record<string, string> = { transfer: 'Transfers', hourly: 'Hourly', tour: 'Tours' };
+		return c.flows.map((f) => names[f] ?? f).join(', ') || '—';
+	}
+
+	function discountLabel(c: CouponRow): string {
+		return c.discount_type === 'percent' ? `${c.discount_value}%` : `€${Number(c.discount_value).toFixed(2)}`;
+	}
+
+	async function loadCoupons() {
+		const { data, error } = await supabase
+			.from('coupons')
+			.select('*')
+			.order('created_at', { ascending: false });
+
+		if (error) {
+			rowsEl.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-red-500">Error loading coupons: [${error.code}] ${escapeHtml(error.message)}</td></tr>`;
+			return;
+		}
+		const coupons = (data ?? []) as CouponRow[];
+		if (!coupons.length) {
+			rowsEl.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-neutral-400">No coupons yet.</td></tr>';
+			return;
+		}
+
+		const today = athensTodayISO();
+		rowsEl.innerHTML = coupons.map((c) => {
+			const status = couponStatusOn(c, today);
+			return `
+				<tr class="border-t border-neutral-100">
+					<td class="px-5 py-3 font-semibold text-neutral-900">${escapeHtml(c.code)}</td>
+					<td class="px-5 py-3">${discountLabel(c)}</td>
+					<td class="px-5 py-3 whitespace-nowrap">${c.valid_from} → ${c.valid_until}</td>
+					<td class="px-5 py-3">${escapeHtml(servicesLabel(c))}</td>
+					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_BADGE[status]}">${status}</span></td>
+					<td class="px-5 py-3 text-right whitespace-nowrap">
+						<button data-toggle="${c.id}" data-active="${c.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${c.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
+							${c.active ? 'Close' : 'Reopen'}
+						</button>
+						<button data-delete="${c.id}" data-code="${escapeHtml(c.code)}" class="ml-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50">
+							Delete
+						</button>
+					</td>
+				</tr>`;
+		}).join('');
+
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				btn.disabled = true;
+				const { error: err } = await supabase
+					.from('coupons')
+					.update({ active: btn.dataset.active !== 'true' })
+					.eq('id', btn.dataset.toggle);
+				if (err) setStatus(`Error updating coupon: [${err.code}] ${err.message}`, 'text-red-500');
+				await loadCoupons();
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				pendingDeleteId = btn.dataset.delete ?? null;
+				const codeEl = document.getElementById('delete-modal-code');
+				if (codeEl) codeEl.textContent = btn.dataset.code ?? '';
+				document.getElementById('delete-modal')?.classList.remove('hidden');
+			});
+		});
+	}
+
+	/* ── Scope radio enables/disables the flow checkboxes ── */
+	const flowsBox = document.getElementById('cp-flows');
+	document.querySelectorAll<HTMLInputElement>('input[name="cp-scope"]').forEach((radio) => {
+		radio.addEventListener('change', () => {
+			const selected = (document.querySelector('input[name="cp-scope"]:checked') as HTMLInputElement)?.value === 'selected';
+			flowsBox?.classList.toggle('opacity-40', !selected);
+			flowsBox?.classList.toggle('pointer-events-none', !selected);
+		});
+	});
+
+	/* ── Create ── */
+	document.getElementById('coupon-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const code = (document.getElementById('cp-code') as HTMLInputElement).value.trim();
+		const discountType = (document.getElementById('cp-type') as HTMLSelectElement).value as 'percent' | 'fixed';
+		const discountValue = parseFloat((document.getElementById('cp-value') as HTMLInputElement).value);
+		const validFrom = (document.getElementById('cp-from') as HTMLInputElement).value;
+		const validUntil = (document.getElementById('cp-until') as HTMLInputElement).value;
+		const appliesToAll = (document.querySelector('input[name="cp-scope"]:checked') as HTMLInputElement)?.value === 'all';
+		const flows = appliesToAll
+			? []
+			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-flow:checked')).map((c) => c.value);
+
+		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
+		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
+		if (discountType === 'percent' && discountValue > 100) { setStatus('Percent discount cannot exceed 100.', 'text-red-500'); return; }
+		if (!validFrom || !validUntil || validUntil < validFrom) { setStatus('Set a valid period (end date not before start date).', 'text-red-500'); return; }
+		if (!appliesToAll && !flows.length) { setStatus('Pick at least one service, or choose "All services".', 'text-red-500'); return; }
+
+		const { error } = await supabase.from('coupons').insert({
+			code,
+			discount_type: discountType,
+			discount_value: discountValue,
+			valid_from: validFrom,
+			valid_until: validUntil,
+			applies_to_all: appliesToAll,
+			flows,
+			active: true,
+		});
+
+		if (error) {
+			const msg = error.code === '23505'
+				? `A coupon named "${code}" already exists.`
+				: `Error creating coupon: [${error.code}] ${error.message}`;
+			setStatus(msg, 'text-red-500');
+			return;
+		}
+
+		setStatus(`Coupon "${code}" created.`, 'text-green-600');
+		(e.target as HTMLFormElement).reset();
+		flowsBox?.classList.add('opacity-40', 'pointer-events-none');
+		await loadCoupons();
+	});
+
+	/* ── Delete modal ── */
+	document.getElementById('delete-cancel')?.addEventListener('click', () => {
+		pendingDeleteId = null;
+		document.getElementById('delete-modal')?.classList.add('hidden');
+	});
+	document.getElementById('delete-confirm')?.addEventListener('click', async () => {
+		if (!pendingDeleteId) return;
+		const { error } = await supabase.from('coupons').delete().eq('id', pendingDeleteId);
+		if (error) setStatus(`Error deleting coupon: [${error.code}] ${error.message}`, 'text-red-500');
+		pendingDeleteId = null;
+		document.getElementById('delete-modal')?.classList.add('hidden');
+		await loadCoupons();
+	});
+
+	/* ── Wait for the AdminLayout auth gate, then load ── */
+	const authEl = document.getElementById('admin-auth-check');
+	if (authEl) {
+		if (authEl.classList.contains('hidden')) loadCoupons();
+		else {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadCoupons(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	} else {
+		loadCoupons();
+	}
+</script>
