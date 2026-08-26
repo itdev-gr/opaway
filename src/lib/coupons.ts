@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 export type CouponFlow = 'transfer' | 'hourly' | 'tour';
 
 export interface AppliedCoupon {
@@ -44,6 +42,7 @@ export function athensTodayISO(): string {
 }
 
 export async function validateCoupon(code: string, flow: CouponFlow): Promise<AppliedCoupon | null> {
+  const { supabase } = await import('./supabase');
   const { data, error } = await supabase.rpc('validate_coupon', { p_code: code, p_flow: flow });
   if (error) {
     console.error('validate_coupon failed:', error);
