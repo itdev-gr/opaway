@@ -70,6 +70,35 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 			</div>
 
+			<div class="mb-5">
+				<span class="block text-sm font-medium text-neutral-700 mb-2">Customers</span>
+				<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+					<label class="flex items-center gap-2 text-sm text-neutral-700">
+						<input type="radio" name="cp-group-scope" value="all" checked class="w-4 h-4 text-[#0C6B95]" />
+						All customers
+					</label>
+					<label class="flex items-center gap-2 text-sm text-neutral-700">
+						<input type="radio" name="cp-group-scope" value="selected" class="w-4 h-4 text-[#0C6B95]" />
+						Selected groups:
+					</label>
+					<div id="cp-groups" class="flex flex-wrap items-center gap-4 opacity-40 pointer-events-none">
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="retail" class="cp-group w-4 h-4 rounded text-[#0C6B95]" /> Retail
+						</label>
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="hotel" class="cp-group w-4 h-4 rounded text-[#0C6B95]" /> Hotels
+						</label>
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="agency" class="cp-group w-4 h-4 rounded text-[#0C6B95]" /> Agencies
+						</label>
+						<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+							<input type="checkbox" value="driver" class="cp-group w-4 h-4 rounded text-[#0C6B95]" /> Drivers
+						</label>
+					</div>
+				</div>
+				<p class="text-xs text-neutral-400 mt-1">Retail = customers without a partner account (including guests). Partners are matched by their approved account type.</p>
+			</div>
+
 			<div class="flex items-center gap-4">
 				<button type="submit"
 					class="px-6 py-2.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
@@ -89,12 +118,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 							<th class="px-5 py-3 font-medium">Discount</th>
 							<th class="px-5 py-3 font-medium">Period</th>
 							<th class="px-5 py-3 font-medium">Services</th>
+							<th class="px-5 py-3 font-medium">Customers</th>
 							<th class="px-5 py-3 font-medium">Status</th>
 							<th class="px-5 py-3 font-medium text-right">Actions</th>
 						</tr>
 					</thead>
 					<tbody id="coupon-rows">
-						<tr><td colspan="6" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
+						<tr><td colspan="7" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
 					</tbody>
 				</table>
 			</div>
@@ -128,6 +158,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		active: boolean;
 		applies_to_all: boolean;
 		flows: string[];
+		applies_to_all_groups: boolean;
+		groups: string[];
 		created_at: string;
 	};
 
@@ -160,6 +192,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		return c.flows.map((f) => names[f] ?? f).join(', ') || '—';
 	}
 
+	function groupsLabel(c: CouponRow): string {
+		if (c.applies_to_all_groups) return 'All customers';
+		const names: Record<string, string> = { retail: 'Retail', hotel: 'Hotels', agency: 'Agencies', driver: 'Drivers' };
+		return c.groups.map((g) => names[g] ?? g).join(', ') || '—';
+	}
+
 	function discountLabel(c: CouponRow): string {
 		return c.discount_type === 'percent' ? `${c.discount_value}%` : `€${Number(c.discount_value).toFixed(2)}`;
 	}
@@ -171,12 +209,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			.order('created_at', { ascending: false });
 
 		if (error) {
-			rowsEl.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-red-500">Error loading coupons: [${error.code}] ${escapeHtml(error.message)}</td></tr>`;
+			rowsEl.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-red-500">Error loading coupons: [${error.code}] ${escapeHtml(error.message)}</td></tr>`;
 			return;
 		}
 		const coupons = (data ?? []) as CouponRow[];
 		if (!coupons.length) {
-			rowsEl.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-neutral-400">No coupons yet.</td></tr>';
+			rowsEl.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-neutral-400">No coupons yet.</td></tr>';
 			return;
 		}
 
@@ -189,6 +227,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-5 py-3">${discountLabel(c)}</td>
 					<td class="px-5 py-3 whitespace-nowrap">${c.valid_from} → ${c.valid_until}</td>
 					<td class="px-5 py-3">${escapeHtml(servicesLabel(c))}</td>
+					<td class="px-5 py-3">${escapeHtml(groupsLabel(c))}</td>
 					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_BADGE[status]}">${status}</span></td>
 					<td class="px-5 py-3 text-right whitespace-nowrap">
 						<button data-toggle="${c.id}" data-active="${c.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${c.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
@@ -233,6 +272,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		});
 	});
 
+	/* ── Group-scope radio enables/disables the group checkboxes ── */
+	const groupsBox = document.getElementById('cp-groups');
+	document.querySelectorAll<HTMLInputElement>('input[name="cp-group-scope"]').forEach((radio) => {
+		radio.addEventListener('change', () => {
+			const selected = (document.querySelector('input[name="cp-group-scope"]:checked') as HTMLInputElement)?.value === 'selected';
+			groupsBox?.classList.toggle('opacity-40', !selected);
+			groupsBox?.classList.toggle('pointer-events-none', !selected);
+		});
+	});
+
 	/* ── Create ── */
 	document.getElementById('coupon-form')?.addEventListener('submit', async (e) => {
 		e.preventDefault();
@@ -245,12 +294,17 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const flows = appliesToAll
 			? []
 			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-flow:checked')).map((c) => c.value);
+		const appliesToAllGroups = (document.querySelector('input[name="cp-group-scope"]:checked') as HTMLInputElement)?.value === 'all';
+		const groups = appliesToAllGroups
+			? []
+			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-group:checked')).map((c) => c.value);
 
 		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
 		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
 		if (discountType === 'percent' && discountValue > 100) { setStatus('Percent discount cannot exceed 100.', 'text-red-500'); return; }
 		if (!validFrom || !validUntil || validUntil < validFrom) { setStatus('Set a valid period (end date not before start date).', 'text-red-500'); return; }
 		if (!appliesToAll && !flows.length) { setStatus('Pick at least one service, or choose "All services".', 'text-red-500'); return; }
+		if (!appliesToAllGroups && !groups.length) { setStatus('Pick at least one customer group, or choose "All customers".', 'text-red-500'); return; }
 
 		const { error } = await supabase.from('coupons').insert({
 			code,
@@ -260,6 +314,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			valid_until: validUntil,
 			applies_to_all: appliesToAll,
 			flows,
+			applies_to_all_groups: appliesToAllGroups,
+			groups,
 			active: true,
 		});
 
@@ -274,6 +330,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		setStatus(`Coupon "${code}" created.`, 'text-green-600');
 		(e.target as HTMLFormElement).reset();
 		flowsBox?.classList.add('opacity-40', 'pointer-events-none');
+		groupsBox?.classList.add('opacity-40', 'pointer-events-none');
 		await loadCoupons();
 	});
 
