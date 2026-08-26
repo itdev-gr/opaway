@@ -131,6 +131,19 @@ import Layout from '../../../layouts/Layout.astro';
 							</label>
 						</div>
 
+						<!-- Coupon code -->
+						<div class="mb-6">
+							<label for="coupon-input" class="block text-sm font-semibold text-neutral-900 mb-2" data-i18n-el="Κουπόνι έκπτωσης" data-i18n-es="Cupón de descuento">Discount coupon</label>
+							<div class="flex gap-2">
+								<input id="coupon-input" type="text" placeholder="Coupon code" data-i18n-placeholder-el="Κωδικός κουπονιού" data-i18n-placeholder-es="Código de cupón"
+									class="flex-1 rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+								<button id="coupon-apply-btn" type="button"
+									class="px-5 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+									data-i18n-el="Εφαρμογή" data-i18n-es="Aplicar">Apply</button>
+							</div>
+							<p id="coupon-status" class="hidden mt-2 text-sm"></p>
+						</div>
+
 						<!-- Form-level error banner -->
 						<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
@@ -282,6 +295,7 @@ import Layout from '../../../layouts/Layout.astro';
 	import { supabase } from '../../../lib/supabase';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
 	import { resolvePartnerId } from '../../../lib/resolve-partner-id';
+	import { validateCoupon, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
 
 	const formScope = document.getElementById('payment-form-section');
 
@@ -344,16 +358,59 @@ import Layout from '../../../layouts/Layout.astro';
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }
 
 	/* ── Payment method state ── */
-	const baseTotal = (parseFloat(totalPrice) || 0) + ticketsSubtotal;
-	const cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
-	const cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
+	const preCouponTotal = (parseFloat(totalPrice) || 0) + ticketsSubtotal;
+	let appliedCoupon: AppliedCoupon | null = null;
+	let couponDiscount = 0;
+	let baseTotal = preCouponTotal;
+	let cardOnsiteFee = 0;
+	let cardOnsiteTotal = 0;
 	let selectedMethod = '';
 
-	// Set method prices
-	setText('method-stripe-price', `\u20AC${baseTotal.toFixed(2)}`);
-	setText('method-cash-price', `\u20AC${baseTotal.toFixed(2)}`);
-	setText('method-card-price', `\u20AC${cardOnsiteTotal.toFixed(2)}`);
-	setText('card-fee-amount', `+\u20AC${cardOnsiteFee.toFixed(2)}`);
+	function recomputeTotals() {
+		couponDiscount = appliedCoupon ? couponDiscountAmount(preCouponTotal, appliedCoupon) : 0;
+		baseTotal = Math.round((preCouponTotal - couponDiscount) * 100) / 100;
+		cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
+		cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
+		setText('method-stripe-price', `\u20AC${baseTotal.toFixed(2)}`);
+		setText('method-cash-price', `\u20AC${baseTotal.toFixed(2)}`);
+		setText('method-card-price', `\u20AC${cardOnsiteTotal.toFixed(2)}`);
+		setText('card-fee-amount', `+\u20AC${cardOnsiteFee.toFixed(2)}`);
+		const displayTotal = selectedMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
+		setText('os-total', `\u20AC${displayTotal.toFixed(2)}`);
+		setText('sb-total', `\u20AC ${displayTotal.toFixed(2)}`);
+	}
+	recomputeTotals();
+
+	/* ── Coupon ── */
+	const couponInput = document.getElementById('coupon-input') as HTMLInputElement | null;
+	const couponBtn = document.getElementById('coupon-apply-btn') as HTMLButtonElement | null;
+	const couponStatusEl = document.getElementById('coupon-status');
+
+	function setCouponStatus(msg: string, ok: boolean) {
+		if (!couponStatusEl) return;
+		couponStatusEl.textContent = msg;
+		couponStatusEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
+		couponStatusEl.classList.add(ok ? 'text-green-600' : 'text-red-600');
+	}
+
+	couponBtn?.addEventListener('click', async () => {
+		const codeValue = (couponInput?.value || '').trim();
+		if (!codeValue) {
+			appliedCoupon = null;
+			recomputeTotals();
+			couponStatusEl?.classList.add('hidden');
+			return;
+		}
+		couponBtn.disabled = true;
+		couponBtn.textContent = 'Checking\u2026';
+		const coupon = await validateCoupon(codeValue, 'tour');
+		couponBtn.disabled = false;
+		couponBtn.textContent = 'Apply';
+		appliedCoupon = coupon;
+		recomputeTotals();
+		if (coupon) setCouponStatus(`Coupon "${coupon.code}" applied: -\u20AC${couponDiscount.toFixed(2)}`, true);
+		else setCouponStatus('Invalid or expired coupon code.', false);
+	});
 
 	/* ── Method selection ── */
 	function selectMethod(method: string) {
@@ -436,6 +493,8 @@ import Layout from '../../../layouts/Layout.astro';
 					card_surcharge: paymentMethod === 'card-onsite' ? cardOnsiteFee : 0,
 					partner_id: partnerId,
 					added_by_admin: false,
+					coupon_code: appliedCoupon?.code ?? null,
+					coupon_discount: couponDiscount,
 				},
 			});
 
@@ -506,6 +565,8 @@ import Layout from '../../../layouts/Layout.astro';
 				entrance_tickets_total: ticketsSubtotal,
 				card_surcharge: 0,
 				partner_id: partnerId,
+				coupon_code: appliedCoupon?.code ?? null,
+				coupon_discount: couponDiscount,
 			};
 
 			const { data: { session } } = await supabase.auth.getSession();
@@ -520,7 +581,9 @@ import Layout from '../../../layouts/Layout.astro';
 				});
 				if (!res.ok) {
 					const { error } = await res.json().catch(() => ({ error: 'unknown' }));
-					showFormError(formScope, `Couldn't start payment: ${error}`);
+					showFormError(formScope, error === 'COUPON_INVALID'
+						? 'The coupon is no longer valid. Remove it or try another code.'
+						: `Couldn't start payment: ${error}`);
 					btn.disabled = false; btn.innerHTML = originalLabel;
 					return;
 				}
