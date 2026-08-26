@@ -76,6 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const { data: bookingId, error: rpcErr } = await sb.rpc(rpcNameFor(flow), { payload: insertPayload });
   if (rpcErr || !bookingId) {
+    if (rpcErr?.message?.includes('COUPON_INVALID')) return jsonError(400, 'COUPON_INVALID');
     console.error('[create-checkout-session] RPC failed', { flow, error: rpcErr });
     return jsonError(500, 'Failed to create booking');
   }
