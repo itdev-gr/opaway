@@ -2,67 +2,88 @@
 import AdminLayout from '../../components/AdminLayout.astro';
 ---
 
-<AdminLayout pageTitle="Sales Report" pageDescription="Revenue overview across all booking types." activeSection="sales">
+<AdminLayout pageTitle="Sales Report" pageDescription="Money collected and money still expected." activeSection="sales">
 
 	<!-- Period selector -->
-	<div class="flex items-center gap-3 mb-6">
+	<div class="flex flex-wrap items-center gap-3 mb-6">
 		<button data-period="week" class="period-btn px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">This Week</button>
 		<button data-period="month" class="period-btn px-4 py-2 text-sm font-semibold rounded-xl bg-[#0C6B95] text-white shadow-sm">This Month</button>
 		<button data-period="quarter" class="period-btn px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">This Quarter</button>
 		<button data-period="year" class="period-btn px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">This Year</button>
 		<button data-period="all" class="period-btn px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">All Time</button>
+		<span id="period-range" class="text-xs text-neutral-400 ml-1"></span>
 	</div>
 
-	<!-- Summary cards -->
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+	<!-- Headline: collected vs expected -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
 			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Total Revenue</p>
-			<p id="stat-total" class="text-2xl font-bold text-neutral-900">—</p>
-			<p id="stat-total-count" class="text-xs text-neutral-400 mt-1">— bookings</p>
+			<p id="stat-total" class="text-3xl font-bold text-emerald-600">—</p>
+			<p id="stat-total-count" class="text-xs text-neutral-400 mt-1">— paid bookings</p>
+			<p class="text-xs text-neutral-400 mt-0.5">Money received, counted on the date it was paid.</p>
 		</div>
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
+			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Possible Incomes</p>
+			<p id="stat-possible" class="text-3xl font-bold text-amber-600">—</p>
+			<p id="stat-possible-count" class="text-xs text-neutral-400 mt-1">— unpaid bookings</p>
+			<p class="text-xs text-neutral-400 mt-0.5">Not paid yet, counted on the ride date.</p>
+		</div>
+	</div>
+
+	<!-- Per service type -->
+	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
 			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Transfers</p>
 			<p id="stat-transfers" class="text-2xl font-bold text-[#0C6B95]">—</p>
-			<p id="stat-transfers-count" class="text-xs text-neutral-400 mt-1">— bookings</p>
+			<p id="stat-transfers-count" class="text-xs text-neutral-400 mt-1">— paid</p>
+			<p id="stat-transfers-possible" class="text-xs font-medium text-amber-600 mt-0.5">—</p>
 		</div>
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
 			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Tours</p>
-			<p id="stat-tours" class="text-2xl font-bold text-emerald-600">—</p>
-			<p id="stat-tours-count" class="text-xs text-neutral-400 mt-1">— bookings</p>
+			<p id="stat-tours" class="text-2xl font-bold text-[#0C6B95]">—</p>
+			<p id="stat-tours-count" class="text-xs text-neutral-400 mt-1">— paid</p>
+			<p id="stat-tours-possible" class="text-xs font-medium text-amber-600 mt-0.5">—</p>
 		</div>
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
 			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Experiences</p>
-			<p id="stat-experiences" class="text-2xl font-bold text-violet-600">—</p>
-			<p id="stat-experiences-count" class="text-xs text-neutral-400 mt-1">— bookings</p>
+			<p id="stat-experiences" class="text-2xl font-bold text-[#0C6B95]">—</p>
+			<p id="stat-experiences-count" class="text-xs text-neutral-400 mt-1">— paid</p>
+			<p id="stat-experiences-possible" class="text-xs font-medium text-amber-600 mt-0.5">—</p>
 		</div>
 	</div>
 
-	<!-- Payment method breakdown -->
+	<p id="excluded-note" class="hidden text-xs text-neutral-500 mb-6"></p>
+
+	<!-- Breakdowns (collected only) -->
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
-			<h3 class="text-sm font-bold text-neutral-800 mb-4">By Payment Method</h3>
+			<h3 class="text-sm font-bold text-neutral-800 mb-1">By Payment Method</h3>
+			<p class="text-xs text-neutral-400 mb-4">Collected money only.</p>
 			<div id="by-method" class="space-y-3">
 				<p class="text-sm text-neutral-400">Loading...</p>
 			</div>
 		</div>
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
-			<h3 class="text-sm font-bold text-neutral-800 mb-4">By Vehicle Type</h3>
+			<h3 class="text-sm font-bold text-neutral-800 mb-1">By Vehicle Type</h3>
+			<p class="text-xs text-neutral-400 mb-4">Collected money only.</p>
 			<div id="by-vehicle" class="space-y-3">
 				<p class="text-sm text-neutral-400">Loading...</p>
 			</div>
 		</div>
 	</div>
 
-	<!-- Revenue table -->
+	<!-- Bookings table -->
 	<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
-		<div class="px-6 py-4 border-b border-neutral-100">
-			<h3 class="text-base font-semibold text-neutral-800">All Bookings</h3>
+		<div class="px-6 py-4 border-b border-neutral-100 flex flex-wrap items-center gap-2">
+			<button data-view="collected" class="view-btn px-3 py-1.5 text-sm font-semibold rounded-lg bg-[#0C6B95] text-white">Collected</button>
+			<button data-view="possible" class="view-btn px-3 py-1.5 text-sm font-semibold rounded-lg border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">Possible</button>
+			<button data-view="excluded" class="view-btn hidden px-3 py-1.5 text-sm font-semibold rounded-lg border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95] transition-colors">Not counted</button>
 		</div>
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="bg-neutral-50 text-left">
-						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+						<th id="col-date" class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Paid on</th>
 						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
 						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Customer</th>
 						<th class="px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vehicle</th>
@@ -77,198 +98,252 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		</div>
 	</div>
 
-</AdminLayout>
-
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { summarize, toSalesRow } from '../../lib/sales-report';
+	import type { BookingType, Period, SalesRow, SalesSummary } from '../../lib/sales-report';
 
-	interface Booking {
-		id: string;
-		type: 'transfer' | 'tour' | 'experience';
-		date: string;
-		name: string;
-		email: string;
-		vehicleName: string;
-		totalPrice: number;
-		paymentMethod: string;
-		paymentStatus: string;
-		createdAt: Date | null;
-	}
+	type View = 'collected' | 'possible' | 'excluded';
 
-	let allBookings: Booking[] = [];
-	let currentPeriod = 'month';
+	const PERIODS: Period[] = ['week', 'month', 'quarter', 'year', 'all'];
+	const VIEWS: View[] = ['collected', 'possible', 'excluded'];
+
+	/* Columns are listed explicitly (never `select('*')`) so the payload stays
+	   small — but the three tables do not share a customer/vehicle shape, so the
+	   list differs per table or PostgREST rejects the request. */
+	const COMMON_COLS = 'id, date, created_at, paid_at, email, vehicle_name, total_price, payment_method, payment_status, ride_status';
+	const SOURCES: { table: string; type: BookingType; columns: string }[] = [
+		{ table: 'transfers',   type: 'transfer',   columns: `${COMMON_COLS}, first_name, last_name` },
+		{ table: 'tours',       type: 'tour',       columns: `${COMMON_COLS}, name, vehicle` },
+		{ table: 'experiences', type: 'experience', columns: `${COMMON_COLS}, name, vehicle` },
+	];
+
+	const PAYMENT_STATUS_COLORS: Record<string, string> = {
+		pending:            'bg-amber-50 text-amber-700',
+		paid:               'bg-emerald-50 text-emerald-700',
+		paid_to_driver:     'bg-teal-50 text-teal-700',
+		awaiting_payment:   'bg-neutral-100 text-neutral-600',
+		failed:             'bg-red-50 text-red-700',
+		refunded:           'bg-red-50 text-red-700',
+		partially_refunded: 'bg-orange-50 text-orange-700',
+		cancelled:          'bg-red-50 text-red-700',
+	};
+
+	const TYPE_BADGE: Record<BookingType, string> = {
+		transfer:   'bg-sky-100 text-sky-700',
+		tour:       'bg-emerald-100 text-emerald-700',
+		experience: 'bg-violet-100 text-violet-700',
+	};
+
+	let allRows: SalesRow[] = [];
+	let currentPeriod: Period = 'month';
+	let currentView: View = 'collected';
 
 	const setText = (id: string, text: string) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 	const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	const money = (n: number) => `\u20AC${n.toFixed(2)}`;
+	const label = (s: string) => esc(String(s).replace(/_/g, ' ').replace(/-/g, ' '));
+
+	/* ── Loading ── */
+
+	/** Read a whole table in pages; Supabase caps a single request at 1000 rows. */
+	async function fetchAll(table: string, columns: string): Promise<any[]> {
+		const PAGE = 1000;
+		const out: any[] = [];
+		for (let from = 0; ; from += PAGE) {
+			const { data, error } = await supabase
+				.from(table)
+				.select(columns)
+				.order('created_at', { ascending: false })
+				.range(from, from + PAGE - 1);
+			if (error) {
+				console.error(`Sales report load failed for ${table}:`, error);
+				break;
+			}
+			const page = data ?? [];
+			out.push(...page);
+			if (page.length < PAGE) break;
+		}
+		return out;
+	}
 
 	async function loadAllBookings() {
-		const collections = [
-			{ name: 'transfers', type: 'transfer' as const },
-			{ name: 'tours', type: 'tour' as const },
-			{ name: 'experiences', type: 'experience' as const },
-		];
-
-		allBookings = [];
-
-		for (const col of collections) {
-			const { data, error } = await supabase.from(col.name).select('*').order('created_at', { ascending: false });
-			if (error) {
-				console.error(`Sales report load failed for ${col.name}:`, error);
-				continue;
-			}
-			(data ?? []).forEach((d: any) => {
-				// Cancelled bookings are not revenue — exclude them from the report.
-				if (String(d.ride_status ?? '').toLowerCase() === 'cancelled') return;
-				const createdAt = d.created_at ? new Date(d.created_at) : null;
-				allBookings.push({
-					id: d.id,
-					type: col.type,
-					date: d.date || (createdAt ? createdAt.toLocaleDateString() : '—'),
-					name: d.first_name ? `${d.first_name} ${d.last_name || ''}`.trim() : (d.name || '—'),
-					email: d.email || '—',
-					vehicleName: d.vehicle_name || d.vehicle || '—',
-					totalPrice: Number(d.total_price) || 0,
-					paymentMethod: d.payment_method || '—',
-					paymentStatus: d.payment_status || (d.status === 'payed' ? 'paid' : 'pending'),
-					createdAt,
-				});
-			});
-		}
-
-		allBookings.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+		const results = await Promise.all(SOURCES.map((s) => fetchAll(s.table, s.columns)));
+		allRows = results.flatMap((rows, i) => rows.map((raw) => toSalesRow(raw, SOURCES[i].type)));
 		renderReport();
 	}
 
-	function getFilteredBookings(): Booking[] {
-		if (currentPeriod === 'all') return allBookings;
+	/* ── Rendering ── */
 
-		const now = new Date();
-		let startDate: Date;
-
-		switch (currentPeriod) {
-			case 'week':
-				startDate = new Date(now); startDate.setDate(now.getDate() - 7); break;
-			case 'month':
-				startDate = new Date(now.getFullYear(), now.getMonth(), 1); break;
-			case 'quarter':
-				startDate = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1); break;
-			case 'year':
-				startDate = new Date(now.getFullYear(), 0, 1); break;
-			default:
-				return allBookings;
-		}
-
-		return allBookings.filter(b => b.createdAt && b.createdAt >= startDate);
-	}
-
-	function renderReport() {
-		const bookings = getFilteredBookings();
-
-		// Stats
-		const transferBookings = bookings.filter(b => b.type === 'transfer');
-		const tourBookings = bookings.filter(b => b.type === 'tour');
-		const expBookings = bookings.filter(b => b.type === 'experience');
-
-		const totalRev = bookings.reduce((s, b) => s + b.totalPrice, 0);
-		const transferRev = transferBookings.reduce((s, b) => s + b.totalPrice, 0);
-		const tourRev = tourBookings.reduce((s, b) => s + b.totalPrice, 0);
-		const expRev = expBookings.reduce((s, b) => s + b.totalPrice, 0);
-
-		setText('stat-total', `\u20AC${totalRev.toFixed(2)}`);
-		setText('stat-total-count', `${bookings.length} bookings`);
-		setText('stat-transfers', `\u20AC${transferRev.toFixed(2)}`);
-		setText('stat-transfers-count', `${transferBookings.length} bookings`);
-		setText('stat-tours', `\u20AC${tourRev.toFixed(2)}`);
-		setText('stat-tours-count', `${tourBookings.length} bookings`);
-		setText('stat-experiences', `\u20AC${expRev.toFixed(2)}`);
-		setText('stat-experiences-count', `${expBookings.length} bookings`);
-
-		// By payment method
-		const byMethod: Record<string, { count: number; total: number }> = {};
-		bookings.forEach(b => {
-			const m = b.paymentMethod || 'unknown';
-			if (!byMethod[m]) byMethod[m] = { count: 0, total: 0 };
-			byMethod[m].count++;
-			byMethod[m].total += b.totalPrice;
-		});
-
-		const methodEl = document.getElementById('by-method')!;
-		const methodEntries = Object.entries(byMethod);
-		methodEl.innerHTML = methodEntries.length === 0
-			? '<p class="text-sm text-neutral-400">No data</p>'
-			: methodEntries.map(([method, data]) => `
+	function renderBreakdown(elId: string, buckets: Record<string, { total: number; count: number }>) {
+		const el = document.getElementById(elId);
+		if (!el) return;
+		const entries = Object.entries(buckets).sort((a, b) => b[1].total - a[1].total);
+		el.innerHTML = entries.length === 0
+			? '<p class="text-sm text-neutral-400">No collected money in this period.</p>'
+			: entries.map(([key, data]) => `
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
-						<span class="text-sm font-medium text-neutral-700 capitalize">${esc(method.replace('-', ' '))}</span>
+						<span class="text-sm font-medium text-neutral-700 capitalize">${label(key)}</span>
 						<span class="text-xs text-neutral-400">${data.count} bookings</span>
 					</div>
-					<span class="text-sm font-bold text-neutral-900">\u20AC${data.total.toFixed(2)}</span>
+					<span class="text-sm font-bold text-neutral-900">${money(data.total)}</span>
 				</div>
 			`).join('');
+	}
 
-		// By vehicle
-		const byVehicle: Record<string, { count: number; total: number }> = {};
-		bookings.forEach(b => {
-			const v = b.vehicleName || 'Unknown';
-			if (!byVehicle[v]) byVehicle[v] = { count: 0, total: 0 };
-			byVehicle[v].count++;
-			byVehicle[v].total += b.totalPrice;
-		});
+	function rowsFor(summary: SalesSummary): SalesRow[] {
+		if (currentView === 'possible') return summary.possible.rows;
+		if (currentView === 'excluded') return summary.excluded.rows;
+		return summary.collected.rows;
+	}
 
-		const vehicleEl = document.getElementById('by-vehicle')!;
-		const vehicleEntries = Object.entries(byVehicle);
-		vehicleEl.innerHTML = vehicleEntries.length === 0
-			? '<p class="text-sm text-neutral-400">No data</p>'
-			: vehicleEntries.map(([vehicle, data]) => `
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-2">
-						<span class="text-sm font-medium text-neutral-700">${esc(vehicle)}</span>
-						<span class="text-xs text-neutral-400">${data.count}</span>
-					</div>
-					<span class="text-sm font-bold text-neutral-900">\u20AC${data.total.toFixed(2)}</span>
-				</div>
-			`).join('');
+	function renderTable(summary: SalesSummary) {
+		const rows = rowsFor(summary);
+		const showPaidDate = currentView === 'collected';
+		setText('col-date', showPaidDate ? 'Paid on' : 'Ride date');
 
-		// Revenue table
-		const typeBadge: Record<string, string> = {
-			transfer: 'bg-sky-100 text-sky-700',
-			tour: 'bg-emerald-100 text-emerald-700',
-			experience: 'bg-violet-100 text-violet-700',
-		};
+		const tbody = document.getElementById('revenue-tbody');
+		if (!tbody) return;
 
-		const tbody = document.getElementById('revenue-tbody')!;
-		if (bookings.length === 0) {
-			tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">No bookings in this period.</td></tr>`;
+		if (rows.length === 0) {
+			const empty = currentView === 'collected'
+				? 'No money collected in this period.'
+				: currentView === 'possible'
+					? 'Nothing left to collect in this period.'
+					: 'Nothing excluded in this period.';
+			tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-neutral-400">${empty}</td></tr>`;
 			return;
 		}
 
-		tbody.innerHTML = bookings.map(b => `
+		tbody.innerHTML = rows.map((r) => {
+			const statusClass = PAYMENT_STATUS_COLORS[r.paymentStatus] ?? 'bg-neutral-100 text-neutral-600';
+			return `
 			<tr class="border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
-				<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${esc(b.date)}</td>
-				<td class="px-4 py-3"><span class="text-xs font-medium px-2 py-0.5 rounded-full ${typeBadge[b.type] || 'bg-neutral-100 text-neutral-600'} capitalize">${b.type}</span></td>
-				<td class="px-4 py-3 font-medium text-neutral-900 whitespace-nowrap">${esc(b.name)}</td>
-				<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${esc(b.vehicleName)}</td>
+				<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${esc(showPaidDate ? r.paidDate : r.serviceDate) || '—'}</td>
+				<td class="px-4 py-3"><span class="text-xs font-medium px-2 py-0.5 rounded-full ${TYPE_BADGE[r.type]} capitalize">${r.type}</span></td>
+				<td class="px-4 py-3 font-medium text-neutral-900 whitespace-nowrap">${esc(r.name)}</td>
+				<td class="px-4 py-3 text-neutral-600 whitespace-nowrap">${esc(r.vehicleName)}</td>
 				<td class="px-4 py-3">
-					<span class="text-xs font-medium px-2 py-0.5 rounded-full ${b.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'} capitalize">${esc(b.paymentMethod.replace('-', ' '))} · ${b.paymentStatus}</span>
+					<span class="text-xs font-medium px-2 py-0.5 rounded-full ${statusClass} capitalize whitespace-nowrap">${label(r.paymentMethod)} · ${label(r.paymentStatus)}</span>
 				</td>
-				<td class="px-4 py-3 text-right font-bold text-neutral-900">\u20AC${b.totalPrice.toFixed(2)}</td>
-			</tr>
-		`).join('');
+				<td class="px-4 py-3 text-right font-bold text-neutral-900">${money(r.totalPrice)}</td>
+			</tr>`;
+		}).join('');
 	}
 
-	// Period buttons
-	document.querySelectorAll<HTMLButtonElement>('.period-btn').forEach(btn => {
+	function renderReport() {
+		const summary = summarize(allRows, currentPeriod);
+		const { collected, possible, excluded } = summary;
+
+		setText('period-range', summary.range ? `${summary.range.from} → ${summary.range.to}` : 'All time');
+
+		setText('stat-total', money(collected.total));
+		setText('stat-total-count', `${collected.count} paid booking${collected.count === 1 ? '' : 's'}`);
+		setText('stat-possible', money(possible.total));
+		setText('stat-possible-count', `${possible.count} unpaid booking${possible.count === 1 ? '' : 's'}`);
+
+		const types: { type: BookingType; id: string }[] = [
+			{ type: 'transfer',   id: 'transfers' },
+			{ type: 'tour',       id: 'tours' },
+			{ type: 'experience', id: 'experiences' },
+		];
+		for (const { type, id } of types) {
+			setText(`stat-${id}`, money(collected.byType[type].total));
+			setText(`stat-${id}-count`, `${collected.byType[type].count} paid`);
+			setText(`stat-${id}-possible`, `+ ${money(possible.byType[type].total)} possible`);
+		}
+
+		// Refunded / failed / abandoned rows belong to neither figure — say so
+		// out loud rather than letting them vanish from the report.
+		const note = document.getElementById('excluded-note');
+		if (note) {
+			if (excluded.count > 0) {
+				note.textContent = `Not counted in either figure: ${excluded.count} booking${excluded.count === 1 ? '' : 's'} worth ${money(excluded.total)} (refunded, failed or unfinished checkouts).`;
+				note.classList.remove('hidden');
+			} else {
+				note.classList.add('hidden');
+			}
+		}
+
+		const excludedBtn = document.querySelector<HTMLButtonElement>('.view-btn[data-view="excluded"]');
+		if (excludedBtn) excludedBtn.classList.toggle('hidden', excluded.count === 0);
+		if (currentView === 'excluded' && excluded.count === 0) currentView = 'collected';
+
+		for (const view of VIEWS) {
+			const btn = document.querySelector<HTMLButtonElement>(`.view-btn[data-view="${view}"]`);
+			if (!btn) continue;
+			const count = view === 'collected' ? collected.count : view === 'possible' ? possible.count : excluded.count;
+			const name = view === 'excluded' ? 'Not counted' : view === 'collected' ? 'Collected' : 'Possible';
+			btn.textContent = `${name} (${count})`;
+		}
+		applyViewStyles();
+
+		renderBreakdown('by-method', collected.byMethod);
+		renderBreakdown('by-vehicle', collected.byVehicle);
+		renderTable(summary);
+	}
+
+	/* ── Controls ── */
+
+	function applyPeriodStyles() {
+		document.querySelectorAll<HTMLButtonElement>('.period-btn').forEach((b) => {
+			const isActive = b.dataset.period === currentPeriod;
+			b.className = `period-btn px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+				isActive ? 'bg-[#0C6B95] text-white shadow-sm' : 'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]'
+			}`;
+		});
+	}
+
+	function applyViewStyles() {
+		document.querySelectorAll<HTMLButtonElement>('.view-btn').forEach((b) => {
+			const isActive = b.dataset.view === currentView;
+			// className is rebuilt wholesale, so carry the hidden state across.
+			const wasHidden = b.classList.contains('hidden');
+			b.className = `view-btn px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+				isActive ? 'bg-[#0C6B95] text-white' : 'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]'
+			}`;
+			if (wasHidden) b.classList.add('hidden');
+		});
+	}
+
+	/** Keep period + view in the URL so a reload or a shared link lands on the same view. */
+	function syncUrl() {
+		const params = new URLSearchParams(location.search);
+		params.set('period', currentPeriod);
+		params.set('view', currentView);
+		history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+	}
+
+	function readUrl() {
+		const params = new URLSearchParams(location.search);
+		const period = params.get('period') as Period | null;
+		const view = params.get('view') as View | null;
+		if (period && PERIODS.includes(period)) currentPeriod = period;
+		if (view && VIEWS.includes(view)) currentView = view;
+	}
+
+	document.querySelectorAll<HTMLButtonElement>('.period-btn').forEach((btn) => {
 		btn.addEventListener('click', () => {
-			currentPeriod = btn.dataset.period || 'month';
-			document.querySelectorAll('.period-btn').forEach(b => {
-				const isActive = b.dataset.period === currentPeriod;
-				b.className = `period-btn px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-					isActive ? 'bg-[#0C6B95] text-white shadow-sm' : 'border border-neutral-200 text-neutral-600 hover:border-[#0C6B95]/40 hover:text-[#0C6B95]'
-				}`;
-			});
+			currentPeriod = (btn.dataset.period as Period) || 'month';
+			applyPeriodStyles();
+			syncUrl();
 			renderReport();
 		});
 	});
+
+	document.querySelectorAll<HTMLButtonElement>('.view-btn').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			currentView = (btn.dataset.view as View) || 'collected';
+			applyViewStyles();
+			syncUrl();
+			renderReport();
+		});
+	});
+
+	readUrl();
+	applyPeriodStyles();
+	applyViewStyles();
 
 	/* ── Auth guard observer ── */
 	// Race fix: AdminLayout's async getSession() can flip auth-check to hidden BEFORE
