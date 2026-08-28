@@ -1,0 +1,424 @@
+---
+import AdminLayout from '../../components/AdminLayout.astro';
+---
+
+<AdminLayout pageTitle="Influencers" pageDescription="Create influencer profiles, share their referral link, and track the bookings and commission each one brings in." activeSection="influencers" docTitle="Influencers — Admin">
+	<div class="max-w-6xl">
+		<!-- ── Create form ── -->
+		<form id="inf-form" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 mb-8">
+			<h2 class="text-base font-bold text-neutral-900 mb-4">New influencer</h2>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="inf-name" class="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+					<input id="inf-name" type="text" required placeholder="e.g. Maria K."
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+				<div>
+					<label for="inf-code" class="block text-sm font-medium text-neutral-700 mb-1">Referral code</label>
+					<input id="inf-code" type="text" required placeholder="e.g. maria" pattern="[a-zA-Z0-9_-]{3,32}"
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<p class="text-xs text-neutral-400 mt-1">3-32 letters, numbers, - or _. Becomes the link: <span class="font-mono">/?ref=&lt;code&gt;</span>. Unique, case-insensitive.</p>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="inf-email" class="block text-sm font-medium text-neutral-700 mb-1">Email <span class="text-neutral-400">(optional)</span></label>
+					<input id="inf-email" type="email" placeholder="name@example.com"
+						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="inf-ctype" class="block text-sm font-medium text-neutral-700 mb-1">Commission</label>
+						<select id="inf-ctype"
+							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]">
+							<option value="percent">Percent (%)</option>
+							<option value="fixed">Fixed (&euro;) per booking</option>
+						</select>
+					</div>
+					<div>
+						<label for="inf-cvalue" class="block text-sm font-medium text-neutral-700 mb-1">Value</label>
+						<input id="inf-cvalue" type="number" min="0" step="0.01" required placeholder="10"
+							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+			</div>
+
+			<div class="flex items-center gap-4">
+				<button type="submit"
+					class="px-6 py-2.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
+					Create influencer
+				</button>
+				<p id="inf-status" class="text-sm"></p>
+			</div>
+		</form>
+
+		<!-- ── List + report ── -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50 text-left text-neutral-500">
+							<th class="px-5 py-3 font-medium">Name</th>
+							<th class="px-5 py-3 font-medium">Link</th>
+							<th class="px-5 py-3 font-medium">Rate</th>
+							<th class="px-5 py-3 font-medium">Bookings</th>
+							<th class="px-5 py-3 font-medium">Revenue</th>
+							<th class="px-5 py-3 font-medium">Commission</th>
+							<th class="px-5 py-3 font-medium">Status</th>
+							<th class="px-5 py-3 font-medium text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody id="inf-rows">
+						<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- ── Delete confirm modal ── -->
+	<div id="inf-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+		<div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+			<h3 class="text-base font-bold text-neutral-900 mb-2">Delete influencer?</h3>
+			<p class="text-sm text-neutral-500 mb-5">This permanently deletes <strong id="inf-delete-name"></strong> and their referral link. Past bookings keep the recorded code and commission.</p>
+			<div class="flex justify-end gap-3">
+				<button id="inf-delete-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50">Cancel</button>
+				<button id="inf-delete-confirm" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white">Delete</button>
+			</div>
+		</div>
+	</div>
+</AdminLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+
+	type Influencer = {
+		id: string;
+		name: string;
+		email: string;
+		phone: string;
+		ref_code: string;
+		commission_type: 'percent' | 'fixed';
+		commission_value: number;
+		active: boolean;
+		created_at: string;
+	};
+
+	type AttributedBooking = {
+		id: string;
+		source: 'transfers' | 'tours';
+		influencer_id: string;
+		date: string;
+		time: string;
+		label: string;
+		customer: string;
+		total_price: number;
+		influencer_commission: number;
+		ride_status: string;
+		payment_status: string;
+	};
+
+	const rowsEl = document.getElementById('inf-rows') as HTMLTableSectionElement;
+	const statusEl = document.getElementById('inf-status');
+	let influencers: Influencer[] = [];
+	let bookingsByInf: Record<string, AttributedBooking[]> = {};
+	let pendingDeleteId: string | null = null;
+	const expanded = new Set<string>();
+
+	function setStatus(msg: string, cls: string) {
+		if (!statusEl) return;
+		statusEl.textContent = msg;
+		statusEl.className = `text-sm ${cls}`;
+	}
+
+	function escapeHtml(s: string): string {
+		return s.replace(/[&<>"']/g, (c) => (
+			{ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+		));
+	}
+
+	const eur = (n: number) => `€${(Number(n) || 0).toFixed(2)}`;
+
+	function rateLabel(i: Influencer): string {
+		return i.commission_type === 'percent' ? `${i.commission_value}%` : `${eur(i.commission_value)}/booking`;
+	}
+
+	function refUrl(i: Influencer): string {
+		return `${window.location.origin}/?ref=${encodeURIComponent(i.ref_code)}`;
+	}
+
+	async function loadData() {
+		const [infRes, trRes, toRes] = await Promise.all([
+			supabase.from('influencers').select('*').order('created_at', { ascending: false }),
+			supabase.from('transfers')
+				.select('id, influencer_id, influencer_commission, total_price, date, time, from, to, first_name, last_name, ride_status, payment_status, booking_type')
+				.not('influencer_id', 'is', null),
+			supabase.from('tours')
+				.select('id, influencer_id, influencer_commission, total_price, date, time, tour_name, name, ride_status, payment_status')
+				.not('influencer_id', 'is', null),
+		]);
+
+		if (infRes.error) {
+			rowsEl.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-red-500">Error loading influencers: [${infRes.error.code}] ${escapeHtml(infRes.error.message)}</td></tr>`;
+			return;
+		}
+		influencers = (infRes.data ?? []) as Influencer[];
+
+		bookingsByInf = {};
+		for (const t of (trRes.data ?? []) as any[]) {
+			const b: AttributedBooking = {
+				id: t.id, source: 'transfers', influencer_id: t.influencer_id,
+				date: t.date, time: t.time,
+				label: t.booking_type === 'hourly' ? `Hourly — ${t.from}` : `${t.from} → ${t.to}`,
+				customer: `${t.first_name ?? ''} ${t.last_name ?? ''}`.trim(),
+				total_price: Number(t.total_price) || 0,
+				influencer_commission: Number(t.influencer_commission) || 0,
+				ride_status: t.ride_status, payment_status: t.payment_status,
+			};
+			(bookingsByInf[b.influencer_id] ??= []).push(b);
+		}
+		for (const t of (toRes.data ?? []) as any[]) {
+			const b: AttributedBooking = {
+				id: t.id, source: 'tours', influencer_id: t.influencer_id,
+				date: t.date, time: t.time,
+				label: `Tour — ${t.tour_name ?? ''}`,
+				customer: (t.name ?? '').trim(),
+				total_price: Number(t.total_price) || 0,
+				influencer_commission: Number(t.influencer_commission) || 0,
+				ride_status: t.ride_status, payment_status: t.payment_status,
+			};
+			(bookingsByInf[b.influencer_id] ??= []).push(b);
+		}
+		for (const list of Object.values(bookingsByInf)) {
+			list.sort((a, b) => (b.date + (b.time ?? '')).localeCompare(a.date + (a.time ?? '')));
+		}
+
+		render();
+	}
+
+	function totalsFor(i: Influencer) {
+		const all = bookingsByInf[i.id] ?? [];
+		const counted = all.filter((b) => b.ride_status !== 'cancelled');
+		return {
+			count: counted.length,
+			revenue: counted.reduce((s, b) => s + b.total_price, 0),
+			commission: counted.reduce((s, b) => s + b.influencer_commission, 0),
+			all,
+		};
+	}
+
+	function bookingsDetailHtml(i: Influencer): string {
+		const all = bookingsByInf[i.id] ?? [];
+		if (!all.length) return '<p class="px-5 py-4 text-sm text-neutral-400">No bookings from this influencer yet.</p>';
+		return `
+			<table class="w-full text-xs">
+				<thead>
+					<tr class="text-left text-neutral-400">
+						<th class="px-5 py-2 font-medium">Date</th>
+						<th class="px-5 py-2 font-medium">Booking</th>
+						<th class="px-5 py-2 font-medium">Customer</th>
+						<th class="px-5 py-2 font-medium">Total</th>
+						<th class="px-5 py-2 font-medium">Commission</th>
+						<th class="px-5 py-2 font-medium">Ride</th>
+						<th class="px-5 py-2 font-medium">Payment</th>
+					</tr>
+				</thead>
+				<tbody>
+					${all.map((b) => `
+						<tr class="border-t border-neutral-100 ${b.ride_status === 'cancelled' ? 'text-neutral-400 line-through' : 'text-neutral-700'}">
+							<td class="px-5 py-2 whitespace-nowrap">${escapeHtml(b.date)} ${escapeHtml(b.time ?? '')}</td>
+							<td class="px-5 py-2">${escapeHtml(b.label)}</td>
+							<td class="px-5 py-2">${escapeHtml(b.customer)}</td>
+							<td class="px-5 py-2">${eur(b.total_price)}</td>
+							<td class="px-5 py-2 font-semibold">${eur(b.influencer_commission)}</td>
+							<td class="px-5 py-2">${escapeHtml(b.ride_status ?? '')}</td>
+							<td class="px-5 py-2">${escapeHtml(b.payment_status ?? '')}</td>
+						</tr>`).join('')}
+				</tbody>
+			</table>`;
+	}
+
+	function render() {
+		if (!influencers.length) {
+			rowsEl.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">No influencers yet.</td></tr>';
+			return;
+		}
+
+		rowsEl.innerHTML = influencers.map((i) => {
+			const t = totalsFor(i);
+			const isOpen = expanded.has(i.id);
+			return `
+				<tr class="border-t border-neutral-100">
+					<td class="px-5 py-3">
+						<span class="font-semibold text-neutral-900">${escapeHtml(i.name)}</span>
+						${i.email ? `<span class="block text-xs text-neutral-400">${escapeHtml(i.email)}</span>` : ''}
+					</td>
+					<td class="px-5 py-3 whitespace-nowrap">
+						<span class="font-mono text-xs text-neutral-600">?ref=${escapeHtml(i.ref_code)}</span>
+						<button data-copy="${i.id}" class="ml-1 px-2 py-1 text-xs font-semibold rounded-lg border border-neutral-200 hover:bg-sky-50 text-neutral-600">Copy link</button>
+					</td>
+					<td class="px-5 py-3 whitespace-nowrap">
+						<span class="rate-cell cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg" data-rate="${i.id}" title="Click to edit commission">${escapeHtml(rateLabel(i))}</span>
+					</td>
+					<td class="px-5 py-3">
+						<button data-expand="${i.id}" class="px-2.5 py-1 text-xs font-semibold rounded-lg border ${isOpen ? 'border-[#0C6B95] text-[#0C6B95] bg-sky-50' : 'border-neutral-200 text-neutral-700 hover:bg-sky-50'}">
+							${t.count} ${isOpen ? '▴' : '▾'}
+						</button>
+					</td>
+					<td class="px-5 py-3">${eur(t.revenue)}</td>
+					<td class="px-5 py-3 font-semibold text-emerald-700">${eur(t.commission)}</td>
+					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${i.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${i.active ? 'active' : 'closed'}</span></td>
+					<td class="px-5 py-3 text-right whitespace-nowrap">
+						<button data-toggle="${i.id}" data-active="${i.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${i.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
+							${i.active ? 'Close' : 'Reopen'}
+						</button>
+						<button data-delete="${i.id}" data-name="${escapeHtml(i.name)}" class="ml-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50">
+							Delete
+						</button>
+					</td>
+				</tr>
+				${isOpen ? `<tr class="border-t border-neutral-100 bg-neutral-50/60"><td colspan="8" class="p-0">${bookingsDetailHtml(i)}</td></tr>` : ''}`;
+		}).join('');
+
+		wireRowActions();
+	}
+
+	function wireRowActions() {
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				const inf = influencers.find((x) => x.id === btn.dataset.copy);
+				if (!inf) return;
+				try {
+					await navigator.clipboard.writeText(refUrl(inf));
+					btn.textContent = 'Copied!';
+					setTimeout(() => { btn.textContent = 'Copy link'; }, 1500);
+				} catch {
+					setStatus(`Link: ${refUrl(inf)}`, 'text-neutral-600');
+				}
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-expand]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const id = btn.dataset.expand ?? '';
+				if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+				render();
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLSpanElement>('.rate-cell').forEach((cell) => {
+			cell.addEventListener('click', () => {
+				const inf = influencers.find((x) => x.id === cell.dataset.rate);
+				if (!inf) return;
+				cell.outerHTML = `
+					<span class="inline-flex items-center gap-1">
+						<select id="rate-type-${inf.id}" class="rounded-lg border border-neutral-200 px-1.5 py-1 text-xs">
+							<option value="percent" ${inf.commission_type === 'percent' ? 'selected' : ''}>%</option>
+							<option value="fixed" ${inf.commission_type === 'fixed' ? 'selected' : ''}>€</option>
+						</select>
+						<input id="rate-value-${inf.id}" type="number" min="0" step="0.01" value="${inf.commission_value}"
+							class="w-20 rounded-lg border border-neutral-200 px-2 py-1 text-xs" />
+						<button id="rate-save-${inf.id}" class="px-2 py-1 bg-[#0C6B95] text-white text-xs rounded-lg hover:bg-[#0a5c82]">Save</button>
+					</span>`;
+				document.getElementById(`rate-save-${inf.id}`)?.addEventListener('click', async () => {
+					const type = (document.getElementById(`rate-type-${inf.id}`) as HTMLSelectElement).value as 'percent' | 'fixed';
+					const val = parseFloat((document.getElementById(`rate-value-${inf.id}`) as HTMLInputElement).value);
+					if (!Number.isFinite(val) || val < 0) { setStatus('Commission value must be 0 or more.', 'text-red-500'); return; }
+					if (type === 'percent' && val > 100) { setStatus('Percent commission cannot exceed 100.', 'text-red-500'); return; }
+					const { error } = await supabase.from('influencers')
+						.update({ commission_type: type, commission_value: val })
+						.eq('id', inf.id);
+					if (error) { setStatus(`Error updating commission: [${error.code}] ${error.message}`, 'text-red-500'); return; }
+					setStatus(`Commission updated for "${inf.name}". Applies to new bookings only.`, 'text-green-600');
+					await loadData();
+				});
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				btn.disabled = true;
+				const { error } = await supabase.from('influencers')
+					.update({ active: btn.dataset.active !== 'true' })
+					.eq('id', btn.dataset.toggle);
+				if (error) setStatus(`Error updating influencer: [${error.code}] ${error.message}`, 'text-red-500');
+				await loadData();
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				pendingDeleteId = btn.dataset.delete ?? null;
+				const nameEl = document.getElementById('inf-delete-name');
+				if (nameEl) nameEl.textContent = btn.dataset.name ?? '';
+				document.getElementById('inf-delete-modal')?.classList.remove('hidden');
+			});
+		});
+	}
+
+	/* ── Create ── */
+	document.getElementById('inf-form')?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const name = (document.getElementById('inf-name') as HTMLInputElement).value.trim();
+		const refCode = (document.getElementById('inf-code') as HTMLInputElement).value.trim();
+		const email = (document.getElementById('inf-email') as HTMLInputElement).value.trim();
+		const cType = (document.getElementById('inf-ctype') as HTMLSelectElement).value as 'percent' | 'fixed';
+		const cValue = parseFloat((document.getElementById('inf-cvalue') as HTMLInputElement).value);
+
+		if (!name) { setStatus('Enter a name.', 'text-red-500'); return; }
+		if (!/^[a-zA-Z0-9_-]{3,32}$/.test(refCode)) { setStatus('Referral code must be 3-32 letters, numbers, - or _.', 'text-red-500'); return; }
+		if (!Number.isFinite(cValue) || cValue < 0) { setStatus('Commission value must be 0 or more.', 'text-red-500'); return; }
+		if (cType === 'percent' && cValue > 100) { setStatus('Percent commission cannot exceed 100.', 'text-red-500'); return; }
+
+		const { error } = await supabase.from('influencers').insert({
+			name,
+			ref_code: refCode,
+			email,
+			commission_type: cType,
+			commission_value: cValue,
+			active: true,
+		});
+
+		if (error) {
+			const msg = error.code === '23505'
+				? `The referral code "${refCode}" is already taken.`
+				: `Error creating influencer: [${error.code}] ${error.message}`;
+			setStatus(msg, 'text-red-500');
+			return;
+		}
+
+		setStatus(`Influencer "${name}" created.`, 'text-green-600');
+		(e.target as HTMLFormElement).reset();
+		await loadData();
+	});
+
+	/* ── Delete modal ── */
+	document.getElementById('inf-delete-cancel')?.addEventListener('click', () => {
+		pendingDeleteId = null;
+		document.getElementById('inf-delete-modal')?.classList.add('hidden');
+	});
+	document.getElementById('inf-delete-confirm')?.addEventListener('click', async () => {
+		if (!pendingDeleteId) return;
+		const { error } = await supabase.from('influencers').delete().eq('id', pendingDeleteId);
+		if (error) setStatus(`Error deleting influencer: [${error.code}] ${error.message}`, 'text-red-500');
+		pendingDeleteId = null;
+		document.getElementById('inf-delete-modal')?.classList.add('hidden');
+		await loadData();
+	});
+
+	/* ── Wait for the AdminLayout auth gate, then load ── */
+	const authEl = document.getElementById('admin-auth-check');
+	if (authEl) {
+		if (authEl.classList.contains('hidden')) loadData();
+		else {
+			const observer = new MutationObserver(() => {
+				if (authEl.classList.contains('hidden')) { observer.disconnect(); loadData(); }
+			});
+			observer.observe(authEl, { attributes: true, attributeFilter: ['class'] });
+		}
+	} else {
+		loadData();
+	}
+</script>
