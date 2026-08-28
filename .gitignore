@@ -52,3 +52,6 @@ about-*.png
 booking-*.png
 e7-*.png
 r5-*.png
+
+# Claude Code local permissions (contains local secrets) — never track
+.claude/settings.local.json
