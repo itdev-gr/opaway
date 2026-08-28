@@ -32,6 +32,8 @@ export type FieldDef = {
   nullable?: boolean;
   /** Render as plain text; never included in the update payload. */
   readonly?: boolean;
+  /** Wire Google Places autocomplete onto this input (address fields). */
+  places?: boolean;
 };
 
 export const RIDE_STATUSES = ['new', 'assigned', 'pickup', 'onboard', 'completed', 'cancelled'] as const;
@@ -78,8 +80,8 @@ function transferFields(): FieldDef[] {
     t('phone', 'Phone'),
     sel('booking_type', 'Booking type', opts(BOOKING_TYPES)),
     sel('vehicle_slug', 'Vehicle', VEHICLE_OPTIONS),
-    t('from', 'From', { full: true }),
-    t('to', 'To', { full: true }),
+    t('from', 'From', { full: true, places: true }),
+    t('to', 'To', { full: true, places: true }),
     { key: 'date', label: 'Date', type: 'date' },
     { key: 'time', label: 'Time', type: 'time' },
     { key: 'return_date', label: 'Return date', type: 'date', nullable: true },
@@ -126,9 +128,9 @@ function tourOrExperienceFields(kind: 'tour' | 'experience'): FieldDef[] {
     t(`${kind}_name`, isTour ? 'Tour' : 'Experience'),
     t('vehicle', 'Vehicle'),
     t('vehicle_name', 'Vehicle name'),
-    t('pickup', 'Pickup', { full: true }),
-    t('pickup_location', 'Pickup location', { full: true }),
-    t('destination', 'Destination', { full: true }),
+    t('pickup', 'Pickup', { full: true, places: true }),
+    t('pickup_location', 'Pickup location', { full: true, places: true }),
+    t('destination', 'Destination', { full: true, places: true }),
     { key: 'date', label: 'Date', type: 'date' },
     { key: 'time', label: 'Time', type: 'time' },
     i('participants', 'Participants'),
@@ -180,7 +182,7 @@ function requestFields(): FieldDef[] {
     ta('message', 'Message', n),
     t('tour_name', 'Tour', n),
     t('experience_name', 'Experience', n),
-    t('pickup_location', 'Pickup', { ...n, full: true }),
+    t('pickup_location', 'Pickup', { ...n, full: true, places: true }),
     { key: 'date', label: 'Date', type: 'date', nullable: true },
     { key: 'time', label: 'Time', type: 'time', nullable: true },
     i('participants', 'Participants', n),

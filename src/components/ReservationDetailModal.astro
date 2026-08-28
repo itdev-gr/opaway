@@ -8,7 +8,7 @@
 <div id="res-detail-modal" class="fixed inset-0 z-[60] hidden">
 	<div class="absolute inset-0 bg-black/40" id="res-detail-overlay"></div>
 	<div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-		<div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
+		<div id="res-detail-card" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative pointer-events-auto">
 			<button type="button" id="res-detail-close"
 				class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors">
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -48,6 +48,7 @@
 	import { fieldsFor, buildUpdatePayload, VEHICLE_OPTIONS, type FieldDef, type Kind, type Option, type DynamicSource } from '../lib/booking-edit';
 	import { fetchApprovedDrivers, buildAssignmentUpdate } from '../lib/driver-options';
 	import { isPastBookingDate } from '../lib/booking-date';
+	import { attachPlacesAutocomplete } from '../lib/places-autocomplete';
 
 	type Row = Record<string, any>;
 
@@ -249,7 +250,8 @@
 			case 'number':
 				return `<input type="number" step="any" ${name} value="${esc(val)}" class="${INPUT_CLS}" />`;
 			default:
-				return `<input type="text" ${name} value="${esc(val)}" class="${INPUT_CLS}" />`;
+				// Address fields get Google Places autocomplete once the form is in the DOM.
+				return `<input type="text" ${name} value="${esc(val)}" ${def.places ? 'data-places="1" autocomplete="off"' : ''} class="${INPUT_CLS}" />`;
 		}
 	}
 
@@ -262,6 +264,50 @@
 			</div>`;
 		});
 		return `<form id="res-edit-form" class="grid grid-cols-2 gap-4" novalidate>${cells.join('')}</form>`;
+	}
+
+	/* ── Google Places on the address fields ── */
+	// The dropdown (.pac-container) is appended to <body> and positioned against the
+	// document, so inside a scrolling modal it drifts away from its input. We pin the
+	// containers we created to the focused input's viewport box instead, and drop them
+	// when the form goes away — leaving other pages' autocompletes untouched.
+	let ownPacContainers: HTMLElement[] = [];
+
+	function pacSnapshot(): Set<Element> {
+		return new Set(document.querySelectorAll('.pac-container'));
+	}
+
+	function collectNewPacContainers(before: Set<Element>) {
+		for (const el of document.querySelectorAll<HTMLElement>('.pac-container')) {
+			if (!before.has(el) && !ownPacContainers.includes(el)) ownPacContainers.push(el);
+		}
+	}
+
+	function repositionPac() {
+		if (!ownPacContainers.length) return;
+		const input = document.activeElement as HTMLElement | null;
+		if (!input || !(input instanceof HTMLInputElement) || input.dataset.places !== '1') return;
+		const r = input.getBoundingClientRect();
+		for (const c of ownPacContainers) {
+			c.style.position = 'fixed';
+			c.style.left = `${r.left}px`;
+			c.style.top = `${r.bottom}px`;
+			c.style.width = `${r.width}px`;
+		}
+	}
+
+	function teardownPlaces() {
+		for (const c of ownPacContainers) c.remove();
+		ownPacContainers = [];
+	}
+
+	async function wirePlaces() {
+		const inputs = Array.from(body.querySelectorAll<HTMLInputElement>('input[data-places="1"]'));
+		if (!inputs.length) return;
+		const before = pacSnapshot();
+		await Promise.all(inputs.map((el) => attachPlacesAutocomplete(el).catch(() => null)));
+		collectNewPacContainers(before);
+		repositionPac();
 	}
 
 	/* ══════════════════ Wiring ══════════════════ */
@@ -313,6 +359,7 @@
 
 	function renderView() {
 		if (!currentRow || !currentKind) return;
+		teardownPlaces();
 		body.innerHTML = currentKind === 'transfer'
 			? renderTransfer(currentRow)
 			: currentKind === 'request'
@@ -335,6 +382,7 @@
 		clearStatus();
 		setMode('edit');
 		(body.querySelector('input, select, textarea') as HTMLElement | null)?.focus();
+		wirePlaces();
 	}
 
 	function cancelEdit() {
@@ -344,6 +392,7 @@
 	}
 
 	function close() {
+		teardownPlaces();
 		modal.classList.add('hidden');
 		currentRow = null;
 		currentKind = null;
@@ -355,6 +404,10 @@
 	document.addEventListener('keydown', (e) => {
 		if (e.key !== 'Escape' || modal.classList.contains('hidden')) return;
 		if (mode === 'edit') cancelEdit(); else close();
+	});
+	document.getElementById('res-detail-card')?.addEventListener('scroll', repositionPac, { passive: true });
+	body.addEventListener('focusin', (e) => {
+		if ((e.target as HTMLElement)?.dataset?.places === '1') repositionPac();
 	});
 	editBtn.addEventListener('click', enterEdit);
 	cancelBtn.addEventListener('click', cancelEdit);
