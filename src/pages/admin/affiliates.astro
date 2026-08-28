@@ -135,6 +135,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		groupByAffiliate, affiliateTotals, refUrl as buildRefUrl, rateLabel as buildRateLabel,
 		TRANSFER_COLUMNS_ADMIN, TOUR_COLUMNS_ADMIN, type AffiliateBooking,
 	} from '../../lib/affiliate-earnings';
+	import { formatIban } from '../../lib/iban';
 
 	type Affiliate = {
 		id: string;
@@ -147,6 +148,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		active: boolean;
 		created_at: string;
 		user_id: string | null;
+		iban: string;
+		bank_holder: string;
 	};
 
 	// DB columns keep the legacy influencer_* names; the UI term is "affiliate".
@@ -199,10 +202,25 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	const totalsFor = (i: Affiliate) => affiliateTotals(bookingsByAff[i.id] ?? []);
 
+	/** Where to send this affiliate's commission. The affiliate maintains it themselves. */
+	function payoutHtml(i: Affiliate): string {
+		if (!i.iban) {
+			return `<div class="px-5 py-3 border-b border-neutral-200 text-xs text-neutral-400">
+				No payout details yet — the affiliate adds their IBAN from their own portal.
+			</div>`;
+		}
+		return `<div class="px-5 py-3 border-b border-neutral-200 flex flex-wrap items-center gap-x-4 gap-y-1">
+			<span class="text-[11px] uppercase tracking-wider text-neutral-500">Payout</span>
+			<span class="font-mono text-xs text-neutral-800">${escapeHtml(formatIban(i.iban))}</span>
+			${i.bank_holder ? `<span class="text-xs text-neutral-500">${escapeHtml(i.bank_holder)}</span>` : ''}
+			<button data-iban="${escapeHtml(i.iban)}" class="px-2 py-1 text-xs font-semibold rounded-lg border border-neutral-200 text-neutral-600 hover:bg-sky-50">Copy IBAN</button>
+		</div>`;
+	}
+
 	function bookingsDetailHtml(i: Affiliate): string {
 		const all = bookingsByAff[i.id] ?? [];
-		if (!all.length) return '<p class="px-5 py-4 text-sm text-neutral-400">No bookings from this affiliate yet.</p>';
-		return `
+		if (!all.length) return `${payoutHtml(i)}<p class="px-5 py-4 text-sm text-neutral-400">No bookings from this affiliate yet.</p>`;
+		return `${payoutHtml(i)}
 			<table class="w-full text-xs">
 				<thead>
 					<tr class="text-left text-neutral-400">
@@ -281,6 +299,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	}
 
 	function wireRowActions() {
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-iban]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				try {
+					await navigator.clipboard.writeText(btn.dataset.iban!);
+					btn.textContent = 'Copied!';
+					setTimeout(() => { btn.textContent = 'Copy IBAN'; }, 1500);
+				} catch { setStatus(`IBAN: ${btn.dataset.iban}`, 'text-neutral-600'); }
+			});
+		});
 		rowsEl.querySelectorAll<HTMLButtonElement>('[data-login]').forEach((btn) => {
 			btn.addEventListener('click', () => openLoginModal(btn.dataset.login!, btn.dataset.name ?? '', btn.dataset.email ?? ''));
 		});
