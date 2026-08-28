@@ -1,0 +1,94 @@
+---
+// src/components/PromoBanner.astro
+//
+// Sticky promo bar pinned to the bottom of the viewport.
+// Behaviour: position:sticky + bottom:0 inside the wrapper in Layout.astro that
+// ends where the footer begins — so it follows the visitor while they scroll and
+// parks in its natural slot right above the footer once they reach it.
+// Dismissal is remembered in localStorage for 30 days.
+
+const STORAGE_KEY = 'promo:opawey-book-online';
+const DISMISS_DAYS = 30;
+---
+<aside
+	id="promo-banner"
+	data-storage-key={STORAGE_KEY}
+	data-dismiss-days={DISMISS_DAYS}
+	class="sticky bottom-0 z-30 hidden bg-[#000724] text-white font-sans shadow-[0_-8px_24px_-12px_rgba(0,7,36,0.55)]"
+	aria-label="Opawey offer"
+>
+	<div class="max-w-6xl mx-auto px-6 lg:px-10 py-3 md:py-4 flex items-center gap-4">
+		<div class="flex-1 min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1">
+			<span
+				class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-white/15 border border-white/25 whitespace-nowrap"
+				data-i18n-el="Νέο"
+				data-i18n-es="Nuevo"
+			>New</span>
+			<p class="text-base md:text-lg font-semibold leading-tight">
+				<span data-i18n-el="Κλείστε online τη μεταφορά σας:" data-i18n-es="Reserva tu traslado online:">Book your transfer online:</span>
+				<span
+					class="font-normal text-white/90"
+					data-i18n-el="ιδιωτικός οδηγός σε όλη την Ελλάδα, με σταθερή τιμή."
+					data-i18n-es="chófer privado en toda Grecia, con precio fijo."
+				>private chauffeur across Greece, at a fixed price.</span>
+			</p>
+		</div>
+		<a
+			href="/book"
+			class="hidden sm:inline-flex shrink-0 items-center gap-1.5 bg-white text-[#000724] font-semibold rounded-lg px-4 py-2 text-sm hover:bg-white/90 transition-colors no-underline"
+		>
+			<span data-i18n-el="Κάντε κράτηση" data-i18n-es="Reservar ahora">Book now</span>
+			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+		</a>
+		<a
+			href="/book"
+			class="inline-flex sm:hidden shrink-0 items-center bg-white text-[#000724] font-semibold rounded-lg px-3 py-2 text-sm no-underline"
+			aria-label="Book now"
+			data-i18n-aria-el="Κάντε κράτηση"
+			data-i18n-aria-es="Reservar ahora"
+		>
+			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+		</a>
+		<button
+			type="button"
+			id="promo-banner-close"
+			aria-label="Close"
+			data-i18n-aria-el="Κλείσιμο"
+			data-i18n-aria-es="Cerrar"
+			class="shrink-0 -mr-1 w-8 h-8 rounded-full text-white/80 hover:text-white hover:bg-white/15 flex items-center justify-center transition-colors"
+		>
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+		</button>
+	</div>
+</aside>
+
+<script>
+	// Runs on every astro:page-load — view transitions swap the <body>, so the
+	// banner element is a new node after each client-side navigation.
+	function initPromoBanner() {
+		const banner = document.getElementById('promo-banner');
+		if (!banner) return;
+		const closeBtn = document.getElementById('promo-banner-close');
+		const key = banner.dataset.storageKey ?? 'promo:opawey-book-online';
+		const days = Number(banner.dataset.dismissDays ?? '30');
+		const ttlMs = days * 24 * 60 * 60 * 1000;
+
+		let dismissed = false;
+		try {
+			const raw = localStorage.getItem(key);
+			if (raw) {
+				const at = Number(raw);
+				if (Number.isFinite(at) && Date.now() - at < ttlMs) dismissed = true;
+			}
+		} catch { /* ignore — Safari private mode */ }
+
+		if (!dismissed) banner.classList.remove('hidden');
+
+		closeBtn?.addEventListener('click', () => {
+			try { localStorage.setItem(key, String(Date.now())); } catch { /* ignore */ }
+			banner.classList.add('hidden');
+		});
+	}
+
+	document.addEventListener('astro:page-load', initPromoBanner);
+</script>

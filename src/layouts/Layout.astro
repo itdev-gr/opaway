@@ -2,12 +2,15 @@
 import '../styles/global.css';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import PromoBanner from '../components/PromoBanner.astro';
 import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
 	noindex?: boolean;
+	/** Set to false to hide the sticky promo bar on a given page. */
+	promo?: boolean;
 }
-const { noindex = false } = Astro.props;
+const { noindex = false, promo = true } = Astro.props;
 ---
 
 <html lang="en">
@@ -87,7 +90,14 @@ const { noindex = false } = Astro.props;
 	</head>
 	<body class="flex flex-col min-h-screen">
 		<Navbar />
-		<slot />
+		<!-- The promo bar is sticky-bottom inside this wrapper, which ends where the
+		     footer starts — so it follows the scroll and parks above the footer. -->
+		<div class="flex-1 flex flex-col">
+			<div class="flex-1 flex flex-col">
+				<slot />
+			</div>
+			{promo && <PromoBanner />}
+		</div>
 		<Footer />
 	</body>
 </html>
