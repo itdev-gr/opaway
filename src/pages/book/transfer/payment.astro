@@ -313,7 +313,7 @@ import Layout from '../../../layouts/Layout.astro';
 	import { supabase } from '../../../lib/supabase';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
 	import { resolvePartnerId } from '../../../lib/resolve-partner-id';
-	import { validateCoupon, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
+	import { validateCoupon, couponDiscountAmount, effectiveCouponValue, type AppliedCoupon } from '../../../lib/coupons';
 	import { getStoredRefCode } from '../../../lib/affiliate-ref';
 
 	const formScope = document.getElementById('payment-form-section');
@@ -385,7 +385,12 @@ import Layout from '../../../layouts/Layout.astro';
 	let selectedMethod = '';
 
 	function recomputeTotals() {
-		couponDiscount = appliedCoupon ? couponDiscountAmount(preCouponTotal, appliedCoupon) : 0;
+		couponDiscount = appliedCoupon
+			? couponDiscountAmount(preCouponTotal, {
+				discount_type: appliedCoupon.discount_type,
+				discount_value: effectiveCouponValue(appliedCoupon, hasReturn),
+			})
+			: 0;
 		baseTotal = Math.round((preCouponTotal - couponDiscount) * 100) / 100;
 		cardOnsiteFee = Math.round(baseTotal * 0.05 * 100) / 100;
 		cardOnsiteTotal = Math.round((baseTotal + cardOnsiteFee) * 100) / 100;
@@ -430,6 +435,15 @@ import Layout from '../../../layouts/Layout.astro';
 		if (coupon) setCouponStatus(`Coupon "${coupon.code}" applied: -\u20AC${couponDiscount.toFixed(2)}`, true);
 		else setCouponStatus('Invalid or expired coupon code.', false);
 	});
+
+	// Auto-apply a coupon carried over from the results page.
+	try {
+		const carried = sessionStorage.getItem('opaway:coupon') || '';
+		if (carried && couponInput && couponBtn && !couponInput.value) {
+			couponInput.value = carried;
+			couponBtn.click();
+		}
+	} catch { /* sessionStorage unavailable — skip */ }
 
 	/* ── Method selection ── */
 	function selectMethod(method: string) {
@@ -529,6 +543,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 			document.getElementById('payment-form-section')?.classList.add('hidden');
 			document.getElementById('success-section')?.classList.remove('hidden');
+			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
 			setText('success-ref', String(bookingId).substring(0, 8).toUpperCase());
 			setText('success-route', `${from} \u2192 ${to}`);
 			setText('success-date', `${date} at ${time}`);
