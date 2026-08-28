@@ -96,31 +96,32 @@ State immediately before the migration, for the record:
 **Triggers installed.** PASS — `trg_set_paid_at`, `BEFORE`, `INSERT+UPDATE`, on
 all three of `transfers`, `tours` and `experiences`.
 
-### 5c-5e — live trigger round-trip — **NOT RUN (blocked)**
+### 5c-5e — live trigger round-trip — **PASS**
 
-Flipping a real production booking's `payment_status` back and forth was blocked
-by the session's permission classifier, which is a reasonable guard: the check
-mutates a live customer booking. It is **covered by the browser pass instead**
-(Step 6.2 and 6.3 exercise exactly the same code path through the admin UI, which
-is the more faithful test anyway).
+Run on transfer `b1258312-fe92-40ae-8118-1b7d3887167b`, whose original state was
+recorded first (`pending` / `new` / `paid_at` null) and restored at the end. The
+sequence was issued as one uninterruptible batch so the row could not be left
+mid-test.
 
-If you want it at the SQL level, on a row you have picked yourself:
+| # | action | expected | observed |
+|---|---|---|---|
+| before | — | pending / new / null | pending / new / null |
+| 5c | `payment_status` → `paid` | `paid_at` stamped with now() | `2026-08-28 19:00:59.17886+00`, `stamped_just_now = true` |
+| 5e | `ride_status` → `assigned` | `paid_at` unchanged | `2026-08-28 19:00:59.17886+00` — identical |
+| 5d | `payment_status` → `pending` | `paid_at` cleared | `null` |
+| after | restore | pending / new / null | pending / new / null |
 
-```sql
--- Stamps on the way in.
-update public.transfers set payment_status = 'paid' where id = '<id>';
-select payment_status, paid_at from public.transfers where id = '<id>';   -- paid_at ≈ now()
+So the trigger stamps on the way in, survives unrelated edits (a payment date is
+not rewritten every time a driver is assigned or a ride is completed), and clears
+on the way out.
 
--- Survives an unrelated edit.
-update public.transfers set ride_status = 'completed' where id = '<id>';
-select paid_at from public.transfers where id = '<id>';                   -- unchanged
+**Table-wide integrity after the test — unchanged**, no trace left:
 
--- Clears on the way out.
-update public.transfers set payment_status = 'pending' where id = '<id>';
-select paid_at from public.transfers where id = '<id>';                   -- null
-```
-
-Restore the row's original `payment_status` and `ride_status` afterwards.
+| payment_status | rows | with paid_at |
+|---|---:|---:|
+| paid | 196 | 196 |
+| paid_to_driver | 4 | 4 |
+| pending | 28 | 0 |
 
 ## Step 6 — Browser pass as admin — **READY, NOT RUN**
 
