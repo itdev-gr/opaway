@@ -270,6 +270,7 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
+	import { validateCoupon, couponDiscountAmount, effectiveCouponValue } from '../../../lib/coupons';
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -319,6 +320,26 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 		setText('sb-return-price', `\u20AC ${returnPrice}`);
 		document.getElementById('sb-return-price-row')?.classList.remove('hidden');
 	}
+
+	/* ── Apply a coupon carried over from the results page ── */
+	(async () => {
+		let carried = '';
+		try { carried = sessionStorage.getItem('opaway:coupon') || ''; } catch { return; }
+		if (!carried) return;
+		const coupon = await validateCoupon(carried, 'transfer');
+		if (!coupon) return;
+		const base = parseFloat(totalPrice) || 0;
+		const discount = couponDiscountAmount(base, {
+			discount_type: coupon.discount_type,
+			discount_value: effectiveCouponValue(coupon, hasReturn),
+		});
+		if (discount <= 0) return;
+		const finalTotal = Math.round((base - discount) * 100) / 100;
+		setText('sb-total', `\u20AC ${finalTotal.toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.remove('text-neutral-900');
+		totalEl?.classList.add('text-red-600');
+	})();
 
 	/* ── Auto-fill from Supabase Auth ── */
 	supabase.auth.onAuthStateChange((_event, session) => {

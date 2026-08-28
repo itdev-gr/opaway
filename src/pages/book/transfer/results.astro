@@ -393,6 +393,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 	/* ── Update sidebar prices ── */
 	function updateSidebarPrices() {
+		if (!pricingData) return;
 		if (!selectedVehicleSlug) return;
 		const price = calculatePrice({
 			vehicleSlug: selectedVehicleSlug,
@@ -436,6 +437,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 	/* ── Render vehicle cards ── */
 	function renderVehicles() {
+		if (!pricingData) return;
 		const container = document.getElementById('vehicle-cards')!;
 
 		const badgeHtml = partnerDiscount > 0

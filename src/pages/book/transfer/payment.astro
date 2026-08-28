@@ -436,14 +436,21 @@ import Layout from '../../../layouts/Layout.astro';
 		else setCouponStatus('Invalid or expired coupon code.', false);
 	});
 
-	// Auto-apply a coupon carried over from the results page.
-	try {
-		const carried = sessionStorage.getItem('opaway:coupon') || '';
-		if (carried && couponInput && couponBtn && !couponInput.value) {
-			couponInput.value = carried;
-			couponBtn.click();
+	// Auto-apply a coupon carried over from the results page (silent on failure).
+	(async () => {
+		let carried = '';
+		try { carried = sessionStorage.getItem('opaway:coupon') || ''; } catch { return; }
+		if (!carried || !couponInput || couponInput.value) return;
+		const coupon = await validateCoupon(carried, 'transfer');
+		if (!coupon) {
+			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
+			return;
 		}
-	} catch { /* sessionStorage unavailable — skip */ }
+		couponInput.value = coupon.code;
+		appliedCoupon = coupon;
+		recomputeTotals();
+		setCouponStatus(`Coupon "${coupon.code}" applied: -\u20AC${couponDiscount.toFixed(2)}`, true);
+	})();
 
 	/* ── Method selection ── */
 	function selectMethod(method: string) {
@@ -623,6 +630,7 @@ import Layout from '../../../layouts/Layout.astro';
 					return;
 				}
 				const { url } = await res.json();
+				try { sessionStorage.removeItem('opaway:coupon'); } catch {}
 				window.location.href = url;
 			} catch (err) {
 				console.error('Failed to start Stripe checkout:', err);
