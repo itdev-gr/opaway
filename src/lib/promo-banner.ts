@@ -8,15 +8,6 @@ export interface PromoBanner {
   banner_text: string;
 }
 
-export const DEFAULT_PROMO_KEY = 'promo:opawey-book-online';
-
-// Dismissal is per-offer: a visitor who closed last month's banner still sees
-// the new one, and closing the new one does not un-dismiss the old.
-export function promoStorageKey(code: string | null): string {
-  const trimmed = (code ?? '').trim();
-  return trimmed ? `promo:coupon:${trimmed.toLowerCase()}` : DEFAULT_PROMO_KEY;
-}
-
 export async function fetchPromoBanner(): Promise<PromoBanner | null> {
   try {
     const { supabase } = await import('./supabase');

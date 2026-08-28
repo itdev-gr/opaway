@@ -27,3 +27,18 @@ export function applyMinBookingDate(...ids: string[]): void {
 		if (el) el.min = min;
 	}
 }
+
+/**
+ * Convert a timestamp (ISO string from Postgres `timestamptz`) to its calendar
+ * date in Europe/Athens as `YYYY-MM-DD`. Returns '' for null/empty/invalid.
+ *
+ * Needed because a payment captured at 00:30 Athens is 21:30 UTC the previous
+ * day — bucketing revenue on the raw UTC instant would file it in the wrong
+ * month for the business.
+ */
+export function toAthensDate(iso: string | null | undefined): string {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (isNaN(d.getTime())) return '';
+	return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Athens' }).format(d);
+}
