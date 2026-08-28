@@ -231,7 +231,6 @@ import Layout from '../../../layouts/Layout.astro';
 	import { validateCoupon, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
 	import { getStoredRefCode } from '../../../lib/influencer-ref';
 
-	const influencerCode = getStoredRefCode();
 	const formScope = document.getElementById('payment-form-section');
 
 	const params = new URLSearchParams(window.location.search);
@@ -397,7 +396,7 @@ import Layout from '../../../layouts/Layout.astro';
 					luggage_big: luggageBig,
 					coupon_code: appliedCoupon?.code ?? null,
 					coupon_discount: couponDiscount,
-					influencer_code: influencerCode,
+					influencer_code: getStoredRefCode(),
 				},
 			});
 
@@ -464,7 +463,7 @@ import Layout from '../../../layouts/Layout.astro';
 				per_hour: parseFloat(perHour) || 0,
 				coupon_code: appliedCoupon?.code ?? null,
 				coupon_discount: couponDiscount,
-				influencer_code: influencerCode,
+				influencer_code: getStoredRefCode(),
 			};
 
 			const { data: { session } } = await supabase.auth.getSession();

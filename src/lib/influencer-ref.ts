@@ -9,7 +9,7 @@ export const REF_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function refFromSearch(search: string): string | null {
   const code = new URLSearchParams(search).get('ref')?.trim() ?? '';
-  if (!code || code.length > 64) return null;
+  if (!/^[a-zA-Z0-9_-]{3,32}$/.test(code)) return null;
   return code;
 }
 

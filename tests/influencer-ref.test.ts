@@ -17,9 +17,12 @@ describe('refFromSearch', () => {
     expect(refFromSearch('?ref=%20%20')).toBeNull();
   });
 
-  it('rejects absurdly long values', () => {
-    expect(refFromSearch(`?ref=${'x'.repeat(65)}`)).toBeNull();
-    expect(refFromSearch(`?ref=${'x'.repeat(64)}`)).toBe('x'.repeat(64));
+  it('rejects codes that do not match the valid shape', () => {
+    expect(refFromSearch(`?ref=${'x'.repeat(33)}`)).toBeNull();
+    expect(refFromSearch(`?ref=${'x'.repeat(32)}`)).toBe('x'.repeat(32));
+    expect(refFromSearch('?ref=ab')).toBeNull();
+    expect(refFromSearch('?ref=bad%20code')).toBeNull();
+    expect(refFromSearch('?ref=bad!code')).toBeNull();
   });
 });
 
