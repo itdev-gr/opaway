@@ -14,8 +14,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		<span id="period-range" class="text-xs text-neutral-400 ml-1"></span>
 	</div>
 
-	<!-- Headline: collected vs expected -->
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+	<!-- Headline: collected, expected, and the two together -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
 			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Total Revenue</p>
 			<p id="stat-total" class="text-3xl font-bold text-emerald-600">—</p>
@@ -27,6 +27,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			<p id="stat-possible" class="text-3xl font-bold text-amber-600">—</p>
 			<p id="stat-possible-count" class="text-xs text-neutral-400 mt-1">— unpaid bookings</p>
 			<p class="text-xs text-neutral-400 mt-0.5">Not paid yet, counted on the ride date.</p>
+		</div>
+		<div class="bg-white rounded-2xl border-2 border-[#0C6B95]/25 shadow-sm p-5">
+			<p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Possible Total Income</p>
+			<p id="stat-grand" class="text-3xl font-bold text-[#0C6B95]">—</p>
+			<p id="stat-grand-count" class="text-xs text-neutral-400 mt-1">— bookings</p>
+			<p class="text-xs text-neutral-400 mt-0.5">Both figures together — the period's full value if everything unpaid gets paid.</p>
 		</div>
 	</div>
 
@@ -242,6 +248,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		setText('stat-total-count', `${collected.count} paid booking${collected.count === 1 ? '' : 's'}`);
 		setText('stat-possible', money(possible.total));
 		setText('stat-possible-count', `${possible.count} unpaid booking${possible.count === 1 ? '' : 's'}`);
+
+		// Collected + possible. Rounded from the two rounded figures so the card
+		// always equals what the other two cards show, to the cent.
+		const grandTotal = Math.round((collected.total + possible.total) * 100) / 100;
+		const grandCount = collected.count + possible.count;
+		setText('stat-grand', money(grandTotal));
+		setText('stat-grand-count', `${grandCount} booking${grandCount === 1 ? '' : 's'}`);
 
 		const types: { type: BookingType; id: string }[] = [
 			{ type: 'transfer',   id: 'transfers' },
