@@ -32,6 +32,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 			</div>
 
+			<div class="mb-4">
+				<label for="cp-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount — transfers only <span class="text-neutral-400">(optional)</span></label>
+				<input id="cp-return-extra" type="number" min="0" step="0.01" placeholder="0"
+					class="w-full md:w-64 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				<p class="text-xs text-neutral-400 mt-1">Added on top of the discount when a transfer booking includes a return trip. Same unit as the discount type (percent or &euro;).</p>
+			</div>
+
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 				<div>
 					<label for="cp-from" class="block text-sm font-medium text-neutral-700 mb-1">Valid from</label>
@@ -153,6 +160,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		code: string;
 		discount_type: 'percent' | 'fixed';
 		discount_value: number;
+		return_extra_value: number;
 		valid_from: string;
 		valid_until: string;
 		active: boolean;
@@ -199,7 +207,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 	}
 
 	function discountLabel(c: CouponRow): string {
-		return c.discount_type === 'percent' ? `${c.discount_value}%` : `€${Number(c.discount_value).toFixed(2)}`;
+		const base = c.discount_type === 'percent' ? `${c.discount_value}%` : `€${Number(c.discount_value).toFixed(2)}`;
+		const extra = Number(c.return_extra_value) > 0
+			? (c.discount_type === 'percent' ? ` (+${c.return_extra_value}% RT)` : ` (+€${Number(c.return_extra_value).toFixed(2)} RT)`)
+			: '';
+		return base + extra;
 	}
 
 	async function loadCoupons() {
@@ -288,6 +300,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const code = (document.getElementById('cp-code') as HTMLInputElement).value.trim();
 		const discountType = (document.getElementById('cp-type') as HTMLSelectElement).value as 'percent' | 'fixed';
 		const discountValue = parseFloat((document.getElementById('cp-value') as HTMLInputElement).value);
+		const returnExtra = parseFloat((document.getElementById('cp-return-extra') as HTMLInputElement).value) || 0;
 		const validFrom = (document.getElementById('cp-from') as HTMLInputElement).value;
 		const validUntil = (document.getElementById('cp-until') as HTMLInputElement).value;
 		const appliesToAll = (document.querySelector('input[name="cp-scope"]:checked') as HTMLInputElement)?.value === 'all';
@@ -302,6 +315,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
 		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
 		if (discountType === 'percent' && discountValue > 100) { setStatus('Percent discount cannot exceed 100.', 'text-red-500'); return; }
+		if (returnExtra < 0) { setStatus('Extra round-trip discount cannot be negative.', 'text-red-500'); return; }
+		if (discountType === 'percent' && discountValue + returnExtra > 100) { setStatus('Discount plus round-trip extra cannot exceed 100%.', 'text-red-500'); return; }
 		if (!validFrom || !validUntil || validUntil < validFrom) { setStatus('Set a valid period (end date not before start date).', 'text-red-500'); return; }
 		if (!appliesToAll && !flows.length) { setStatus('Pick at least one service, or choose "All services".', 'text-red-500'); return; }
 		if (!appliesToAllGroups && !groups.length) { setStatus('Pick at least one customer group, or choose "All customers".', 'text-red-500'); return; }
@@ -310,6 +325,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			code,
 			discount_type: discountType,
 			discount_value: discountValue,
+			return_extra_value: returnExtra,
 			valid_from: validFrom,
 			valid_until: validUntil,
 			applies_to_all: appliesToAll,
