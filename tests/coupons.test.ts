@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { couponDiscountAmount, couponStatusOn } from '../src/lib/coupons';
+import { couponDiscountAmount, couponStatusOn, effectiveCouponValue } from '../src/lib/coupons';
 
 describe('couponDiscountAmount', () => {
   it('percent: 10% of €50.00 is €5.00', () => {
@@ -51,5 +51,29 @@ describe('couponStatusOn', () => {
 
   it('expired after valid_until', () => {
     expect(couponStatusOn(coupon, '2026-09-01')).toBe('expired');
+  });
+});
+
+describe('effectiveCouponValue', () => {
+  const pct = { discount_type: 'percent' as const, discount_value: 10, return_extra_value: 5 };
+
+  it('adds the round-trip extra for transfer round trips', () => {
+    expect(effectiveCouponValue(pct, true)).toBe(15);
+  });
+
+  it('ignores the extra for one-way bookings', () => {
+    expect(effectiveCouponValue(pct, false)).toBe(10);
+  });
+
+  it('caps combined percent at 100', () => {
+    expect(effectiveCouponValue({ ...pct, discount_value: 98 }, true)).toBe(100);
+  });
+
+  it('sums fixed euro amounts without a cap', () => {
+    expect(effectiveCouponValue({ discount_type: 'fixed', discount_value: 10, return_extra_value: 5 }, true)).toBe(15);
+  });
+
+  it('treats a zero extra as no change', () => {
+    expect(effectiveCouponValue({ ...pct, return_extra_value: 0 }, true)).toBe(10);
   });
 });
