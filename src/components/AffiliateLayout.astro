@@ -1,0 +1,196 @@
+---
+// Affiliate portal shell. Mirrors HotelLayout: sidebar + top bar + an auth
+// overlay that pages wait on (MutationObserver on #affiliate-auth-check).
+// Guard: public.users.type === 'affiliate' AND an active influencers row
+// linked to this auth user.
+import '../styles/global.css';
+
+interface Props {
+	pageTitle: string;
+	pageDescription?: string;
+	activeSection?: string;
+	docTitle?: string;
+}
+
+const {
+	pageTitle,
+	pageDescription = '',
+	activeSection = '',
+	docTitle,
+} = Astro.props;
+
+const nav = [
+	{
+		group: 'Main',
+		items: [
+			{ key: 'bookings', label: 'My bookings', href: '/affiliate', icon: 'chart' },
+		],
+	},
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon-ow.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{docTitle ?? `${pageTitle} — Opawey Affiliate`}</title>
+	</head>
+	<body class="flex min-h-screen bg-neutral-100 font-sans">
+
+		<!-- Mobile overlay -->
+		<div id="affiliate-sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden" aria-hidden="true"></div>
+
+		<!-- Mobile burger -->
+		<button
+			type="button"
+			id="affiliate-burger"
+			class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md border border-neutral-200"
+			aria-label="Toggle menu"
+		>
+			<svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+			</svg>
+		</button>
+
+		<!-- Sidebar -->
+		<aside
+			id="affiliate-sidebar"
+			class="fixed md:sticky top-0 left-0 h-screen z-40 w-72 shrink-0 bg-[#0C6B95] flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out"
+		>
+			<div class="flex items-center justify-center px-6 py-5 border-b border-white/20">
+				<a href="/" target="_blank" rel="noopener noreferrer" aria-label="Opawey — Home">
+					<img src="/logo-opaway.svg" alt="Opawey" class="h-20 w-auto object-contain brightness-0 invert" width="240" height="80" />
+				</a>
+			</div>
+
+			<nav class="flex-1 pt-4 px-4 flex flex-col overflow-y-auto gap-0.5">
+				{nav.map(({ group, items }) => (
+					<>
+						<p class="text-white/50 text-xs font-semibold tracking-widest uppercase px-3 mb-1 mt-4 first:mt-2">{group}</p>
+						{items.map(({ key, label, href, icon }: { key: string; label: string; href: string; icon: string }) => {
+							const active = activeSection === key;
+							return (
+								<a
+									href={href}
+									class={`flex items-center gap-3 py-2.5 px-3 rounded-lg text-white transition-colors border-b border-white/10 ${active ? 'bg-white/20 font-semibold' : 'hover:bg-white/10'}`}
+								>
+									{icon === 'chart' && (
+										<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 6-6" />
+										</svg>
+									)}
+									<span>{label}</span>
+								</a>
+							);
+						})}
+					</>
+				))}
+
+				<button
+					type="button"
+					id="affiliate-sidebar-logout"
+					class="mt-auto flex items-center gap-3 py-2.5 px-3 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors w-full text-left mb-2"
+				>
+					<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+					</svg>
+					Logout
+				</button>
+			</nav>
+
+			<div class="px-6 py-4 border-t border-white/20">
+				<p class="text-white/50 text-xs">&copy; 2025 Opawey. Affiliate Panel.</p>
+			</div>
+		</aside>
+
+		<!-- Main -->
+		<div class="flex-1 flex flex-col min-h-screen min-w-0">
+
+			<header class="bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm">
+				<div>
+					<h1 class="text-xl font-bold text-neutral-900">{pageTitle}</h1>
+					{pageDescription && <p class="text-xs text-neutral-400 mt-0.5">{pageDescription}</p>}
+				</div>
+				<div class="flex items-center gap-3">
+					<span id="affiliate-user-name" class="text-sm font-medium text-neutral-600 hidden sm:block"></span>
+					<div class="flex items-center gap-2 text-xs font-medium text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-full">
+						<span class="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span>
+						Affiliate
+					</div>
+				</div>
+			</header>
+
+			<main class="flex-1 p-6 md:p-8 overflow-auto">
+
+				<!-- Auth checking overlay -->
+				<div id="affiliate-auth-check" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+					<div class="flex flex-col items-center gap-4">
+						<svg class="w-10 h-10 text-[#0C6B95] animate-spin" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+						</svg>
+						<p class="text-neutral-500 text-sm">Verifying access&hellip;</p>
+					</div>
+				</div>
+
+				<slot />
+			</main>
+		</div>
+
+	</body>
+</html>
+
+<script>
+	import { supabase } from '../lib/supabase';
+
+	function initAffiliateLayout() {
+		const overlay    = document.getElementById('affiliate-sidebar-overlay');
+		const sidebar    = document.getElementById('affiliate-sidebar');
+		const burger     = document.getElementById('affiliate-burger');
+		const authCheck  = document.getElementById('affiliate-auth-check');
+		const userNameEl = document.getElementById('affiliate-user-name');
+
+		function openSidebar()  { sidebar?.classList.remove('-translate-x-full'); overlay?.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+		function closeSidebar() { sidebar?.classList.add('-translate-x-full');    overlay?.classList.add('hidden');    document.body.style.overflow = ''; }
+		burger?.addEventListener('click', () => sidebar?.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar());
+		overlay?.addEventListener('click', closeSidebar);
+		sidebar?.querySelectorAll('a').forEach(l => l.addEventListener('click', closeSidebar));
+
+		document.getElementById('affiliate-sidebar-logout')?.addEventListener('click', () => {
+			closeSidebar();
+			window.location.href = '/logout';
+		});
+
+		/* -- Affiliate guard (one-time check) -- */
+		(async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (!session?.user) { window.location.href = '/login'; return; }
+			try {
+				const [{ data: userRow }, { data: affiliate }] = await Promise.all([
+					supabase.from('users').select('type, display_name').eq('id', session.user.id).maybeSingle(),
+					supabase.from('influencers').select('id, name, ref_code, active').eq('user_id', session.user.id).maybeSingle(),
+				]);
+				// Both must agree: the role routes the portal, the row proves the link.
+				if (userRow?.type !== 'affiliate' || !affiliate || affiliate.active === false) {
+					window.location.href = '/login';
+					return;
+				}
+				if (userNameEl) {
+					userNameEl.textContent =
+						affiliate.name?.trim() ||
+						userRow.display_name?.trim() ||
+						session.user.email || 'Affiliate';
+				}
+				// Hand the resolved profile to the page so it does not re-query.
+				(window as any).OpawayAffiliate = affiliate;
+				authCheck?.classList.add('hidden');
+			} catch { window.location.href = '/login'; }
+		})();
+	}
+
+	initAffiliateLayout();
+	document.addEventListener('astro:page-load', initAffiliateLayout);
+</script>
