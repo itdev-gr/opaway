@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { todayAthens, isPastBookingDate } from '../src/lib/booking-date';
+import { todayAthens, isPastBookingDate, toAthensDate } from '../src/lib/booking-date';
 
 describe('todayAthens', () => {
 	it('returns a YYYY-MM-DD string', () => {
@@ -40,5 +40,28 @@ describe('isPastBookingDate', () => {
 
 	it('treats the empty string as past (blocked)', () => {
 		expect(isPastBookingDate('')).toBe(true);
+	});
+});
+
+describe('toAthensDate', () => {
+	it('rolls a late-evening UTC timestamp into the next Athens day', () => {
+		// 21:30 UTC on Jul 31 is 00:30 on Aug 1 in Athens (UTC+3 in summer).
+		expect(toAthensDate('2026-07-31T21:30:00Z')).toBe('2026-08-01');
+	});
+
+	it('keeps a daytime timestamp on the same day', () => {
+		expect(toAthensDate('2026-08-15T09:00:00Z')).toBe('2026-08-15');
+	});
+
+	it('handles winter time (UTC+2)', () => {
+		expect(toAthensDate('2026-01-31T22:30:00Z')).toBe('2026-02-01');
+		expect(toAthensDate('2026-01-31T21:30:00Z')).toBe('2026-01-31');
+	});
+
+	it('returns an empty string for missing or invalid input', () => {
+		expect(toAthensDate(null)).toBe('');
+		expect(toAthensDate(undefined)).toBe('');
+		expect(toAthensDate('')).toBe('');
+		expect(toAthensDate('not-a-date')).toBe('');
 	});
 });
