@@ -1,4 +1,4 @@
-// Influencer referral capture. A visit to any page with ?ref=<code> stores
+// Affiliate referral capture. A visit to any page with ?ref=<code> stores
 // the code for REF_TTL_MS (last click wins); the payment pages read it back
 // and send it with the booking payload, where the RPC resolves and snapshots
 // the commission server-side. No supabase import here — this module must be

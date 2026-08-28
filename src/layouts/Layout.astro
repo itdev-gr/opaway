@@ -93,7 +93,7 @@ const { noindex = false } = Astro.props;
 </html>
 
 <script>
-	import { captureRefFromUrl } from '../lib/influencer-ref';
+	import { captureRefFromUrl } from '../lib/affiliate-ref';
 
 	/**
 	 * In-place text translator.
@@ -182,6 +182,6 @@ const { noindex = false } = Astro.props;
 	document.addEventListener('astro:page-load', run);
 	document.addEventListener('opaway:lang-changed', run);
 
-	// Capture ?ref=<code> influencer referrals on every page view (30-day, last-click-wins).
+	// Capture ?ref=<code> affiliate referrals on every page view (30-day, last-click-wins).
 	document.addEventListener('astro:page-load', captureRefFromUrl);
 </script>

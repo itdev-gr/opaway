@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { refFromSearch, parseStoredRef, REF_TTL_MS } from '../src/lib/influencer-ref';
+import { refFromSearch, parseStoredRef, REF_TTL_MS } from '../src/lib/affiliate-ref';
 
 describe('refFromSearch', () => {
   it('extracts the ref param', () => {
