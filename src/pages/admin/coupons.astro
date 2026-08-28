@@ -106,6 +106,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				<p class="text-xs text-neutral-400 mt-1">Retail = customers without a partner account (including guests). Partners are matched by their approved account type.</p>
 			</div>
 
+			<div class="mb-5">
+				<label for="cp-banner" class="block text-sm font-medium text-neutral-700 mb-1">Banner text <span class="text-neutral-400">(optional)</span></label>
+				<textarea id="cp-banner" rows="2" placeholder="e.g. Save 10% on your airport transfer this week"
+					class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]"></textarea>
+				<p class="text-xs text-neutral-400 mt-1">Shown in the site-wide promo bar together with this coupon's code. Leave empty for no banner. If several coupons have banner text, the newest one is shown.</p>
+			</div>
+
 			<div class="flex items-center gap-4">
 				<button type="submit"
 					class="px-6 py-2.5 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
@@ -126,12 +133,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 							<th class="px-5 py-3 font-medium">Period</th>
 							<th class="px-5 py-3 font-medium">Services</th>
 							<th class="px-5 py-3 font-medium">Customers</th>
+							<th class="px-5 py-3 font-medium">Banner</th>
 							<th class="px-5 py-3 font-medium">Status</th>
 							<th class="px-5 py-3 font-medium text-right">Actions</th>
 						</tr>
 					</thead>
 					<tbody id="coupon-rows">
-						<tr><td colspan="7" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
+						<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
 					</tbody>
 				</table>
 			</div>
@@ -168,6 +176,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		flows: string[];
 		applies_to_all_groups: boolean;
 		groups: string[];
+		banner_text: string;
 		created_at: string;
 	};
 
@@ -221,12 +230,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			.order('created_at', { ascending: false });
 
 		if (error) {
-			rowsEl.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-red-500">Error loading coupons: [${error.code}] ${escapeHtml(error.message)}</td></tr>`;
+			rowsEl.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-red-500">Error loading coupons: [${error.code}] ${escapeHtml(error.message)}</td></tr>`;
 			return;
 		}
 		const coupons = (data ?? []) as CouponRow[];
 		if (!coupons.length) {
-			rowsEl.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-neutral-400">No coupons yet.</td></tr>';
+			rowsEl.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">No coupons yet.</td></tr>';
 			return;
 		}
 
@@ -240,6 +249,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-5 py-3 whitespace-nowrap">${c.valid_from} → ${c.valid_until}</td>
 					<td class="px-5 py-3">${escapeHtml(servicesLabel(c))}</td>
 					<td class="px-5 py-3">${escapeHtml(groupsLabel(c))}</td>
+					<td class="px-5 py-3 max-w-xs">
+						<span class="banner-cell block cursor-pointer hover:bg-sky-50 px-2 py-1 rounded-lg truncate ${c.banner_text ? 'text-neutral-700' : 'text-neutral-300'}" data-banner="${c.id}" title="Click to edit banner text">${c.banner_text ? escapeHtml(c.banner_text) : '—'}</span>
+					</td>
 					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_BADGE[status]}">${status}</span></td>
 					<td class="px-5 py-3 text-right whitespace-nowrap">
 						<button data-toggle="${c.id}" data-active="${c.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${c.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
@@ -270,6 +282,26 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const codeEl = document.getElementById('delete-modal-code');
 				if (codeEl) codeEl.textContent = btn.dataset.code ?? '';
 				document.getElementById('delete-modal')?.classList.remove('hidden');
+			});
+		});
+
+		rowsEl.querySelectorAll<HTMLSpanElement>('.banner-cell').forEach((cell) => {
+			cell.addEventListener('click', () => {
+				const coupon = coupons.find((c) => c.id === cell.dataset.banner);
+				if (!coupon) return;
+				const id = coupon.id;
+				cell.outerHTML = `
+					<span class="flex items-start gap-1">
+						<textarea id="banner-input-${id}" rows="2" class="flex-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs">${escapeHtml(coupon.banner_text ?? '')}</textarea>
+						<button id="banner-save-${id}" class="px-2 py-1 bg-[#0C6B95] text-white text-xs rounded-lg hover:bg-[#0a5c82]">Save</button>
+					</span>`;
+				document.getElementById(`banner-save-${id}`)?.addEventListener('click', async () => {
+					const value = (document.getElementById(`banner-input-${id}`) as HTMLTextAreaElement).value.trim();
+					const { error } = await supabase.from('coupons').update({ banner_text: value }).eq('id', id);
+					if (error) { setStatus(`Error updating banner: [${error.code}] ${error.message}`, 'text-red-500'); return; }
+					setStatus(value ? 'Banner text updated.' : 'Banner text cleared.', 'text-green-600');
+					await loadCoupons();
+				});
 			});
 		});
 	}
@@ -311,6 +343,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const groups = appliesToAllGroups
 			? []
 			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-group:checked')).map((c) => c.value);
+		const bannerText = (document.getElementById('cp-banner') as HTMLTextAreaElement).value.trim();
 
 		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
 		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
@@ -332,6 +365,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			flows,
 			applies_to_all_groups: appliesToAllGroups,
 			groups,
+			banner_text: bannerText,
 			active: true,
 		});
 
