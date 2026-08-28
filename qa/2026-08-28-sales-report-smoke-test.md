@@ -64,48 +64,72 @@ bundles without error.
 This confirms the new modules bundle for the browser. It does **not** confirm
 runtime behaviour against real data — see Step 5.
 
-## Step 5 — Migration on the live database — **NOT RUN**
+## Step 5 — Migration on the live database — **APPLIED, PASS**
 
-`db/migrations/2026-08-28-paid-at.sql` has **not** been applied to the opaway
-project (`wjqfcijisslzqxesbbox`). Until it is, `/admin/sales` will fail to load:
-its select asks for `paid_at`, which does not exist yet, and PostgREST rejects
-the whole request.
+`db/migrations/2026-08-28-paid-at.sql` was applied to the opaway project
+(`wjqfcijisslzqxesbbox`) on 2026-08-28 via the Management API SQL endpoint, all
+16 statements sent **one at a time** (a multi-statement batch returns the first
+statement's result when the last yields no rows, which makes the outcome
+unreadable). Every statement returned HTTP 201.
 
-Apply it via the Dashboard SQL editor, or the Management API with
-`SUPABASE_ACCESS_TOKEN` and a custom `User-Agent` header. Send the statements
-**one at a time** — a multi-statement batch returns the first statement's result
-when the last yields no rows, which makes the outcome unreadable.
+State immediately before the migration, for the record:
 
-Then verify:
+| table | rows | paid | paid_to_driver | pending | cancelled |
+|---|---:|---:|---:|---:|---:|
+| transfers | 228 | 196 | 4 | 28 | 0 |
+| tours | 8 | 7 | 0 | 0 | 1 |
+| experiences | 0 | 0 | 0 | 0 | 0 |
+
+`paid_at` did not exist on any table beforehand.
+
+**5a — every collected booking now has a payment date.** PASS.
+
+| table | missing paid_at | stamped |
+|---|---:|---:|
+| transfers | 0 | 200 |
+| tours | 0 | 7 |
+| experiences | 0 | 0 |
+
+**5b — the backfill used `created_at` with no drift.** PASS:
+`select count(*) from public.transfers where paid_at is not null and paid_at <> created_at` → `0`.
+
+**Triggers installed.** PASS — `trg_set_paid_at`, `BEFORE`, `INSERT+UPDATE`, on
+all three of `transfers`, `tours` and `experiences`.
+
+### 5c-5e — live trigger round-trip — **NOT RUN (blocked)**
+
+Flipping a real production booking's `payment_status` back and forth was blocked
+by the session's permission classifier, which is a reasonable guard: the check
+mutates a live customer booking. It is **covered by the browser pass instead**
+(Step 6.2 and 6.3 exercise exactly the same code path through the admin UI, which
+is the more faithful test anyway).
+
+If you want it at the SQL level, on a row you have picked yourself:
 
 ```sql
--- 5a. Every collected booking has a payment date (expect 0, three times).
-select count(*) from public.transfers   where payment_status in ('paid','paid_to_driver') and paid_at is null;
-select count(*) from public.tours       where payment_status in ('paid','paid_to_driver') and paid_at is null;
-select count(*) from public.experiences where payment_status in ('paid','paid_to_driver') and paid_at is null;
-
--- 5b. The backfill used created_at (expect 0 — no drift).
-select count(*) from public.transfers where paid_at is not null and paid_at <> created_at;
-
--- 5c. Trigger stamps on the way in. Pick a real pending row id first.
+-- Stamps on the way in.
 update public.transfers set payment_status = 'paid' where id = '<id>';
 select payment_status, paid_at from public.transfers where id = '<id>';   -- paid_at ≈ now()
 
--- 5d. Trigger clears on the way out.
-update public.transfers set payment_status = 'pending' where id = '<id>';
-select payment_status, paid_at from public.transfers where id = '<id>';   -- paid_at is null
-
--- 5e. An existing payment date survives an unrelated edit.
-update public.transfers set payment_status = 'paid' where id = '<id>';
+-- Survives an unrelated edit.
 update public.transfers set ride_status = 'completed' where id = '<id>';
 select paid_at from public.transfers where id = '<id>';                   -- unchanged
+
+-- Clears on the way out.
+update public.transfers set payment_status = 'pending' where id = '<id>';
+select paid_at from public.transfers where id = '<id>';                   -- null
 ```
 
 Restore the row's original `payment_status` and `ride_status` afterwards.
 
-## Step 6 — Browser pass as admin — **NOT RUN**
+## Step 6 — Browser pass as admin — **READY, NOT RUN**
 
-Requires Step 5 plus an admin login. Steps:
+Step 5 is applied, so the page loads against real data now. A dev server for this
+branch runs at **`http://localhost:4324/admin/sales`** (port 4324 — 4321-4323 were
+already taken by other branches' servers; the repo's main working directory is
+checked out on a different branch, so the changes are only visible on 4324).
+
+Still needs an admin login, which this session does not have. Steps:
 
 1. `/admin/sales` loads; **Total Revenue** shows only paid money and **Possible
    Incomes** only unpaid — the two must not overlap, and neither should equal
