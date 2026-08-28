@@ -371,6 +371,9 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		}
 	}
 
+	// Edits made in the shared detail modal refresh this list too (same contract as the booking pages).
+	window.addEventListener('opaway:reservation-changed', () => { loadRequests(); });
+
 	/* ── Auth guard observer ── */
 	// Race fix: AdminLayout's async getSession() can flip auth-check to hidden BEFORE
 	// this script attaches its observer. Check current state first; only observe if pending.
