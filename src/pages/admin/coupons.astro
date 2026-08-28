@@ -161,7 +161,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { couponStatusOn, athensTodayISO, type CouponStatus } from '../../lib/coupons';
+	import { couponStatusOn, athensTodayISO, validateCouponFields, type CouponStatus, type CouponFields } from '../../lib/coupons';
 
 	type CouponRow = {
 		id: string;
@@ -345,14 +345,12 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-group:checked')).map((c) => c.value);
 		const bannerText = (document.getElementById('cp-banner') as HTMLTextAreaElement).value.trim();
 
-		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
-		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
-		if (discountType === 'percent' && discountValue > 100) { setStatus('Percent discount cannot exceed 100.', 'text-red-500'); return; }
-		if (returnExtra < 0) { setStatus('Extra round-trip discount cannot be negative.', 'text-red-500'); return; }
-		if (discountType === 'percent' && discountValue + returnExtra > 100) { setStatus('Discount plus round-trip extra cannot exceed 100%.', 'text-red-500'); return; }
-		if (!validFrom || !validUntil || validUntil < validFrom) { setStatus('Set a valid period (end date not before start date).', 'text-red-500'); return; }
-		if (!appliesToAll && !flows.length) { setStatus('Pick at least one service, or choose "All services".', 'text-red-500'); return; }
-		if (!appliesToAllGroups && !groups.length) { setStatus('Pick at least one customer group, or choose "All customers".', 'text-red-500'); return; }
+		const fields: CouponFields = {
+			code, discountType, discountValue, returnExtra, validFrom, validUntil,
+			appliesToAll, flows, appliesToAllGroups, groups, bannerText,
+		};
+		const problem = validateCouponFields(fields);
+		if (problem) { setStatus(problem, 'text-red-500'); return; }
 
 		const { error } = await supabase.from('coupons').insert({
 			code,
