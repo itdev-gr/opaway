@@ -1,0 +1,171 @@
+---
+import AffiliateLayout from '../../components/AffiliateLayout.astro';
+---
+
+<AffiliateLayout
+	pageTitle="My bookings"
+	pageDescription="Bookings made through your referral link, and the commission they earned."
+	activeSection="bookings"
+	docTitle="My bookings — Affiliate"
+>
+	<div class="max-w-6xl">
+
+		<!-- ── Referral link ── -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 mb-6 flex flex-wrap items-center gap-4">
+			<div class="min-w-0">
+				<p class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Your referral link</p>
+				<p id="af-link" class="font-mono text-sm text-neutral-800 truncate">&hellip;</p>
+			</div>
+			<div class="ml-auto flex items-center gap-3">
+				<span id="af-rate" class="text-sm text-neutral-500"></span>
+				<button id="af-copy" type="button"
+					class="px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-700 hover:bg-sky-50">
+					Copy link
+				</button>
+			</div>
+		</div>
+
+		<!-- ── Totals ── -->
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+			<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
+				<p class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Bookings</p>
+				<p id="af-count" class="text-2xl font-bold text-neutral-900">—</p>
+			</div>
+			<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
+				<p class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Total value</p>
+				<p id="af-revenue" class="text-2xl font-bold text-neutral-900">—</p>
+			</div>
+			<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5">
+				<p class="text-[11px] uppercase tracking-wider text-neutral-500 mb-1">Your commission</p>
+				<p id="af-commission" class="text-2xl font-bold text-emerald-700">—</p>
+			</div>
+		</div>
+
+		<!-- ── Bookings ── -->
+		<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+			<div class="px-5 py-4 border-b border-neutral-100">
+				<h2 class="text-base font-semibold text-neutral-800">Bookings from your link</h2>
+				<p class="text-xs text-neutral-400 mt-0.5">Cancelled bookings are listed but earn no commission.</p>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="bg-neutral-50 text-left text-neutral-500">
+							<th class="px-5 py-3 font-medium">Date</th>
+							<th class="px-5 py-3 font-medium">Booking</th>
+							<th class="px-5 py-3 font-medium">Value</th>
+							<th class="px-5 py-3 font-medium">Commission</th>
+							<th class="px-5 py-3 font-medium">Status</th>
+						</tr>
+					</thead>
+					<tbody id="af-rows">
+						<tr><td colspan="5" class="px-5 py-8 text-center text-neutral-400">Loading&hellip;</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</AffiliateLayout>
+
+<script>
+	import { supabase } from '../../lib/supabase';
+	import {
+		affiliateTotals, sortBookings, transferToBooking, tourToBooking, refUrl, rateLabel,
+		TRANSFER_COLUMNS_PORTAL, TOUR_COLUMNS_PORTAL, type AffiliateBooking,
+	} from '../../lib/affiliate-earnings';
+
+	const rowsEl = document.getElementById('af-rows')!;
+
+	const eur = (n: number) => `€${(Number(n) || 0).toFixed(2)}`;
+	const esc = (s: unknown) => String(s ?? '')
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+	/** The layout flips this once the affiliate is verified. */
+	function waitForAuth(): Promise<void> {
+		const authCheck = document.getElementById('affiliate-auth-check');
+		return new Promise((resolve) => {
+			if (!authCheck || authCheck.classList.contains('hidden')) { resolve(); return; }
+			const obs = new MutationObserver(() => {
+				if (authCheck.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+			});
+			obs.observe(authCheck, { attributes: true, attributeFilter: ['class'] });
+		});
+	}
+
+	function statusPill(rideStatus: string): string {
+		const s = rideStatus || 'new';
+		const cls = s === 'cancelled' ? 'bg-red-100 text-red-700'
+			: s === 'completed' ? 'bg-green-100 text-green-700'
+			: 'bg-neutral-100 text-neutral-600';
+		return `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${cls}">${esc(s)}</span>`;
+	}
+
+	function renderRows(all: AffiliateBooking[]) {
+		if (!all.length) {
+			rowsEl.innerHTML = '<tr><td colspan="5" class="px-5 py-8 text-center text-neutral-400">No bookings from your link yet.</td></tr>';
+			return;
+		}
+		rowsEl.innerHTML = all.map((b) => {
+			const dim = b.ride_status === 'cancelled' ? 'line-through text-neutral-400' : '';
+			return `
+				<tr class="border-t border-neutral-100 ${dim}">
+					<td class="px-5 py-3 whitespace-nowrap">${esc(b.date)}${b.time ? ` <span class="text-neutral-400">${esc(b.time)}</span>` : ''}</td>
+					<td class="px-5 py-3">${esc(b.label)}</td>
+					<td class="px-5 py-3 whitespace-nowrap">${eur(b.total_price)}</td>
+					<td class="px-5 py-3 whitespace-nowrap font-semibold ${b.ride_status === 'cancelled' ? '' : 'text-emerald-700'}">${eur(b.influencer_commission)}</td>
+					<td class="px-5 py-3">${statusPill(b.ride_status)}</td>
+				</tr>`;
+		}).join('');
+	}
+
+	async function load() {
+		await waitForAuth();
+		const me = (window as any).OpawayAffiliate as { id: string; ref_code: string } | undefined;
+		if (!me?.id) return;
+
+		// Referral link + rate. RLS limits this select to the affiliate's own row.
+		const { data: profile } = await supabase
+			.from('influencers').select('ref_code, commission_type, commission_value')
+			.eq('id', me.id).maybeSingle();
+		if (profile) {
+			const link = refUrl(window.location.origin, profile.ref_code);
+			document.getElementById('af-link')!.textContent = link;
+			document.getElementById('af-rate')!.textContent = `Rate: ${rateLabel(profile.commission_type, profile.commission_value)}`;
+			document.getElementById('af-copy')!.addEventListener('click', async (e) => {
+				const btn = e.currentTarget as HTMLButtonElement;
+				try {
+					await navigator.clipboard.writeText(link);
+					btn.textContent = 'Copied!';
+					setTimeout(() => { btn.textContent = 'Copy link'; }, 1500);
+				} catch { /* clipboard blocked — the link is on screen anyway */ }
+			});
+		}
+
+		// Column lists deliberately exclude every customer field.
+		const [trRes, toRes] = await Promise.all([
+			supabase.from('transfers').select(TRANSFER_COLUMNS_PORTAL).eq('influencer_id', me.id),
+			supabase.from('tours').select(TOUR_COLUMNS_PORTAL).eq('influencer_id', me.id),
+		]);
+
+		if (trRes.error || toRes.error) {
+			const err = trRes.error ?? toRes.error;
+			console.error('Affiliate bookings load failed:', err);
+			rowsEl.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-red-500">Could not load your bookings: [${esc(err?.code)}] ${esc(err?.message)}</td></tr>`;
+			return;
+		}
+
+		const all = sortBookings([
+			...(trRes.data ?? []).map((r: any) => transferToBooking(r)),
+			...(toRes.data ?? []).map((r: any) => tourToBooking(r)),
+		]);
+		const totals = affiliateTotals(all);
+
+		document.getElementById('af-count')!.textContent = String(totals.count);
+		document.getElementById('af-revenue')!.textContent = eur(totals.revenue);
+		document.getElementById('af-commission')!.textContent = eur(totals.commission);
+		renderRows(all);
+	}
+
+	load();
+</script>

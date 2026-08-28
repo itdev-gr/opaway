@@ -214,6 +214,8 @@ import Layout from '../layouts/Layout.astro';
 					// Admin first — public.users.type is authoritative for the portal.
 					const { data: userRow } = await supabase.from('users').select('type').eq('id', uid).maybeSingle();
 					if (userRow?.type === 'admin') { window.location.href = '/admin'; return; }
+					// Affiliates get their own portal — same query, no extra round-trip.
+					if (userRow?.type === 'affiliate') { window.location.href = '/affiliate'; return; }
 					// Then approved partner by type.
 					const { data: partnerRow } = await supabase.from('partners').select('type, status').eq('id', uid).maybeSingle();
 					if (partnerRow?.status === 'approved') {

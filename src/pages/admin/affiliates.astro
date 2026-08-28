@@ -24,9 +24,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 				<div>
-					<label for="aff-email" class="block text-sm font-medium text-neutral-700 mb-1">Email <span class="text-neutral-400">(optional)</span></label>
-					<input id="aff-email" type="email" placeholder="name@example.com"
+					<label for="aff-email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+					<input id="aff-email" type="email" required placeholder="name@example.com"
 						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<p class="text-xs text-neutral-400 mt-1">Used to sign in to their affiliate portal.</p>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
@@ -42,6 +43,19 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						<input id="aff-cvalue" type="number" min="0" step="0.01" required placeholder="10"
 							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
 					</div>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="aff-password" class="block text-sm font-medium text-neutral-700 mb-1">Password</label>
+					<div class="relative">
+						<input id="aff-password" type="password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password"
+							class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+						<button type="button" data-toggle-pw="aff-password"
+							class="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-neutral-500 hover:text-neutral-700">Show</button>
+					</div>
+					<p class="text-xs text-neutral-400 mt-1">Creates their login. Share it with them directly — it is never emailed.</p>
 				</div>
 			</div>
 
@@ -67,13 +81,37 @@ import AdminLayout from '../../components/AdminLayout.astro';
 							<th class="px-5 py-3 font-medium">Revenue</th>
 							<th class="px-5 py-3 font-medium">Commission</th>
 							<th class="px-5 py-3 font-medium">Status</th>
+							<th class="px-5 py-3 font-medium">Login</th>
 							<th class="px-5 py-3 font-medium text-right">Actions</th>
 						</tr>
 					</thead>
 					<tbody id="aff-rows">
-						<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
+						<tr><td colspan="9" class="px-5 py-8 text-center text-neutral-400">Loading…</td></tr>
 					</tbody>
 				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- ── Create login modal ── -->
+	<div id="aff-login-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+		<div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+			<h3 class="text-base font-bold text-neutral-900 mb-1">Create login</h3>
+			<p class="text-sm text-neutral-500 mb-4">Give <strong id="aff-login-name"></strong> access to the affiliate portal.</p>
+			<label for="aff-login-email" class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+			<input id="aff-login-email" type="email" required placeholder="name@example.com"
+				class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+			<label for="aff-login-password" class="block text-sm font-medium text-neutral-700 mb-1">Password</label>
+			<div class="relative mb-2">
+				<input id="aff-login-password" type="password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password"
+					class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				<button type="button" data-toggle-pw="aff-login-password"
+					class="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-neutral-500 hover:text-neutral-700">Show</button>
+			</div>
+			<p id="aff-login-status" class="text-xs mb-4"></p>
+			<div class="flex justify-end gap-3">
+				<button id="aff-login-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50">Cancel</button>
+				<button id="aff-login-confirm" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white disabled:opacity-60">Create login</button>
 			</div>
 		</div>
 	</div>
@@ -93,6 +131,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import {
+		groupByAffiliate, affiliateTotals, refUrl as buildRefUrl, rateLabel as buildRateLabel,
+		TRANSFER_COLUMNS_ADMIN, TOUR_COLUMNS_ADMIN, type AffiliateBooking,
+	} from '../../lib/affiliate-earnings';
 
 	type Affiliate = {
 		id: string;
@@ -104,24 +146,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		commission_value: number;
 		active: boolean;
 		created_at: string;
+		user_id: string | null;
 	};
 
 	// DB columns keep the legacy influencer_* names; the UI term is "affiliate".
-	type AttributedBooking = {
-		id: string;
-		source: 'transfers' | 'tours';
-		influencer_id: string;
-		date: string;
-		time: string;
-		label: string;
-		customer: string;
-		total_price: number;
-		influencer_commission: number;
-		ride_status: string;
-		payment_status: string;
-	};
+	// The booking shape and the totals math live in src/lib/affiliate-earnings.ts,
+	// shared with the affiliate's own portal so the numbers cannot drift apart.
+	type AttributedBooking = AffiliateBooking;
 
-	const rowsEl = document.getElementById('aff-rows') as HTMLTableSectionElement;
+	const rowsEl = document.getElementById('aff-rows')!;
 	const statusEl = document.getElementById('aff-status');
 	let affiliates: Affiliate[] = [];
 	let bookingsByAff: Record<string, AttributedBooking[]> = {};
@@ -142,73 +175,29 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	const eur = (n: number) => `€${(Number(n) || 0).toFixed(2)}`;
 
-	function rateLabel(i: Affiliate): string {
-		return i.commission_type === 'percent' ? `${i.commission_value}%` : `${eur(i.commission_value)}/booking`;
-	}
-
-	function refUrl(i: Affiliate): string {
-		return `${window.location.origin}/?ref=${encodeURIComponent(i.ref_code)}`;
-	}
+	const rateLabel = (i: Affiliate) => buildRateLabel(i.commission_type, i.commission_value);
+	const refUrl    = (i: Affiliate) => buildRefUrl(window.location.origin, i.ref_code);
 
 	async function loadData() {
 		const [affRes, trRes, toRes] = await Promise.all([
 			supabase.from('influencers').select('*').order('created_at', { ascending: false }),
-			supabase.from('transfers')
-				.select('id, influencer_id, influencer_commission, total_price, date, time, from, to, first_name, last_name, ride_status, payment_status, booking_type')
-				.not('influencer_id', 'is', null),
-			supabase.from('tours')
-				.select('id, influencer_id, influencer_commission, total_price, date, time, tour_name, name, ride_status, payment_status')
-				.not('influencer_id', 'is', null),
+			supabase.from('transfers').select(TRANSFER_COLUMNS_ADMIN).not('influencer_id', 'is', null),
+			supabase.from('tours').select(TOUR_COLUMNS_ADMIN).not('influencer_id', 'is', null),
 		]);
 
 		if (affRes.error) {
-			rowsEl.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-red-500">Error loading affiliates: [${affRes.error.code}] ${escapeHtml(affRes.error.message)}</td></tr>`;
+			rowsEl.innerHTML = `<tr><td colspan="9" class="px-5 py-8 text-center text-red-500">Error loading affiliates: [${affRes.error.code}] ${escapeHtml(affRes.error.message)}</td></tr>`;
 			return;
 		}
 		affiliates = (affRes.data ?? []) as Affiliate[];
 
-		bookingsByAff = {};
-		for (const t of (trRes.data ?? []) as any[]) {
-			const b: AttributedBooking = {
-				id: t.id, source: 'transfers', influencer_id: t.influencer_id,
-				date: t.date, time: t.time,
-				label: t.booking_type === 'hourly' ? `Hourly — ${t.from}` : `${t.from} → ${t.to}`,
-				customer: `${t.first_name ?? ''} ${t.last_name ?? ''}`.trim(),
-				total_price: Number(t.total_price) || 0,
-				influencer_commission: Number(t.influencer_commission) || 0,
-				ride_status: t.ride_status, payment_status: t.payment_status,
-			};
-			(bookingsByAff[b.influencer_id] ??= []).push(b);
-		}
-		for (const t of (toRes.data ?? []) as any[]) {
-			const b: AttributedBooking = {
-				id: t.id, source: 'tours', influencer_id: t.influencer_id,
-				date: t.date, time: t.time,
-				label: `Tour — ${t.tour_name ?? ''}`,
-				customer: (t.name ?? '').trim(),
-				total_price: Number(t.total_price) || 0,
-				influencer_commission: Number(t.influencer_commission) || 0,
-				ride_status: t.ride_status, payment_status: t.payment_status,
-			};
-			(bookingsByAff[b.influencer_id] ??= []).push(b);
-		}
-		for (const list of Object.values(bookingsByAff)) {
-			list.sort((a, b) => (b.date + (b.time ?? '')).localeCompare(a.date + (a.time ?? '')));
-		}
+		// Shared with the affiliate portal so both show identical numbers.
+		bookingsByAff = groupByAffiliate((trRes.data ?? []) as any[], (toRes.data ?? []) as any[]);
 
 		render();
 	}
 
-	function totalsFor(i: Affiliate) {
-		const all = bookingsByAff[i.id] ?? [];
-		const counted = all.filter((b) => b.ride_status !== 'cancelled');
-		return {
-			count: counted.length,
-			revenue: counted.reduce((s, b) => s + b.total_price, 0),
-			commission: counted.reduce((s, b) => s + b.influencer_commission, 0),
-			all,
-		};
-	}
+	const totalsFor = (i: Affiliate) => affiliateTotals(bookingsByAff[i.id] ?? []);
 
 	function bookingsDetailHtml(i: Affiliate): string {
 		const all = bookingsByAff[i.id] ?? [];
@@ -243,7 +232,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 	function render() {
 		if (!affiliates.length) {
-			rowsEl.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-neutral-400">No affiliates yet.</td></tr>';
+			rowsEl.innerHTML = '<tr><td colspan="9" class="px-5 py-8 text-center text-neutral-400">No affiliates yet.</td></tr>';
 			return;
 		}
 
@@ -271,6 +260,11 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					<td class="px-5 py-3">${eur(t.revenue)}</td>
 					<td class="px-5 py-3 font-semibold text-emerald-700">${eur(t.commission)}</td>
 					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${i.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${i.active ? 'active' : 'closed'}</span></td>
+					<td class="px-5 py-3 whitespace-nowrap">
+						${i.user_id
+							? `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700" title="${escapeHtml(i.email || '')}">Has login</span>`
+							: `<button data-login="${i.id}" data-name="${escapeHtml(i.name)}" data-email="${escapeHtml(i.email || '')}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#0C6B95] text-[#0C6B95] hover:bg-sky-50">Create login</button>`}
+					</td>
 					<td class="px-5 py-3 text-right whitespace-nowrap">
 						<button data-toggle="${i.id}" data-active="${i.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${i.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
 							${i.active ? 'Close' : 'Reopen'}
@@ -280,13 +274,16 @@ import AdminLayout from '../../components/AdminLayout.astro';
 						</button>
 					</td>
 				</tr>
-				${isOpen ? `<tr class="border-t border-neutral-100 bg-neutral-50/60"><td colspan="8" class="p-0">${bookingsDetailHtml(i)}</td></tr>` : ''}`;
+				${isOpen ? `<tr class="border-t border-neutral-100 bg-neutral-50/60"><td colspan="9" class="p-0">${bookingsDetailHtml(i)}</td></tr>` : ''}`;
 		}).join('');
 
 		wireRowActions();
 	}
 
 	function wireRowActions() {
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-login]').forEach((btn) => {
+			btn.addEventListener('click', () => openLoginModal(btn.dataset.login!, btn.dataset.name ?? '', btn.dataset.email ?? ''));
+		});
 		rowsEl.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
 			btn.addEventListener('click', async () => {
 				const aff = affiliates.find((x) => x.id === btn.dataset.copy);
@@ -365,33 +362,133 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const name = (document.getElementById('aff-name') as HTMLInputElement).value.trim();
 		const refCode = (document.getElementById('aff-code') as HTMLInputElement).value.trim();
 		const email = (document.getElementById('aff-email') as HTMLInputElement).value.trim();
+		const password = (document.getElementById('aff-password') as HTMLInputElement).value;
 		const cType = (document.getElementById('aff-ctype') as HTMLSelectElement).value as 'percent' | 'fixed';
 		const cValue = parseFloat((document.getElementById('aff-cvalue') as HTMLInputElement).value);
 
 		if (!name) { setStatus('Enter a name.', 'text-red-500'); return; }
 		if (!/^[a-zA-Z0-9_-]{3,32}$/.test(refCode)) { setStatus('Referral code must be 3-32 letters, numbers, - or _.', 'text-red-500'); return; }
+		if (!email) { setStatus('Enter an email — it is their login.', 'text-red-500'); return; }
+		if (password.length < 8) { setStatus('Password must be at least 8 characters.', 'text-red-500'); return; }
 		if (!Number.isFinite(cValue) || cValue < 0) { setStatus('Commission value must be 0 or more.', 'text-red-500'); return; }
 		if (cType === 'percent' && cValue > 100) { setStatus('Percent commission cannot exceed 100.', 'text-red-500'); return; }
 
-		const { error } = await supabase.from('influencers').insert({
+		setStatus('Creating…', 'text-[#0C6B95]');
+
+		// Two steps: the profile row (RLS-authorized insert), then the login
+		// (server route — creating an auth user needs the service role). If the
+		// second step fails the profile still exists, so the admin can retry with
+		// the row's "Create login" button instead of starting over.
+		const { data: created, error } = await supabase.from('influencers').insert({
 			name,
 			ref_code: refCode,
 			email,
 			commission_type: cType,
 			commission_value: cValue,
 			active: true,
-		});
+		}).select('id').single();
 
-		if (error) {
-			const msg = error.code === '23505'
+		if (error || !created) {
+			const msg = error?.code === '23505'
 				? `The referral code "${refCode}" is already taken.`
-				: `Error creating affiliate: [${error.code}] ${error.message}`;
+				: `Error creating affiliate: [${error?.code}] ${error?.message}`;
 			setStatus(msg, 'text-red-500');
 			return;
 		}
 
-		setStatus(`Affiliate "${name}" created.`, 'text-green-600');
+		const loginErr = await createLogin(created.id, email, password);
+		if (loginErr) {
+			setStatus(`Affiliate "${name}" was created, but the login was not: ${loginErr} Use "Create login" on their row to retry.`, 'text-red-500');
+			(document.getElementById('aff-password') as HTMLInputElement).value = '';
+			await loadData();
+			return;
+		}
+
+		setStatus(`Affiliate "${name}" created with a login.`, 'text-green-600');
 		(e.target as HTMLFormElement).reset();
+		await loadData();
+	});
+
+	/* ── Create login ── */
+	// Password fields are write-only: typed by the admin, posted straight to the
+	// server route, never stored or echoed back into the page.
+	document.querySelectorAll<HTMLButtonElement>('[data-toggle-pw]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const input = document.getElementById(btn.dataset.togglePw!) as HTMLInputElement | null;
+			if (!input) return;
+			const hidden = input.type === 'password';
+			input.type = hidden ? 'text' : 'password';
+			btn.textContent = hidden ? 'Hide' : 'Show';
+		});
+	});
+
+	const loginModal   = document.getElementById('aff-login-modal');
+	const loginNameEl  = document.getElementById('aff-login-name');
+	const loginEmailEl = document.getElementById('aff-login-email') as HTMLInputElement | null;
+	const loginPwEl    = document.getElementById('aff-login-password') as HTMLInputElement | null;
+	const loginStatus  = document.getElementById('aff-login-status');
+	const loginConfirm = document.getElementById('aff-login-confirm') as HTMLButtonElement | null;
+	let pendingLoginId: string | null = null;
+
+	function setLoginStatus(msg: string, cls: string) {
+		if (!loginStatus) return;
+		loginStatus.textContent = msg;
+		loginStatus.className = `text-xs mb-4 ${cls}`;
+	}
+
+	function openLoginModal(id: string, name: string, email: string) {
+		pendingLoginId = id;
+		if (loginNameEl) loginNameEl.textContent = name;
+		if (loginEmailEl) loginEmailEl.value = email;
+		if (loginPwEl) loginPwEl.value = '';
+		setLoginStatus('', '');
+		loginModal?.classList.remove('hidden');
+		loginEmailEl?.focus();
+	}
+
+	function closeLoginModal() {
+		pendingLoginId = null;
+		if (loginPwEl) loginPwEl.value = '';   // never leave a password in the DOM
+		loginModal?.classList.add('hidden');
+	}
+
+	document.getElementById('aff-login-cancel')?.addEventListener('click', closeLoginModal);
+	loginModal?.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
+
+	/** Calls the admin-only server route. Returns an error message, or null on success. */
+	async function createLogin(affiliateId: string, email: string, password: string): Promise<string | null> {
+		const { data: { session } } = await supabase.auth.getSession();
+		if (!session?.access_token) return 'Your session expired — reload and sign in again.';
+		let res: Response;
+		try {
+			res = await fetch('/api/admin/create-affiliate-login', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json', authorization: `Bearer ${session.access_token}` },
+				body: JSON.stringify({ affiliateId, email, password }),
+			});
+		} catch {
+			return 'Could not reach the server.';
+		}
+		if (res.ok) return null;
+		const body = await res.json().catch(() => ({}));
+		return body?.error || `Request failed (${res.status})`;
+	}
+
+	loginConfirm?.addEventListener('click', async () => {
+		if (!pendingLoginId || !loginEmailEl || !loginPwEl) return;
+		const email = loginEmailEl.value.trim();
+		const password = loginPwEl.value;
+		if (!email) { setLoginStatus('Enter an email address.', 'text-red-500'); return; }
+		if (password.length < 8) { setLoginStatus('Password must be at least 8 characters.', 'text-red-500'); return; }
+
+		loginConfirm.disabled = true;
+		setLoginStatus('Creating…', 'text-[#0C6B95]');
+		const err = await createLogin(pendingLoginId, email, password);
+		loginConfirm.disabled = false;
+		if (err) { setLoginStatus(err, 'text-red-500'); return; }
+
+		closeLoginModal();
+		setStatus('Login created.', 'text-green-600');
 		await loadData();
 	});
 
