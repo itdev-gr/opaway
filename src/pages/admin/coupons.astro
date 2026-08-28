@@ -108,7 +108,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 			<div class="mb-5">
 				<label for="cp-banner" class="block text-sm font-medium text-neutral-700 mb-1">Banner text <span class="text-neutral-400">(optional)</span></label>
-				<textarea id="cp-banner" rows="2" placeholder="e.g. Save 10% on your airport transfer this week"
+				<textarea id="cp-banner" rows="2" maxlength="140" placeholder="e.g. Save 10% on your airport transfer this week"
 					class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]"></textarea>
 				<p class="text-xs text-neutral-400 mt-1">Shown in the site-wide promo bar together with this coupon's code. Leave empty for no banner. If several coupons have banner text, the newest one is shown.</p>
 			</div>
@@ -292,7 +292,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				const id = coupon.id;
 				cell.outerHTML = `
 					<span class="flex items-start gap-1">
-						<textarea id="banner-input-${id}" rows="2" class="flex-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs">${escapeHtml(coupon.banner_text ?? '')}</textarea>
+						<textarea id="banner-input-${id}" rows="2" maxlength="140" class="flex-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs">${escapeHtml(coupon.banner_text ?? '')}</textarea>
 						<button id="banner-save-${id}" class="px-2 py-1 bg-[#0C6B95] text-white text-xs rounded-lg hover:bg-[#0a5c82]">Save</button>
 					</span>`;
 				document.getElementById(`banner-save-${id}`)?.addEventListener('click', async () => {

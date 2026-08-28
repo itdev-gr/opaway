@@ -62,6 +62,10 @@
 	// Runs on every astro:page-load — view transitions swap the <body>, so the
 	// banner element is a new node after each client-side navigation.
 	let teardownPromo: (() => void) | null = null;
+	// The offer is global and effectively static, so cache the in-flight/settled
+	// promise at module scope — it survives view transitions, so navigating
+	// client-side doesn't re-fire the RPC on every astro:page-load.
+	let promoPromise: Promise<Awaited<ReturnType<typeof fetchPromoBanner>>> | null = null;
 
 	function initPromoBanner() {
 		teardownPromo?.();
@@ -70,9 +74,14 @@
 		const banner = document.getElementById('promo-banner');
 		if (!banner) return;
 
+		// Re-run after the copy swap: the coupon text can wrap to a second line,
+		// growing the bar, which would leave the last show/hide decision stale.
+		let refreshPromo: (() => void) | null = null;
+
 		// Swap in the running coupon offer, if one is being advertised. Visibility
 		// stays main's scroll concern; this only changes what the bar says.
-		fetchPromoBanner().then((promo) => {
+		promoPromise ??= fetchPromoBanner();
+		promoPromise.then((promo) => {
 			if (!promo) return;
 			const textEl = document.getElementById('promo-coupon-text');
 			const codeEl = document.getElementById('promo-coupon-code');
@@ -81,6 +90,7 @@
 			codeEl.textContent = promo.code;
 			document.getElementById('promo-default-copy')?.classList.add('hidden');
 			document.getElementById('promo-coupon-copy')?.classList.remove('hidden');
+			refreshPromo?.();
 		});
 
 		// Reveal/conceal by sliding, so the bar never covers the hero.
@@ -104,6 +114,7 @@
 			const gapBelowHero = window.innerHeight - anchor.getBoundingClientRect().bottom;
 			show(gapBelowHero >= banner.offsetHeight);
 		};
+		refreshPromo = update;
 		const onScroll = () => {
 			if (queued) return;
 			queued = true;

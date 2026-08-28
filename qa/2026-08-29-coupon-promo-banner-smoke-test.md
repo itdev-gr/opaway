@@ -1,5 +1,16 @@
 # 2026-08-29 — Coupon promo banner smoke test journal
 
+**Note (final-review fix wave):** the per-offer dismissal design this journal
+originally exercised (a close button, `localStorage`-backed "dismissed until
+a different coupon shows" behaviour) was superseded by main's banner
+redesign (`351a406`, `46c7ba5`), which removed the close button and the
+localStorage dismissal entirely during the merge with main. The banner's
+visibility is now purely scroll-driven — it slides in once a gap the height
+of the bar opens up below the page's `[data-promo-anchor]` hero. The
+automated-gate numbers below and the browser-check list have been updated to
+match; the dismissal-specific browser check has been removed rather than
+rewritten, since there's no equivalent behaviour left to check.
+
 Branch: `feature/coupon-promo-banner`
 Started: 2026-08-28 (worktree at `.claude/worktrees/promo-banner`)
 Method: no dev server / browser session was available for this pass. Step 2's
@@ -20,24 +31,28 @@ states exactly what was and wasn't verified, and how.
 `npm test`:
 
 ```
-Test Files  7 passed (7)
-     Tests  74 passed (74)
+Test Files  8 passed (8)
+     Tests  109 passed (109)
 ```
-All 74/74 Vitest tests pass, across `tests/promo-banner.test.ts` (3),
-`tests/affiliate-ref.test.ts` (7), `tests/pricing.test.ts` (6),
-`tests/coupons.test.ts` (16), `tests/booking-edit.test.ts` (18),
-`tests/booking-filters.test.ts` (17), `tests/booking-date.test.ts` (7).
-**PASS.**
+All 109/109 Vitest tests pass, across `tests/promo-banner.test.ts` (6, the
+lib-level suite for `fetchPromoBanner`, re-created during the final-review
+fix wave — see the note at the top of this journal), `tests/affiliate-ref.test.ts`
+(7), `tests/pricing.test.ts` (6), `tests/coupons.test.ts` (16),
+`tests/booking-edit.test.ts` (18), `tests/booking-filters.test.ts` (17),
+`tests/booking-date.test.ts` (11), `tests/sales-report.test.ts` (28). Also
+verified in a clean shell (`env -i PATH="$PATH" HOME="$HOME" npm test`), same
+result — confirming the promo-banner mock doesn't depend on env vars leaking
+in from the ambient shell. **PASS.**
 
 `npx astro check`:
 
 ```
-Result (156 files):
-- 43 errors
+Result (158 files):
+- 42 errors
 - 0 warnings
 - 18 hints
 ```
-43 errors — matches the pre-existing baseline (all in unrelated files:
+42 errors — matches the pre-existing baseline (all in unrelated files:
 `Layout` prop typing on `.astro` pages, `google` global not typed on
 `transfer/results.astro`, implicit-any callback params). No new errors
 introduced by the promo-banner feature. **PASS.**
@@ -263,24 +278,19 @@ pass below.
 
 No dev server or browser session was available in this environment. The
 following require a human with a running `npm run dev` server (or the
-deployed site) and, for item 4, an admin login. **None of the items below
+deployed site) and, for item 3, an admin login. **None of the items below
 were exercised in this pass — treat them as open until a human runs them.**
 
 1. With `BANNER10` active, load any page: the sticky bar shows "Book online
    and save 10% on your transfer" with a `BANNER10` code pill, and the
    default "Book your transfer online" copy is gone.
-2. Dismiss the banner, reload: it stays hidden. Then change the coupon's
-   banner text via the admin inline editor (`/admin/coupons`, click the
-   Banner cell for `BANNER10`) to a different message and reload: the
-   banner is still hidden (same code = same dismissal key) — dismissing is
-   per coupon, not per wording.
-3. Deactivate `BANNER10` (toggle `active` off in `/admin/coupons` or via
+2. Deactivate `BANNER10` (toggle `active` off in `/admin/coupons` or via
    SQL): the banner falls back to the default hard-coded copy on the next
    load.
-4. Admin `/admin/coupons`: create a coupon with banner text; the Banner
+3. Admin `/admin/coupons`: create a coupon with banner text; the Banner
    column shows it truncated; click the cell, edit, Save, and the list
    refreshes with the new text; clearing it shows `—`.
-5. Language switch to Greek/Spanish with a coupon banner showing: the
+4. Language switch to Greek/Spanish with a coupon banner showing: the
    message stays in the admin's wording (documented behaviour), while the
    "Code" label and the Book-now button translate.
 
@@ -290,8 +300,8 @@ were exercised in this pass — treat them as open until a human runs them.**
 
 | # | Check | Result |
 |---|---|---|
-| 1 | `npm test` (74/74) | PASS |
-| 2 | `npx astro check` (43 baseline, 0 new) | PASS |
+| 1 | `npm test` (109/109) | PASS |
+| 2 | `npx astro check` (42 baseline, 0 new) | PASS |
 | 3 | DB check 1 — 0 rows when no active coupon has banner text | PASS |
 | 4 | DB check 2 — returned row has exactly `code` + `banner_text` | PASS |
 | 5 | DB check 3 — newest-created banner coupon wins | PASS |
@@ -302,12 +312,11 @@ were exercised in this pass — treat them as open until a human runs them.**
 | 10 | Cleanup verified (0 leftover `QA_BAN%` coupons) | PASS |
 | 11 | Demo coupon `BANNER10` created, active, surfaced by the RPC | PASS |
 | 2b.1 | Sticky bar shows `BANNER10` banner text + code pill, default copy gone | NOT RUN — deferred |
-| 2b.2 | Dismiss persists across reload and across a banner-text edit (per-code key) | NOT RUN — deferred |
-| 2b.3 | Deactivating `BANNER10` falls back to default hard-coded copy | NOT RUN — deferred |
-| 2b.4 | Admin Banner column: truncation, inline edit + save, clear shows `—` | NOT RUN — deferred |
-| 2b.5 | Language switch: banner text stays as authored, surrounding UI translates | NOT RUN — deferred |
+| 2b.2 | Deactivating `BANNER10` falls back to default hard-coded copy | NOT RUN — deferred |
+| 2b.3 | Admin Banner column: truncation, inline edit + save, clear shows `—` | NOT RUN — deferred |
+| 2b.4 | Language switch: banner text stays as authored, surrounding UI translates | NOT RUN — deferred |
 
-11 of 11 automated/DB-level checks PASS. 5 browser-only checks NOT RUN
+11 of 11 automated/DB-level checks PASS. 4 browser-only checks NOT RUN
 (deferred to manual QA with steps above). 0 FAIL.
 
 **Reminder:** `BANNER10` is live and active in production. Deactivate or
