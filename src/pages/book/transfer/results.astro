@@ -52,6 +52,19 @@ import Layout from '../../../layouts/Layout.astro';
 						<span class="ml-auto text-xs" data-i18n-el="Όλες οι τιμές περιλαμβάνουν ΦΠΑ, φόρους & διόδια" data-i18n-es="Todos los precios incluyen IVA, impuestos y peajes">All prices include VAT, taxes & tolls</span>
 					</div>
 
+					<!-- Coupon code -->
+					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-4">
+						<label for="coupon-input" class="block text-sm font-semibold text-neutral-900 mb-2" data-i18n-el="Κουπόνι έκπτωσης" data-i18n-es="Cupón de descuento">Discount coupon</label>
+						<div class="flex gap-2">
+							<input id="coupon-input" type="text" placeholder="Coupon code" data-i18n-placeholder-el="Κωδικός κουπονιού" data-i18n-placeholder-es="Código de cupón"
+								class="flex-1 rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+							<button id="coupon-apply-btn" type="button"
+								class="px-5 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+								data-i18n-el="Εφαρμογή" data-i18n-es="Aplicar">Apply</button>
+						</div>
+						<p id="coupon-status" class="hidden mt-2 text-sm"></p>
+					</div>
+
 					<!-- Vehicle cards -->
 					<div id="vehicle-cards" class="space-y-4">
 						<!-- Skeleton loaders -->
@@ -202,6 +215,10 @@ import Layout from '../../../layouts/Layout.astro';
 								<span data-i18n-el="Επιστροφή" data-i18n-es="Vuelta">Return</span>
 								<span id="sb-return-price">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span><span data-i18n-el="Κουπόνι" data-i18n-es="Cupón">Coupon</span> <span id="sb-coupon-code" class="font-mono"></span></span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<!-- Feature badges -->
@@ -249,8 +266,18 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 	import { calculatePrice, loadPricing, type PricingData } from '../../../lib/pricing';
+	import { validateCoupon, couponDiscountAmount, effectiveCouponValue, type AppliedCoupon } from '../../../lib/coupons';
 
 	let partnerDiscount = 0;
+	let appliedCoupon: AppliedCoupon | null = null;
+
+	function couponAmountFor(total: number): number {
+		if (!appliedCoupon) return 0;
+		return couponDiscountAmount(total, {
+			discount_type: appliedCoupon.discount_type,
+			discount_value: effectiveCouponValue(appliedCoupon, hasReturn),
+		});
+	}
 	let pricingData: PricingData;
 
 	async function detectPartnerDiscount(): Promise<number> {
@@ -345,6 +372,7 @@ import Layout from '../../../layouts/Layout.astro';
 
 		renderVehicles();
 		updateSidebarPrices();
+		refreshCouponStatus();
 	}
 
 	if (hasReturn) {
@@ -375,9 +403,22 @@ import Layout from '../../../layouts/Layout.astro';
 			discount: partnerDiscount,
 			time,
 		}, pricingData);
-		setText('sb-total', `\u20AC ${price.totalPrice.toFixed(2)}`);
+		const couponAmount = couponAmountFor(price.totalPrice);
+		const finalTotal = Math.round((price.totalPrice - couponAmount) * 100) / 100;
+		setText('sb-total', `\u20AC ${finalTotal.toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.toggle('text-red-600', couponAmount > 0);
+		totalEl?.classList.toggle('text-neutral-900', couponAmount <= 0);
 		setText('sb-outward', `\u20AC ${price.outwardPrice.toFixed(2)}`);
 		setText('sb-return-price', hasReturn ? `\u20AC ${price.returnPrice.toFixed(2)}` : '—');
+		const couponRow = document.getElementById('sb-coupon-row');
+		if (couponRow) {
+			couponRow.classList.toggle('hidden', couponAmount <= 0);
+			if (couponAmount > 0 && appliedCoupon) {
+				setText('sb-coupon-code', appliedCoupon.code);
+				setText('sb-coupon-amount', `-\u20AC ${couponAmount.toFixed(2)}`);
+			}
+		}
 	}
 
 	/* ── Escape HTML ── */
@@ -413,6 +454,9 @@ import Layout from '../../../layouts/Layout.astro';
 			}, pricingData);
 			const isSelected = selectedVehicleSlug === v.slug;
 			const showOriginal = partnerDiscount > 0 && price.originalTotal !== price.totalPrice;
+			const couponAmount = couponAmountFor(price.totalPrice);
+			const finalTotal = Math.round((price.totalPrice - couponAmount) * 100) / 100;
+			const strikeFrom = showOriginal ? price.originalTotal : price.totalPrice;
 
 			return `
 			<div
@@ -446,8 +490,11 @@ import Layout from '../../../layouts/Layout.astro';
 
 					<!-- Price -->
 					<div class="flex flex-col items-end justify-center shrink-0 pl-2">
-						${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${price.originalTotal.toFixed(2)}</del>` : ''}
-						<span class="text-xl font-bold text-neutral-900">&euro;${price.totalPrice.toFixed(2)}</span>
+						${couponAmount > 0
+							? `<del class="text-neutral-400 text-sm">&euro;${strikeFrom.toFixed(2)}</del>
+							<span class="text-xl font-bold text-red-600">&euro;${finalTotal.toFixed(2)}</span>`
+							: `${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${price.originalTotal.toFixed(2)}</del>` : ''}
+							<span class="text-xl font-bold text-neutral-900">&euro;${price.totalPrice.toFixed(2)}</span>`}
 						<span class="text-[10px] text-neutral-400" data-i18n-el="${hasReturn ? 'με επιστροφή' : 'τελική τιμή'}" data-i18n-es="${hasReturn ? 'con vuelta' : 'precio final'}">${hasReturn ? 'round trip' : 'total price'}</span>
 					</div>
 				</div>
@@ -679,4 +726,66 @@ import Layout from '../../../layouts/Layout.astro';
 		pricingData = p;
 		loadVehicles();
 	});
+
+	/* ── Coupon ── */
+	const couponInput = document.getElementById('coupon-input') as HTMLInputElement | null;
+	const couponBtn = document.getElementById('coupon-apply-btn') as HTMLButtonElement | null;
+	const couponStatusEl = document.getElementById('coupon-status');
+
+	function setCouponStatus(msg: string, ok: boolean) {
+		if (!couponStatusEl) return;
+		couponStatusEl.textContent = msg;
+		couponStatusEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
+		couponStatusEl.classList.add(ok ? 'text-green-600' : 'text-red-600');
+	}
+
+	function couponSummaryLabel(c: AppliedCoupon, roundTrip: boolean): string {
+		const base = c.discount_type === 'percent' ? `${c.discount_value}%` : `\u20AC${c.discount_value.toFixed(2)}`;
+		const extra = roundTrip && c.return_extra_value > 0
+			? (c.discount_type === 'percent' ? ` + ${c.return_extra_value}% round-trip extra` : ` + \u20AC${c.return_extra_value.toFixed(2)} round-trip extra`)
+			: '';
+		return `${base} off${extra}`;
+	}
+
+	function refreshCouponStatus() {
+		if (!appliedCoupon) return;
+		setCouponStatus(`Coupon "${appliedCoupon.code}" applied: ${couponSummaryLabel(appliedCoupon, hasReturn)}`, true);
+	}
+
+	couponBtn?.addEventListener('click', async () => {
+		const codeValue = (couponInput?.value || '').trim();
+		if (!codeValue) {
+			appliedCoupon = null;
+			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
+			couponStatusEl?.classList.add('hidden');
+			renderVehicles();
+			updateSidebarPrices();
+			return;
+		}
+		couponBtn.disabled = true;
+		const applyLabel = couponBtn.textContent || 'Apply';
+		couponBtn.textContent = 'Checking…';
+		const coupon = await validateCoupon(codeValue, 'transfer');
+		couponBtn.disabled = false;
+		couponBtn.textContent = applyLabel;
+		appliedCoupon = coupon;
+		if (coupon) {
+			try { sessionStorage.setItem('opaway:coupon', coupon.code); } catch {}
+			refreshCouponStatus();
+		} else {
+			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
+			setCouponStatus('Invalid or expired coupon code.', false);
+		}
+		renderVehicles();
+		updateSidebarPrices();
+	});
+
+	// Restore a previously applied coupon (e.g. browser-Back from a later step).
+	try {
+		const carried = sessionStorage.getItem('opaway:coupon') || '';
+		if (carried && couponInput && couponBtn) {
+			couponInput.value = carried;
+			couponBtn.click();
+		}
+	} catch { /* sessionStorage unavailable — skip */ }
 </script>
