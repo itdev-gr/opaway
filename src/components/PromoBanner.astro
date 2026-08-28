@@ -5,16 +5,13 @@
 // Behaviour: position:sticky + bottom:0 inside the wrapper in Layout.astro that
 // ends where the footer begins — so it follows the visitor while they scroll and
 // parks in its natural slot right above the footer once they reach it.
-// Dismissal is remembered in localStorage for 30 days.
-
-const STORAGE_KEY = 'promo:opawey-book-online';
-const DISMISS_DAYS = 30;
+// It stays off-screen while the hero fills the viewport and slides in as soon as
+// the visitor has scrolled far enough for a gap the height of the bar to open up
+// below the hero; pages with no hero (no [data-promo-anchor]) show it right away.
 ---
 <aside
 	id="promo-banner"
-	data-storage-key={STORAGE_KEY}
-	data-dismiss-days={DISMISS_DAYS}
-	class="sticky bottom-0 z-30 hidden bg-[#0C6B95] text-white font-sans shadow-[0_-8px_24px_-12px_rgba(12,107,149,0.45)]"
+	class="sticky bottom-0 z-30 translate-y-full pointer-events-none transition-transform duration-300 ease-out motion-reduce:transition-none bg-[#0C6B95] text-white font-sans shadow-[0_-8px_24px_-12px_rgba(12,107,149,0.45)]"
 	aria-label="Opawey offer"
 >
 	<div class="max-w-6xl mx-auto px-6 lg:px-10 py-3 md:py-4 flex items-center gap-4">
@@ -49,46 +46,60 @@ const DISMISS_DAYS = 30;
 		>
 			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
 		</a>
-		<button
-			type="button"
-			id="promo-banner-close"
-			aria-label="Close"
-			data-i18n-aria-el="Κλείσιμο"
-			data-i18n-aria-es="Cerrar"
-			class="shrink-0 -mr-1 w-8 h-8 rounded-full text-white/80 hover:text-white hover:bg-white/15 flex items-center justify-center transition-colors"
-		>
-			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-		</button>
 	</div>
 </aside>
 
 <script>
 	// Runs on every astro:page-load — view transitions swap the <body>, so the
 	// banner element is a new node after each client-side navigation.
+	let teardownPromo: (() => void) | null = null;
+
 	function initPromoBanner() {
+		teardownPromo?.();
+		teardownPromo = null;
+
 		const banner = document.getElementById('promo-banner');
 		if (!banner) return;
-		const closeBtn = document.getElementById('promo-banner-close');
-		const key = banner.dataset.storageKey ?? 'promo:opawey-book-online';
-		const days = Number(banner.dataset.dismissDays ?? '30');
-		const ttlMs = days * 24 * 60 * 60 * 1000;
 
-		let dismissed = false;
-		try {
-			const raw = localStorage.getItem(key);
-			if (raw) {
-				const at = Number(raw);
-				if (Number.isFinite(at) && Date.now() - at < ttlMs) dismissed = true;
-			}
-		} catch { /* ignore — Safari private mode */ }
+		// Reveal/conceal by sliding, so the bar never covers the hero.
+		const show = (on: boolean) => {
+			banner.classList.toggle('translate-y-full', !on);
+			banner.classList.toggle('pointer-events-none', !on);
+		};
 
-		if (!dismissed) banner.classList.remove('hidden');
+		const anchor = document.querySelector('[data-promo-anchor]');
+		if (!anchor) {
+			// No hero on this page — the bar is relevant from the start.
+			show(true);
+			return;
+		}
 
-		closeBtn?.addEventListener('click', () => {
-			try { localStorage.setItem(key, String(Date.now())); } catch { /* ignore */ }
-			banner.classList.add('hidden');
-		});
+		// Show as soon as the strip of page below the hero is at least as tall as the
+		// bar itself — i.e. the bar slides in over content, never over the hero.
+		let queued = false;
+		const update = () => {
+			queued = false;
+			const gapBelowHero = window.innerHeight - anchor.getBoundingClientRect().bottom;
+			show(gapBelowHero >= banner.offsetHeight);
+		};
+		const onScroll = () => {
+			if (queued) return;
+			queued = true;
+			requestAnimationFrame(update);
+		};
+
+		update();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll, { passive: true });
+		teardownPromo = () => {
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
+		};
 	}
 
 	document.addEventListener('astro:page-load', initPromoBanner);
+	document.addEventListener('astro:before-swap', () => {
+		teardownPromo?.();
+		teardownPromo = null;
+	});
 </script>
