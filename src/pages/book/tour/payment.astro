@@ -296,7 +296,9 @@ import Layout from '../../../layouts/Layout.astro';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
 	import { resolvePartnerId } from '../../../lib/resolve-partner-id';
 	import { validateCoupon, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
+	import { getStoredRefCode } from '../../../lib/influencer-ref';
 
+	const influencerCode = getStoredRefCode();
 	const formScope = document.getElementById('payment-form-section');
 
 	/* ── Parse URL params ── */
@@ -496,6 +498,7 @@ import Layout from '../../../layouts/Layout.astro';
 					added_by_admin: false,
 					coupon_code: appliedCoupon?.code ?? null,
 					coupon_discount: couponDiscount,
+					influencer_code: influencerCode,
 				},
 			});
 
@@ -570,6 +573,7 @@ import Layout from '../../../layouts/Layout.astro';
 				partner_id: partnerId,
 				coupon_code: appliedCoupon?.code ?? null,
 				coupon_discount: couponDiscount,
+				influencer_code: influencerCode,
 			};
 
 			const { data: { session } } = await supabase.auth.getSession();
