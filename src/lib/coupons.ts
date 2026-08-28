@@ -5,6 +5,7 @@ export interface AppliedCoupon {
   code: string;
   discount_type: 'percent' | 'fixed';
   discount_value: number;
+  return_extra_value: number;
 }
 
 // Stripe checkout rejects totals under €1 (see create-checkout-session.ts
@@ -21,6 +22,17 @@ export function couponDiscountAmount(
     : coupon.discount_value;
   const max = total - MIN_PAYABLE_TOTAL_EUR;
   return Math.round(Math.min(Math.max(raw, 0), max) * 100) / 100;
+}
+
+// Effective discount value for a booking: the base value plus, for round-trip
+// transfers, the coupon's return extra (same unit as discount_type). Percent
+// totals are capped at 100.
+export function effectiveCouponValue(
+  coupon: Pick<AppliedCoupon, 'discount_type' | 'discount_value' | 'return_extra_value'>,
+  roundTripTransfer: boolean,
+): number {
+  const v = coupon.discount_value + (roundTripTransfer ? (coupon.return_extra_value || 0) : 0);
+  return coupon.discount_type === 'percent' ? Math.min(v, 100) : v;
 }
 
 export type CouponStatus = 'active' | 'scheduled' | 'expired' | 'closed';
@@ -55,5 +67,6 @@ export async function validateCoupon(code: string, flow: CouponFlow): Promise<Ap
     code: String(row.code),
     discount_type: row.discount_type === 'fixed' ? 'fixed' : 'percent',
     discount_value: Number(row.discount_value),
+    return_extra_value: Number(row.return_extra_value ?? 0),
   };
 }
