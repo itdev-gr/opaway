@@ -52,19 +52,6 @@ import Layout from '../../../layouts/Layout.astro';
 						<span class="ml-auto text-xs" data-i18n-el="Όλες οι τιμές περιλαμβάνουν ΦΠΑ, φόρους & διόδια" data-i18n-es="Todos los precios incluyen IVA, impuestos y peajes">All prices include VAT, taxes & tolls</span>
 					</div>
 
-					<!-- Coupon code -->
-					<div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-4">
-						<label for="coupon-input" class="block text-sm font-semibold text-neutral-900 mb-2" data-i18n-el="Κουπόνι έκπτωσης" data-i18n-es="Cupón de descuento">Discount coupon</label>
-						<div class="flex gap-2">
-							<input id="coupon-input" type="text" placeholder="Coupon code" data-i18n-placeholder-el="Κωδικός κουπονιού" data-i18n-placeholder-es="Código de cupón"
-								class="flex-1 rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
-							<button id="coupon-apply-btn" type="button"
-								class="px-5 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
-								data-i18n-el="Εφαρμογή" data-i18n-es="Aplicar">Apply</button>
-						</div>
-						<p id="coupon-status" class="hidden mt-2 text-sm"></p>
-					</div>
-
 					<!-- Vehicle cards -->
 					<div id="vehicle-cards" class="space-y-4">
 						<!-- Skeleton loaders -->
@@ -216,7 +203,7 @@ import Layout from '../../../layouts/Layout.astro';
 								<span id="sb-return-price">—</span>
 							</div>
 							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
-								<span><span data-i18n-el="Κουπόνι" data-i18n-es="Cupón">Coupon</span> <span id="sb-coupon-code" class="font-mono"></span></span>
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
 								<span id="sb-coupon-amount">—</span>
 							</div>
 						</div>
@@ -266,17 +253,16 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 	import { calculatePrice, loadPricing, type PricingData } from '../../../lib/pricing';
-	import { validateCoupon, couponDiscountAmount, effectiveCouponValue, type AppliedCoupon } from '../../../lib/coupons';
+	import { bestCouponFor, fetchAutoCoupons, type AppliedCoupon } from '../../../lib/coupons';
 
 	let partnerDiscount = 0;
-	let appliedCoupon: AppliedCoupon | null = null;
+	// Offers the visitor qualifies for. Nothing is typed in: the best one for
+	// each vehicle's own price is picked below, so a fixed coupon can win on a
+	// short ride while a percent one wins on a long one.
+	let autoCoupons: AppliedCoupon[] = [];
 
 	function couponAmountFor(total: number): number {
-		if (!appliedCoupon) return 0;
-		return couponDiscountAmount(total, {
-			discount_type: appliedCoupon.discount_type,
-			discount_value: effectiveCouponValue(appliedCoupon, hasReturn),
-		});
+		return bestCouponFor(autoCoupons, total, hasReturn)?.amount ?? 0;
 	}
 	let pricingData: PricingData;
 
@@ -370,9 +356,9 @@ import Layout from '../../../layouts/Layout.astro';
 			setText('sb-return-to', from);
 		}
 
+		// Re-render: the round-trip extra can change which offer wins.
 		renderVehicles();
 		updateSidebarPrices();
-		refreshCouponStatus();
 	}
 
 	if (hasReturn) {
@@ -415,10 +401,7 @@ import Layout from '../../../layouts/Layout.astro';
 		const couponRow = document.getElementById('sb-coupon-row');
 		if (couponRow) {
 			couponRow.classList.toggle('hidden', couponAmount <= 0);
-			if (couponAmount > 0 && appliedCoupon) {
-				setText('sb-coupon-code', appliedCoupon.code);
-				setText('sb-coupon-amount', `-\u20AC ${couponAmount.toFixed(2)}`);
-			}
+			if (couponAmount > 0) setText('sb-coupon-amount', `-\u20AC ${couponAmount.toFixed(2)}`);
 		}
 	}
 
@@ -723,71 +706,12 @@ import Layout from '../../../layouts/Layout.astro';
 	});
 
 	/* ── Init ── */
-	Promise.all([detectPartnerDiscount(), loadPricing()]).then(([d, p]) => {
+	// fetchAutoCoupons resolves the customer group from the session, so it runs
+	// with the partner-discount lookup, before the first price is drawn.
+	Promise.all([detectPartnerDiscount(), loadPricing(), fetchAutoCoupons('transfer')]).then(([d, p, coupons]) => {
 		partnerDiscount = d;
 		pricingData = p;
+		autoCoupons = coupons;
 		loadVehicles();
 	});
-
-	/* ── Coupon ── */
-	const couponInput = document.getElementById('coupon-input') as HTMLInputElement | null;
-	const couponBtn = document.getElementById('coupon-apply-btn') as HTMLButtonElement | null;
-	const couponStatusEl = document.getElementById('coupon-status');
-
-	function setCouponStatus(msg: string, ok: boolean) {
-		if (!couponStatusEl) return;
-		couponStatusEl.textContent = msg;
-		couponStatusEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
-		couponStatusEl.classList.add(ok ? 'text-green-600' : 'text-red-600');
-	}
-
-	function couponSummaryLabel(c: AppliedCoupon, roundTrip: boolean): string {
-		const base = c.discount_type === 'percent' ? `${c.discount_value}%` : `\u20AC${c.discount_value.toFixed(2)}`;
-		const extra = roundTrip && c.return_extra_value > 0
-			? (c.discount_type === 'percent' ? ` + ${c.return_extra_value}% round-trip extra` : ` + \u20AC${c.return_extra_value.toFixed(2)} round-trip extra`)
-			: '';
-		return `${base} off${extra}`;
-	}
-
-	function refreshCouponStatus() {
-		if (!appliedCoupon) return;
-		setCouponStatus(`Coupon "${appliedCoupon.code}" applied: ${couponSummaryLabel(appliedCoupon, hasReturn)}`, true);
-	}
-
-	couponBtn?.addEventListener('click', async () => {
-		const codeValue = (couponInput?.value || '').trim();
-		if (!codeValue) {
-			appliedCoupon = null;
-			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
-			couponStatusEl?.classList.add('hidden');
-			renderVehicles();
-			updateSidebarPrices();
-			return;
-		}
-		couponBtn.disabled = true;
-		const applyLabel = couponBtn.textContent || 'Apply';
-		couponBtn.textContent = 'Checking…';
-		const coupon = await validateCoupon(codeValue, 'transfer');
-		couponBtn.disabled = false;
-		couponBtn.textContent = applyLabel;
-		appliedCoupon = coupon;
-		if (coupon) {
-			try { sessionStorage.setItem('opaway:coupon', coupon.code); } catch {}
-			refreshCouponStatus();
-		} else {
-			try { sessionStorage.removeItem('opaway:coupon'); } catch {}
-			setCouponStatus('Invalid or expired coupon code.', false);
-		}
-		renderVehicles();
-		updateSidebarPrices();
-	});
-
-	// Restore a previously applied coupon (e.g. browser-Back from a later step).
-	try {
-		const carried = sessionStorage.getItem('opaway:coupon') || '';
-		if (carried && couponInput && couponBtn) {
-			couponInput.value = carried;
-			couponBtn.click();
-		}
-	} catch { /* sessionStorage unavailable — skip */ }
 </script>

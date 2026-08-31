@@ -35,6 +35,32 @@ export function effectiveCouponValue(
   return coupon.discount_type === 'percent' ? Math.min(v, 100) : v;
 }
 
+export interface BestCoupon {
+  coupon: AppliedCoupon;
+  amount: number;
+}
+
+// Coupons are applied automatically, so several may fit one booking. The one
+// that saves the customer the most money wins; because a fixed coupon beats a
+// percent one on a cheap ride and loses on an expensive one, this has to be
+// decided per price, not once per page. Ties keep the caller's order, and
+// get_auto_coupons hands them over newest first.
+export function bestCouponFor(
+  coupons: AppliedCoupon[],
+  total: number,
+  roundTripTransfer: boolean,
+): BestCoupon | null {
+  let best: BestCoupon | null = null;
+  for (const coupon of coupons) {
+    const amount = couponDiscountAmount(total, {
+      discount_type: coupon.discount_type,
+      discount_value: effectiveCouponValue(coupon, roundTripTransfer),
+    });
+    if (amount > 0 && (!best || amount > best.amount)) best = { coupon, amount };
+  }
+  return best;
+}
+
 export type CouponStatus = 'active' | 'scheduled' | 'expired' | 'closed';
 
 export function couponStatusOn(
@@ -53,14 +79,7 @@ export function athensTodayISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' });
 }
 
-export async function validateCoupon(code: string, flow: CouponFlow): Promise<AppliedCoupon | null> {
-  const { supabase } = await import('./supabase');
-  const { data, error } = await supabase.rpc('validate_coupon', { p_code: code, p_flow: flow });
-  if (error) {
-    console.error('validate_coupon failed:', error);
-    return null;
-  }
-  const row = Array.isArray(data) ? data[0] : data;
+function toAppliedCoupon(row: any): AppliedCoupon | null {
   if (!row?.id) return null;
   return {
     id: String(row.id),
@@ -69,4 +88,23 @@ export async function validateCoupon(code: string, flow: CouponFlow): Promise<Ap
     discount_value: Number(row.discount_value),
     return_extra_value: Number(row.return_extra_value ?? 0),
   };
+}
+
+// Every offer the current visitor qualifies for on this flow, newest first.
+// The coupons table is admin-only, so this SECURITY DEFINER RPC is the only
+// public window onto it; it resolves the customer group from the session.
+export async function fetchAutoCoupons(flow: CouponFlow): Promise<AppliedCoupon[]> {
+  try {
+    const { supabase } = await import('./supabase');
+    const { data, error } = await supabase.rpc('get_auto_coupons', { p_flow: flow });
+    if (error) {
+      console.error('get_auto_coupons failed:', error);
+      return [];
+    }
+    const rows = Array.isArray(data) ? data : data ? [data] : [];
+    return rows.map(toAppliedCoupon).filter((c): c is AppliedCoupon => c !== null);
+  } catch (err) {
+    console.error('get_auto_coupons request failed:', err);
+    return [];
+  }
 }

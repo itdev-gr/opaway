@@ -131,19 +131,6 @@ import Layout from '../../../layouts/Layout.astro';
 							</label>
 						</div>
 
-						<!-- Coupon code -->
-						<div class="mb-6">
-							<label for="coupon-input" class="block text-sm font-semibold text-neutral-900 mb-2" data-i18n-el="Κουπόνι έκπτωσης" data-i18n-es="Cupón de descuento">Discount coupon</label>
-							<div class="flex gap-2">
-								<input id="coupon-input" type="text" placeholder="Coupon code" data-i18n-placeholder-el="Κωδικός κουπονιού" data-i18n-placeholder-es="Código de cupón"
-									class="flex-1 rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
-								<button id="coupon-apply-btn" type="button"
-									class="px-5 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
-									data-i18n-el="Εφαρμογή" data-i18n-es="Aplicar">Apply</button>
-							</div>
-							<p id="coupon-status" class="hidden mt-2 text-sm"></p>
-						</div>
-
 						<!-- Form-level error banner -->
 						<div data-form-error class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert"></div>
 
@@ -257,6 +244,10 @@ import Layout from '../../../layouts/Layout.astro';
 								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο" data-i18n-es="Total">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<div class="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
@@ -295,7 +286,7 @@ import Layout from '../../../layouts/Layout.astro';
 	import { supabase } from '../../../lib/supabase';
 	import { showFormError, clearFormErrors } from '../../../lib/form-errors';
 	import { resolvePartnerId } from '../../../lib/resolve-partner-id';
-	import { validateCoupon, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
+	import { bestCouponFor, fetchAutoCoupons, couponDiscountAmount, type AppliedCoupon } from '../../../lib/coupons';
 	import { getStoredRefCode } from '../../../lib/affiliate-ref';
 
 	const formScope = document.getElementById('payment-form-section');
@@ -379,40 +370,23 @@ import Layout from '../../../layouts/Layout.astro';
 		const displayTotal = selectedMethod === 'card-onsite' ? cardOnsiteTotal : baseTotal;
 		setText('os-total', `\u20AC${displayTotal.toFixed(2)}`);
 		setText('sb-total', `\u20AC ${displayTotal.toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.toggle('text-red-600', couponDiscount > 0);
+		totalEl?.classList.toggle('text-neutral-900', couponDiscount <= 0);
+		document.getElementById('sb-coupon-row')?.classList.toggle('hidden', couponDiscount <= 0);
+		if (couponDiscount > 0) setText('sb-coupon-amount', `-\u20AC ${couponDiscount.toFixed(2)}`);
 	}
 	recomputeTotals();
 
-	/* ── Coupon ── */
-	const couponInput = document.getElementById('coupon-input') as HTMLInputElement | null;
-	const couponBtn = document.getElementById('coupon-apply-btn') as HTMLButtonElement | null;
-	const couponStatusEl = document.getElementById('coupon-status');
-
-	function setCouponStatus(msg: string, ok: boolean) {
-		if (!couponStatusEl) return;
-		couponStatusEl.textContent = msg;
-		couponStatusEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
-		couponStatusEl.classList.add(ok ? 'text-green-600' : 'text-red-600');
-	}
-
-	couponBtn?.addEventListener('click', async () => {
-		const codeValue = (couponInput?.value || '').trim();
-		if (!codeValue) {
-			appliedCoupon = null;
-			recomputeTotals();
-			couponStatusEl?.classList.add('hidden');
-			return;
-		}
-		couponBtn.disabled = true;
-		const applyLabel = couponBtn.textContent || 'Apply';
-		couponBtn.textContent = 'Checking\u2026';
-		const coupon = await validateCoupon(codeValue, 'tour');
-		couponBtn.disabled = false;
-		couponBtn.textContent = applyLabel;
-		appliedCoupon = coupon;
+	/* ── Running offer ── */
+	// Nothing is typed in: whichever active offer saves the most on this total
+	// is applied on load. It runs again if the server rejects the code at
+	// booking time, which happens only if an admin closes the offer mid-checkout.
+	async function applyRunningOffer() {
+		appliedCoupon = bestCouponFor(await fetchAutoCoupons('tour'), preCouponTotal, false)?.coupon ?? null;
 		recomputeTotals();
-		if (coupon) setCouponStatus(`Coupon "${coupon.code}" applied: -\u20AC${couponDiscount.toFixed(2)}`, true);
-		else setCouponStatus('Invalid or expired coupon code.', false);
-	});
+	}
+	applyRunningOffer();
 
 	/* ── Method selection ── */
 	function selectMethod(method: string) {
@@ -522,8 +496,9 @@ import Layout from '../../../layouts/Layout.astro';
 		} catch (err: any) {
 			console.error('Save booking failed:', err);
 			const detail = err?.message || err?.error_description || '';
+			if (detail.includes('COUPON_INVALID')) await applyRunningOffer();
 			showFormError(formScope, detail.includes('COUPON_INVALID')
-				? 'The coupon is no longer valid. Remove it or try another code.'
+				? 'This offer has just ended — the price has been updated. Please try again.'
 				: detail
 					? `Failed to save booking: ${detail}`
 					: 'Failed to save booking. Please try again.');
@@ -587,8 +562,9 @@ import Layout from '../../../layouts/Layout.astro';
 				});
 				if (!res.ok) {
 					const { error } = await res.json().catch(() => ({ error: 'unknown' }));
+					if (error === 'COUPON_INVALID') await applyRunningOffer();
 					showFormError(formScope, error === 'COUPON_INVALID'
-						? 'The coupon is no longer valid. Remove it or try another code.'
+						? 'This offer has just ended — the price has been updated. Please try again.'
 						: `Couldn't start payment: ${error}`);
 					btn.disabled = false; btn.innerHTML = originalLabel;
 					return;
