@@ -20,17 +20,24 @@ in the repo. Step 2 needs the live project (`wjqfcijisslzqxesbbox`) and is
 
 ```
 Test Files  10 passed (10)
-     Tests  145 passed (145)
+     Tests  151 passed (151)
 ```
-145/145 pass, up from `main`'s 138: `tests/coupons.test.ts` goes 16 → 22 (six
-new `bestCouponFor` cases) and `tests/promo-banner.test.ts` 6 → 7 (a row with
-no code, now that the code is not part of the banner's contract). **PASS.**
+151/151 pass, up from `main`'s 138: `tests/coupons.test.ts` goes 16 → 28 (six
+`bestCouponFor` cases and six over the `fetchAutoCoupons` RPC wrapper) and
+`tests/promo-banner.test.ts` 6 → 7 (a row with no code, now that the code is
+not part of the banner's contract). **PASS.**
 
-The six new cases cover: an empty offer list; a single offer; a fixed coupon
+`npm run build` also completes cleanly (Astro + the Vercel adapter), which
+exercises the rewritten `.astro` templates the type-check alone does not.
+
+The six `bestCouponFor` cases cover: an empty offer list; a single offer; a fixed coupon
 beating a percent one at €100 and losing at €300 (the case that forces the
 choice to be made per price rather than once per page); the round-trip extra
 flipping the winner; nothing being picked when every discount floors to 0 at
-the €1 minimum; and a tie keeping the RPC's newest-first order.
+the €1 minimum; and a tie keeping the RPC's newest-first order. The six
+`fetchAutoCoupons` cases cover the flow it asks for, numeric normalisation of
+the rows, dropping an id-less row, and the three empty paths (no offer, RPC
+error, thrown request) each leaving prices at full price.
 
 `npx astro check` (branch):
 
