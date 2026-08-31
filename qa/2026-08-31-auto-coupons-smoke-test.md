@@ -9,8 +9,9 @@ What changed: customers no longer type a coupon code anywhere. The new
 and each page applies whichever saves the most on the price it is showing.
 
 Method: no dev server / browser session was available for this pass. Step 1 ran
-in the repo. Step 2 needs the live project (`wjqfcijisslzqxesbbox`) and is
-**BLOCKED** — see below. Browser checks are listed as **NOT RUN** with steps.
+in the repo; Step 2 ran against the live project (`wjqfcijisslzqxesbbox`)
+through the Management API SQL endpoint. Browser checks are listed as **NOT
+RUN** with steps.
 
 ---
 
@@ -53,26 +54,106 @@ call on the round-trip toggle, removed before the commit.) **PASS.**
 
 ---
 
-## Step 2 — DB-level checks — **BLOCKED**
+## Step 2 — DB-level checks
 
-The Supabase MCP server disconnected mid-session, so
-`db/migrations/2026-08-31-auto-coupons.sql` has **not** been applied to prod and
-none of the checks below have been run. Nothing else is blocked by this — the
-migration is additive (one new function, no schema change) and no deployed page
-calls it yet.
+`db/migrations/2026-08-31-auto-coupons.sql` was **applied to prod**
+(`wjqfcijisslzqxesbbox`) via the Management API SQL endpoint; no token appears
+in this journal. Artifacts prefixed `QA_AUTO`, one statement per call.
 
-To run, with `QA_AUTO`-prefixed artifacts, one statement per call:
-1. Apply the migration, then insert `QA_AUTO_PCT` (10%, all services/groups),
-   `QA_AUTO_FIX` (fixed €20, tours only) and `QA_AUTO_OFF` (`active = false`).
-2. `select * from public.get_auto_coupons('transfer');` → `QA_AUTO_PCT` only.
-3. `select * from public.get_auto_coupons('tour');` → both live coupons, newest
-   first; the closed one absent.
-4. `update ... set applies_to_all_groups = false, groups = array['hotel']` on
-   `QA_AUTO_PCT` → `get_auto_coupons('transfer')` returns nothing (the MCP
-   connection has no `auth.uid()`, so it books as `retail`).
-5. `update ... set valid_from = current_date + 5` → still nothing.
-6. `delete from public.coupons where code like 'QA_AUTO%';` then
-   `select count(*) ...` → `0`.
+**2.1 — The function exists, security definer, callable by visitors**
+
+```sql
+select p.proname, pg_get_function_identity_arguments(p.oid) as args, p.prosecdef,
+       array(select r.rolname from pg_roles r
+             where has_function_privilege(r.rolname, p.oid, 'execute')
+               and r.rolname in ('anon','authenticated')) as grantees
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'get_auto_coupons';
+```
+
+```
+get_auto_coupons | p_flow text | prosecdef = true | {authenticated,anon}
+```
+**PASS.**
+
+**2.2 — Fixtures**
+
+`QA_AUTO_PCT` (10%, all services, all groups), `QA_AUTO_FIX` (fixed €20, tours
+only) and `QA_AUTO_OFF` (50%, `active = false`) inserted, all inside today's
+date window.
+
+**2.3 — Service targeting**
+
+```sql
+select code, discount_type, discount_value, return_extra_value from public.get_auto_coupons('transfer');
+```
+
+```
+QA_AUTO_PCT | percent | 10 | 0
+SEP7        | percent |  7 | 0
+```
+
+```sql
+select code, discount_type, discount_value from public.get_auto_coupons('tour');
+```
+
+```
+QA_AUTO_PCT | percent | 10
+QA_AUTO_FIX | fixed   | 20
+```
+The tours-only coupon appears on `tour` and not on `transfer`; the closed one
+appears on neither; the all-services one appears on both. `SEP7` is the site's
+real running September offer (transfers, retail) and correctly shows only on
+`transfer`. **PASS.**
+
+Note on ordering: the three fixtures were inserted in one statement, so they
+share a `created_at` to the microsecond and the RPC's `order by created_at desc`
+cannot separate them. That is harmless — the client ranks by the amount saved
+and only falls back to this order on an exact monetary tie — but it means the
+ordering itself is not what this run proves.
+
+**2.4 — Customer-group targeting**
+
+```sql
+update public.coupons set applies_to_all_groups = false, groups = array['hotel'] where code = 'QA_AUTO_PCT';
+select code from public.get_auto_coupons('transfer') where code like 'QA_AUTO%';
+```
+
+```
+(no rows)
+```
+The Management API connection carries no `auth.uid()`, so it resolves as a
+guest/`retail` caller — and a hotel-only coupon is correctly withheld from it.
+**PASS.**
+
+**2.5 — Date window, both directions**
+
+```sql
+update public.coupons set applies_to_all_groups = true, groups = '{}', valid_from = current_date + 5 where code = 'QA_AUTO_PCT';
+select code from public.get_auto_coupons('transfer') where code like 'QA_AUTO%';   -- scheduled for later
+
+update public.coupons set valid_from = current_date - 20, valid_until = current_date - 1 where code = 'QA_AUTO_PCT';
+select code from public.get_auto_coupons('transfer') where code like 'QA_AUTO%';   -- already expired
+```
+
+```
+(no rows)
+(no rows)
+```
+**PASS.**
+
+**2.6 — Cleanup**
+
+```sql
+delete from public.coupons where code like 'QA_AUTO%';
+select count(*) from public.coupons where code like 'QA_AUTO%';
+```
+
+```
+count = 0
+```
+**PASS.** Live state afterwards: `get_auto_coupons` returns `SEP7` on
+`transfer` and nothing on `hourly`/`tour` — matching that offer's targeting.
 
 ---
 
@@ -100,3 +181,14 @@ With one active 10% coupon (all services, all customers):
    form says the offer has ended, the price updates, and a retry books at the
    full price.
 9. The promo bar still shows its message, with **no code** in it.
+
+---
+
+## Follow-up found during this run
+
+The live `SEP7` offer's `banner_text` ends with *"Enter code SEP7 before
+choosing your vehicle"* — an instruction that stops making sense the moment
+this branch is deployed, since there is nowhere left to enter it. The copy is
+admin-editable (`/admin/coupons`, the Banner column); it needs rewording before
+or with the deploy. Flagged to the user rather than changed here: it is live
+marketing copy, not a test artifact.
