@@ -29,12 +29,9 @@
 					data-i18n-es="chófer privado en toda Grecia, con precio fijo."
 				>private chauffeur across Greece, at a fixed price.</span>
 			</p>
+			<!-- No code is shown: the offer is applied to the prices by itself. -->
 			<p id="promo-coupon-copy" class="hidden text-base md:text-lg font-semibold leading-tight">
 				<span id="promo-coupon-text"></span>
-				<span class="ml-2 inline-flex items-center gap-1.5 align-middle">
-					<span class="text-xs font-normal text-white/70" data-i18n-el="Κωδικός" data-i18n-es="Código">Code</span>
-					<span id="promo-coupon-code" class="px-2 py-0.5 rounded bg-white/15 border border-white/30 font-mono text-sm tracking-wide"></span>
-				</span>
 			</p>
 		</div>
 		<a
@@ -84,10 +81,8 @@
 		promoPromise.then((promo) => {
 			if (!promo) return;
 			const textEl = document.getElementById('promo-coupon-text');
-			const codeEl = document.getElementById('promo-coupon-code');
-			if (!textEl || !codeEl) return;
+			if (!textEl) return;
 			textEl.textContent = promo.banner_text;
-			codeEl.textContent = promo.code;
 			document.getElementById('promo-default-copy')?.classList.add('hidden');
 			document.getElementById('promo-coupon-copy')?.classList.remove('hidden');
 			refreshPromo?.();

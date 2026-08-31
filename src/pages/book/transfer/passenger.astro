@@ -224,6 +224,10 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 								<span data-i18n-el="Επιστροφή" data-i18n-es="Vuelta">Return</span>
 								<span id="sb-return-price">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<!-- Feature badges -->
@@ -270,7 +274,7 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
-	import { validateCoupon, couponDiscountAmount, effectiveCouponValue } from '../../../lib/coupons';
+	import { bestCouponFor, fetchAutoCoupons } from '../../../lib/coupons';
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -321,24 +325,18 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 		document.getElementById('sb-return-price-row')?.classList.remove('hidden');
 	}
 
-	/* ── Apply a coupon carried over from the results page ── */
+	/* ── Running offer, applied without the customer asking ── */
 	(async () => {
-		let carried = '';
-		try { carried = sessionStorage.getItem('opaway:coupon') || ''; } catch { return; }
-		if (!carried) return;
-		const coupon = await validateCoupon(carried, 'transfer');
-		if (!coupon) return;
 		const base = parseFloat(totalPrice) || 0;
-		const discount = couponDiscountAmount(base, {
-			discount_type: coupon.discount_type,
-			discount_value: effectiveCouponValue(coupon, hasReturn),
-		});
-		if (discount <= 0) return;
-		const finalTotal = Math.round((base - discount) * 100) / 100;
+		const best = bestCouponFor(await fetchAutoCoupons('transfer'), base, hasReturn);
+		if (!best) return;
+		const finalTotal = Math.round((base - best.amount) * 100) / 100;
 		setText('sb-total', `\u20AC ${finalTotal.toFixed(2)}`);
 		const totalEl = document.getElementById('sb-total');
 		totalEl?.classList.remove('text-neutral-900');
 		totalEl?.classList.add('text-red-600');
+		setText('sb-coupon-amount', `-\u20AC ${best.amount.toFixed(2)}`);
+		document.getElementById('sb-coupon-row')?.classList.remove('hidden');
 	})();
 
 	/* ── Auto-fill from Supabase Auth ── */

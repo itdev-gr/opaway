@@ -160,6 +160,10 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 								<span data-i18n-el="Χρέωση" data-i18n-es="Cargo">Rate</span>
 								<span id="sb-rate">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<!-- Features -->
@@ -182,6 +186,7 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
+	import { bestCouponFor, fetchAutoCoupons } from '../../../lib/coupons';
 
 	const params = new URLSearchParams(window.location.search);
 	const pickup = params.get('pickup') || '';
@@ -212,6 +217,19 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 	setText('sb-vehicle-name', vehicleName);
 	setText('sb-total', `\u20AC ${totalPrice}`);
 	setText('sb-rate', `\u20AC${perHour}/hour \u00D7 ${hours}h`);
+
+	/* ── Running offer, applied without the customer asking ── */
+	(async () => {
+		const base = parseFloat(totalPrice) || 0;
+		const best = bestCouponFor(await fetchAutoCoupons('hourly'), base, false);
+		if (!best) return;
+		setText('sb-total', `\u20AC ${(Math.round((base - best.amount) * 100) / 100).toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.remove('text-neutral-900');
+		totalEl?.classList.add('text-red-600');
+		setText('sb-coupon-amount', `-\u20AC ${best.amount.toFixed(2)}`);
+		document.getElementById('sb-coupon-row')?.classList.remove('hidden');
+	})();
 
 	const vehicleImg = document.getElementById('sb-vehicle-img') as HTMLImageElement;
 	if (vehicleImg && vehicleImage) { vehicleImg.src = vehicleImage; vehicleImg.alt = vehicleName; }

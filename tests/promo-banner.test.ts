@@ -17,9 +17,9 @@ describe('fetchPromoBanner', () => {
     mockRpc.mockReset();
   });
 
-  it('returns the code and banner_text from a normal row', async () => {
+  it('returns the banner_text from a normal row, dropping the code', async () => {
     mockRpc.mockResolvedValue({ data: [{ code: 'SUMMER25', banner_text: 'Save 10%' }], error: null });
-    await expect(fetchPromoBanner()).resolves.toEqual({ code: 'SUMMER25', banner_text: 'Save 10%' });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
   });
 
   it('returns null when there is no running offer', async () => {
@@ -37,9 +37,14 @@ describe('fetchPromoBanner', () => {
     await expect(fetchPromoBanner()).resolves.toBeNull();
   });
 
-  it('trims padded code and banner_text', async () => {
+  it('trims padded banner_text', async () => {
     mockRpc.mockResolvedValue({ data: [{ code: '  SUMMER25  ', banner_text: '  Save 10%  ' }], error: null });
-    await expect(fetchPromoBanner()).resolves.toEqual({ code: 'SUMMER25', banner_text: 'Save 10%' });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
+  });
+
+  it('still shows the message when the row carries no code', async () => {
+    mockRpc.mockResolvedValue({ data: [{ code: '', banner_text: 'Save 10%' }], error: null });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
   });
 
   it('returns null when the rpc call throws', async () => {

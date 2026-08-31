@@ -1,10 +1,10 @@
 // Coupon-driven promo banner. The coupons table has no public read policy, so
-// the banner asks get_promo_banner() for the one offer currently advertised —
-// it returns only a code and a message, never the discount or the rest of the
-// row. No top-level supabase import: this module must load without env vars.
+// the banner asks get_promo_banner() for the one offer currently advertised.
+// The RPC also returns that offer's code, which this deliberately drops:
+// coupons apply themselves to the prices now, so there is no code to hand out.
+// No top-level supabase import: this module must load without env vars.
 
 export interface PromoBanner {
-  code: string;
   banner_text: string;
 }
 
@@ -17,10 +17,9 @@ export async function fetchPromoBanner(): Promise<PromoBanner | null> {
       return null;
     }
     const row = Array.isArray(data) ? data[0] : data;
-    const code = typeof row?.code === 'string' ? row.code.trim() : '';
     const text = typeof row?.banner_text === 'string' ? row.banner_text.trim() : '';
-    if (!code || !text) return null;
-    return { code, banner_text: text };
+    if (!text) return null;
+    return { banner_text: text };
   } catch (err) {
     console.error('get_promo_banner request failed:', err);
     return null;

@@ -143,6 +143,10 @@ import Layout from '../../../layouts/Layout.astro';
 								<span data-i18n-el="Χρέωση" data-i18n-es="Cargo">Rate</span>
 								<span id="sb-rate">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<!-- Feature badges -->
@@ -182,8 +186,16 @@ import Layout from '../../../layouts/Layout.astro';
 <script>
 	import { supabase } from '../../../lib/supabase';
 	import { calculateHourlyPrice, loadPricing, type PricingData } from '../../../lib/pricing';
+	import { bestCouponFor, fetchAutoCoupons, type AppliedCoupon } from '../../../lib/coupons';
 
 	let partnerDiscount = 0;
+	// Running offers, applied without the customer typing anything. The best one
+	// is picked per price, so a fixed coupon can win on a short hire.
+	let autoCoupons: AppliedCoupon[] = [];
+
+	function couponAmountFor(total: number): number {
+		return bestCouponFor(autoCoupons, total, false)?.amount ?? 0;
+	}
 	let pricingData: PricingData;
 
 	async function detectPartnerDiscount(): Promise<number> {
@@ -252,7 +264,14 @@ import Layout from '../../../layouts/Layout.astro';
 	function updateSidebarPrices() {
 		if (!selectedVehicleSlug) return;
 		const price = calculateHourlyPrice({ vehicleSlug: selectedVehicleSlug, hours, discount: partnerDiscount, time }, pricingData);
-		setText('sb-total', `\u20AC ${price.totalPrice.toFixed(2)}`);
+		const couponAmount = couponAmountFor(price.totalPrice);
+		const finalTotal = Math.round((price.totalPrice - couponAmount) * 100) / 100;
+		setText('sb-total', `\u20AC ${finalTotal.toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.toggle('text-red-600', couponAmount > 0);
+		totalEl?.classList.toggle('text-neutral-900', couponAmount <= 0);
+		document.getElementById('sb-coupon-row')?.classList.toggle('hidden', couponAmount <= 0);
+		if (couponAmount > 0) setText('sb-coupon-amount', `-\u20AC ${couponAmount.toFixed(2)}`);
 		setText('sb-rate', `\u20AC${price.perHour}/hour \u00D7 ${hours}h`);
 	}
 
@@ -281,6 +300,9 @@ import Layout from '../../../layouts/Layout.astro';
 			const price = calculateHourlyPrice({ vehicleSlug: v.slug, hours, discount: partnerDiscount, time }, pricingData);
 			const isSelected = selectedVehicleSlug === v.slug;
 			const showOriginal = partnerDiscount > 0 && price.originalTotal !== price.totalPrice;
+			const couponAmount = couponAmountFor(price.totalPrice);
+			const finalTotal = Math.round((price.totalPrice - couponAmount) * 100) / 100;
+			const strikeFrom = showOriginal ? price.originalTotal : price.totalPrice;
 
 			return `
 			<div
@@ -309,8 +331,11 @@ import Layout from '../../../layouts/Layout.astro';
 						<p class="text-xs text-neutral-400 truncate">${esc(v.models)}</p>
 					</div>
 					<div class="flex flex-col items-end justify-center shrink-0 pl-2">
-						${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${price.originalTotal.toFixed(2)}</del>` : ''}
-						<span class="text-xl font-bold text-neutral-900">&euro;${price.totalPrice.toFixed(2)}</span>
+						${couponAmount > 0
+							? `<del class="text-neutral-400 text-sm">&euro;${strikeFrom.toFixed(2)}</del>
+							   <span class="text-xl font-bold text-red-600">&euro;${finalTotal.toFixed(2)}</span>`
+							: `${showOriginal ? `<del class="text-neutral-400 text-sm">&euro;${price.originalTotal.toFixed(2)}</del>` : ''}
+							   <span class="text-xl font-bold text-neutral-900">&euro;${price.totalPrice.toFixed(2)}</span>`}
 						<span class="text-[10px] text-neutral-400">\u20AC${price.perHour}/hr \u00D7 ${hours}h</span>
 					</div>
 				</div>
@@ -397,9 +422,10 @@ import Layout from '../../../layouts/Layout.astro';
 	});
 
 	/* ── Init ── */
-	Promise.all([detectPartnerDiscount(), loadPricing()]).then(([d, p]) => {
+	Promise.all([detectPartnerDiscount(), loadPricing(), fetchAutoCoupons('hourly')]).then(([d, p, coupons]) => {
 		partnerDiscount = d;
 		pricingData = p;
+		autoCoupons = coupons;
 		loadVehicles();
 	});
 </script>

@@ -220,6 +220,10 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 								<span class="font-semibold text-neutral-900" data-i18n-el="Σύνολο" data-i18n-es="Total">Total</span>
 								<span id="sb-total" class="font-bold text-neutral-900">—</span>
 							</div>
+							<div id="sb-coupon-row" class="hidden flex justify-between text-sm text-emerald-700">
+								<span data-i18n-el="Έκπτωση" data-i18n-es="Descuento">Discount</span>
+								<span id="sb-coupon-amount">—</span>
+							</div>
 						</div>
 
 						<!-- Feature badges -->
@@ -258,6 +262,11 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 
 <script>
 	import { supabase } from '../../../lib/supabase';
+	import { bestCouponFor, fetchAutoCoupons, type AppliedCoupon } from '../../../lib/coupons';
+
+	// Offers the visitor qualifies for; declared up front because the sidebar
+	// recompute can run before the fetch resolves.
+	let autoCoupons: AppliedCoupon[] = [];
 
 	/* ── Parse URL params ── */
 	const params = new URLSearchParams(window.location.search);
@@ -338,8 +347,25 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 		const ticketsRow = document.getElementById('sb-tickets-row');
 		ticketsRow?.classList.toggle('hidden', count === 0);
 		setText('sb-tickets-subtotal', `€ ${subtotal.toFixed(2)}`);
-		setText('sb-total', `€ ${(tourSubtotal + subtotal).toFixed(2)}`);
+
+		// The running offer is applied to the whole total, tickets included, so
+		// it has to be re-picked whenever the ticket count changes.
+		const base = tourSubtotal + subtotal;
+		const best = bestCouponFor(autoCoupons, base, false);
+		const discount = best?.amount ?? 0;
+		setText('sb-total', `€ ${(Math.round((base - discount) * 100) / 100).toFixed(2)}`);
+		const totalEl = document.getElementById('sb-total');
+		totalEl?.classList.toggle('text-red-600', discount > 0);
+		totalEl?.classList.toggle('text-neutral-900', discount <= 0);
+		document.getElementById('sb-coupon-row')?.classList.toggle('hidden', discount <= 0);
+		if (discount > 0) setText('sb-coupon-amount', `-€ ${discount.toFixed(2)}`);
 	}
+
+	/* ── Running offer, applied without the customer asking ── */
+	fetchAutoCoupons('tour').then((coupons) => {
+		autoCoupons = coupons;
+		recomputeTicketsAndSidebar();
+	});
 
 	document.addEventListener('change', (e) => {
 		const target = e.target as HTMLElement;

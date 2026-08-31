@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { couponDiscountAmount, couponStatusOn, effectiveCouponValue } from '../src/lib/coupons';
+import { bestCouponFor, couponDiscountAmount, couponStatusOn, effectiveCouponValue, type AppliedCoupon } from '../src/lib/coupons';
 
 describe('couponDiscountAmount', () => {
   it('percent: 10% of €50.00 is €5.00', () => {
@@ -75,5 +75,44 @@ describe('effectiveCouponValue', () => {
 
   it('treats a zero extra as no change', () => {
     expect(effectiveCouponValue({ ...pct, return_extra_value: 0 }, true)).toBe(10);
+  });
+});
+
+describe('bestCouponFor', () => {
+  const pct = (value: number, extra = 0): AppliedCoupon =>
+    ({ id: `pct-${value}-${extra}`, code: `PCT${value}`, discount_type: 'percent', discount_value: value, return_extra_value: extra });
+  const fixed = (value: number, extra = 0): AppliedCoupon =>
+    ({ id: `fix-${value}-${extra}`, code: `FIX${value}`, discount_type: 'fixed', discount_value: value, return_extra_value: extra });
+
+  it('returns null when there is nothing on offer', () => {
+    expect(bestCouponFor([], 100, false)).toBeNull();
+  });
+
+  it('returns the only coupon with the amount it saves', () => {
+    expect(bestCouponFor([pct(10)], 100, false)).toEqual({ coupon: pct(10), amount: 10 });
+  });
+
+  it('picks the fixed coupon on a cheap ride and the percent one on an expensive ride', () => {
+    const offers = [pct(10), fixed(20)];
+    expect(bestCouponFor(offers, 100, false)?.coupon.code).toBe('FIX20');
+    expect(bestCouponFor(offers, 300, false)?.coupon.code).toBe('PCT10');
+  });
+
+  it('lets the round-trip extra flip the winner', () => {
+    const offers = [pct(10, 8), pct(15)];
+    expect(bestCouponFor(offers, 100, false)?.coupon.code).toBe('PCT15');
+    expect(bestCouponFor(offers, 100, true)?.coupon.code).toBe('PCT10');
+    expect(bestCouponFor(offers, 100, true)?.amount).toBe(18);
+  });
+
+  it('never prefers a coupon that saves nothing', () => {
+    // At the €1 floor every discount is worth 0, so there is no winner to pick.
+    expect(bestCouponFor([pct(50), fixed(20)], 1, false)).toBeNull();
+  });
+
+  it('keeps the first entry on a tie (the RPC hands them over newest first)', () => {
+    const newest = fixed(20);
+    const older = pct(20);
+    expect(bestCouponFor([newest, older], 100, false)?.coupon.code).toBe('FIX20');
   });
 });
