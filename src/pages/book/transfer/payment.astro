@@ -589,7 +589,7 @@ import Layout from '../../../layouts/Layout.astro';
 					return;
 				}
 				const { url } = await res.json();
-					window.location.href = url;
+				window.location.href = url;
 			} catch (err) {
 				console.error('Failed to start Stripe checkout:', err);
 				showFormError(formScope, 'Network error starting payment. Please try again.');

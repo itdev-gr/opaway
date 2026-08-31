@@ -1,5 +1,15 @@
-import { describe, it, expect } from 'vitest';
-import { bestCouponFor, couponDiscountAmount, couponStatusOn, effectiveCouponValue, type AppliedCoupon } from '../src/lib/coupons';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// coupons.ts lazy-imports './supabase' *inside* fetchAutoCoupons so the module
+// loads without env vars. Mock the specifier it resolves to from tests/.
+const mockRpc = vi.fn();
+vi.mock('../src/lib/supabase', () => ({
+  supabase: {
+    rpc: (...args: unknown[]) => mockRpc(...args),
+  },
+}));
+
+import { bestCouponFor, couponDiscountAmount, couponStatusOn, effectiveCouponValue, fetchAutoCoupons, type AppliedCoupon } from '../src/lib/coupons';
 
 describe('couponDiscountAmount', () => {
   it('percent: 10% of €50.00 is €5.00', () => {
@@ -114,5 +124,51 @@ describe('bestCouponFor', () => {
     const newest = fixed(20);
     const older = pct(20);
     expect(bestCouponFor([newest, older], 100, false)?.coupon.code).toBe('FIX20');
+  });
+});
+
+describe('fetchAutoCoupons', () => {
+  beforeEach(() => {
+    mockRpc.mockReset();
+  });
+
+  it('asks the RPC for the flow it was given', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await fetchAutoCoupons('tour');
+    expect(mockRpc).toHaveBeenCalledWith('get_auto_coupons', { p_flow: 'tour' });
+  });
+
+  it('normalises the rows it gets back', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        { id: 'a', code: 'SUMMER', discount_type: 'percent', discount_value: '10', return_extra_value: '5' },
+        { id: 'b', code: 'FLAT', discount_type: 'fixed', discount_value: 20, return_extra_value: null },
+      ],
+      error: null,
+    });
+    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([
+      { id: 'a', code: 'SUMMER', discount_type: 'percent', discount_value: 10, return_extra_value: 5 },
+      { id: 'b', code: 'FLAT', discount_type: 'fixed', discount_value: 20, return_extra_value: 0 },
+    ]);
+  });
+
+  it('drops rows with no id rather than pricing off them', async () => {
+    mockRpc.mockResolvedValue({ data: [{ code: 'GHOST', discount_type: 'percent', discount_value: 10 }], error: null });
+    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+  });
+
+  it('returns nothing when there is no offer running', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    await expect(fetchAutoCoupons('hourly')).resolves.toEqual([]);
+  });
+
+  it('returns nothing when the RPC errors, so prices stay at full price', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
+    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+  });
+
+  it('returns nothing when the request throws', async () => {
+    mockRpc.mockRejectedValue(new Error('network down'));
+    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
   });
 });
