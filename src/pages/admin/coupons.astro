@@ -157,11 +157,122 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			</div>
 		</div>
 	</div>
+
+	<!-- ── Edit coupon modal ── -->
+	<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+		<div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+			<div class="p-6">
+				<h3 class="text-base font-bold text-neutral-900 mb-4">Edit coupon</h3>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+					<div>
+						<label for="ed-code" class="block text-sm font-medium text-neutral-700 mb-1">Name / code</label>
+						<input id="ed-code" type="text" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+						<p class="text-xs text-neutral-400 mt-1">Renaming does not affect bookings already made with the old code.</p>
+					</div>
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label for="ed-type" class="block text-sm font-medium text-neutral-700 mb-1">Discount type</label>
+							<select id="ed-type" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]">
+								<option value="percent">Percent (%)</option>
+								<option value="fixed">Fixed (&euro;)</option>
+							</select>
+						</div>
+						<div>
+							<label for="ed-value" class="block text-sm font-medium text-neutral-700 mb-1">Value</label>
+							<input id="ed-value" type="number" min="0.01" step="0.01" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-4">
+					<label for="ed-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount — transfers only <span class="text-neutral-400">(optional)</span></label>
+					<input id="ed-return-extra" type="number" min="0" step="0.01" class="w-full md:w-64 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+					<div>
+						<label for="ed-from" class="block text-sm font-medium text-neutral-700 mb-1">Valid from</label>
+						<input id="ed-from" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+					<div>
+						<label for="ed-until" class="block text-sm font-medium text-neutral-700 mb-1">Valid until</label>
+						<input id="ed-until" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+				</div>
+
+				<div class="mb-5">
+					<span class="block text-sm font-medium text-neutral-700 mb-2">Applies to</span>
+					<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+						<label class="flex items-center gap-2 text-sm text-neutral-700">
+							<input type="radio" name="ed-scope" value="all" class="w-4 h-4 text-[#0C6B95]" />
+							All services
+						</label>
+						<label class="flex items-center gap-2 text-sm text-neutral-700">
+							<input type="radio" name="ed-scope" value="selected" class="w-4 h-4 text-[#0C6B95]" />
+							Selected services:
+						</label>
+						<div id="ed-flows" class="flex items-center gap-4">
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="transfer" class="ed-flow w-4 h-4 rounded text-[#0C6B95]" /> Transfers
+							</label>
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="hourly" class="ed-flow w-4 h-4 rounded text-[#0C6B95]" /> Hourly
+							</label>
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="tour" class="ed-flow w-4 h-4 rounded text-[#0C6B95]" /> Tours
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-5">
+					<span class="block text-sm font-medium text-neutral-700 mb-2">Customers</span>
+					<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+						<label class="flex items-center gap-2 text-sm text-neutral-700">
+							<input type="radio" name="ed-group-scope" value="all" class="w-4 h-4 text-[#0C6B95]" />
+							All customers
+						</label>
+						<label class="flex items-center gap-2 text-sm text-neutral-700">
+							<input type="radio" name="ed-group-scope" value="selected" class="w-4 h-4 text-[#0C6B95]" />
+							Selected groups:
+						</label>
+						<div id="ed-groups" class="flex flex-wrap items-center gap-4">
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="retail" class="ed-group w-4 h-4 rounded text-[#0C6B95]" /> Retail
+							</label>
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="hotel" class="ed-group w-4 h-4 rounded text-[#0C6B95]" /> Hotels
+							</label>
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="agency" class="ed-group w-4 h-4 rounded text-[#0C6B95]" /> Agencies
+							</label>
+							<label class="flex items-center gap-1.5 text-sm text-neutral-700">
+								<input type="checkbox" value="driver" class="ed-group w-4 h-4 rounded text-[#0C6B95]" /> Drivers
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-5">
+					<label for="ed-banner" class="block text-sm font-medium text-neutral-700 mb-1">Banner text <span class="text-neutral-400">(optional)</span></label>
+					<textarea id="ed-banner" rows="2" maxlength="140" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]"></textarea>
+				</div>
+
+				<p id="ed-status" class="text-sm mb-3"></p>
+
+				<div class="flex justify-end gap-3">
+					<button id="edit-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50">Cancel</button>
+					<button id="edit-save" type="button" class="px-5 py-2 text-sm font-semibold rounded-xl bg-[#0C6B95] hover:bg-[#0a5c82] text-white disabled:opacity-50">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </AdminLayout>
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { couponStatusOn, athensTodayISO, type CouponStatus } from '../../lib/coupons';
+	import { couponStatusOn, athensTodayISO, validateCouponFields, type CouponStatus, type CouponFields } from '../../lib/coupons';
 
 	type CouponRow = {
 		id: string;
@@ -223,6 +334,42 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		return base + extra;
 	}
 
+	// Reads the create form ('cp') or the edit modal ('ed') — one shape, two forms.
+	function readCouponFields(p: 'cp' | 'ed'): CouponFields {
+		const appliesToAll = (document.querySelector(`input[name="${p}-scope"]:checked`) as HTMLInputElement)?.value === 'all';
+		const appliesToAllGroups = (document.querySelector(`input[name="${p}-group-scope"]:checked`) as HTMLInputElement)?.value === 'all';
+		return {
+			code: (document.getElementById(`${p}-code`) as HTMLInputElement).value.trim(),
+			discountType: (document.getElementById(`${p}-type`) as HTMLSelectElement).value as 'percent' | 'fixed',
+			discountValue: parseFloat((document.getElementById(`${p}-value`) as HTMLInputElement).value),
+			returnExtra: parseFloat((document.getElementById(`${p}-return-extra`) as HTMLInputElement).value) || 0,
+			validFrom: (document.getElementById(`${p}-from`) as HTMLInputElement).value,
+			validUntil: (document.getElementById(`${p}-until`) as HTMLInputElement).value,
+			appliesToAll,
+			flows: appliesToAll ? [] : Array.from(document.querySelectorAll<HTMLInputElement>(`.${p}-flow:checked`)).map((c) => c.value),
+			appliesToAllGroups,
+			groups: appliesToAllGroups ? [] : Array.from(document.querySelectorAll<HTMLInputElement>(`.${p}-group:checked`)).map((c) => c.value),
+			bannerText: (document.getElementById(`${p}-banner`) as HTMLTextAreaElement).value.trim(),
+		};
+	}
+
+	// The scope radios grey out their checkbox group when "all" is selected.
+	function wireScopeRadios(p: 'cp' | 'ed') {
+		const pairs: Array<[string, string]> = [[`${p}-scope`, `${p}-flows`], [`${p}-group-scope`, `${p}-groups`]];
+		for (const [radioName, boxId] of pairs) {
+			const box = document.getElementById(boxId);
+			const sync = () => {
+				const selected = (document.querySelector(`input[name="${radioName}"]:checked`) as HTMLInputElement)?.value === 'selected';
+				box?.classList.toggle('opacity-40', !selected);
+				box?.classList.toggle('pointer-events-none', !selected);
+			};
+			document.querySelectorAll<HTMLInputElement>(`input[name="${radioName}"]`).forEach((radio) => {
+				radio.addEventListener('change', sync);
+			});
+			sync();
+		}
+	}
+
 	async function loadCoupons() {
 		const { data, error } = await supabase
 			.from('coupons')
@@ -254,7 +401,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 					</td>
 					<td class="px-5 py-3"><span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_BADGE[status]}">${status}</span></td>
 					<td class="px-5 py-3 text-right whitespace-nowrap">
-						<button data-toggle="${c.id}" data-active="${c.active}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border ${c.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
+						<button data-edit="${c.id}" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-neutral-200 text-neutral-700 hover:bg-sky-50">
+							Edit
+						</button>
+						<button data-toggle="${c.id}" data-active="${c.active}" class="ml-2 px-3 py-1.5 text-xs font-semibold rounded-lg border ${c.active ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}">
 							${c.active ? 'Close' : 'Reopen'}
 						</button>
 						<button data-delete="${c.id}" data-code="${escapeHtml(c.code)}" class="ml-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50">
@@ -285,6 +435,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			});
 		});
 
+		rowsEl.querySelectorAll<HTMLButtonElement>('[data-edit]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const coupon = coupons.find((c) => c.id === btn.dataset.edit);
+				if (coupon) openEditModal(coupon);
+			});
+		});
+
 		rowsEl.querySelectorAll<HTMLSpanElement>('.banner-cell').forEach((cell) => {
 			cell.addEventListener('click', () => {
 				const coupon = coupons.find((c) => c.id === cell.dataset.banner);
@@ -306,81 +463,43 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		});
 	}
 
-	/* ── Scope radio enables/disables the flow checkboxes ── */
-	const flowsBox = document.getElementById('cp-flows');
-	document.querySelectorAll<HTMLInputElement>('input[name="cp-scope"]').forEach((radio) => {
-		radio.addEventListener('change', () => {
-			const selected = (document.querySelector('input[name="cp-scope"]:checked') as HTMLInputElement)?.value === 'selected';
-			flowsBox?.classList.toggle('opacity-40', !selected);
-			flowsBox?.classList.toggle('pointer-events-none', !selected);
-		});
-	});
-
-	/* ── Group-scope radio enables/disables the group checkboxes ── */
-	const groupsBox = document.getElementById('cp-groups');
-	document.querySelectorAll<HTMLInputElement>('input[name="cp-group-scope"]').forEach((radio) => {
-		radio.addEventListener('change', () => {
-			const selected = (document.querySelector('input[name="cp-group-scope"]:checked') as HTMLInputElement)?.value === 'selected';
-			groupsBox?.classList.toggle('opacity-40', !selected);
-			groupsBox?.classList.toggle('pointer-events-none', !selected);
-		});
-	});
+	/* ── Scope radios (create form + edit modal) ── */
+	wireScopeRadios('cp');
+	wireScopeRadios('ed');
 
 	/* ── Create ── */
 	document.getElementById('coupon-form')?.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		const code = (document.getElementById('cp-code') as HTMLInputElement).value.trim();
-		const discountType = (document.getElementById('cp-type') as HTMLSelectElement).value as 'percent' | 'fixed';
-		const discountValue = parseFloat((document.getElementById('cp-value') as HTMLInputElement).value);
-		const returnExtra = parseFloat((document.getElementById('cp-return-extra') as HTMLInputElement).value) || 0;
-		const validFrom = (document.getElementById('cp-from') as HTMLInputElement).value;
-		const validUntil = (document.getElementById('cp-until') as HTMLInputElement).value;
-		const appliesToAll = (document.querySelector('input[name="cp-scope"]:checked') as HTMLInputElement)?.value === 'all';
-		const flows = appliesToAll
-			? []
-			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-flow:checked')).map((c) => c.value);
-		const appliesToAllGroups = (document.querySelector('input[name="cp-group-scope"]:checked') as HTMLInputElement)?.value === 'all';
-		const groups = appliesToAllGroups
-			? []
-			: Array.from(document.querySelectorAll<HTMLInputElement>('.cp-group:checked')).map((c) => c.value);
-		const bannerText = (document.getElementById('cp-banner') as HTMLTextAreaElement).value.trim();
-
-		if (!code) { setStatus('Enter a coupon name/code.', 'text-red-500'); return; }
-		if (!Number.isFinite(discountValue) || discountValue <= 0) { setStatus('Discount value must be greater than 0.', 'text-red-500'); return; }
-		if (discountType === 'percent' && discountValue > 100) { setStatus('Percent discount cannot exceed 100.', 'text-red-500'); return; }
-		if (returnExtra < 0) { setStatus('Extra round-trip discount cannot be negative.', 'text-red-500'); return; }
-		if (discountType === 'percent' && discountValue + returnExtra > 100) { setStatus('Discount plus round-trip extra cannot exceed 100%.', 'text-red-500'); return; }
-		if (!validFrom || !validUntil || validUntil < validFrom) { setStatus('Set a valid period (end date not before start date).', 'text-red-500'); return; }
-		if (!appliesToAll && !flows.length) { setStatus('Pick at least one service, or choose "All services".', 'text-red-500'); return; }
-		if (!appliesToAllGroups && !groups.length) { setStatus('Pick at least one customer group, or choose "All customers".', 'text-red-500'); return; }
+		const fields = readCouponFields('cp');
+		const problem = validateCouponFields(fields);
+		if (problem) { setStatus(problem, 'text-red-500'); return; }
 
 		const { error } = await supabase.from('coupons').insert({
-			code,
-			discount_type: discountType,
-			discount_value: discountValue,
-			return_extra_value: returnExtra,
-			valid_from: validFrom,
-			valid_until: validUntil,
-			applies_to_all: appliesToAll,
-			flows,
-			applies_to_all_groups: appliesToAllGroups,
-			groups,
-			banner_text: bannerText,
+			code: fields.code,
+			discount_type: fields.discountType,
+			discount_value: fields.discountValue,
+			return_extra_value: fields.returnExtra,
+			valid_from: fields.validFrom,
+			valid_until: fields.validUntil,
+			applies_to_all: fields.appliesToAll,
+			flows: fields.flows,
+			applies_to_all_groups: fields.appliesToAllGroups,
+			groups: fields.groups,
+			banner_text: fields.bannerText,
 			active: true,
 		});
 
 		if (error) {
 			const msg = error.code === '23505'
-				? `A coupon named "${code}" already exists.`
+				? `A coupon named "${fields.code}" already exists.`
 				: `Error creating coupon: [${error.code}] ${error.message}`;
 			setStatus(msg, 'text-red-500');
 			return;
 		}
 
-		setStatus(`Coupon "${code}" created.`, 'text-green-600');
+		setStatus(`Coupon "${fields.code}" created.`, 'text-green-600');
 		(e.target as HTMLFormElement).reset();
-		flowsBox?.classList.add('opacity-40', 'pointer-events-none');
-		groupsBox?.classList.add('opacity-40', 'pointer-events-none');
+		wireScopeRadios('cp');
 		await loadCoupons();
 	});
 
@@ -395,6 +514,85 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		if (error) setStatus(`Error deleting coupon: [${error.code}] ${error.message}`, 'text-red-500');
 		pendingDeleteId = null;
 		document.getElementById('delete-modal')?.classList.add('hidden');
+		await loadCoupons();
+	});
+
+	/* ── Edit modal ── */
+	let editingId: string | null = null;
+	const editStatusEl = document.getElementById('ed-status');
+
+	function setEditStatus(msg: string, cls: string) {
+		if (!editStatusEl) return;
+		editStatusEl.textContent = msg;
+		editStatusEl.className = `text-sm mb-3 ${cls}`;
+	}
+
+	function openEditModal(c: CouponRow) {
+		editingId = c.id;
+		setEditStatus('', '');
+		(document.getElementById('ed-code') as HTMLInputElement).value = c.code;
+		(document.getElementById('ed-type') as HTMLSelectElement).value = c.discount_type;
+		(document.getElementById('ed-value') as HTMLInputElement).value = String(c.discount_value);
+		(document.getElementById('ed-return-extra') as HTMLInputElement).value = String(c.return_extra_value ?? 0);
+		(document.getElementById('ed-from') as HTMLInputElement).value = c.valid_from;
+		(document.getElementById('ed-until') as HTMLInputElement).value = c.valid_until;
+		(document.getElementById('ed-banner') as HTMLTextAreaElement).value = c.banner_text ?? '';
+
+		const scopeValue = c.applies_to_all ? 'all' : 'selected';
+		document.querySelectorAll<HTMLInputElement>('input[name="ed-scope"]').forEach((r) => { r.checked = r.value === scopeValue; });
+		document.querySelectorAll<HTMLInputElement>('.ed-flow').forEach((cb) => { cb.checked = c.flows.includes(cb.value); });
+
+		const groupScopeValue = c.applies_to_all_groups ? 'all' : 'selected';
+		document.querySelectorAll<HTMLInputElement>('input[name="ed-group-scope"]').forEach((r) => { r.checked = r.value === groupScopeValue; });
+		document.querySelectorAll<HTMLInputElement>('.ed-group').forEach((cb) => { cb.checked = c.groups.includes(cb.value); });
+
+		wireScopeRadios('ed');
+		document.getElementById('edit-modal')?.classList.remove('hidden');
+	}
+
+	function closeEditModal() {
+		editingId = null;
+		document.getElementById('edit-modal')?.classList.add('hidden');
+	}
+
+	document.getElementById('edit-cancel')?.addEventListener('click', closeEditModal);
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && !document.getElementById('edit-modal')?.classList.contains('hidden')) closeEditModal();
+	});
+
+	document.getElementById('edit-save')?.addEventListener('click', async () => {
+		if (!editingId) return;
+		const fields = readCouponFields('ed');
+		const problem = validateCouponFields(fields);
+		if (problem) { setEditStatus(problem, 'text-red-500'); return; }
+
+		const saveBtn = document.getElementById('edit-save') as HTMLButtonElement;
+		saveBtn.disabled = true;
+		const { error } = await supabase.from('coupons').update({
+			code: fields.code,
+			discount_type: fields.discountType,
+			discount_value: fields.discountValue,
+			return_extra_value: fields.returnExtra,
+			valid_from: fields.validFrom,
+			valid_until: fields.validUntil,
+			applies_to_all: fields.appliesToAll,
+			flows: fields.flows,
+			applies_to_all_groups: fields.appliesToAllGroups,
+			groups: fields.groups,
+			banner_text: fields.bannerText,
+		}).eq('id', editingId);
+		saveBtn.disabled = false;
+
+		if (error) {
+			setEditStatus(error.code === '23505'
+				? `A coupon named "${fields.code}" already exists.`
+				: `Error saving coupon: [${error.code}] ${error.message}`, 'text-red-500');
+			return;
+		}
+
+		const savedCode = fields.code;
+		closeEditModal();
+		setStatus(`Coupon "${savedCode}" updated.`, 'text-green-600');
 		await loadCoupons();
 	});
 

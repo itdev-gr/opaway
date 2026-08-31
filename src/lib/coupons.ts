@@ -79,6 +79,35 @@ export function athensTodayISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' });
 }
 
+// Admin coupon form fields, shared by the create form and the edit modal so the
+// two cannot drift apart on validation rules.
+export interface CouponFields {
+  code: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  returnExtra: number;
+  validFrom: string;
+  validUntil: string;
+  appliesToAll: boolean;
+  flows: string[];
+  appliesToAllGroups: boolean;
+  groups: string[];
+  bannerText: string;
+}
+
+// Returns the first violated rule's message, or null when the fields are valid.
+export function validateCouponFields(f: CouponFields): string | null {
+  if (!f.code) return 'Enter a coupon name/code.';
+  if (!Number.isFinite(f.discountValue) || f.discountValue <= 0) return 'Discount value must be greater than 0.';
+  if (f.discountType === 'percent' && f.discountValue > 100) return 'Percent discount cannot exceed 100.';
+  if (f.returnExtra < 0) return 'Extra round-trip discount cannot be negative.';
+  if (f.discountType === 'percent' && f.discountValue + f.returnExtra > 100) return 'Discount plus round-trip extra cannot exceed 100%.';
+  if (!f.validFrom || !f.validUntil || f.validUntil < f.validFrom) return 'Set a valid period (end date not before start date).';
+  if (!f.appliesToAll && !f.flows.length) return 'Pick at least one service, or choose "All services".';
+  if (!f.appliesToAllGroups && !f.groups.length) return 'Pick at least one customer group, or choose "All customers".';
+  return null;
+}
+
 function toAppliedCoupon(row: any): AppliedCoupon | null {
   if (!row?.id) return null;
   return {

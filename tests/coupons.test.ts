@@ -9,7 +9,10 @@ vi.mock('../src/lib/supabase', () => ({
   },
 }));
 
-import { bestCouponFor, couponDiscountAmount, couponStatusOn, effectiveCouponValue, fetchAutoCoupons, type AppliedCoupon } from '../src/lib/coupons';
+import {
+  bestCouponFor, couponDiscountAmount, couponStatusOn, effectiveCouponValue, fetchAutoCoupons,
+  validateCouponFields, type AppliedCoupon, type CouponFields,
+} from '../src/lib/coupons';
 
 describe('couponDiscountAmount', () => {
   it('percent: 10% of €50.00 is €5.00', () => {
@@ -170,5 +173,66 @@ describe('fetchAutoCoupons', () => {
   it('returns nothing when the request throws', async () => {
     mockRpc.mockRejectedValue(new Error('network down'));
     await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+  });
+});
+
+describe('validateCouponFields', () => {
+  const valid: CouponFields = {
+    code: 'SUMMER25',
+    discountType: 'percent',
+    discountValue: 10,
+    returnExtra: 5,
+    validFrom: '2026-09-01',
+    validUntil: '2026-09-30',
+    appliesToAll: true,
+    flows: [],
+    appliesToAllGroups: true,
+    groups: [],
+    bannerText: '',
+  };
+
+  it('accepts a well-formed coupon', () => {
+    expect(validateCouponFields(valid)).toBeNull();
+  });
+
+  it('requires a code', () => {
+    expect(validateCouponFields({ ...valid, code: '' })).toBe('Enter a coupon name/code.');
+  });
+
+  it('requires a positive discount value', () => {
+    expect(validateCouponFields({ ...valid, discountValue: 0 })).toBe('Discount value must be greater than 0.');
+    expect(validateCouponFields({ ...valid, discountValue: NaN })).toBe('Discount value must be greater than 0.');
+  });
+
+  it('caps a percent discount at 100', () => {
+    expect(validateCouponFields({ ...valid, discountValue: 101, returnExtra: 0 })).toBe('Percent discount cannot exceed 100.');
+  });
+
+  it('rejects a negative round-trip extra', () => {
+    expect(validateCouponFields({ ...valid, returnExtra: -1 })).toBe('Extra round-trip discount cannot be negative.');
+  });
+
+  it('caps percent discount plus extra at 100', () => {
+    expect(validateCouponFields({ ...valid, discountValue: 98, returnExtra: 5 })).toBe('Discount plus round-trip extra cannot exceed 100%.');
+  });
+
+  it('allows a fixed discount above 100 with an extra', () => {
+    expect(validateCouponFields({ ...valid, discountType: 'fixed', discountValue: 150, returnExtra: 20 })).toBeNull();
+  });
+
+  it('requires a period with the end on or after the start', () => {
+    expect(validateCouponFields({ ...valid, validFrom: '', validUntil: '2026-09-30' })).toBe('Set a valid period (end date not before start date).');
+    expect(validateCouponFields({ ...valid, validFrom: '2026-09-30', validUntil: '2026-09-01' })).toBe('Set a valid period (end date not before start date).');
+    expect(validateCouponFields({ ...valid, validFrom: '2026-09-01', validUntil: '2026-09-01' })).toBeNull();
+  });
+
+  it('requires at least one service when the scope is selected', () => {
+    expect(validateCouponFields({ ...valid, appliesToAll: false, flows: [] })).toBe('Pick at least one service, or choose "All services".');
+    expect(validateCouponFields({ ...valid, appliesToAll: false, flows: ['transfer'] })).toBeNull();
+  });
+
+  it('requires at least one customer group when the scope is selected', () => {
+    expect(validateCouponFields({ ...valid, appliesToAllGroups: false, groups: [] })).toBe('Pick at least one customer group, or choose "All customers".');
+    expect(validateCouponFields({ ...valid, appliesToAllGroups: false, groups: ['hotel'] })).toBeNull();
   });
 });
