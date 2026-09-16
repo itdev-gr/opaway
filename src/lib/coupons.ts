@@ -119,13 +119,28 @@ function toAppliedCoupon(row: any): AppliedCoupon | null {
   };
 }
 
-// Every offer the current visitor qualifies for on this flow, newest first.
+// Every offer the current visitor qualifies for on this flow AND this trip,
+// newest first. An offer counts only when the ride date (and, for a round
+// trip, the return date) falls inside its period -- the client's rule: a
+// September offer must not discount an October ride, even when the booking is
+// made in September. The server applies that rule; this just hands over the
+// dates (YYYY-MM-DD) the page already has. With no trip date nothing can
+// qualify, so the RPC is not even asked.
 // The coupons table is admin-only, so this SECURITY DEFINER RPC is the only
 // public window onto it; it resolves the customer group from the session.
-export async function fetchAutoCoupons(flow: CouponFlow): Promise<AppliedCoupon[]> {
+export async function fetchAutoCoupons(
+  flow: CouponFlow,
+  tripDate: string,
+  returnDate = '',
+): Promise<AppliedCoupon[]> {
+  if (!tripDate) return [];
   try {
     const { supabase } = await import('./supabase');
-    const { data, error } = await supabase.rpc('get_auto_coupons', { p_flow: flow });
+    const { data, error } = await supabase.rpc('get_auto_coupons', {
+      p_flow: flow,
+      p_date: tripDate,
+      p_return_date: returnDate || null,
+    });
     if (error) {
       console.error('get_auto_coupons failed:', error);
       return [];

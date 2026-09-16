@@ -383,7 +383,7 @@ import Layout from '../../../layouts/Layout.astro';
 	// is applied on load. It runs again if the server rejects the code at
 	// booking time, which happens only if an admin closes the offer mid-checkout.
 	async function applyRunningOffer() {
-		appliedCoupon = bestCouponFor(await fetchAutoCoupons('tour'), preCouponTotal, false)?.coupon ?? null;
+		appliedCoupon = bestCouponFor(await fetchAutoCoupons('tour', date), preCouponTotal, false)?.coupon ?? null;
 		recomputeTotals();
 	}
 	applyRunningOffer();

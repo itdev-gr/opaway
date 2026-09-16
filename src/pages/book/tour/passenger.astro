@@ -362,7 +362,7 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 	}
 
 	/* ── Running offer, applied without the customer asking ── */
-	fetchAutoCoupons('tour').then((coupons) => {
+	fetchAutoCoupons('tour', date).then((coupons) => {
 		autoCoupons = coupons;
 		recomputeTicketsAndSidebar();
 	});

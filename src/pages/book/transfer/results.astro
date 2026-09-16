@@ -256,13 +256,18 @@ import Layout from '../../../layouts/Layout.astro';
 	import { bestCouponFor, fetchAutoCoupons, type AppliedCoupon } from '../../../lib/coupons';
 
 	let partnerDiscount = 0;
-	// Offers the visitor qualifies for. Nothing is typed in: the best one for
-	// each vehicle's own price is picked below, so a fixed coupon can win on a
-	// short ride while a percent one wins on a long one.
-	let autoCoupons: AppliedCoupon[] = [];
+	// Offers the visitor qualifies for on THIS trip. Nothing is typed in: the
+	// best one for each vehicle's own price is picked below, so a fixed coupon
+	// can win on a short ride while a percent one wins on a long one.
+	// An offer only counts when every leg travels inside its period, so the
+	// round-trip set can be smaller than the one-way set (a return leg in the
+	// next month drops the offer). "Add return" flips between the two.
+	let oneWayCoupons: AppliedCoupon[] = [];
+	let roundTripCoupons: AppliedCoupon[] = [];
 
 	function couponAmountFor(total: number): number {
-		return bestCouponFor(autoCoupons, total, hasReturn)?.amount ?? 0;
+		const offers = hasReturn ? roundTripCoupons : oneWayCoupons;
+		return bestCouponFor(offers, total, hasReturn)?.amount ?? 0;
 	}
 	let pricingData: PricingData;
 
@@ -708,10 +713,18 @@ import Layout from '../../../layouts/Layout.astro';
 	/* ── Init ── */
 	// fetchAutoCoupons resolves the customer group from the session, so it runs
 	// with the partner-discount lookup, before the first price is drawn.
-	Promise.all([detectPartnerDiscount(), loadPricing(), fetchAutoCoupons('transfer')]).then(([d, p, coupons]) => {
+	// With no returnDate in the URL, "Add return" books the return on the
+	// outward date (see the continue handler), so the one-way set already
+	// answers for that round trip.
+	const oneWayOffers = fetchAutoCoupons('transfer', date);
+	const roundTripOffers = returnDate && returnDate !== date
+		? fetchAutoCoupons('transfer', date, returnDate)
+		: oneWayOffers;
+	Promise.all([detectPartnerDiscount(), loadPricing(), oneWayOffers, roundTripOffers]).then(([d, p, oneWay, roundTrip]) => {
 		partnerDiscount = d;
 		pricingData = p;
-		autoCoupons = coupons;
+		oneWayCoupons = oneWay;
+		roundTripCoupons = roundTrip;
 		loadVehicles();
 	});
 </script>

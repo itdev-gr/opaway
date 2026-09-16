@@ -328,7 +328,7 @@ import PhoneCountrySelect from '../../../components/PhoneCountrySelect.astro';
 	/* ── Running offer, applied without the customer asking ── */
 	(async () => {
 		const base = parseFloat(totalPrice) || 0;
-		const best = bestCouponFor(await fetchAutoCoupons('transfer'), base, hasReturn);
+		const best = bestCouponFor(await fetchAutoCoupons('transfer', date, hasReturn ? returnDate : ''), base, hasReturn);
 		if (!best) return;
 		const finalTotal = Math.round((base - best.amount) * 100) / 100;
 		setText('sb-total', `\u20AC ${finalTotal.toFixed(2)}`);
