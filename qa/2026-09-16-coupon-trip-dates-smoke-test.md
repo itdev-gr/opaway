@@ -193,32 +193,35 @@ delete from public.coupons where code = 'QA_TRIP' returning code;
 
 ---
 
-## Step 3 — Browser checklist (NOT RUN — needs the deployed build + the migration)
+## Step 3 — Browser checklist (RUN 2026-09-16 on www.opawey.com, after the deploy)
 
-Prereq: an active offer covering today and September (`SEP7` qualifies).
+Prereq met: `VIPSEP7` (5 %, transfers, retail, 31/08–30/09) is the running
+offer. Pages were driven through Claude in Chrome as a guest (no session, so
+the caller resolves to retail); prices were read off the DOM after each load.
+The deployed bundle was confirmed to send `p_date` / `p_return_date` in its
+`get_auto_coupons` call before any check ran.
 
-1. Transfer search for **20/09/2026**, one way → results show the struck-through
-   price and the red total on each vehicle; passenger and payment pages show
-   the coupon row; a cash booking saves with `coupon_code` set.
-2. Same search for **05/10/2026** → full price everywhere, no coupon row on
-   results, passenger or payment; a cash booking saves with `coupon_code` null
-   and `coupon_discount` 0.
-3. Round trip **28/09 → 03/10** → full price on results (the round-trip extra
-   does not appear either), passenger and payment.
-4. Search for 20/09 one way, then click **Add return** on the results page →
-   the discount stays (the return is booked on the outward date, which is
-   inside the period); click **Remove return** → still discounted.
-5. Round trip **20/09 → 25/09** → discounted, with the round-trip extra when
-   the offer has one.
-6. Hourly and tour flows: a September date is discounted, an October date is
-   not.
-7. Forged check (DevTools on the payment page): change the request body of a
-   cash booking to `coupon_code: "SEP7"` on an October date → the page reports
-   the coupon error and re-prices at full price (existing `COUPON_INVALID`
-   handling).
-8. Admin → Coupons: the period fields now carry the hint "Applies only to
-   bookings made and travelling within these dates. A round trip needs both
-   legs inside the period."; the banner-text hint no longer mentions a code.
+Transfer, Athens International Airport → Syntagma Square, sedan / van / minibus:
+
+| # | Scenario | Results page | Passenger | Payment | Verdict |
+|---|---|---|---|---|---|
+| 1 | 20/09 one way | €70 → **€66.50**, €90 → €85.50, €175 → €166.25 | coupon row −€3.50, total €66.50 | coupon row −€3.50, total €66.50 | PASS |
+| 2 | 05/10 one way | €70 / €90 / €175, no strike-through | no coupon row, €70.00 | no coupon row, €70.00 | PASS |
+| 3 | 28/09 → 03/10 round trip | €140 / €180 / €350, no strike-through | — | no coupon row, €140.00 | PASS |
+| 4 | 20/09 one way, then **Add return** | €140 → €133 (still 5 %); **Remove return** → €70 → €66.50 | — | — | PASS |
+| 5 | 20/09 → 25/09 round trip | €140 → **€133**, €180 → €171, €350 → €332.50 | — | — | PASS |
+
+6. Hourly (Syntagma, 3 h) and tour (Meteora day tour) for 20/09 and 05/10:
+   full price on all four loads and the `get_auto_coupons` request returned
+   200 each time. No coupon is expected on either date — `VIPSEP7` targets
+   transfers only — so this only shows the flows still price correctly with
+   the new call. **PASS.**
+7. Forged bookings, sent straight to the REST endpoint with the site's anon
+   key and `coupon_code: "VIPSEP7"`: transfer 05/10 one way, transfer 28/09 →
+   03/10, tour 05/10 — all three answered `400 COUPON_INVALID` (P0001), nothing
+   inserted. **PASS.**
+8. Admin → Coupons hint: **NOT RUN** — the page needs an admin login, which
+   this session cannot perform. Check by eye after signing in.
 
 Note for the client: bookings already saved with the September coupon for an
 October ride are not re-priced by this change; they can be adjusted from the

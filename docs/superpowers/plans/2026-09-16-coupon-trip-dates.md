@@ -37,5 +37,5 @@
 - [x] Admin copy
 - [x] Tests: 164/164; build OK; `astro check` 42 = baseline
 - [x] Apply the migration to prod `wjqfcijisslzqxesbbox` and run the journal's Step 2 SQL (applied + verified 2026-09-16)
-- [ ] Deploy; browser checklist (journal Step 3)
+- [x] Deploy; browser checklist (journal Step 3, run 2026-09-16 on the live site — only the admin-hint eyeball check is left)
 - [ ] Reword `VIPSEP7`'s `banner_text` to state the travel dates
