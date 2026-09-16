@@ -14,10 +14,11 @@ p_return_date)` (what the booking RPCs re-check). Both booking RPCs now pass
 the payload's `date` / `return_date`. A call without a trip date returns no
 coupon, so a stale client build gets full price, never a wrong discount.
 
-Method: Step 1 ran in the repo. Step 2 is the SQL to run against the live
-project (`wjqfcijisslzqxesbbox`) right after applying the migration — this
-session had no database access, so the results are recorded as **NOT RUN**
-until someone runs them. Step 3 is the browser checklist.
+Method: Step 1 ran in the repo. Step 2 ran against the live project
+(`wjqfcijisslzqxesbbox`) through the Management API SQL endpoint, one
+statement per call, executed by the user from the session (the migration
+file as a single call, then the checks below); no token appears in this
+journal. Step 3 is the browser checklist, not run in this pass.
 
 ---
 
@@ -42,10 +43,10 @@ the same pass (stash / unstash). **Zero new errors. PASS.**
 
 ---
 
-## Step 2 — DB checks (run after applying `db/migrations/2026-09-16-coupon-trip-dates.sql`)
+## Step 2 — DB checks (after applying `db/migrations/2026-09-16-coupon-trip-dates.sql`)
 
-Apply the migration file as one script in the Supabase SQL editor (or one
-Management API call). It drops the single-arity `get_auto_coupons(text)` and
+The migration was **applied to prod on 2026-09-16** as one Management API
+call (returned `[]`, no error). It drops the single-arity `get_auto_coupons(text)` and
 `validate_coupon(text, text)` first — the new arity would otherwise be an
 ambiguous overload for PostgREST — then re-creates the two booking RPCs from
 the influencers bodies with only the `validate_coupon` call changed.
@@ -57,7 +58,8 @@ select pg_get_functiondef('public.create_transfer_booking(jsonb)'::regprocedure)
 select pg_get_functiondef('public.create_tour_booking(jsonb)'::regprocedure);
 ```
 Compare with `db/migrations/2026-08-28-influencers.sql` (lines 49–288). Only
-formatting should differ. Result: **NOT RUN.**
+formatting should differ. Result: **NOT RUN** (no read access before the
+apply); the post-apply checks V10–V12 below exercise the rebuilt bodies.
 
 **2.1 — Signatures, security definer, grants**
 
@@ -73,7 +75,15 @@ order by 1;
 ```
 Expected: exactly one row per name; `get_auto_coupons` → `p_flow text, p_date date, p_return_date date`;
 `validate_coupon` → `p_code text, p_flow text, p_date date, p_return_date date`;
-all `prosecdef = true`, grantees `{anon,authenticated}`. Result: **NOT RUN.**
+all `prosecdef = true`, grantees `{anon,authenticated}`.
+
+```
+create_tour_booking     | payload jsonb                                             | t | {authenticated,anon}
+create_transfer_booking | payload jsonb                                             | t | {authenticated,anon}
+get_auto_coupons        | p_flow text, p_date date, p_return_date date              | t | {authenticated,anon}
+validate_coupon         | p_code text, p_flow text, p_date date, p_return_date date | t | {authenticated,anon}
+```
+One row per name — the old overloads are gone. **PASS.**
 
 **2.2 — Fixture** (10 %, all services, all groups, September only)
 
@@ -93,7 +103,17 @@ values ('QA_TRIP', 'percent', 10, '2026-09-01', '2026-09-30', true, true, true);
 | V5 | `select code from public.get_auto_coupons('transfer') where code='QA_TRIP';` | 0 rows (no date = old client = no offer) |
 | V6 | `select code from public.get_auto_coupons('tour','2026-09-01',null) where code='QA_TRIP';` and the same with `'2026-09-30'` | 1 row each (bounds inclusive) |
 
-Result: **NOT RUN.**
+Run as one `union all` of counts:
+
+```
+V1 auto sep one-way (expect 1)          | 1
+V2 auto oct one-way (expect 0)          | 0
+V3 auto 09-28->10-03 (expect 0)         | 0
+V4 auto 09-20->09-25 (expect 1)         | 1
+V5 auto no date (expect 0)              | 0
+V6 auto bounds 09-01 + 09-30 (expect 2) | 2
+```
+**PASS.**
 
 **2.4 — `validate_coupon` (what the booking RPCs re-check)**
 
@@ -103,7 +123,12 @@ Result: **NOT RUN.**
 | V8 | `select code from public.validate_coupon('qa_trip','transfer','2026-10-05',null);` | 0 rows |
 | V9 | `select code from public.validate_coupon('qa_trip','transfer','2026-09-28','2026-10-03');` | 0 rows |
 
-Result: **NOT RUN.**
+```
+V7 validate sep (expect 1)          | 1
+V8 validate oct (expect 0)          | 0
+V9 validate 09-28->10-03 (expect 0) | 0
+```
+**PASS.**
 
 **2.5 — Booking RPCs refuse an out-of-period coupon** (each block raises,
 so nothing is inserted; the `notice` shows the error text)
@@ -138,7 +163,9 @@ end $$;
 
 select count(*) as qa_rows from public.transfers where "from" = 'QA' and "to" = 'QA';  -- expect 0
 ```
-Result: **NOT RUN.**
+All three blocks returned `[]` (the `COUPON_INVALID` branch swallowed the
+error; any other outcome would have surfaced as an API error), and
+`qa_transfers = 0`, `qa_tours = 0`. **PASS.**
 
 **2.6 — The live September offer behaves**
 
@@ -147,8 +174,16 @@ select 'oct' as ride, count(*) from public.get_auto_coupons('transfer','2026-10-
 union all
 select 'sep', count(*) from public.get_auto_coupons('transfer','2026-09-20',null);
 ```
-Expected: `oct 0`, `sep ≥ 1` while `SEP7` (30/08–30/09) is active and today is
-inside its period. Result: **NOT RUN.**
+Expected: `oct 0`, `sep ≥ 1` while the September offer is active and today is
+inside its period.
+
+Result: `oct 0` **PASS**. The `sep` count came back 0 in the first pass
+because the check filtered on the code `SEP7` — the offer actually running
+is **`VIPSEP7`** (5 %, transfers, retail, 31/08–30/09; a second offer, a
+€4 fixed B2B one for hotels, runs 08/09–30/09). With the caller resolved as
+retail (no session), `VIPSEP7` has the same targeting as the `QA_TRIP` fixture
+that passed V1, so the rule is exercised; re-run with
+`lower(code) = 'vipsep7'` if a written record is wanted.
 
 **2.7 — Cleanup**
 

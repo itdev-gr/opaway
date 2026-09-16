@@ -36,6 +36,6 @@
 - [x] `fetchAutoCoupons` signature + nine call sites
 - [x] Admin copy
 - [x] Tests: 164/164; build OK; `astro check` 42 = baseline
-- [ ] Apply the migration to prod `wjqfcijisslzqxesbbox` and run the journal's Step 2 SQL
+- [x] Apply the migration to prod `wjqfcijisslzqxesbbox` and run the journal's Step 2 SQL (applied + verified 2026-09-16)
 - [ ] Deploy; browser checklist (journal Step 3)
-- [ ] Reword `SEP7`'s `banner_text` to state the travel dates
+- [ ] Reword `VIPSEP7`'s `banner_text` to state the travel dates
