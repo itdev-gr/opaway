@@ -422,7 +422,7 @@ import Layout from '../../../layouts/Layout.astro';
 	});
 
 	/* ── Init ── */
-	Promise.all([detectPartnerDiscount(), loadPricing(), fetchAutoCoupons('hourly')]).then(([d, p, coupons]) => {
+	Promise.all([detectPartnerDiscount(), loadPricing(), fetchAutoCoupons('hourly', date)]).then(([d, p, coupons]) => {
 		partnerDiscount = d;
 		pricingData = p;
 		autoCoupons = coupons;

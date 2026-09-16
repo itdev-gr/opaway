@@ -135,10 +135,31 @@ describe('fetchAutoCoupons', () => {
     mockRpc.mockReset();
   });
 
-  it('asks the RPC for the flow it was given', async () => {
+  it('asks the RPC for the flow and the trip date it was given', async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
-    await fetchAutoCoupons('tour');
-    expect(mockRpc).toHaveBeenCalledWith('get_auto_coupons', { p_flow: 'tour' });
+    await fetchAutoCoupons('tour', '2026-09-20');
+    expect(mockRpc).toHaveBeenCalledWith('get_auto_coupons', {
+      p_flow: 'tour', p_date: '2026-09-20', p_return_date: null,
+    });
+  });
+
+  it('hands the return date over for a round trip, so a return leg outside the period drops the offer', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await fetchAutoCoupons('transfer', '2026-09-28', '2026-10-03');
+    expect(mockRpc).toHaveBeenCalledWith('get_auto_coupons', {
+      p_flow: 'transfer', p_date: '2026-09-28', p_return_date: '2026-10-03',
+    });
+  });
+
+  it('sends null, not an empty string, when there is no return leg', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await fetchAutoCoupons('transfer', '2026-09-20', '');
+    expect(mockRpc).toHaveBeenCalledWith('get_auto_coupons', expect.objectContaining({ p_return_date: null }));
+  });
+
+  it('asks for nothing without a trip date: no date, no offer', async () => {
+    await expect(fetchAutoCoupons('transfer', '')).resolves.toEqual([]);
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('normalises the rows it gets back', async () => {
@@ -149,7 +170,7 @@ describe('fetchAutoCoupons', () => {
       ],
       error: null,
     });
-    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([
+    await expect(fetchAutoCoupons('transfer', '2026-09-20')).resolves.toEqual([
       { id: 'a', code: 'SUMMER', discount_type: 'percent', discount_value: 10, return_extra_value: 5 },
       { id: 'b', code: 'FLAT', discount_type: 'fixed', discount_value: 20, return_extra_value: 0 },
     ]);
@@ -157,22 +178,22 @@ describe('fetchAutoCoupons', () => {
 
   it('drops rows with no id rather than pricing off them', async () => {
     mockRpc.mockResolvedValue({ data: [{ code: 'GHOST', discount_type: 'percent', discount_value: 10 }], error: null });
-    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+    await expect(fetchAutoCoupons('transfer', '2026-09-20')).resolves.toEqual([]);
   });
 
   it('returns nothing when there is no offer running', async () => {
     mockRpc.mockResolvedValue({ data: null, error: null });
-    await expect(fetchAutoCoupons('hourly')).resolves.toEqual([]);
+    await expect(fetchAutoCoupons('hourly', '2026-09-20')).resolves.toEqual([]);
   });
 
   it('returns nothing when the RPC errors, so prices stay at full price', async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
-    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+    await expect(fetchAutoCoupons('transfer', '2026-09-20')).resolves.toEqual([]);
   });
 
   it('returns nothing when the request throws', async () => {
     mockRpc.mockRejectedValue(new Error('network down'));
-    await expect(fetchAutoCoupons('transfer')).resolves.toEqual([]);
+    await expect(fetchAutoCoupons('transfer', '2026-09-20')).resolves.toEqual([]);
   });
 });
 

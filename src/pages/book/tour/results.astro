@@ -453,7 +453,7 @@ import Layout from '../../../layouts/Layout.astro';
 	});
 
 	/* ── Init ── */
-	Promise.all([detectPartnerDiscount(), loadTourPrices(), fetchAutoCoupons('tour')]).then(([d, , coupons]) => {
+	Promise.all([detectPartnerDiscount(), loadTourPrices(), fetchAutoCoupons('tour', date)]).then(([d, , coupons]) => {
 		partnerDiscount = d;
 		autoCoupons = coupons;
 		loadVehicles();
