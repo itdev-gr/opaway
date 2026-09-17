@@ -6,9 +6,11 @@ What changed: reviews from the client's Google Business Profile are pulled
 into `google_reviews` (daily cron + admin "Sync now"), approved one by one on
 `/admin/reviews`, and the approved ones show in a new homepage section.
 
-Method: Step 1 ran in the repo. Steps 2–4 need the migration applied to prod,
-the three env vars set in Vercel, and a deploy; they are listed with the
-expected results and marked **NOT RUN** until someone runs them.
+Method: Step 1 ran in the repo. Step 2 ran against prod
+(`wjqfcijisslzqxesbbox`) through the Management API SQL endpoint, one
+statement per call, executed by the user from the session right after the
+migration was applied the same way (2026-09-17; no token in this journal).
+Steps 3–4 need the env vars in Vercel and a deploy; they stay **NOT RUN**.
 
 ---
 
@@ -50,7 +52,17 @@ select id, last_sync_at from public.google_reviews_meta;
 Expected: both tables `rowsecurity = true`; one "Admins manage …" policy
 each; both RPCs `prosecdef = true`, grantees `{anon,authenticated}`;
 `google_reviews` in the realtime publication; meta row `id = 1` present.
-Result: **NOT RUN.**
+
+```
+table    google_reviews        rowsecurity=true
+table    google_reviews_meta   rowsecurity=true
+policy   Admins manage google_reviews / Admins manage google_reviews_meta
+rpc      get_public_reviews(p_limit integer)   secdef=true grantees={authenticated,anon}
+rpc      get_public_reviews_meta()             secdef=true grantees={authenticated,anon}
+realtime google_reviews  supabase_realtime
+meta-row 1  last_sync_at=never
+```
+**PASS.**
 
 **2.2 — Only approved rows leave the RPC**
 
@@ -64,7 +76,14 @@ select approved_count from public.get_public_reviews_meta();        -- expect 1 
 set role anon; select count(*) from public.google_reviews; reset role; -- expect a permission error / 0 rows (no public policy)
 delete from public.google_reviews where dedupe_key like 'qa:%';
 ```
-Result: **NOT RUN.**
+```
+V1 rpc rows                  | QA Approved      (pending and hidden rows absent)
+V2 meta approved_count       | 1
+V3 get_public_reviews(0)     | 1 row            (limit clamped to >= 1)
+anon: select count(*) from google_reviews | 0   (no public policy; RLS hides every row)
+cleanup                      | qa:1, qa:2, qa:3 deleted
+```
+**PASS.**
 
 ---
 

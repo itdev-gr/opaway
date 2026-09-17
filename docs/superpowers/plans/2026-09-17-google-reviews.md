@@ -46,6 +46,7 @@
 - [x] Admin page + sidebar badge
 - [x] Public lib + homepage section
 - [x] Gates: `npm test`, `npm run build`, `npx astro check` delta 0
-- [ ] Apply the migration to prod; add the three env vars in Vercel (Production); redeploy
+- [x] Apply the migration to prod (applied + verified 2026-09-17)
+- [ ] Add the three env vars in Vercel (Production); push + deploy
 - [ ] First "Sync now" from `/admin/reviews`; client approves; section appears
 - [ ] Browser checklist (journal Step 3)
