@@ -7,6 +7,7 @@ export type AdminCounts = {
     tours: number;
     experiences: number;
     partners: number;
+    reviews: number;
 };
 
 /**
@@ -14,17 +15,19 @@ export type AdminCounts = {
  *   - requests.status = 'new'
  *   - transfers/tours/experiences.ride_status = 'new'
  *   - partners.status = 'pending'
+ *   - google_reviews.status = 'pending' (Google reviews awaiting approval)
  * All queries run in parallel with `head: true, count: 'exact'` — no rows
  * returned, only totals.
  */
 export async function adminCounts(): Promise<AdminCounts> {
     const head = (table: string) => supabase.from(table).select('*', { count: 'exact', head: true });
-    const [req, tr, to, ex, pa] = await Promise.all([
+    const [req, tr, to, ex, pa, rv] = await Promise.all([
         head('requests').eq('status', 'new'),
         head('transfers').eq('ride_status', 'new'),
         head('tours').eq('ride_status', 'new'),
         head('experiences').eq('ride_status', 'new'),
         head('partners').eq('status', 'pending'),
+        head('google_reviews').eq('status', 'pending'),
     ]);
     return {
         requests: req.count ?? 0,
@@ -32,6 +35,7 @@ export async function adminCounts(): Promise<AdminCounts> {
         tours: to.count ?? 0,
         experiences: ex.count ?? 0,
         partners: pa.count ?? 0,
+        reviews: rv.count ?? 0,
     };
 }
 

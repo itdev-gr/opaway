@@ -1,0 +1,167 @@
+---
+// Google reviews the admin has approved. The section stays hidden until at
+// least one approved review comes back, so the homepage is unchanged before
+// the client has approved anything. Review text is rendered with textContent
+// and shown exactly as written on Google (their attribution terms).
+import { GOOGLE_REVIEW_URL } from '../lib/reviews';
+---
+
+<section id="reviews-section" class="hidden bg-[#F5F6F8] py-16 lg:py-24 px-6 lg:px-10">
+	<div class="max-w-6xl mx-auto">
+
+		<!-- Heading row -->
+		<div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10">
+			<div class="max-w-2xl">
+				<div class="flex items-center gap-2 mb-5">
+					<span class="w-2 h-2 rounded-full bg-[#0C6B95] shrink-0"></span>
+					<span class="text-sm font-medium text-neutral-500 tracking-wide" data-i18n-el="Κριτικές από το Google" data-i18n-es="Reseñas de Google">Reviews from Google</span>
+				</div>
+				<h2 class="text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight mb-4" data-i18n-el="Τι λένε οι πελάτες μας" data-i18n-es="Lo que dicen nuestros clientes">What our customers say</h2>
+				<p class="text-neutral-500 text-base leading-relaxed" data-i18n-el="Πραγματικές εμπειρίες από ταξιδιώτες που επέλεξαν την Opawey για τις μεταφορές και τις ξεναγήσεις τους." data-i18n-es="Experiencias reales de viajeros que eligieron Opawey para sus traslados y tours.">Real experiences from travellers who chose Opawey for their transfers and tours.</p>
+			</div>
+
+			<!-- Aggregate rating -->
+			<div class="flex flex-col items-start lg:items-end gap-3">
+				<div class="flex items-center gap-3">
+					<svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" aria-label="Google"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.4 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9l3.3-2.5z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5L6.4 10C7.2 7.8 9.4 6 12 6z"/></svg>
+					<div>
+						<div class="flex items-center gap-2">
+							<span id="reviews-rating" class="text-2xl font-bold text-neutral-900 leading-none">—</span>
+							<span id="reviews-stars" class="text-amber-400 text-lg leading-none" aria-hidden="true"></span>
+						</div>
+						<p class="text-sm text-neutral-500 mt-1"><span id="reviews-total">—</span> <span data-i18n-el="κριτικές στο Google" data-i18n-es="reseñas en Google">reviews on Google</span></p>
+					</div>
+				</div>
+				<div class="flex flex-wrap gap-3">
+					<a id="reviews-all-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-1.5 text-sm font-semibold text-[#0C6B95] hover:underline" data-i18n-el="Δείτε όλες τις κριτικές" data-i18n-es="Ver todas las reseñas">See all reviews on Google</a>
+					<a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-[#0C6B95] hover:bg-[#0a5c82] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-lg shadow-[#0C6B95]/25" data-i18n-el="Γράψτε μια κριτική" data-i18n-es="Escribe una reseña">Write a review</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Cards: horizontal scroll-snap on small screens, grid on large -->
+		<div id="reviews-cards" class="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0 [scrollbar-width:thin]"></div>
+
+		<p class="text-xs text-neutral-400 mt-6" data-i18n-el="Ταξινόμηση: νεότερες πρώτα. Οι κριτικές εμφανίζονται όπως γράφτηκαν στο Google." data-i18n-es="Ordenadas de más recientes a más antiguas. Las reseñas se muestran tal como se escribieron en Google.">Sorted by newest first. Reviews are shown as written on Google.</p>
+	</div>
+</section>
+
+<template id="review-card-template">
+	<article class="snap-start shrink-0 w-[85vw] sm:w-[360px] lg:w-auto bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 flex flex-col">
+		<div class="flex items-center gap-3 mb-4">
+			<span class="review-avatar w-11 h-11 rounded-full bg-[#0C6B95]/10 text-[#0C6B95] font-bold flex items-center justify-center shrink-0 overflow-hidden"></span>
+			<div class="min-w-0">
+				<p class="review-author font-semibold text-neutral-900 truncate"></p>
+				<p class="review-date text-xs text-neutral-400"></p>
+			</div>
+			<svg class="w-5 h-5 ml-auto shrink-0" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.4 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9l3.3-2.5z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5L6.4 10C7.2 7.8 9.4 6 12 6z"/></svg>
+		</div>
+		<p class="review-stars text-amber-400 text-base leading-none mb-3 tracking-tight"></p>
+		<p class="review-text text-sm text-neutral-700 leading-relaxed whitespace-pre-line break-words flex-1"></p>
+		<button type="button" class="review-more hidden self-start mt-2 text-sm font-semibold text-[#0C6B95] hover:underline" data-i18n-el="Περισσότερα" data-i18n-es="Leer más">Read more</button>
+	</article>
+</template>
+
+<script>
+	import { fetchPublicReviews, fetchPublicReviewsMeta, type PublicReview } from '../lib/reviews';
+	import { clampText, relativeTime } from '../lib/google-reviews';
+
+	const MAX_CARDS = 6;
+
+	function currentLang(): string {
+		try { return localStorage.getItem('opaway:lang') || 'en'; } catch { return 'en'; }
+	}
+
+	function safeUrl(u: string | null): string | null {
+		if (!u) return null;
+		try {
+			const p = new URL(u);
+			return p.protocol === 'https:' ? p.toString() : null;
+		} catch { return null; }
+	}
+
+	const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+	function buildCard(tpl: HTMLTemplateElement, r: PublicReview, nowISO: string): HTMLElement {
+		const node = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+		const avatar = node.querySelector('.review-avatar')!;
+		const photo = safeUrl(r.author_photo_url);
+		if (photo) {
+			const img = document.createElement('img');
+			img.src = photo;
+			img.alt = '';
+			img.referrerPolicy = 'no-referrer';
+			img.loading = 'lazy';
+			img.className = 'w-full h-full object-cover';
+			img.addEventListener('error', () => { img.remove(); avatar.textContent = (r.author_name[0] || '?').toUpperCase(); });
+			avatar.appendChild(img);
+		} else {
+			avatar.textContent = (r.author_name[0] || '?').toUpperCase();
+		}
+
+		const authorEl = node.querySelector('.review-author') as HTMLElement;
+		const profile = safeUrl(r.author_url);
+		if (profile) {
+			const a = document.createElement('a');
+			a.href = profile;
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+			a.className = 'hover:text-[#0C6B95]';
+			a.textContent = r.author_name;
+			authorEl.appendChild(a);
+		} else {
+			authorEl.textContent = r.author_name;
+		}
+
+		(node.querySelector('.review-date') as HTMLElement).textContent = relativeTime(r.published_at, nowISO, currentLang());
+		const starsEl = node.querySelector('.review-stars') as HTMLElement;
+		starsEl.textContent = stars(r.rating);
+		starsEl.setAttribute('aria-label', `${r.rating} out of 5`);
+
+		const textEl = node.querySelector('.review-text') as HTMLElement;
+		const more = node.querySelector('.review-more') as HTMLButtonElement;
+		const { short, clamped } = clampText(r.text);
+		textEl.textContent = short;
+		if (clamped) {
+			more.classList.remove('hidden');
+			more.addEventListener('click', () => {
+				textEl.textContent = r.text;
+				more.remove();
+			}, { once: true });
+		}
+		return node;
+	}
+
+	async function initReviews() {
+		const section = document.getElementById('reviews-section');
+		const cards = document.getElementById('reviews-cards');
+		const tpl = document.getElementById('review-card-template') as HTMLTemplateElement | null;
+		if (!section || !cards || !tpl) return;
+
+		const [reviews, meta] = await Promise.all([fetchPublicReviews(MAX_CARDS), fetchPublicReviewsMeta()]);
+		if (!reviews.length) return; // stays hidden
+
+		const nowISO = new Date().toISOString();
+		cards.replaceChildren(...reviews.map((r) => buildCard(tpl, r, nowISO)));
+
+		if (meta) {
+			const ratingEl = document.getElementById('reviews-rating');
+			const starsEl = document.getElementById('reviews-stars');
+			const totalEl = document.getElementById('reviews-total');
+			if (ratingEl && meta.rating != null) ratingEl.textContent = meta.rating.toFixed(1);
+			if (starsEl && meta.rating != null) starsEl.textContent = stars(Math.round(meta.rating));
+			if (totalEl && meta.user_ratings_total != null) totalEl.textContent = String(meta.user_ratings_total);
+			const all = document.getElementById('reviews-all-link') as HTMLAnchorElement | null;
+			const placeUrl = safeUrl(meta.place_url);
+			if (all && placeUrl) { all.href = placeUrl; all.classList.remove('hidden'); }
+		}
+
+		section.classList.remove('hidden');
+		// The injected cards carry data-i18n-* labels; re-run the translator.
+		(window as any).opawayApplyI18n?.();
+	}
+
+	// Fires on the first load too (the layout uses ViewTransitions), and again
+	// after every client-side navigation, when the section is a fresh node.
+	document.addEventListener('astro:page-load', initReviews);
+</script>

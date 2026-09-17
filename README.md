@@ -113,6 +113,25 @@ Login and register use **Firebase Authentication** (email/password and Google).
 
 6. Restart the dev server. Sign in and register will use Firebase.
 
+## Google reviews (homepage section, admin-approved)
+
+Reviews from the Google Business Profile are pulled once a day by a Vercel cron
+(`vercel.json` → `GET /api/admin/sync-google-reviews`) and by the **Sync now**
+button on `/admin/reviews`. New reviews land as *pending*; only reviews the
+admin approves show in the homepage section (hidden while there are none).
+
+Env vars (server-side, set in Vercel → Production and in local `.env`):
+
+| Name | Purpose |
+|---|---|
+| `GOOGLE_PLACES_API_KEY` | Key with the Places API enabled (not the browser-restricted `PUBLIC_GOOGLE_MAPS_API_KEY`) |
+| `GOOGLE_PLACE_ID` | The business's Place ID (`ChIJ…`) |
+| `CRON_SECRET` | Random string; Vercel sends it as `Authorization: Bearer …` on cron calls |
+
+Google returns at most five reviews per call (newest five + most relevant
+five are merged), so the archive grows from the first sync onward. Migration:
+`db/migrations/2026-09-17-google-reviews.sql`.
+
 ## Tech
 
 - [Astro](https://astro.build)

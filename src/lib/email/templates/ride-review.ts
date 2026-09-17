@@ -6,7 +6,7 @@ export interface RideReviewData {
   customer_first_name?: string | null;
 }
 
-const REVIEW_URL = 'https://g.page/r/CQvjBfZ0vaQGEAE/review';
+import { GOOGLE_REVIEW_URL as REVIEW_URL } from '../../reviews';
 
 export function renderRideReview(d: RideReviewData): { subject: string; html: string; text: string } {
   const greetName = d.customer_first_name ? `Dear ${d.customer_first_name},` : 'Dear Valued Guest,';
