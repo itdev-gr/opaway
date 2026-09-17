@@ -47,6 +47,6 @@
 - [x] Public lib + homepage section
 - [x] Gates: `npm test`, `npm run build`, `npx astro check` delta 0
 - [x] Apply the migration to prod (applied + verified 2026-09-17)
-- [ ] Add the three env vars in Vercel (Production); push + deploy
-- [ ] First "Sync now" from `/admin/reviews`; client approves; section appears
+- [x] Add the three env vars in Vercel (Production); push + deploy (2026-09-17, first sync: 10 pending)
+- [ ] Client approves reviews on `/admin/reviews`; section appears
 - [ ] Browser checklist (journal Step 3)

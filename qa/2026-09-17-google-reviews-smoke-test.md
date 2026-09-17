@@ -10,7 +10,9 @@ Method: Step 1 ran in the repo. Step 2 ran against prod
 (`wjqfcijisslzqxesbbox`) through the Management API SQL endpoint, one
 statement per call, executed by the user from the session right after the
 migration was applied the same way (2026-09-17; no token in this journal).
-Steps 3–4 need the env vars in Vercel and a deploy; they stay **NOT RUN**.
+Step 3 ran on 2026-09-17 after the env vars were added to Vercel
+(Production) and `main` was pushed. Step 4 needs an admin login for the
+approve/hide part, so it stays **NOT RUN** except where noted.
 
 ---
 
@@ -96,7 +98,19 @@ curl -s -o /dev/null -w '%{http_code}\n' https://www.opawey.com/api/admin/sync-g
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://www.opawey.com/api/admin/sync-google-reviews    # expect 401
 ```
 Vercel dashboard → project → Cron Jobs: `/api/admin/sync-google-reviews`
-listed with schedule `0 5 * * *`. Result: **NOT RUN.**
+listed with schedule `0 5 * * *`.
+
+Results (Place ID `ChIJ93NeVc29oRQRC-MF9nS9pAY`, business rating 5.0 with
+58 reviews on Google at the time):
+
+```
+GET  no auth            → 401
+GET  wrong secret       → 401
+POST no auth            → 403
+GET  with CRON_SECRET   → {"ok":true,"new":10,"seen":10,"errors":[]}   (first sync: 5 newest + 5 most relevant, no overlap; both endpoints answered)
+GET  again              → {"ok":true,"new":0,"seen":10,"errors":[]}    (idempotent)
+```
+**PASS.** (Cron Jobs listing in the dashboard not eyeballed in this pass.)
 
 ---
 
@@ -120,4 +134,8 @@ listed with schedule `0 5 * * *`. Result: **NOT RUN.**
 8. Post-ride email still links to the Google review page (the URL now comes
    from `src/lib/reviews.ts`).
 
-Result: **NOT RUN.**
+Result: items 1–2 and 4–8 **NOT RUN** (admin login needed). Checked as a
+guest on the live site after the first sync: the homepage renders the
+section node hidden with zero cards (10 pending, 0 approved), and
+`/admin/reviews` redirects to `/login`. **PASS** for the "hidden until
+approved" rule.
