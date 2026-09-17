@@ -85,6 +85,8 @@
 			textEl.textContent = promo.banner_text;
 			document.getElementById('promo-default-copy')?.classList.add('hidden');
 			document.getElementById('promo-coupon-copy')?.classList.remove('hidden');
+			// "Book now" lands on the booking page of the service the offer is for.
+			banner.querySelectorAll<HTMLAnchorElement>('a[href="/book"]').forEach((a) => { a.href = promo.href; });
 			refreshPromo?.();
 		});
 

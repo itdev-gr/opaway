@@ -81,13 +81,22 @@ export function athensTodayISO(): string {
 
 // Admin coupon form fields, shared by the create form and the edit modal so the
 // two cannot drift apart on validation rules.
+// Which transfer trips a coupon is for. Only meaningful on the transfer flow;
+// hourly and tour bookings ignore it.
+export type TripScope = 'any' | 'one_way' | 'round_trip';
+
 export interface CouponFields {
   code: string;
   discountType: 'percent' | 'fixed';
   discountValue: number;
   returnExtra: number;
+  // Offer (booking) period: when the offer can be booked and the banner shows.
   validFrom: string;
   validUntil: string;
+  // Travel period: the ride (both legs of a round trip) must fall inside it.
+  travelFrom: string;
+  travelUntil: string;
+  tripScope: TripScope;
   appliesToAll: boolean;
   flows: string[];
   appliesToAllGroups: boolean;
@@ -102,11 +111,21 @@ export function validateCouponFields(f: CouponFields): string | null {
   if (f.discountType === 'percent' && f.discountValue > 100) return 'Percent discount cannot exceed 100.';
   if (f.returnExtra < 0) return 'Extra round-trip discount cannot be negative.';
   if (f.discountType === 'percent' && f.discountValue + f.returnExtra > 100) return 'Discount plus round-trip extra cannot exceed 100%.';
-  if (!f.validFrom || !f.validUntil || f.validUntil < f.validFrom) return 'Set a valid period (end date not before start date).';
+  if (!f.validFrom || !f.validUntil || f.validUntil < f.validFrom) return 'Set the offer period (end date not before start date).';
+  if (!f.travelFrom || !f.travelUntil || f.travelUntil < f.travelFrom) return 'Set the travel dates (end date not before start date).';
+  if (f.travelUntil < f.validFrom) return 'The travel dates end before the offer starts — nobody could use it.';
   if (!f.appliesToAll && !f.flows.length) return 'Pick at least one service, or choose "All services".';
+  if (f.tripScope !== 'any' && !f.appliesToAll && !f.flows.includes('transfer')) return 'Trip type only applies to transfers — include Transfers or choose "Any trip".';
+  if (f.tripScope === 'one_way' && f.returnExtra > 0) return 'A one-way-only offer cannot have a round-trip extra.';
   if (!f.appliesToAllGroups && !f.groups.length) return 'Pick at least one customer group, or choose "All customers".';
   return null;
 }
+
+export const TRIP_SCOPE_LABEL: Record<TripScope, string> = {
+  any: 'One way & round trip',
+  one_way: 'One way only',
+  round_trip: 'Round trip only',
+};
 
 function toAppliedCoupon(row: any): AppliedCoupon | null {
   if (!row?.id) return null;

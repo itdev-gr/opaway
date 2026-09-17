@@ -205,6 +205,9 @@ describe('validateCouponFields', () => {
     returnExtra: 5,
     validFrom: '2026-09-01',
     validUntil: '2026-09-30',
+    travelFrom: '2026-09-01',
+    travelUntil: '2026-09-30',
+    tripScope: 'any',
     appliesToAll: true,
     flows: [],
     appliesToAllGroups: true,
@@ -241,9 +244,37 @@ describe('validateCouponFields', () => {
     expect(validateCouponFields({ ...valid, discountType: 'fixed', discountValue: 150, returnExtra: 20 })).toBeNull();
   });
 
+  it('accepts an early-booking offer: booked in September, travelling in October', () => {
+    expect(validateCouponFields({ ...valid, validFrom: '2026-09-15', validUntil: '2026-09-30', travelFrom: '2026-10-01', travelUntil: '2026-10-31' })).toBeNull();
+  });
+
+  it('requires travel dates with the end on or after the start', () => {
+    expect(validateCouponFields({ ...valid, travelFrom: '', travelUntil: '2026-10-31' })).toBe('Set the travel dates (end date not before start date).');
+    expect(validateCouponFields({ ...valid, travelFrom: '2026-10-31', travelUntil: '2026-10-01' })).toBe('Set the travel dates (end date not before start date).');
+  });
+
+  it('rejects travel dates that end before the offer opens', () => {
+    expect(validateCouponFields({ ...valid, validFrom: '2026-10-01', validUntil: '2026-10-31', travelFrom: '2026-09-01', travelUntil: '2026-09-30' }))
+      .toBe('The travel dates end before the offer starts — nobody could use it.');
+  });
+
+  it('accepts a round-trip-only transfer offer and a one-way-only one', () => {
+    expect(validateCouponFields({ ...valid, tripScope: 'round_trip', appliesToAll: false, flows: ['transfer'] })).toBeNull();
+    expect(validateCouponFields({ ...valid, tripScope: 'one_way', returnExtra: 0 })).toBeNull();
+  });
+
+  it('rejects a trip type on an offer that excludes transfers', () => {
+    expect(validateCouponFields({ ...valid, tripScope: 'round_trip', appliesToAll: false, flows: ['tour'] }))
+      .toBe('Trip type only applies to transfers — include Transfers or choose "Any trip".');
+  });
+
+  it('rejects a round-trip extra on a one-way-only offer', () => {
+    expect(validateCouponFields({ ...valid, tripScope: 'one_way', returnExtra: 5 })).toBe('A one-way-only offer cannot have a round-trip extra.');
+  });
+
   it('requires a period with the end on or after the start', () => {
-    expect(validateCouponFields({ ...valid, validFrom: '', validUntil: '2026-09-30' })).toBe('Set a valid period (end date not before start date).');
-    expect(validateCouponFields({ ...valid, validFrom: '2026-09-30', validUntil: '2026-09-01' })).toBe('Set a valid period (end date not before start date).');
+    expect(validateCouponFields({ ...valid, validFrom: '', validUntil: '2026-09-30' })).toBe('Set the offer period (end date not before start date).');
+    expect(validateCouponFields({ ...valid, validFrom: '2026-09-30', validUntil: '2026-09-01' })).toBe('Set the offer period (end date not before start date).');
     expect(validateCouponFields({ ...valid, validFrom: '2026-09-01', validUntil: '2026-09-01' })).toBeNull();
   });
 

@@ -2,7 +2,7 @@
 import AdminLayout from '../../components/AdminLayout.astro';
 ---
 
-<AdminLayout pageTitle="Coupons" pageDescription="Create discount codes, set the period they run in, and choose which services they apply to. A coupon only discounts trips that travel inside its period." activeSection="coupons" docTitle="Coupons — Admin">
+<AdminLayout pageTitle="Coupons" pageDescription="Create offers, choose when they can be booked and which travel dates they cover, and pick the services, trip type and customers they apply to." activeSection="coupons" docTitle="Coupons — Admin">
 	<div class="max-w-5xl">
 		<!-- ── Create form ── -->
 		<form id="coupon-form" class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 mb-8">
@@ -33,24 +33,44 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			</div>
 
 			<div class="mb-4">
-				<label for="cp-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount — transfers only <span class="text-neutral-400">(optional)</span></label>
+				<span class="block text-sm font-medium text-neutral-700 mb-2">Trip type <span class="text-neutral-400">(transfers only)</span></span>
+				<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+					<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="cp-trip-scope" value="any" checked class="w-4 h-4 text-[#0C6B95]" /> One way &amp; round trip</label>
+					<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="cp-trip-scope" value="one_way" class="w-4 h-4 text-[#0C6B95]" /> One way only</label>
+					<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="cp-trip-scope" value="round_trip" class="w-4 h-4 text-[#0C6B95]" /> Round trip only</label>
+				</div>
+				<p class="text-xs text-neutral-400 mt-1">"Round trip only" discounts a transfer only when the customer books the return too; a plain one-way gets no discount. Hourly and tour bookings ignore this.</p>
+			</div>
+
+			<div class="mb-4">
+				<label for="cp-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount <span class="text-neutral-400">(optional)</span></label>
 				<input id="cp-return-extra" type="number" min="0" step="0.01" placeholder="0"
 					class="w-full md:w-64 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
-				<p class="text-xs text-neutral-400 mt-1">Added on top of the discount when a transfer booking includes a return trip. Same unit as the discount type (percent or &euro;).</p>
+				<p class="text-xs text-neutral-400 mt-1">Added on top of the discount when a transfer includes a return trip, same unit as the discount type. For a round-trip-only offer put the whole discount in the value above and leave this 0.</p>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 				<div>
-					<label for="cp-from" class="block text-sm font-medium text-neutral-700 mb-1">Valid from</label>
-					<input id="cp-from" type="date" required
-						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<label for="cp-from" class="block text-sm font-medium text-neutral-700 mb-1">Offer active from</label>
+					<input id="cp-from" type="date" required class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
 				</div>
 				<div>
-					<label for="cp-until" class="block text-sm font-medium text-neutral-700 mb-1">Valid until</label>
-					<input id="cp-until" type="date" required
-						class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<label for="cp-until" class="block text-sm font-medium text-neutral-700 mb-1">Offer active until</label>
+					<input id="cp-until" type="date" required class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
 				</div>
-				<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">Applies only to bookings made <strong>and</strong> travelling within these dates. A round trip needs both legs inside the period.</p>
+				<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">When the offer can be <strong>booked</strong> and when its banner shows.</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label for="cp-travel-from" class="block text-sm font-medium text-neutral-700 mb-1">Travel dates from</label>
+					<input id="cp-travel-from" type="date" required class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+				<div>
+					<label for="cp-travel-until" class="block text-sm font-medium text-neutral-700 mb-1">Travel dates until</label>
+					<input id="cp-travel-until" type="date" required class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+				</div>
+				<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">The ride (both legs of a round trip) must fall inside these dates. Set them later than the offer period for an early-booking offer. <button type="button" data-copy-period="cp" class="text-[#0C6B95] font-medium hover:underline">Same as offer period</button></p>
 			</div>
 
 			<div class="mb-5">
@@ -187,20 +207,44 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				</div>
 
 				<div class="mb-4">
-					<label for="ed-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount — transfers only <span class="text-neutral-400">(optional)</span></label>
-					<input id="ed-return-extra" type="number" min="0" step="0.01" class="w-full md:w-64 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<span class="block text-sm font-medium text-neutral-700 mb-2">Trip type <span class="text-neutral-400">(transfers only)</span></span>
+					<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+						<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="ed-trip-scope" value="any" checked class="w-4 h-4 text-[#0C6B95]" /> One way &amp; round trip</label>
+						<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="ed-trip-scope" value="one_way" class="w-4 h-4 text-[#0C6B95]" /> One way only</label>
+						<label class="flex items-center gap-2 text-sm text-neutral-700"><input type="radio" name="ed-trip-scope" value="round_trip" class="w-4 h-4 text-[#0C6B95]" /> Round trip only</label>
+					</div>
+					<p class="text-xs text-neutral-400 mt-1">"Round trip only" discounts a transfer only when the customer books the return too; a plain one-way gets no discount. Hourly and tour bookings ignore this.</p>
+				</div>
+
+				<div class="mb-4">
+					<label for="ed-return-extra" class="block text-sm font-medium text-neutral-700 mb-1">Extra round-trip discount <span class="text-neutral-400">(optional)</span></label>
+					<input id="ed-return-extra" type="number" min="0" step="0.01" placeholder="0"
+						class="w-full md:w-64 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					<p class="text-xs text-neutral-400 mt-1">Added on top of the discount when a transfer includes a return trip, same unit as the discount type. For a round-trip-only offer put the whole discount in the value above and leave this 0.</p>
 				</div>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 					<div>
-						<label for="ed-from" class="block text-sm font-medium text-neutral-700 mb-1">Valid from</label>
+						<label for="ed-from" class="block text-sm font-medium text-neutral-700 mb-1">Offer active from</label>
 						<input id="ed-from" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
 					</div>
 					<div>
-						<label for="ed-until" class="block text-sm font-medium text-neutral-700 mb-1">Valid until</label>
+						<label for="ed-until" class="block text-sm font-medium text-neutral-700 mb-1">Offer active until</label>
 						<input id="ed-until" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
 					</div>
-					<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">Applies only to bookings made <strong>and</strong> travelling within these dates. A round trip needs both legs inside the period.</p>
+					<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">When the offer can be <strong>booked</strong> and when its banner shows.</p>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+					<div>
+						<label for="ed-travel-from" class="block text-sm font-medium text-neutral-700 mb-1">Travel dates from</label>
+						<input id="ed-travel-from" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+					<div>
+						<label for="ed-travel-until" class="block text-sm font-medium text-neutral-700 mb-1">Travel dates until</label>
+						<input id="ed-travel-until" type="date" class="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C6B95]/30 focus:border-[#0C6B95]" />
+					</div>
+					<p class="md:col-span-2 -mt-2 text-xs text-neutral-400">The ride (both legs of a round trip) must fall inside these dates. Set them later than the offer period for an early-booking offer. <button type="button" data-copy-period="ed" class="text-[#0C6B95] font-medium hover:underline">Same as offer period</button></p>
 				</div>
 
 				<div class="mb-5">
@@ -274,7 +318,7 @@ import AdminLayout from '../../components/AdminLayout.astro';
 
 <script>
 	import { supabase } from '../../lib/supabase';
-	import { couponStatusOn, athensTodayISO, validateCouponFields, type CouponStatus, type CouponFields } from '../../lib/coupons';
+	import { couponStatusOn, athensTodayISO, validateCouponFields, TRIP_SCOPE_LABEL, type CouponStatus, type CouponFields, type TripScope } from '../../lib/coupons';
 
 	type CouponRow = {
 		id: string;
@@ -284,6 +328,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		return_extra_value: number;
 		valid_from: string;
 		valid_until: string;
+		travel_from: string;
+		travel_until: string;
+		trip_scope: TripScope;
 		active: boolean;
 		applies_to_all: boolean;
 		flows: string[];
@@ -333,7 +380,8 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		const extra = Number(c.return_extra_value) > 0
 			? (c.discount_type === 'percent' ? ` (+${c.return_extra_value}% RT)` : ` (+€${Number(c.return_extra_value).toFixed(2)} RT)`)
 			: '';
-		return base + extra;
+		const scope = c.trip_scope && c.trip_scope !== 'any' ? ` · ${TRIP_SCOPE_LABEL[c.trip_scope].toLowerCase()}` : '';
+		return base + extra + scope;
 	}
 
 	// Reads the create form ('cp') or the edit modal ('ed') — one shape, two forms.
@@ -347,6 +395,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			returnExtra: parseFloat((document.getElementById(`${p}-return-extra`) as HTMLInputElement).value) || 0,
 			validFrom: (document.getElementById(`${p}-from`) as HTMLInputElement).value,
 			validUntil: (document.getElementById(`${p}-until`) as HTMLInputElement).value,
+			travelFrom: (document.getElementById(`${p}-travel-from`) as HTMLInputElement).value,
+			travelUntil: (document.getElementById(`${p}-travel-until`) as HTMLInputElement).value,
+			tripScope: ((document.querySelector(`input[name="${p}-trip-scope"]:checked`) as HTMLInputElement)?.value || 'any') as TripScope,
 			appliesToAll,
 			flows: appliesToAll ? [] : Array.from(document.querySelectorAll<HTMLInputElement>(`.${p}-flow:checked`)).map((c) => c.value),
 			appliesToAllGroups,
@@ -354,6 +405,15 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			bannerText: (document.getElementById(`${p}-banner`) as HTMLTextAreaElement).value.trim(),
 		};
 	}
+
+	// "Same as offer period" copies the offer dates into the travel dates.
+	document.querySelectorAll<HTMLButtonElement>('[data-copy-period]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const p = btn.dataset.copyPeriod!;
+			(document.getElementById(`${p}-travel-from`) as HTMLInputElement).value = (document.getElementById(`${p}-from`) as HTMLInputElement).value;
+			(document.getElementById(`${p}-travel-until`) as HTMLInputElement).value = (document.getElementById(`${p}-until`) as HTMLInputElement).value;
+		});
+	});
 
 	// The scope radios grey out their checkbox group when "all" is selected.
 	function wireScopeRadios(p: 'cp' | 'ed') {
@@ -395,7 +455,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 				<tr class="border-t border-neutral-100">
 					<td class="px-5 py-3 font-semibold text-neutral-900">${escapeHtml(c.code)}</td>
 					<td class="px-5 py-3">${discountLabel(c)}</td>
-					<td class="px-5 py-3 whitespace-nowrap">${c.valid_from} → ${c.valid_until}</td>
+					<td class="px-5 py-3 whitespace-nowrap text-xs leading-5">
+						<span class="text-neutral-400">Book</span> ${c.valid_from} → ${c.valid_until}<br />
+						<span class="text-neutral-400">Travel</span> ${c.travel_from ?? c.valid_from} → ${c.travel_until ?? c.valid_until}
+					</td>
 					<td class="px-5 py-3">${escapeHtml(servicesLabel(c))}</td>
 					<td class="px-5 py-3">${escapeHtml(groupsLabel(c))}</td>
 					<td class="px-5 py-3 max-w-xs">
@@ -483,6 +546,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			return_extra_value: fields.returnExtra,
 			valid_from: fields.validFrom,
 			valid_until: fields.validUntil,
+			travel_from: fields.travelFrom,
+			travel_until: fields.travelUntil,
+			trip_scope: fields.tripScope,
 			applies_to_all: fields.appliesToAll,
 			flows: fields.flows,
 			applies_to_all_groups: fields.appliesToAllGroups,
@@ -538,6 +604,10 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		(document.getElementById('ed-return-extra') as HTMLInputElement).value = String(c.return_extra_value ?? 0);
 		(document.getElementById('ed-from') as HTMLInputElement).value = c.valid_from;
 		(document.getElementById('ed-until') as HTMLInputElement).value = c.valid_until;
+		(document.getElementById('ed-travel-from') as HTMLInputElement).value = c.travel_from ?? c.valid_from;
+		(document.getElementById('ed-travel-until') as HTMLInputElement).value = c.travel_until ?? c.valid_until;
+		const tripScope = c.trip_scope ?? 'any';
+		document.querySelectorAll<HTMLInputElement>('input[name="ed-trip-scope"]').forEach((r) => { r.checked = r.value === tripScope; });
 		(document.getElementById('ed-banner') as HTMLTextAreaElement).value = c.banner_text ?? '';
 
 		const scopeValue = c.applies_to_all ? 'all' : 'selected';
@@ -577,6 +647,9 @@ import AdminLayout from '../../components/AdminLayout.astro';
 			return_extra_value: fields.returnExtra,
 			valid_from: fields.validFrom,
 			valid_until: fields.validUntil,
+			travel_from: fields.travelFrom,
+			travel_until: fields.travelUntil,
+			trip_scope: fields.tripScope,
 			applies_to_all: fields.appliesToAll,
 			flows: fields.flows,
 			applies_to_all_groups: fields.appliesToAllGroups,

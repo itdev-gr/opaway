@@ -10,7 +10,7 @@ vi.mock('../src/lib/supabase', () => ({
   },
 }));
 
-import { fetchPromoBanner } from '../src/lib/promo-banner';
+import { fetchPromoBanner, promoBannerHref } from '../src/lib/promo-banner';
 
 describe('fetchPromoBanner', () => {
   beforeEach(() => {
@@ -18,8 +18,8 @@ describe('fetchPromoBanner', () => {
   });
 
   it('returns the banner_text from a normal row, dropping the code', async () => {
-    mockRpc.mockResolvedValue({ data: [{ code: 'SUMMER25', banner_text: 'Save 10%' }], error: null });
-    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
+    mockRpc.mockResolvedValue({ data: [{ code: 'SUMMER25', banner_text: 'Save 10%', applies_to_all: true, flows: [] }], error: null });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%', href: '/book' });
   });
 
   it('returns null when there is no running offer', async () => {
@@ -39,16 +39,37 @@ describe('fetchPromoBanner', () => {
 
   it('trims padded banner_text', async () => {
     mockRpc.mockResolvedValue({ data: [{ code: '  SUMMER25  ', banner_text: '  Save 10%  ' }], error: null });
-    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%', href: '/book' });
   });
 
   it('still shows the message when the row carries no code', async () => {
     mockRpc.mockResolvedValue({ data: [{ code: '', banner_text: 'Save 10%' }], error: null });
-    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%' });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: 'Save 10%', href: '/book' });
+  });
+
+  it('sends the visitor to the booking page of the one service the offer is for', async () => {
+    mockRpc.mockResolvedValue({ data: [{ code: 'SEP7', banner_text: '7% off transfers', applies_to_all: false, flows: ['transfer'] }], error: null });
+    await expect(fetchPromoBanner()).resolves.toEqual({ banner_text: '7% off transfers', href: '/book/transfer' });
   });
 
   it('returns null when the rpc call throws', async () => {
     mockRpc.mockRejectedValue(new Error('network down'));
     await expect(fetchPromoBanner()).resolves.toBeNull();
+  });
+});
+
+describe('promoBannerHref', () => {
+  it('maps a single service to its booking page', () => {
+    expect(promoBannerHref(false, ['transfer'])).toBe('/book/transfer');
+    expect(promoBannerHref(false, ['tour'])).toBe('/book/tour');
+    expect(promoBannerHref(false, ['hourly'])).toBe('/book/hourly');
+  });
+
+  it('falls back to the general booking page for all services, several services, or unknown ones', () => {
+    expect(promoBannerHref(true, [])).toBe('/book');
+    expect(promoBannerHref(true, ['transfer'])).toBe('/book');
+    expect(promoBannerHref(false, ['transfer', 'tour'])).toBe('/book');
+    expect(promoBannerHref(false, ['ferry'])).toBe('/book');
+    expect(promoBannerHref(false, null)).toBe('/book');
   });
 });
