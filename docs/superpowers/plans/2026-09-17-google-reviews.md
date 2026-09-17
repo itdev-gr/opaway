@@ -50,3 +50,11 @@
 - [x] Add the three env vars in Vercel (Production); push + deploy (2026-09-17, first sync: 10 pending)
 - [ ] Client approves reviews on `/admin/reviews`; section appears
 - [ ] Browser checklist (journal Step 3)
+
+## Follow-up (2026-09-17): full admin control
+
+User request: the admin must be able to do anything with the reviews, including removing ones already on the site.
+
+- `db/migrations/2026-09-17-google-reviews-manage.sql`: status gains `deleted` (trash — the sync never resurrects it because the dedupe key stays), column `featured` (pinned approved reviews come first), `get_public_reviews` orders `featured desc, published_at desc`.
+- `/admin/reviews`: tabs Pending / On the site / Hidden / Trash / All; per-row **Approve**, **Remove from site**, **Put on the site**, **Pin to top / Unpin**, **Delete** (→ trash), **Restore**, **Delete forever** (confirm modal, warns the next sync may bring it back as pending); checkboxes + bulk Approve / Hide / Delete on the rows shown.
+- Homepage note no longer says "sorted by newest" (pinned reviews go first).
