@@ -12,8 +12,10 @@ What changed (client feedback, three points):
    the travel dates `travel_from..travel_until`, so an October offer can be
    booked in September.
 
-Method: Step 1 ran in the repo. Step 2 is SQL for prod after the migration;
-Step 3 the live checks. Both are marked **NOT RUN** until executed.
+Method: Step 1 ran in the repo. Step 2 ran against prod through the
+Management API SQL endpoint, executed by the user from the session right
+after the migration was applied the same way (2026-09-17). Step 3 ran on the
+live site after the deploy.
 
 ---
 
@@ -74,7 +76,32 @@ insert into public.coupons (code, discount_type, discount_value, valid_from, val
 
 **2.7 — Cleanup**: `delete from public.coupons where code like 'QA_%' returning code;`
 
-Result: **NOT RUN.**
+Results:
+
+```
+backfill    every existing coupon: travel = valid, scope = any
+            (B2B October Offer 08/09–30/09; Exclusive VIP September 17/09–30/09;
+             VIPSEP7 — since re-dated by the admin to 01/10–31/10, so travel is October too)
+get_promo_banner → TABLE(code, banner_text, applies_to_all, flows)
+V1 early oct ride today        1   V2 early sep ride          0
+V3 rt-only one way             0   V4 rt-only round trip      1
+V5 ow-only one way             1   V6 ow-only round trip      0
+V7 ow-only on tour flow        1   (scope ignored off transfers)
+V8 validate rt-only one way    0   V9 validate rt-only rt     1
+V10 validate early oct         1
+V11 "VIPSEP7 on a 20/09 ride"  0   — expected in hindsight: the admin moved VIPSEP7
+                                     to October; the running September offer is now
+                                     "Exclusive VIP September" (see 05)
+booking one-way 10/10 + QA_RT  → COUPON_INVALID, nothing inserted
+banner → Exclusive VIP September, applies_to_all=false, flows={transfer}
+cleanup → QA_EARLY, QA_RT, QA_OW
+```
+**PASS.**
+
+Follow-up for the admin: `VIPSEP7` now has offer period *and* travel dates
+01/10–31/10, so it becomes bookable only on 1 October. For an early-booking
+October offer, edit it and set "Offer active from" to today while keeping the
+travel dates in October.
 
 ---
 
@@ -90,4 +117,9 @@ Result: **NOT RUN.**
    page shows the discount; passenger and payment pages agree.
 5. With QA_OW: one way discounted, "Add return" removes it.
 
-Result: **NOT RUN.**
+Result (guest, live site, after deploy `e15f641`): banner "Book now" → both
+anchors `/book/transfer` (the advertised offer is transfer-only) **PASS**;
+transfer search 20/09 one way €70 → €66.50 and after "Add return" €140 → €133
+(the September offer, unchanged by the backfill) **PASS**. Items 2–5 need an
+admin login / test offers and were **NOT RUN** in the browser; the DB checks
+above cover the same rules.

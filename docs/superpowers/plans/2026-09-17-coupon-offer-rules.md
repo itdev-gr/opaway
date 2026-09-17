@@ -35,4 +35,4 @@
 - [x] Banner + results page
 - [x] Admin form / modal / list / payloads
 - [x] Gates: build, `astro check` delta 0
-- [ ] Apply the migration to prod, then push; live checks (journal Step 3)
+- [x] Apply the migration to prod, push, DB + live checks (2026-09-17)
