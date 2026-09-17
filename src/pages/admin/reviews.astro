@@ -244,9 +244,13 @@ import AdminLayout from '../../components/AdminLayout.astro';
 		syncBtn.disabled = true;
 		setStatus('Syncing with Google…', 'text-neutral-500');
 		try {
+			// JSON content type, like the other admin routes: Astro's built-in
+			// origin check treats a body-less POST as a form post and answers 403
+			// behind Vercel, where the request origin is not the public host.
 			const res = await fetch('/api/admin/sync-google-reviews', {
 				method: 'POST',
-				headers: { Authorization: `Bearer ${session.access_token}` },
+				headers: { 'content-type': 'application/json', authorization: `Bearer ${session.access_token}` },
+				body: '{}',
 			});
 			const body = await res.json().catch(() => ({}));
 			if (!res.ok || !body.ok) {
