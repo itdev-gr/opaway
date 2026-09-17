@@ -45,6 +45,7 @@ const nav = [
 			{ key: 'users',               label: 'Users',        href: '/admin/users',               icon: 'users'    },
 			{ key: 'partners',            label: 'Partners',     href: '/admin/partners',            icon: 'partners', notifId: 'admin-partners' },
 			{ key: 'coupons',             label: 'Coupons',      href: '/admin/coupons',             icon: 'chart'    },
+			{ key: 'reviews',             label: 'Google Reviews', href: '/admin/reviews',           icon: 'star',     notifId: 'admin-reviews' },
 			{ key: 'affiliates',          label: 'Affiliates',   href: '/admin/affiliates',          icon: 'users'    },
 			{ key: 'sales',               label: 'Sales Report', href: '/admin/sales',               icon: 'chart'    },
 			{ key: 'settings',            label: 'Settings',     href: '/admin/settings',            icon: 'settings' },
@@ -288,6 +289,7 @@ const nav = [
 						setBadge('admin-tours',       c.tours);
 						setBadge('admin-experiences', c.experiences);
 						setBadge('admin-partners',    c.partners);
+						setBadge('admin-reviews',     c.reviews);
 					} catch (err) {
 						console.error('Admin badge refresh failed:', err);
 					}
@@ -295,7 +297,7 @@ const nav = [
 
 				refreshAdminBadges();
 				const unsubAdminNotif = subscribeTables(
-					['requests', 'transfers', 'tours', 'experiences', 'partners'],
+					['requests', 'transfers', 'tours', 'experiences', 'partners', 'google_reviews'],
 					refreshAdminBadges
 				);
 				window.addEventListener('beforeunload', () => unsubAdminNotif());
