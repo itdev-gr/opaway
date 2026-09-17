@@ -112,6 +112,15 @@ GET  again              → {"ok":true,"new":0,"seen":10,"errors":[]}    (idempo
 ```
 **PASS.** (Cron Jobs listing in the dashboard not eyeballed in this pass.)
 
+Found by the user on the first try of **Sync now**: `Sync failed: HTTP 403`.
+Cause: Astro's built-in origin check treats a body-less POST (no
+`content-type`) as a form post and compares the browser's `Origin` with the
+request URL's origin, which behind Vercel is not the public host → 403 before
+the route runs (the same reason the curl POST above got 403 instead of 401).
+Fix `ebdeaab`: the button now posts `application/json` with `{}`, like the
+other admin routes. `curl -X POST -H 'content-type: application/json' -d '{}'`
+without a token → 401 (the route's own check). **PASS after fix.**
+
 ---
 
 ## Step 4 — Browser checklist
