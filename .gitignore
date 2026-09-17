@@ -55,3 +55,5 @@ r5-*.png
 
 # Claude Code local permissions (contains local secrets) — never track
 .claude/settings.local.json
+.env*
+!.env.example
