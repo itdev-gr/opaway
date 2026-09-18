@@ -107,6 +107,7 @@ import HotelLayout from '../../components/HotelLayout.astro';
 <script>
 	import { supabase } from '../../lib/supabase';
 	import { resolveHotelCommission, kindForTransferRow, type CommissionKind } from '../../lib/commissions';
+	import { transferReturnLeg } from '../../lib/transfer-legs';
 
 	function initHotelReservations() {
 		const loadingEl = document.getElementById('reservations-loading');
@@ -203,20 +204,31 @@ import HotelLayout from '../../components/HotelLayout.astro';
 				id: string; type: string; firstName: string; lastName: string;
 				from: string; to: string; date: string; time: string;
 				rideStatus: string; paymentStatus: string;
+				leg?: 'outward' | 'return';
 			}
 
-			const calBookings: CalendarBooking[] = allBookings.map(d => ({
-				id: d.id,
-				type: d.type.toLowerCase(),
-				firstName: d.first_name || d.name || '',
-				lastName: d.last_name || '',
-				from: d.from || d.pickup || '',
-				to: d.to || d.dropoff || '',
-				date: d.date || (d.created_at ? new Date(d.created_at).toISOString().slice(0, 10) : ''),
-				time: d.time || '',
-				rideStatus: d.ride_status || d.status || 'pending',
-				paymentStatus: (d as any).payment_status || 'pending',
-			}));
+			// Round-trip transfers appear as two calendar entries (outward + return);
+			// allBookings stays unexpanded so the table and count still list the booking once.
+			const calBookings: CalendarBooking[] = allBookings.flatMap(d => {
+				const base: CalendarBooking = {
+					id: d.id,
+					type: d.type.toLowerCase(),
+					firstName: d.first_name || d.name || '',
+					lastName: d.last_name || '',
+					from: d.from || d.pickup || '',
+					to: d.to || d.dropoff || '',
+					date: d.date || (d.created_at ? new Date(d.created_at).toISOString().slice(0, 10) : ''),
+					time: d.time || '',
+					rideStatus: d.ride_status || d.status || 'pending',
+					paymentStatus: (d as any).payment_status || 'pending',
+				};
+				const ret = base.type === 'transfer' ? transferReturnLeg(d) : null;
+				if (!ret) return [base];
+				return [
+					{ ...base, leg: 'outward' },
+					{ ...base, leg: 'return', date: ret.date, time: ret.time, from: ret.from, to: ret.to },
+				];
+			});
 
 			let currentYear = new Date().getFullYear();
 			let currentMonth = new Date().getMonth();
@@ -293,9 +305,14 @@ import HotelLayout from '../../components/HotelLayout.astro';
 					const m: Record<string,string> = { pending:'bg-amber-50 text-amber-700 border-amber-200', completed:'bg-sky-50 text-sky-700 border-sky-200', cancelled:'bg-red-50 text-red-600 border-red-200', paid:'bg-emerald-50 text-emerald-700 border-emerald-200' };
 					return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${m[s.toLowerCase()]||'bg-neutral-50 text-neutral-600 border-neutral-200'} capitalize">${p}: ${s}</span>`;
 				};
+				const legBadge = (leg?: string) => {
+					if (leg === 'return') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-indigo-50 text-indigo-700 border-indigo-200">Return</span>`;
+					if (leg === 'outward') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-neutral-50 text-neutral-600 border-neutral-200">Outward</span>`;
+					return '';
+				};
 				list.innerHTML = bk.map(b => `
 					<div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-						<div class="flex items-center gap-3 flex-1 min-w-0">${typeBadge(b.type)}<span class="font-medium text-sm text-neutral-900 truncate">${b.firstName} ${b.lastName}</span></div>
+						<div class="flex items-center gap-3 flex-1 min-w-0">${typeBadge(b.type)}${legBadge(b.leg)}<span class="font-medium text-sm text-neutral-900 truncate">${b.firstName} ${b.lastName}</span></div>
 						<div class="flex items-center gap-2 text-sm text-neutral-600 flex-1 min-w-0"><span class="truncate">${b.from||'\u2014'}</span><svg class="w-4 h-4 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg><span class="truncate">${b.to||'\u2014'}</span></div>
 						<div class="text-sm text-neutral-500 whitespace-nowrap">${b.time||'\u2014'}</div>
 						<div class="flex items-center gap-2 flex-shrink-0">${sBadge(b.rideStatus,'Ride')} ${sBadge(b.paymentStatus,'Pay')}</div>

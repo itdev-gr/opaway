@@ -59,6 +59,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 
 <script>
 	import { supabase } from '../../lib/supabase';
+	import { transferReturnLeg } from '../../lib/transfer-legs';
 
 	interface Booking {
 		id: string;
@@ -74,6 +75,7 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 		rideStatus: string;
 		paymentStatus: string;
 		paymentMethod: string;
+		leg?: 'outward' | 'return';
 	}
 
 	let allBookings: Booking[] = [];
@@ -244,10 +246,17 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${cls} capitalize">${prefix}: ${status}</span>`;
 		};
 
+		const legBadge = (leg?: string) => {
+			if (leg === 'return') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-indigo-50 text-indigo-700 border-indigo-200">Return</span>`;
+			if (leg === 'outward') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-neutral-50 text-neutral-600 border-neutral-200">Outward</span>`;
+			return '';
+		};
+
 		list.innerHTML = bookings.map((b, i) => `
 			<div data-idx="${i}" class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center gap-3 cursor-pointer hover:border-[#0C6B95]/40 hover:shadow-md transition-all">
 				<div class="flex items-center gap-3 flex-1 min-w-0">
 					${typeBadge(b.type)}
+					${legBadge(b.leg)}
 					<span class="font-medium text-sm text-neutral-900 truncate">${b.firstName} ${b.lastName}</span>
 				</div>
 				<div class="flex items-center gap-2 text-sm text-neutral-600 flex-1 min-w-0">
@@ -294,7 +303,17 @@ import ReservationDetailModal from '../../components/ReservationDetailModal.astr
 			}
 
 			allBookings = [];
-			(transfersRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'transfer')));
+			// A round trip is one row; the calendar shows it as two scheduled transfers.
+			(transfersRes.data ?? []).forEach(row => {
+				const outward = parseBooking(row, 'transfer');
+				const ret = transferReturnLeg(row);
+				if (!ret) {
+					allBookings.push(outward);
+					return;
+				}
+				allBookings.push({ ...outward, leg: 'outward' });
+				allBookings.push({ ...outward, leg: 'return', date: ret.date, time: ret.time, from: ret.from, to: ret.to });
+			});
 			(toursRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'tour')));
 			(experiencesRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'experience')));
 			(requestsRes.data ?? []).forEach(row => allBookings.push(parseBooking(row, 'request')));
